@@ -6,16 +6,22 @@ It is designed to be task-oriented, configurable, and personalizable. Mojodex is
 
 ## Demo
 
-Mojodex is already available as a SaaS solution with a 14 days free-trial for direct use. :
+[![Mojodex Demo](https://img.youtube.com/vi/9m7AZdd5Qyw/0.jpg)](https://www.youtube.com/watch?v=9m7AZdd5Qyw)
+
+To give try, there is hosted version of Mojodex already available with a 14 days free-trial for direct use :
 - Web app: [https://mojodex.hoomano.com](https://mojodex.hoomano.com)
 - Mobile app:
     - [![App Store](/webapp/public/images/app_store.svg)](https://apps.apple.com/fr/app/mojodex/id6446367743)
   - [![Google Play](/webapp/public/images/google_play.svg)](https://play.google.com/store/apps/details?id=com.hoomano.mojodex_mobile)
 
 
-You can also use the open-source version of Mojodex to host your own instance.
+And you can deploy the open-source version of Mojodex to host your own instance.
+
+__Here we go!__
 
 ## Quick Start
+
+See the installation video guide here: https://youtu.be/86_S_cXhhTA
 
 STEP 1: Clone the repository
 

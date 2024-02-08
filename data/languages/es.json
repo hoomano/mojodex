@@ -1,13 +1,13 @@
 {
     "errorMessages": {
-		"globalSnackBarMessage":  "Ups, algo salió mal - por favor intente de nuevo",
-		"messageFailedEmission": "Ocurrió un problema durante el envio de su mensaje...\nToque para reintentar",
-		"m4aFileInvalid": "Oops, I did it again!"
-	},
+        "globalSnackBarMessage": "Ups, algo salió mal - por favor intente de nuevo",
+        "messageFailedEmission": "Ocurrió un problema durante el envio de su mensaje...\nToque para reintentar",
+        "m4aFileInvalid": "Oops, I did it again!"
+    },
     "validationWidget": {
-		"okButton": "OK",
-		"noButton": "No"
-	},
+        "okButton": "OK",
+        "noButton": "No"
+    },
     "appDrawer": {
         "title": "Mojodex",
         "newTaskButton": "Nueva Tarea",
@@ -16,9 +16,25 @@
         "resourcesButton": "Recursos"
     },
     "nextButton": "Siguiente",
-	"previousButton": "Anterior",
+    "previousButton": "Anterior",
     "skipContainerButton": "Omitir",
     "onboarding": {
+        "termsAndConditions": {
+            "emoji": "😉",
+            "title": "¡Bienvenido!",
+            "IAgree": "Estoy de acuerdo",
+            "defaultAgreement": "Estoy de acuerdo en interactuar con el asistente digital de forma respetuosa y cortés, reconociendo la importancia de la amabilidad en nuestro espacio digital.",
+            "defaultModalContent": "Por favor, tómate un momento para reconocer nuestras directrices de la comunidad",
+            "termsModalContent": "Justo antes de empezar, echa un vistazo a nuestros términos y condiciones",
+            "termsAndConditions": "términos y condiciones",
+            "acceptButtonText": "Empecemos"
+        },
+        "categorySelection": {
+            "emoji": "👋",
+            "title": "¡Hola desde Mojodex!",
+            "content": "¿Preparado para embarcarte en un viaje increíble?",
+            "question": "¿Quién es usted?"
+        },
         "nextButton": "Siguiente",
         "webUrlInputPage": {
             "emoji": "👋",
@@ -50,60 +66,60 @@
             ]
         }
     },
-  "startNewTask": {
-    	"noTasksStarted": "No has iniciado ninguna tarea",
-    	"getStartedMessage": "¡Empieza con tu primera tarea!",
-    	"startNewTaskButton": "Empieza una nueva tarea"
-  },
-    "userTaskExecutionList": {
-		"appBarTitle": "Tareas",
-        "taskNotFound": "🤔\nParece que no hay nada similar a lo que buscar en tu historial..."
-	},
-    "newUserTaskExecution": {
-		"appBarTitle": "Tareas",
-        "title": "🎯\nQue le gustaria hacer hoy?",
-      "selectBusinessTasks": "Selecciona una de las tareas empresariales que te gustaría conseguir con Mojo"
-	},
-  "resources": {
-    "resourcesTitle": "recursos",
-    "addButton": "Añadir",
-    "addedByUserTabTitle": "Añadido por",
-    "learnedByMojoTabTitle": "Aprendido por Mojo",
-    "learnedByUserTableHeader": {
-      "document": "documento",
-      "addedBy": "Añadido por",
-      "updatedAt": "Actualizado en"
+    "startNewTask": {
+        "noTasksStarted": "No has iniciado ninguna tarea",
+        "getStartedMessage": "¡Empieza con tu primera tarea!",
+        "startNewTaskButton": "Empieza una nueva tarea"
     },
-    "learnedByMojoTableHeader": {
-      "document": "documento",
-      "conversationWith": "Conversación con",
-      "updatedAt": "Actualizado en"
-    }
-  },
+    "userTaskExecutionList": {
+        "appBarTitle": "Tareas",
+        "taskNotFound": "🤔\nParece que no hay nada similar a lo que buscar en tu historial..."
+    },
+    "newUserTaskExecution": {
+        "appBarTitle": "Tareas",
+        "title": "🎯\nQue le gustaria hacer hoy?",
+        "selectBusinessTasks": "Selecciona una de las tareas empresariales que te gustaría conseguir con Mojo"
+    },
+    "resources": {
+        "resourcesTitle": "recursos",
+        "addButton": "Añadir",
+        "addedByUserTabTitle": "Añadido por",
+        "learnedByMojoTabTitle": "Aprendido por Mojo",
+        "learnedByUserTableHeader": {
+            "document": "documento",
+            "addedBy": "Añadido por",
+            "updatedAt": "Actualizado en"
+        },
+        "learnedByMojoTableHeader": {
+            "document": "documento",
+            "conversationWith": "Conversación con",
+            "updatedAt": "Actualizado en"
+        }
+    },
     "userTaskExecution": {
-		"chatTab": {
-			"title": "Chat",
-			"notificationValidation":{
-				"emoji": "👍",
-				"title": "Trabajo en ello!",
-				"textContent":{
-					"notifAllowed": "Por favor permita las notificaciones para que pueda avisarle cuando termine mi trabajo",
-					"notNotifAllowed": "Le haré saber cuando termine mi trabajo"
-				},
-				"acceptButtonText": {
-					"notifAllowed": "Mantenme informado",
-					"notNotifAllowed": "Ok"
-				}
-			}
-		},
+        "chatTab": {
+            "title": "Chat",
+            "notificationValidation": {
+                "emoji": "👍",
+                "title": "Trabajo en ello!",
+                "textContent": {
+                    "notifAllowed": "Por favor permita las notificaciones para que pueda avisarle cuando termine mi trabajo",
+                    "notNotifAllowed": "Le haré saber cuando termine mi trabajo"
+                },
+                "acceptButtonText": {
+                    "notifAllowed": "Mantenme informado",
+                    "notNotifAllowed": "Ok"
+                }
+            }
+        },
         "resultTab": {
             "title": "Resultados",
-            "notificationValidation":{
-				"emoji": "💬",
-				"title": "Trabajando en ello...",
-				"textContent": "Por favor permita las notificaciones para que pueda avisarle cuando termine mi trabajo",
-				"acceptButtonText": "Mantenme informado"
-			},
+            "notificationValidation": {
+                "emoji": "💬",
+                "title": "Trabajando en ello...",
+                "textContent": "Por favor permita las notificaciones para que pueda avisarle cuando termine mi trabajo",
+                "acceptButtonText": "Mantenme informado"
+            },
             "editEmoji": "🎙️",
             "editButton": "Editar",
             "exportButton": "Exportar"
@@ -111,7 +127,7 @@
         "todosTab": {
             "title": "Pendientes",
             "workingOnTodosEmoji": "💬",
-			"notWorkingOnTodosEmoji": "✅",
+            "notWorkingOnTodosEmoji": "✅",
             "workingOnTodosTitleMessage": "Estoy organizando que hacer para esta tarea",
             "workingOnTodosBodyMessage": "Encontrarás la lista de pendientes aquí cuando termine",
             "notWorkingOnTodosTitleMessage": "No se encontraron pasos siguientes explícitos.",
@@ -134,42 +150,42 @@
         "termsOfUseButton": "Términos de Uso",
         "privacyPolicyButton": "Política de Privacidad",
         "darkModeButton": "Modo Oscuro",
-        "autoPlayVocalMessage":"Reproducción automática de mensajes vocales",
+        "autoPlayVocalMessage": "Reproducción automática de mensajes vocales",
         "languageButton": "Idioma",
         "languageName": "Español"
     },
     "calendar": {
-		"appBarTitle": "Calendario",
-		"hasAccess": "Calendarios a los que Mojodex tiene acceso:",
-		"noAccess": "\uD83D\uDE14\uFE0F\\nParece que Mojodex aún no tiene acceso a tu calendario.",
-		"grantAccessButton": "Conceder acceso",
-      "statusBarAskAccess": "¿Aumentar asistencia? ¡Permitir el acceso al calendario! 📆",
-    "accessDenied": "¡No te preocupes! Tú tienes el control. Estoy aquí para ayudarte, con o sin calendario 😊",
-    "statusBarGrantButton": "Conceder acceso"
-	},
+        "appBarTitle": "Calendario",
+        "hasAccess": "Calendarios a los que Mojodex tiene acceso:",
+        "noAccess": "\uD83D\uDE14\uFE0F\\nParece que Mojodex aún no tiene acceso a tu calendario.",
+        "grantAccessButton": "Conceder acceso",
+        "statusBarAskAccess": "¿Aumentar asistencia? ¡Permitir el acceso al calendario! 📆",
+        "accessDenied": "¡No te preocupes! Tú tienes el control. Estoy aquí para ayudarte, con o sin calendario 😊",
+        "statusBarGrantButton": "Conceder acceso"
+    },
     "plan": {
         "appBarTitle": "Plan",
         "title": "Gestionar Planes",
         "currentPlans": "Planes Actuales: ",
         "updatePlan": "Actualización: ",
-        "productCard":{
-			"usageLimitTitle": "Periodo de utilización:",
-			"nValidityDaysSuffix": "días",
-			"nTasksLimitSuffix": "tareas",
-          "includedTasks": "Tareas incluidas:",
-      "customerSupportByEmail": "Atención al cliente por correo electrónico",
-      "customPlanCallToAction": "O, si quieres un plan personalizado",
-      "getQuoteCallToAction": "La gente suele ponerse en contacto con nosotros para obtener un presupuesto",
-      "contactUsButton": "Contacte con nosotros"
-		},
-        "purchaseUsageCard":{
-			"title": "Detalles de uso:",
-            "remainingDaysSuffix" : "días restantes",
-            "nTasksConsumedSuffix" : "tareas utilizadas",
-          "nTaskDone": "Tareas realizadas",
-      		"nDaysLeft": "Días restantes:"
-		},
-        "purchaseMessages":{
+        "productCard": {
+            "usageLimitTitle": "Periodo de utilización:",
+            "nValidityDaysSuffix": "días",
+            "nTasksLimitSuffix": "tareas",
+            "includedTasks": "Tareas incluidas:",
+            "customerSupportByEmail": "Atención al cliente por correo electrónico",
+            "customPlanCallToAction": "O, si quieres un plan personalizado",
+            "getQuoteCallToAction": "La gente suele ponerse en contacto con nosotros para obtener un presupuesto",
+            "contactUsButton": "Contacte con nosotros"
+        },
+        "purchaseUsageCard": {
+            "title": "Detalles de uso:",
+            "remainingDaysSuffix": "días restantes",
+            "nTasksConsumedSuffix": "tareas utilizadas",
+            "nTaskDone": "Tareas realizadas",
+            "nDaysLeft": "Días restantes:"
+        },
+        "purchaseMessages": {
             "success": {
                 "emoji": "🎉",
                 "title": "Gracias!",

@@ -1,0 +1,200 @@
+{
+  "errorMessages": {
+    "globalSnackBarMessage": "Ups, algo salió mal - por favor intente de nuevo",
+    "messageFailedEmission": "Ocurrió un problema durante el envio de su mensaje...\nToque para reintentar",
+    "m4aFileInvalid": "Oops, I did it again!"
+  },
+  "validationWidget": {
+    "okButton": "OK",
+    "noButton": "No"
+  },
+  "appDrawer": {
+    "title": "Mojodex",
+    "newTaskButton": "Nueva Tarea",
+    "taskListButton": "Tareas",
+    "todosButton": "Pendientes",
+    "resourcesButton": "Recursos"
+  },
+  "nextButton": "Siguiente",
+  "previousButton": "Anterior",
+  "skipContainerButton": "Omitir",
+  "onboarding": {
+    "nextButton": "Siguiente",
+    "webUrlInputPage": {
+      "emoji": "👋",
+      "title": "¡Bienvenido!",
+      "body": "Soy Mojo. Cuénteme un poco sobre useted. Esto me ayudará a asistirle de la mejor manera posible.",
+      "webUrlInputHintText": "Sitio web de la empresa",
+      "validatorErrorMessage": "Por favor, proporcione una URL válida (http(s)://xxxx.xxxx) o xxxx.xxxx"
+    },
+    "progressIndicatorPage": {
+      "emoji": "🔎",
+      "title": "Deme un momento...",
+      "body": "Mientras aprendo un poco más sobre su negocio"
+    },
+    "companyInformationPage": {
+      "agreeButton": "👍 Sí",
+      "disagreeButton": "👎 No",
+      "userClarificationInputValidatorErrorMessage": "Por favor, ingrese algún texto",
+      "userClarificationInputHintText": "Puede agregar cualquier otro aspecto que considere importante que deba saber sobre su negocio"
+    },
+    "goalsSelectionPage": {
+      "emoji": "🎯",
+      "title": "¿Cuál es su principal objetivo comercial?",
+      "body": "Cuéntenos un poco sobre usted. Esto nos ayudará a asistirle de la mejor manera posible.",
+      "userPersonalGoalInputValidatorHintText": "O describa su objetivo con sus propias palabras",
+      "discoverMojodexGoal": "Descubrir Mojodex",
+      "predefinedGoals": [
+        "Mejorar la conversión con los prospectos",
+        "Fortalecer las conexiones con los clientes actuales"
+      ]
+    }
+  },
+  "startNewTask": {
+    "noTasksStarted": "No has iniciado ninguna tarea",
+    "getStartedMessage": "¡Empieza con tu primera tarea!",
+    "startNewTaskButton": "Empieza una nueva tarea"
+  },
+  "userTaskExecutionList": {
+    "appBarTitle": "Tareas",
+    "taskNotFound": "🤔\nParece que no hay nada similar a lo que buscar en tu historial..."
+  },
+  "newUserTaskExecution": {
+    "appBarTitle": "Tareas",
+    "title": "🎯\nQue le gustaria hacer hoy?",
+    "selectBusinessTasks": "Selecciona una de las tareas empresariales que te gustaría conseguir con Mojo"
+  },
+  "resources": {
+    "resourcesTitle": "recursos",
+    "addButton": "Añadir",
+    "addedByUserTabTitle": "Añadido por",
+    "learnedByMojoTabTitle": "Aprendido por Mojo",
+    "learnedByUserTableHeader": {
+      "document": "documento",
+      "addedBy": "Añadido por",
+      "updatedAt": "Actualizado en"
+    },
+    "learnedByMojoTableHeader": {
+      "document": "documento",
+      "conversationWith": "Conversación con",
+      "updatedAt": "Actualizado en"
+    }
+  },
+  "userTaskExecution": {
+    "chatTab": {
+      "title": "Chat",
+      "notificationValidation": {
+        "emoji": "👍",
+        "title": "Trabajo en ello!",
+        "textContent": {
+          "notifAllowed": "Por favor permita las notificaciones para que pueda avisarle cuando termine mi trabajo",
+          "notNotifAllowed": "Le haré saber cuando termine mi trabajo"
+        },
+        "acceptButtonText": {
+          "notifAllowed": "Mantenme informado",
+          "notNotifAllowed": "Ok"
+        }
+      }
+    },
+    "resultTab": {
+      "title": "Resultados",
+      "notificationValidation": {
+        "emoji": "💬",
+        "title": "Trabajando en ello...",
+        "textContent": "Por favor permita las notificaciones para que pueda avisarle cuando termine mi trabajo",
+        "acceptButtonText": "Mantenme informado"
+      },
+      "editEmoji": "🎙️",
+      "editButton": "Editar",
+      "exportButton": "Exportar"
+    },
+    "todosTab": {
+      "title": "Pendientes",
+      "workingOnTodosEmoji": "💬",
+      "notWorkingOnTodosEmoji": "✅",
+      "workingOnTodosTitleMessage": "Estoy organizando que hacer para esta tarea",
+      "workingOnTodosBodyMessage": "Encontrarás la lista de pendientes aquí cuando termine",
+      "notWorkingOnTodosTitleMessage": "No se encontraron pasos siguientes explícitos.",
+      "notWorkingOnTodosBodyMessage": ""
+    }
+  },
+  "todos": {
+    "appBarTitle": "Por hacer",
+    "neverDoneTodosTitleMessage": "¡Bienvenido a tu lista de pendientes!",
+    "notNeverDoneTodosTitleMessage": "¡Buen trabajo! Su lista de pendientes esta vacía.",
+    "neverDoneTodosBodyMessage": "Aquí es donde encontrarás y gestionarás tus pendientes. Como es tu primera vez aquí, aún no tienes pendientes por hacer."
+  },
+  "account": {
+    "appBarTitle": "Cuenta",
+    "accountSectionTitle": "Cuenta",
+    "planButton": "Plan",
+    "calendarButton": "Calendario",
+    "deleteAccountButton": "Eliminar Cuenta",
+    "securitySectionTitle": "Seguridad",
+    "termsOfUseButton": "Términos de Uso",
+    "privacyPolicyButton": "Política de Privacidad",
+    "darkModeButton": "Modo Oscuro",
+    "autoPlayVocalMessage": "Reproducción automática de mensajes vocales",
+    "languageButton": "Idioma",
+    "languageName": "Español"
+  },
+  "calendar": {
+    "appBarTitle": "Calendario",
+    "hasAccess": "Calendarios a los que Mojodex tiene acceso:",
+    "noAccess": "😔️\\nParece que Mojodex aún no tiene acceso a tu calendario.",
+    "grantAccessButton": "Conceder acceso",
+    "statusBarAskAccess": "¿Aumentar asistencia? ¡Permitir el acceso al calendario! 📆",
+    "accessDenied": "¡No te preocupes! Tú tienes el control. Estoy aquí para ayudarte, con o sin calendario 😊",
+    "statusBarGrantButton": "Conceder acceso"
+  },
+  "plan": {
+    "appBarTitle": "Plan",
+    "title": "Gestionar Planes",
+    "currentPlans": "Planes Actuales: ",
+    "updatePlan": "Actualización: ",
+    "productCard": {
+      "usageLimitTitle": "Periodo de utilización:",
+      "nValidityDaysSuffix": "días",
+      "nTasksLimitSuffix": "tareas",
+      "includedTasks": "Tareas incluidas:",
+      "customerSupportByEmail": "Atención al cliente por correo electrónico",
+      "customPlanCallToAction": "O, si quieres un plan personalizado",
+      "getQuoteCallToAction": "La gente suele ponerse en contacto con nosotros para obtener un presupuesto",
+      "contactUsButton": "Contacte con nosotros"
+    },
+    "purchaseUsageCard": {
+      "title": "Detalles de uso:",
+      "remainingDaysSuffix": "días restantes",
+      "nTasksConsumedSuffix": "tareas utilizadas",
+      "nTaskDone": "Tareas realizadas",
+      "nDaysLeft": "Días restantes:"
+    },
+    "purchaseMessages": {
+      "success": {
+        "emoji": "🎉",
+        "title": "Gracias!",
+        "body": "Hemos recibido su pago. Ahora puede seguir utilizando Mojodex en su maximo potencial!"
+      },
+      "canceled": {
+        "emoji": "🤗",
+        "title": "No se preocupe",
+        "body": "Puede seguir disfrutando de su acceso gratuito y decidir sucribirse más tarde."
+      },
+      "error": {
+        "emoji": "😬",
+        "title": "UPS! Algo a salido mas con su compra.",
+        "body": "Le asistiremos por email!"
+      }
+    },
+    "purchaseBadge": {
+      "activeState": "Activo",
+      "expiredState": "Vencido"
+    }
+  },
+  "accountDeletion": {
+    "appBarTitle": "Eliminación de Cuenta",
+    "title": "Eliminar Cuenta",
+    "body": "<Generico mensaje de eliminación de cuenta>",
+    "requestAccountDeletionButton": "Solicitar Eliminación de Cuenta"
+  }
+}

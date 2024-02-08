@@ -1,0 +1,201 @@
+{
+  "errorMessages": {
+    "globalSnackBarMessage": "Oops, something went wrong - Please try again.",
+    "messageFailedEmission": "A problem occurred while sending your message...\nTap to retry",
+    "m4aFileInvalid": "Oops i did it again"
+  },
+  "validationWidget": {
+    "okButton": "OK",
+    "noButton": "No"
+  },
+  "appDrawer": {
+    "title": "Mojodex",
+    "newTaskButton": "New task",
+    "taskListButton": "Tasks",
+    "todosButton": "Todos",
+    "resourcesButton": "Resources"
+  },
+  "nextButton": "Next",
+  "previousButton": "Previous",
+  "skipContainerButton": "Skip",
+  "onboarding": {
+    "nextButton": "Next",
+    "webUrlInputPage": {
+      "emoji": "👋",
+      "title": "Welcome!",
+      "body": "I'm Mojo. Tell me a bit about yourself. This will help me assist you the best I can.",
+      "webUrlInputHintText": "Company website",
+      "validatorErrorMessage": "Please provide a valid url (http(s)://xxxx.xxxx) or xxxx.xxxx"
+    },
+    "progressIndicatorPage": {
+      "emoji": "🔎",
+      "title": "Give me a moment..",
+      "body": "While I'm learning a little bit more about your business"
+    },
+    "companyInformationPage": {
+      "agreeButton": "👍 Yes",
+      "disagreeButton": "👎 No",
+      "userClarificationInputValidatorErrorMessage": "Please enter some text",
+      "userClarificationInputHintText": "If you want, tell me anything else I need to know about your business"
+    },
+    "goalsSelectionPage": {
+      "emoji": "🎯",
+      "title": "What's your main business goal?",
+      "body": "Tell us a bit about yourself. This will help us assist you the best we can.",
+      "userPersonalGoalInputValidatorHintText": "Or state your goal in your own words",
+      "discoverMojodexGoal": "Discover Mojodex",
+      "predefinedGoals": [
+        "Enhance lead conversion",
+        "Strengthen current customer connections"
+      ]
+    }
+  },
+  "startNewTask": {
+    "noTasksStarted": "You haven’t started any task",
+    "getStartedMessage": "Get started with your first task!",
+    "startNewTaskButton": "Start a new task"
+  },
+  "userTaskExecutionList": {
+    "appBarTitle": "Tasks",
+    "taskNotFound": "🤔\nIt seems there is no such thing in your task history..."
+  },
+  "newUserTaskExecution": {
+    "appBarTitle": "Tasks",
+    "title": "🎯\nWhat would you like to do today?",
+    "selectBusinessTasks": "Select one of the business tasks you would like to achieve with Mojo"
+  },
+  "resources": {
+    "resourcesTitle": "Resources",
+    "addButton": "Add",
+    "addedByUserTabTitle": "Added by",
+    "learnedByMojoTabTitle": "Learned by Mojo",
+    "learnedByUserTableHeader": {
+      "document": "Document",
+      "addedBy": "Added by",
+      "updatedAt": "Updated at"
+    },
+    "learnedByMojoTableHeader": {
+      "document": "Document",
+      "conversationWith": "Conversation with",
+      "updatedAt": "Updated at"
+    }
+  },
+  "userTaskExecution": {
+    "chatTab": {
+      "title": "Chat",
+      "notificationValidation": {
+        "emoji": "👍",
+        "title": "I'm on it !",
+        "textContent": {
+          "notifAllowed": "Please allow notifications and I will let you know once my work is done",
+          "notNotifAllowed": "I will let you know once my work is done"
+        },
+        "acceptButtonText": {
+          "notifAllowed": "Notify me",
+          "notNotifAllowed": "Ok"
+        }
+      }
+    },
+    "resultTab": {
+      "title": "Results",
+      "notificationValidation": {
+        "emoji": "💬",
+        "title": "Working on your tasks...",
+        "textContent": "Please allow notifications and I will let you know once my work is done",
+        "acceptButtonText": "Notify me"
+      },
+      "editEmoji": "🎙️",
+      "editButton": "Edit",
+      "exportButton": "Export"
+    },
+    "todosTab": {
+      "title": "Todos",
+      "workingOnTodosEmoji": "💬",
+      "notWorkingOnTodosEmoji": "✅",
+      "workingOnTodosTitleMessage": "I'm organizing what to do for this task",
+      "workingOnTodosBodyMessage": "You will find the to-do list here when I'm done",
+      "notWorkingOnTodosTitleMessage": "No explicit next steps found.",
+      "notWorkingOnTodosBodyMessage": ""
+    }
+  },
+  "todos": {
+    "appBarTitle": "Todos",
+    "neverDoneTodosTitleMessage": "Welcome to your To-do list!",
+    "notNeverDoneTodosTitleMessage": "Great job! To-do list empty.",
+    "neverDoneTodosBodyMessage": "This is where you will find and manage your To-dos. Since it's your first time here, there is no To-do yet."
+  },
+  "account": {
+    "appBarTitle": "Account",
+    "accountSectionTitle": "Account",
+    "planButton": "Plan",
+    "calendarButton": "Calendar",
+    "deleteAccountButton": "Delete Account",
+    "securitySectionTitle": "Security",
+    "termsOfUseButton": "Terms of Use",
+    "privacyPolicyButton": "Privacy Policy",
+    "darkModeButton": "Dark Mode",
+    "autoPlayVocalMessage": "Auto-play vocal messages",
+    "languageButton": "Language",
+    "languageName": "English"
+  },
+  "calendar": {
+    "appBarTitle": "Calendar",
+    "hasAccess": "Calendars Mojodex has access to:",
+    "noAccess": "😔️\\nSeems Mojodex doesn't have access to your calendar yet.",
+    "grantAccessButton": "Grant Access",
+    "statusBarAskAccess": "Enhance assistance? Allow calendar access! 📆",
+    "accessDenied": "No worries! You're in control. I'm here to help, with or without calendar. 😊",
+    "statusBarGrantButton": "Enable"
+  },
+  "plan": {
+    "appBarTitle": "Plan",
+    "title": "Manage Plans",
+    "currentPlans": "Current Plans: ",
+    "updatePlan": "Update: ",
+    "productCard": {
+      "usageLimitTitle": "Usage limit up to:",
+      "nValidityDaysSuffix": "days",
+      "nTasksLimitSuffix": "tasks",
+      "nTasksPerMonth": "80 tasks per month",
+      "includedTasks": "Includes Tasks:",
+      "customerSupportByEmail": "Customer Support by Email",
+      "customPlanCallToAction": "Or, if you want a custom plan",
+      "getQuoteCallToAction": "People usually contact us to get a quote",
+      "contactUsButton": "Contact us"
+    },
+    "purchaseUsageCard": {
+      "title": "Usage details:",
+      "remainingDaysSuffix": "days left",
+      "nTasksConsumedSuffix": "tasks used",
+      "nTaskDone": "Tasks done:",
+      "nDaysLeft": "Days left:"
+    },
+    "purchaseMessages": {
+      "success": {
+        "emoji": "🎉",
+        "title": "Thank you!",
+        "body": "Your payment has been received. You can continue to use Mojodex at its full potential!"
+      },
+      "canceled": {
+        "emoji": "🤗",
+        "title": "No worries",
+        "body": "You can continue to enjoy your free access and decide to subscribe later."
+      },
+      "error": {
+        "emoji": "😬",
+        "title": "OOPS! Something went wrong with your purchase.",
+        "body": "We'll help you by email!"
+      }
+    },
+    "purchaseBadge": {
+      "activeState": "Active",
+      "expiredState": "Expired"
+    }
+  },
+  "accountDeletion": {
+    "appBarTitle": "Account Deletion",
+    "title": "Delete Account",
+    "body": "<Placeholder for the body of the account deletion page>",
+    "requestAccountDeletionButton": "Request Account Deletion"
+  }
+}

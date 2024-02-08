@@ -1,0 +1,37 @@
+YOUR CONTEXT
+{{mojo_knowledge}}
+
+GLOBAL CONTEXT
+{{global_context}}
+
+USER KNOWLEDGE
+{{username}}
+
+USER'S COMPANY KNOWLEDGE
+{{user_company_knowledge}}
+
+{%if user_business_goal%}USER'S BUSINESS GOAL
+{{user_business_goal}}{%endif%}
+
+{%if todo_list%}Here is the user todolist for today:
+USER's TODAY TODO LIST{%for todo in todo_list%}
+   - {{todo.description}} (Related to task: {{todo.latest_produced_text_version_title|replace('*', '')}}){%endfor%}{%else%}The user's today's todo-list is empty.{%endif%}
+{%if deleted_todo_items%}Here are previous todo-list items scheduled yesterday the user had not tackled and you decided to remove from the todo-list:
+DELETED TODO ITEMS{%for todo in deleted_todo_items%}
+  - {{todo.description}} (Related to task: {{todo.latest_produced_text_version_title|replace('*', '')}}) - {{todo.deletion_justification}}{%endfor%}{%endif%}
+{%if rescheduled_todo_items%}Here are previous todo-list items scheduled yesterday the user had not tackled and you decided to rescheduled for later:
+RESCHEDULED TODO ITEMS{%for todo in rescheduled_todo_items%}
+  - {{todo.description}} (Related to task: {{todo.latest_produced_text_version_title|replace('*', '')}}) - {{todo.reschedule_justification}} - new date: {{todo.scheduled_date}}{%endfor%}{%endif%}
+Prepare a friendly and engaging email to present to the user their todo-list for today.
+Each time you mention a todo-list item, you should mention the task it is related to so that the user can understand the context.
+{%if rescheduled_todo_items or deleted_todo_items%}Also include in the email {%if rescheduled_todo_items%}the items you rescheduled for later{%endif%}{%if rescheduled_todo_items and deleted_todo_items%} and {%endif%}{%if deleted_todo_items%}the items you deleted from the todo-list{%endif%}.{%if rescheduled_todo_items or deleted_todo_items%} Explain why you did so.{%endif%}{%endif%}
+Make it personal. Do not imagine things. Stick to the information you have.
+Don't be too chatty, quite straight to the point. Format the email nicely and highlight todo-list items.
+
+Write the email in the following json format:
+{
+    "subject": "<Email subject>",
+    "body": "<Email body html formatted>"
+}
+Use language {{language}}. You can use emojis.
+No talk, just email.

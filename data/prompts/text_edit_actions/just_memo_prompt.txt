@@ -1,0 +1,11 @@
+The following text was supposed to be a note written by Mojodex for the user to summarize ideas. Instead, Mojodex writted a full message to the user.
+Extract the notes out of this text and format the notes Mojodex should have written. Keep the important information and format the text as a note.
+
+---
+{{ title_start_tag }}{{ title }}{{ title_end_tag }}{{ draft_start_tag }}{{ draft }}{{ draft_end_tag }}
+---
+
+Format the notes with the given tags:
+{{ title_start_tag }}TITLE{{ title_end_tag }}{{ draft_start_tag }}NOTES CONTENT{{ draft_end_tag }}
+Keep the original language of the text.
+No talk, just the note.

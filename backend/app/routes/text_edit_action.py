@@ -1,0 +1,189 @@
+import os
+from datetime import datetime
+from jinja2 import Template
+from flask import request
+from flask_restful import Resource
+from app import db, authenticate, log_error, server_socket
+from db_models import *
+
+from models.produced_text_manager import ProducedTextManager
+from models.text_edit_action_manager import TextEditActionManager
+from sqlalchemy.sql.functions import coalesce
+from packaging import version
+
+class TextEditAction (Resource):
+    
+    base_prompt_files_path = "/data/prompts/text_edit_actions"
+    error_message_text = "Error executing text edit action"
+
+    def __init__(self):
+        TextEditAction.method_decorators = [authenticate()]
+
+    # Executing text edit actions
+    def post(self, user_id):
+        if not request.is_json:
+            log_error(f"{TextEditAction.error_message_text} : Request must be JSON", notify_admin=True)
+            return {"error": "Invalid request"}, 400
+
+        try:
+            timestamp = request.json["datetime"]
+            platform = request.json["platform"]
+            produced_text_version_pk = request.json["produced_text_version_pk"]
+            text_edit_action_pk = request.json["text_edit_action_pk"]
+            message_pk = request.json["message_pk"] if "message_pk" in request.json else None
+            app_version = version.parse(request.json["version"]) if "version" in request.json else version.parse("0.0.0")
+        except KeyError as e:
+            log_error(f"{TextEditAction.error_message_text} : Missing Key: {e}", notify_admin=True)
+            return {"error": f"Missing field in body : {e}"}, 400
+
+        try:
+            # Get text to edit, and User and Task execution info
+            db_values = (
+                db.session
+                .query(
+                    MdProducedTextVersion,
+                    MdUserTaskExecution,
+                    MdTask,
+                    MdUser
+                )
+                .join(
+                    MdProducedText,
+                    MdProducedText.produced_text_pk == MdProducedTextVersion.produced_text_fk
+                    )
+                .join(
+                    MdUserTaskExecution,
+                    MdUserTaskExecution.user_task_execution_pk == MdProducedText.user_task_execution_fk
+                )
+                .join(
+                    MdUserTask,
+                    MdUserTask.user_task_pk == MdUserTaskExecution.user_task_fk
+                )
+                .join(
+                    MdTask,
+                    MdTask.task_pk == MdUserTask.task_fk
+                )
+                .join(
+                    MdUser,
+                    MdUser.user_id == user_id
+                )
+                .filter(
+                    MdProducedTextVersion.produced_text_version_pk == produced_text_version_pk
+                )
+            .first())._asdict()
+
+            produced_text_version = db_values["MdProducedTextVersion"]
+            user_task_execution = db_values["MdUserTaskExecution"]
+            task = db_values["MdTask"]
+            user = db_values["MdUser"]
+
+            # Get text edit action base on text_edit_action_pk
+            # Subquery for user_language_code
+            user_lang_subquery = (
+                db.session.query(
+                    MdTextEditActionDisplayedData.text_edit_action_fk.label("text_edit_action_fk"),
+                    MdTextEditActionDisplayedData.name.label("user_lang_name")
+                )
+                .join(MdUser, MdUser.user_id == user_id)
+                .filter(MdTextEditActionDisplayedData.language_code == MdUser.language_code)
+                .subquery()
+            )
+
+            # Subquery for 'en'
+            en_subquery = (
+                db.session.query(
+                    MdTextEditActionDisplayedData.text_edit_action_fk.label("text_edit_action_fk"),
+                    MdTextEditActionDisplayedData.name.label("en_name")
+                )
+                .filter(MdTextEditActionDisplayedData.language_code == "en")
+                .subquery()
+            )
+
+            # Main query
+            text_edit_actions = (
+                db.session.query(
+                    MdTextEditAction,
+                    coalesce(user_lang_subquery.c.user_lang_name, en_subquery.c.en_name).label("name")
+                )
+                .outerjoin(user_lang_subquery,
+                           MdTextEditAction.text_edit_action_pk == user_lang_subquery.c.text_edit_action_fk)
+                .outerjoin(en_subquery, MdTextEditAction.text_edit_action_pk == en_subquery.c.text_edit_action_fk)
+                .join(
+                    MdTextEditActionTextTypeAssociation,
+                    MdTextEditActionTextTypeAssociation.text_edit_action_fk == MdTextEditAction.text_edit_action_pk,
+                )
+                .filter(MdTextEditAction.text_edit_action_pk == text_edit_action_pk)
+            ).first()
+
+            if text_edit_actions is None:
+                log_error(f"{TextEditAction.error_message_text} : text_edit_action_pk: {text_edit_action_pk} not found", notify_admin=True)
+                return {"error": f"text_edit_action_pk: {text_edit_action_pk} not found"}, 400
+
+            text_edit_action, text_edit_action_name = text_edit_actions
+
+            if message_pk: # it is a retry because previous call had failed
+                # Check if the message exists
+                message = db.session.query(MdMessage).filter(MdMessage.message_pk == message_pk).first()
+                if message is None:
+                    log_error(f"{TextEditAction.error_message_text} : message_pk: {message_pk} not found", notify_admin=True)
+                    return {"error": f"message_pk: {message_pk} not found"}, 400
+            else:
+                # Save user message (edit text tag) to db => This is to leave a trace of the user's action on the chat view on frontend
+                user_message = {"text" : text_edit_action_name}
+                message = MdMessage(
+                    session_id=user_task_execution.session_id,
+                    sender="user",
+                    event_name="user_message",
+                    message=user_message,
+                    creation_date=datetime.now(),
+                    message_date=datetime.now())
+
+                db.session.add(message)
+                db.session.flush()
+                db.session.refresh(message)
+                user_message["message_pk"] = message.message_pk
+                message.message = user_message
+
+            
+
+            # Get text edit action full prompt
+            text_edit_action_prompt_file_name = text_edit_action.prompt_file_name
+            text_edit_action_prompt = os.path.join(TextEditAction.base_prompt_files_path, text_edit_action_prompt_file_name)
+            with open(text_edit_action_prompt, "r") as f:
+                text_edit_action_prompt = Template(f.read())
+                input_prompt = text_edit_action_prompt.render(
+                    title=produced_text_version.title,
+                    draft=produced_text_version.production,
+                    title_start_tag=ProducedTextManager.title_start_tag,
+                    title_end_tag=ProducedTextManager.title_end_tag,
+                    draft_start_tag=ProducedTextManager.draft_start_tag,
+                    draft_end_tag=ProducedTextManager.draft_end_tag
+                )
+
+            text_edit_action_manager = TextEditActionManager(
+                user_id=user.user_id,
+                language=user.language_code,
+                task_name_for_system=task.name_for_system,
+                session_id=user_task_execution.session_id,
+                user_task_execution_pk=user_task_execution.user_task_execution_pk,
+                produced_text_fk=produced_text_version.produced_text_fk,
+                text_type_fk=produced_text_version.text_type_fk,
+                user_message_pk=message.message_pk,
+                platform=platform
+            )
+
+            # Edit text on a background thread
+            server_socket.start_background_task(
+                target=text_edit_action_manager.edit_text,
+                input_prompt=input_prompt,
+                app_version=app_version
+            )
+
+            db.session.commit()
+
+            # Return value
+            return {"success": f"produced_text_version_pk : {produced_text_version_pk}", "message_pk": message.message_pk}, 200
+
+        except Exception as e:
+            db.session.rollback()
+            log_error(f"{TextEditAction.error_message_text} : request.json: {request.json}: {e}", notify_admin=True)
+            return {"error": f"{TextEditAction.error_message_text} : {e}"}, 400

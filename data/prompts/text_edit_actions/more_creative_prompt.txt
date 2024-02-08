@@ -1,0 +1,10 @@
+Rewrite the text below in a more creative way. Keep the important information and the meaning of the text unchanged. Improve the engagement and creativity.
+
+---
+{{ title_start_tag }}{{ title }}{{ title_end_tag }}{{ draft_start_tag }}{{ draft }}{{ draft_end_tag }}
+---
+
+Format your answer with the given tags:
+{{ title_start_tag }}TITLE{{ title_end_tag }}{{ draft_start_tag }}TEXT BODY{{ draft_end_tag }}
+Keep the original language of the text.
+No talk, just the text.

@@ -1,0 +1,13 @@
+
+# misc
+.DS_Store
+*.pem
+
+.idea/*
+*__pycache__/
+env/
+data/costs/*
+data/prompts_dataset/*
+data/postgresql/*
+data/users/*
+.env

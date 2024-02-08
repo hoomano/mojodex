@@ -19,6 +19,22 @@
 	"previousButton": "Previous",
 	"skipContainerButton": "Skip",
 	"onboarding":{
+		"termsAndConditions":{
+			"emoji": "😉",
+			"title": "Welcome!",
+			"IAgree": "I agree",
+			"defaultAgreement": "I agree to interact with the digital assistant in a respectful and courteous manner, recognizing the importance of kindness in our digital space.",
+			"defaultModalContent": "Please take a moment to acknowledge our community guidelines.",
+			"termsModalContent": "Just before we start, have a look at our terms & conditions.",
+			"termsAndConditions": "terms & conditions",
+			"acceptButtonText": "Let's start"
+		},
+		"categorySelection":{
+			"emoji": "👋",
+			"title": "Hello from Mojodex!",
+			"content": "Ready to embark on an awesome journey?\nLet's get personal!",
+			"question": "Who are you?"
+		},
 		"nextButton": "Next",
 		"webUrlInputPage": {
 			"emoji": "👋",

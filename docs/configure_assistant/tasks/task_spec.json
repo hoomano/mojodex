@@ -1,0 +1,33 @@
+{
+    "platforms": ["webapp","mobile"],
+    "predefined_actions": [],
+    "task_displayed_data": [
+        {
+            "language_code": "en",
+            "name_for_user": "<USER TASK NAME>",
+            "definition_for_user": "<USER TASK DEFINITION>",
+            "json_input": [
+                {
+                    "input_name": "<INPUT NAME>",
+                    "description_for_user": "<USER DESCRIPTION>",
+                    "description_for_system": "<SYSTEM DESCRIPTION>",
+                    "placeholder": "<PLACEHOLDER>",
+                    "type": "text_area"
+                }
+            ]
+        }
+    ],
+    "name_for_system": "<SYSTEM TASK NAME>",
+    "definition_for_system": "<SYSTEM TASK DEFINITION>",
+    "final_instruction": "<FINAL INSTRUCTION>",
+    "output_format_instruction_title": "<OUTPUT TITLE FORMAT>",
+    "output_format_instruction_draft": "<OUTPUT DRAFT FORMAT>",
+    "output_type": "<TEXT TYPE>",
+    "icon": "<ICON EMOJI>",
+    "infos_to_extract": [
+        {
+            "info_name": "<INFO NAME>",
+            "description": "<INFO DESCRIPTION>"
+        }
+    ]
+}

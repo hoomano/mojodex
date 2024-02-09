@@ -19,9 +19,6 @@ It is designed to be task-oriented, configurable, and personalizable. Mojodex is
 | [Mobile app](https://github.com/hoomano/mojodex_mobile) | Open-source Flutter app that allows users to interact with the digital assistant on the go - mainly voice interaction. | [![App Store](/webapp/public/images/app_store.svg)](https://apps.apple.com/fr/app/mojodex/id6446367743) [![Google Play](/webapp/public/images/google_play.svg)](https://play.google.com/store/apps/details?id=com.hoomano.mojodex_mobile) |
 | Chrome extension (soon) | Open-source Chrome extension project to access the digital assistant directly from the browser.  | [![Chrome Web Store](/docs/images/chrome_web_store.png)](https://chromewebstore.google.com/detail/mojodex/jagemmajllamdahinjidkopehkffbkho)
 
-![Mojodex Interface Overview](docs/images/mojodex_interface_overview.png) 
-
-
 __Here we go!__
 
 ## Quick Start

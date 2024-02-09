@@ -89,8 +89,7 @@ COPY public.md_task (task_pk, name_for_system, definition_for_system, final_inst
 3	structure_ideas_into_doc	The user needs assistance to turn ideas into a structured written doc	Write a structured document based on the provided ideas.	💡	3	IDEA SUMMARY IN 3-5 WORDS - DATE OF THE DAY	CONTENT OF THE STRUCTURED DOCUMENT	f	[]
 4	prepare_linkedin_post	The user wants to prepare a LinkedIn post	Write a post for LinkedIn	📰	3	CONTEXT OF THE POST	CONTENT OF THE LINKEDIN POST	f	[{"info_name": "post_context", "description": "Context that makes the user want to communicate on LinkedIn"}]
 5	create_one_minute_pitch	The user needs assistance to create a 1-minute pitch for presenting their company and product	Write a 1-minute pitch to briefly present the company and product; finish with a question to engage conversation.	🎤	3	1 MINUTE PITCH - COMPANY NAME	PITCH CONTENT	f	[{"info_name": "problem_solved", "description": "The problem the company and product are solving"}, {"info_name": "solution", "description": "How the company and product solve the problem"}, {"info_name": "unique_selling_points", "description": "What makes the company and product different from other solutions"}, {"info_name": "target_market", "description": "The target market represented by an ideal customer description"}]
-6	briefing_notes	The user wants you to brief them about something based on their related past tasks. It can help them refresh their memory and can be useful to prepare a call.	Prepare a bullet-point briefing note about what you have found in related past tasks	🧠	3	BRIEFING NOTE TITLE - DATE OF THE DAY	BRIEFING NOTE AS BULLET POINTS	f	[{"info_name": "subject", "description": "What the user wants a briefing note about"}]
-7	general_assistance	The user needs help with a question they may ask	Provide a helpful and accurate answer to the user's question	💡	3	QUESTION ASKED BY USER	HELPFUL RESPONSE WITH REQUESTED INFORMATION	f	[]
+6	general_assistance	The user needs help with a question they may ask	Provide a helpful and accurate answer to the user's question	💡	3	QUESTION ASKED BY USER	HELPFUL RESPONSE WITH REQUESTED INFORMATION	f	[]
 \.
 
 
@@ -105,7 +104,6 @@ COPY public.md_user_task (user_task_pk, user_id, task_fk, enabled) FROM stdin;
 4	14f919cf95a70935c6c70f4a89ef5fec	4	t
 5	14f919cf95a70935c6c70f4a89ef5fec	5	t
 6	14f919cf95a70935c6c70f4a89ef5fec	6	t
-7	14f919cf95a70935c6c70f4a89ef5fec	7	t
 \.
 
 
@@ -154,9 +152,6 @@ COPY public.md_document_chunk (document_chunk_pk, document_fk, index, embedding,
 --
 
 COPY public.md_error (error_pk, session_id, message, creation_date) FROM stdin;
-1	\N	Error creating task : 'NoneType' object is not subscriptable	2024-02-06 15:42:54.056049+00
-2	\N	Error creating task : 'NoneType' object is not subscriptable	2024-02-06 15:44:22.36163+00
-3	\N	Error creating task : 'NoneType' object is not subscriptable	2024-02-06 15:51:48.03828+00
 \.
 
 
@@ -255,7 +250,6 @@ COPY public.md_product_task (product_task_pk, product_fk, task_fk) FROM stdin;
 4	1	4
 5	1	5
 6	1	6
-7	1	7
 \.
 
 
@@ -273,10 +267,8 @@ COPY public.md_task_displayed_data (task_displayed_data_pk, task_fk, language_co
 7	4	en	Prepare LinkedIn Post	Assistance with creating a LinkedIn post	[{"input_name": "post_context", "description_for_user": "What do you want to talk about?", "description_for_system": "Context that makes the user want to communicate on LinkedIn", "placeholder": "New product? Participate to an event? New job? Fresh news?", "type": "text_area"}]
 8	4	fr	Post LinkedIn	Préparez un post LinkedIn	[{"description_for_system": "Contexte incitant l'utilisateur \\u00e0 communiquer sur LinkedIn", "description_for_user": "De quoi voulez-vous parler ?", "input_name": "post_context", "placeholder": "Nouveau produit ? Participation \\u00e0 un \\u00e9v\\u00e9nement ? Nouvel emploi ? Actualit\\u00e9s r\\u00e9centes ?", "type": "zone_de_texte"}]
 9	5	en	1 Minute Pitch	Prepare a 1 minute pitch to briefly present your company and product	[{"input_name": "company_and_product_informations", "description_for_user": "Let's make a great pitch!", "description_for_system": "Information about the company and product (ex: company background, product, target market, unique selling points)", "placeholder": "What problem are you solving? How do you solve it? What makes you different from other solutions? Who is your ideal customer?", "type": "text_area"}]
-10	6	en	Briefing notes	Create a briefing note about something based on your related past tasks	[{"input_name": "subject", "description_for_user": "What do you want to be briefed about?", "description_for_system": "What the user wants a briefing note about", "placeholder": "The coming Mojodex features I recently discussed with Xavier", "type": "text"}]
-11	6	fr	Notes de synthèse	Créer une note de synthèse à partir de vos tâches passées liées	[{"description_for_system": "Ce que l'utilisateur veut une note de synth\\u00e8se", "description_for_user": "Sur quoi souhaitez-vous \\u00eatre inform\\u00e9?", "input_name": "sujet", "placeholder": "Les prochaines fonctionnalit\\u00e9s de Mojodex que j'ai r\\u00e9cemment discut\\u00e9es avec Xavier", "type": "texte"}]
-12	7	en	General Assistance	Your go-to assistant for any questions you may have. Just ask away!	[{"input_name": "user_question", "description_for_user": "How can I help?", "description_for_system": "Question posed by the user that the assistant needs to answer", "placeholder": "I'm here to help!", "type": "text_area"}]
-13	7	fr	Question générale	Votre assistant pour toutes les questions que vous pourriez avoir. Demandez simplement!	[{"input_name": "user_question", "description_for_user": "Comment puis-je vous aider?", "description_for_system": "Question posed by the user that the assistant needs to answer", "placeholder": "Je suis l\\u00e0 pour vous!", "type": "text_area"}]
+10	6	en	General Assistance	Your go-to assistant for any questions you may have. Just ask away!	[{"input_name": "user_question", "description_for_user": "How can I help?", "description_for_system": "Question posed by the user that the assistant needs to answer", "placeholder": "I'm here to help!", "type": "text_area"}]
+11	6	fr	Question générale	Votre assistant pour toutes les questions que vous pourriez avoir. Demandez simplement!	[{"input_name": "user_question", "description_for_user": "Comment puis-je vous aider?", "description_for_system": "Question posed by the user that the assistant needs to answer", "placeholder": "Je suis l\\u00e0 pour vous!", "type": "text_area"}]
 \.
 
 
@@ -286,17 +278,15 @@ COPY public.md_task_displayed_data (task_displayed_data_pk, task_fk, language_co
 
 COPY public.md_task_platform_association (task_platform_association_pk, task_fk, platform_fk) FROM stdin;
 1	1	1
-2	1	2
-3	2	1
-4	2	2
-5	3	1
-6	4	1
-7	4	2
-8	5	1
-9	5	2
+2	2	1
+3	2	2
+4	3	1
+5	4	1
+6	4	2
+7	5	1
+8	5	2
+9	6	2
 10	6	1
-11	7	2
-12	7	1
 \.
 
 
@@ -387,19 +377,6 @@ COPY public.md_user_vocabulary (user_vocabulary_pk, word, creation_date, user_id
 SELECT pg_catalog.setval('public.home_chat_pk_seq', 1, false);
 
 
---
--- Name: md_activity_instance_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
---
-
-SELECT pg_catalog.setval('public.md_activity_instance_seq', 1, false);
-
-
---
--- Name: md_activity_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
---
-
-SELECT pg_catalog.setval('public.md_activity_seq', 1, false);
-
 
 --
 -- Name: md_company_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
@@ -433,14 +410,7 @@ SELECT pg_catalog.setval('public.md_document_seq', 1, false);
 -- Name: md_error_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
 --
 
-SELECT pg_catalog.setval('public.md_error_seq', 3, true);
-
-
---
--- Name: md_evaluation_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
---
-
-SELECT pg_catalog.setval('public.md_evaluation_seq', 1, false);
+SELECT pg_catalog.setval('public.md_error_seq', 1, true);
 
 
 --
@@ -448,27 +418,6 @@ SELECT pg_catalog.setval('public.md_evaluation_seq', 1, false);
 --
 
 SELECT pg_catalog.setval('public.md_event_seq', 1, false);
-
-
---
--- Name: md_feedback_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
---
-
-SELECT pg_catalog.setval('public.md_feedback_seq', 1, false);
-
-
---
--- Name: md_follow_up_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
---
-
-SELECT pg_catalog.setval('public.md_follow_up_seq', 1, false);
-
-
---
--- Name: md_idea_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
---
-
-SELECT pg_catalog.setval('public.md_idea_seq', 1, false);
 
 
 --
@@ -490,20 +439,6 @@ SELECT pg_catalog.setval('public.md_platform_seq', 2, true);
 --
 
 SELECT pg_catalog.setval('public.md_predefined_action_displayed_data_seq', 1, false);
-
-
---
--- Name: md_process_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
---
-
-SELECT pg_catalog.setval('public.md_process_seq', 1, false);
-
-
---
--- Name: md_process_step_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
---
-
-SELECT pg_catalog.setval('public.md_process_step_seq', 1, false);
 
 
 --
@@ -552,7 +487,7 @@ SELECT pg_catalog.setval('public.md_product_seq', 1, true);
 -- Name: md_product_task_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
 --
 
-SELECT pg_catalog.setval('public.md_product_task_seq', 7, true);
+SELECT pg_catalog.setval('public.md_product_task_seq', 6, true);
 
 
 --
@@ -563,31 +498,17 @@ SELECT pg_catalog.setval('public.md_purchase_seq', 3, true);
 
 
 --
--- Name: md_relationship_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
---
-
-SELECT pg_catalog.setval('public.md_relationship_seq', 1, false);
-
-
---
--- Name: md_task_category_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
---
-
-SELECT pg_catalog.setval('public.md_task_category_seq', 1, false);
-
-
---
 -- Name: md_task_displayed_data_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
 --
 
-SELECT pg_catalog.setval('public.md_task_displayed_data_seq', 13, true);
+SELECT pg_catalog.setval('public.md_task_displayed_data_seq', 11, true);
 
 
 --
 -- Name: md_task_platform_association_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
 --
 
-SELECT pg_catalog.setval('public.md_task_platform_association_seq', 12, true);
+SELECT pg_catalog.setval('public.md_task_platform_association_seq', 10, true);
 
 
 --
@@ -601,7 +522,7 @@ SELECT pg_catalog.setval('public.md_task_predefined_action_association_seq', 1, 
 -- Name: md_task_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
 --
 
-SELECT pg_catalog.setval('public.md_task_seq', 7, true);
+SELECT pg_catalog.setval('public.md_task_seq', 6, true);
 
 
 --
@@ -668,13 +589,6 @@ SELECT pg_catalog.setval('public.md_todo_seq', 1, false);
 
 
 --
--- Name: md_tool_execution_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
---
-
-SELECT pg_catalog.setval('public.md_tool_execution_seq', 1, false);
-
-
---
 -- Name: md_tool_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
 --
 
@@ -689,17 +603,10 @@ SELECT pg_catalog.setval('public.md_user_task_execution_seq', 1, false);
 
 
 --
--- Name: md_user_task_preference_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
---
-
-SELECT pg_catalog.setval('public.md_user_task_preference_seq', 1, false);
-
-
---
 -- Name: md_user_task_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
 --
 
-SELECT pg_catalog.setval('public.md_user_task_seq', 7, true);
+SELECT pg_catalog.setval('public.md_user_task_seq', 6, true);
 
 
 --

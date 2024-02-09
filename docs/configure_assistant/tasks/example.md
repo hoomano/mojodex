@@ -1,6 +1,10 @@
 # Task creation example
 
-## Crafting the Perfect Sales Pitch: A Mojodex Tale
+Let's say you want to create a specific task for your assistant. Here is an example of how to do it.
+
+We take a fictional example of a salesperson, Mia, who needs to assistance to refine her sales pitch.
+
+## Crafting the Perfect Sales Pitch with Mojodex
 
 ### Context
 In the bustling heart of a startup district, I recently crossed paths with Mia, a passionate **salesperson** navigating the turbulent seas of entrepreneurship. Over coffee and conversations, Mia confided in me her struggles. Amidst the dynamic landscape of ever-evolving offers, she found herself grappling with a persistent dilemma - how to keep her pitch razor-sharp without succumbing to the dreaded "white page syndrome."
@@ -19,7 +23,7 @@ As we delved deeper, Mia unveiled the anatomy of her sales pitch:
 Additionally, Mia emphasized the **need for brevity**, stressing that her pitch must be succinct yet captivating, always **concluding with a compelling question** to spark dialogue.
 
 ### Crafting the Task
-Eager to assist Mia in her quest for the perfect pitch, I set out to create a tailored solution on Mojodex. Drawing from our conversation, I meticulously crafted a task specification:
+Eager to assist Mia in her quest for the perfect pitch, I set out to create a tailored [task](new_task.md) on Mojodex. Drawing from our conversation, I meticulously crafted a task specification:
 
 #### Task Specification
 ```
@@ -81,11 +85,24 @@ Eager to assist Mia in her quest for the perfect pitch, I set out to create a ta
 >
 > - The user data are clear so that Mia easily finds the task and knows what to expect.
 
+
+With this JSON file carefuly crafted, I just need to use the REST API to update the task list in the database.
+
+> ℹ️ You can see how to do this in the [new_task section](new_task.md)
+
+
+### Tweak it until the user love it
+
+After a couple tries, Mia and I decided to tweak it a bit. We added a twist to the `"final_instruction"` to fit best with Mia's preferences.
+
+> ℹ️ To update a task, refer to the [backend REST API](/docs/openAPI/backend_api.yaml)
+
+
 ### Conclusion
 
-With the task configuration complete, I eagerly shared it with Mia through Mojodex. 
+With the task configuration complete, I eagerly shared it with Mia through Mojodex.
 
-Now armed with a personalized tool perfectly aligned with her needs, Mia can effortlessly craft compelling pitches, leaving behind the days of writer's block and embracing the art of persuasive communication with confidence.
+Now armed with a personalized tool perfectly aligned with her needs in her pocket with her [Mojodex Mobile](https://github.com/hoomano/mojodex_mobile), Mia can effortlessly craft compelling pitches, leaving behind the days of writer's block and embracing the art of persuasive communication with confidence.
 
 
 

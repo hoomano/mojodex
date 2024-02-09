@@ -36,7 +36,7 @@ These fields are used to define the format of the document resulting from the ta
 ```
 "output_type": "meeting_minutes"
 ```
-This field is used to define the type of document resulting from the task. It is used to enable special edition features once the document is ready. The value should match one existing in table 'md_text_type' of your database. Default existing values in database are "meeting_minutes", "email" and "document". We will cover how to add new types in a coming documentation.
+This field is used to define the type of document resulting from the task. It is used to enable special edition features once the document is ready. The value should match one existing in table 'md_text_type' of your database. Default existing values in database are "meeting_minutes", "email" and "document". You can add more types in the database if needed.
 
 ### Icon
 ```
@@ -149,9 +149,10 @@ curl --location --request PUT 'http://localhost:5001/task' \
 --header 'Content-Type: application/json' \
 --data @modified_task.json
 ```
-This commands create the task in the database and returns the primary key of the task. You will need this primary key in next step.
+This command calls the backend REST API to create the task in the database and returns the primary key of the task. You will need this primary key in next step.
 
-STEP 3: Associate the task to your user though a product
+STEP 3: Associate the task to your user though a product.
+
 Default user `demo@example.com` is associated with default product `demo` with pk 1. Let's add the task to this product.
 ```
 curl --location --request PUT 'http://localhost:5001/product_task_association' \

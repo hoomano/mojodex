@@ -8,7 +8,7 @@ A Mojodex user has access to the task corresponding to their profile. This way, 
 
 ![tasks](./images/tasks.png)
 
-On the web or mobile app interface, the user directly selects the task they want to accomplish. This makes it easy for the user to ask for the help they need without having to thing about how to phrase their request.
+On the web or mobile app interface, the user directly selects the task they want to accomplish. This makes it easy for the user to ask for the help they need without having to think about how to phrase their request.
 The assistant then guides them through the process, asking questions in a conversational way though a chat interface.
 
 ![starting_task](./images/starting_task.png)

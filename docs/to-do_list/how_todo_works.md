@@ -1,12 +1,20 @@
 # How To-Do works?
 
 ## Extract To-Dos from achieved tasks
-Mojodex's scheduler is a simple python module that triggers routes calls at a certain frequency.
+Mojodex's scheduler is a python module that triggers routes calls at a certain frequency. See `/scheduler/app/main.py`
+
 One of its trigger checks every 10 minutes if a task has just been achieved.
+```python
+from scheduled_tasks.extract_todos import ExtractTodos
+[...]
+ExtractTodos(600) # extract todos every 10 minutes
+[...]
+```
 
-> In this context, a task is considered just achieved if it has an associated produced_text which last version's date is between 10 and 20 minutes ago.
+> A task is considered 'just achieved' if it has an associated produced_text which last version's date is between 10 and 20 minutes ago. See `backend/app/routes/extract_todos.py`
 
-This task is then processed in background for To-Do extraction using a prompt filled with all tasks data and which main instructions are:
+
+This task is then processed in background for To-Do extraction using a prompt – `data/prompts/background/todos/extract_todos.txt`– filled with all tasks data and which main instructions are:
 
 - Extraction instruction: To define what is a To-Do.
 ```
@@ -31,7 +39,7 @@ Extract ONLY next steps assigned to the user.
 ```
 
 The result of the prompt is a json list of dictionnary defining To-Do items.
-```
+```json
 {
     "todo_definition": "<Definition as it will be displayed in the user's todo list.
         The definition should help the user remember what was the original task.
@@ -43,13 +51,13 @@ The result of the prompt is a json list of dictionnary defining To-Do items.
 
 This json is parsed and items are added to the database, related to the task.
 
-![extract_todos](../images/to-dos%20flow/extract_todos.png)
+![extract_todos](../images/to-dos_flow/extract_todos.png)
 
 ## Remind the user
 Here comes Mojodex's scheduler again with another trigger that every hour checks users whose local time is `DAILY_TODO_EMAIL_TIME` (defined in env vars).
 For each of those users, the assistant will collect all To-Dos that are due for the coming day + the re-organization work it has done (cf step 4) and draft a friendly reminding emails to send to the user.
 
-![remind_user](../images/to-dos%20flow/remind_user.png)
+![remind_user](../images/to-dos_flow/remind_user.png)
 
 ## Organize
 Another trigger of the scheduler takes care of reorganizing user's To-Do list every night to keep it up-to-date.
@@ -70,11 +78,11 @@ Provide the new scheduled date.
 
 This prompt outputs a json answer that can be parsed so that a new scheduling can be added to database.
 
-![reschedule_todos](../images/to-dos%20flow/reschedule_todos.png)
+![reschedule_todos](../images/to-dos_flow/reschedule_todos.png)
 
 ## Bonus Step
 User can of course also act on their own To-Dos. For now, they can take 2 actions:
 - Delete a To-Do item, if it was not relevant to add it or the assistant made any mistake
 - Mark a To-Do as completed as soon as they don't need it anymore to remember of the work they have to do.
 
-![user_actions](../images/to-dos%20flow/user_actions.png)
+![user_actions](../images/to-dos_flow/user_actions.png)

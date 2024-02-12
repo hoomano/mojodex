@@ -97,7 +97,7 @@ if emails:
 This triggers calls Mojodex's backend route `/todo_daily_emails` to retrieve all users whose local time is `DAILY_TODO_EMAIL_TIME` (defined in [env vars](../../.env.example)).
 
 
-For each of those users, the assistant will collect all To-Dos that are dued for the coming day + the re-organization work it has done (cf step 4) and send those data to the background using route `events_generation` with parameter `'event_type': 'todo_daily_emails'`.
+For each of those users, the assistant will collect all To-Dos that are due for the coming day + the re-organization work it has done (cf step 4) and send those data to the background using route `events_generation` with parameter `'event_type': 'todo_daily_emails'`.
 
 The background uses its `TodoDailyEmailsGenerator` (`background/app/models/events/todo_daily_emails_generator.py`) with prompt `data/prompts/engagement/emails/todo_daily_emails_text_prompt.txt` to draft a friendly reminding emails to send to the user from provided data.
 

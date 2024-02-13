@@ -116,6 +116,7 @@ def send_mojo_message_with_ack(self, message, session_id, event_name='mojo_messa
         if remaining_tries > 0:
             executor.submit(waiting_for_acknowledgment)
 ```
+![receving_messages](../docs/images/receiving_messages.png)
 
 
 ## System 1/System 2 Abstraction

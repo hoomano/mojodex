@@ -37,8 +37,9 @@ class UserTaskExecution:
                 .join(MdUserTaskExecution,MdProducedText.user_task_execution_fk == MdUserTaskExecution.user_task_execution_pk) \
                 .filter(MdUserTaskExecution.user_task_execution_pk == self.user_task_execution_pk) \
                 .order_by(MdProducedTextVersion.creation_date.desc()) \
-                .first()[0]
-            self.task_result = task_result
+                .first()
+
+            self.task_result = task_result[0] if task_result else None
 
         except Exception as e:
             raise Exception(f"{UserTaskExecution.logger_prefix} __get_info :: {e}")

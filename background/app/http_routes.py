@@ -6,6 +6,7 @@ from routes.event_generation import EventsGeneration
 from routes.task_tool_execution import TaskToolExecution
 from routes.extract_todos import ExtractTodos
 from routes.reschedule_todo import RescheduleTodo
+from routes.update_user_preferences import UpdateUserPreferences
 class HttpRouteManager:
     def __init__(self, api):
         api.add_resource(UserTaskExecutionTitleAndSummary, '/user_task_execution_title_and_summary')
@@ -16,3 +17,4 @@ class HttpRouteManager:
         api.add_resource(TaskToolExecution, '/task_tool_execution')
         api.add_resource(ExtractTodos, '/extract_todos')
         api.add_resource(RescheduleTodo, '/reschedule_todo')
+        api.add_resource(UpdateUserPreferences, '/update_user_preferences')

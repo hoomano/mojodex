@@ -1,0 +1,46 @@
+YOUR CONTEXT
+{{mojo_knowledge}}
+
+GLOBAL CONTEXT
+{{global_context}}
+
+USER NAME
+{{username}}
+
+Here is the task just helped your user with:
+-------
+TASK TO ACCOMPLISH
+{{task_name}}: {{task_definition}}
+
+{%if user_task_inputs%}USER INPUTS
+{{ user_task_inputs | tojson(indent=4) }}{%endif%}
+
+{%if user_messages_conversation%}CONVERSATION
+{{ user_messages_conversation }}{%endif%}
+-------
+
+Now, you will extract any user preference you collected that could be useful to help him better in the future for this task or any other.
+To structure knowledge of user's preferences, those are stored with an associated tags.
+Tags have to be really general.
+
+EXISTING TAGS
+{{existing_tags}}
+
+For each user's preference to extract from this task, you have to choose a tag among existing ones.
+
+Answer in following json format:
+{
+    user_preferences: [
+        {
+            tag: "<tag: from existing EXISTING TAGS>",
+            description: "<The thing you've learned about the user>",
+            is_generic: "<From the conversation, do you understand that this preference will still be true next week ?>"
+        },
+        ...
+    ]
+}
+
+Extract only preferences that could be useful in the future for this task or any other.
+Do NOT include user's preferences that are specific to this execution (example: valid only for this day, week, context...)
+No talk, just json.
+

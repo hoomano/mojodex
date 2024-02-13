@@ -27,21 +27,17 @@ class RescheduleTodoCortex:
             self.n_scheduled = self.__get_n_scheduled(self.todo_pk)
             self.first_scheduled_date = self.__get_first_scheduled_date(self.todo_pk)
 
-            self.session_id, self.user_task_execution_pk, self.user_task_pk, self.task_name_for_system, self.task_definition_for_system, self.task_input_values = self.__get_task_info(
-                self.todo_pk)
+            self.user_task_execution_pk = self.__get_user_task_execution_pk(self.todo_pk)
+            self.user_task_execution = UserTaskExecution(self.user_task_execution_pk)
 
-            self.task_result = self.__get_task_result(self.user_task_execution_pk)
             self.user = db.session.query(MdUser).join(MdUserTask, MdUserTask.user_id == MdUser.user_id).filter(
-                MdUserTask.user_task_pk == self.user_task_pk).first()
+                MdUserTask.user_task_pk == self.user_task_execution.user_task_fk).first()
             self.company = db.session.query(MdCompany).join(MdUser, MdUser.company_fk == MdCompany.company_pk).filter(
                 MdUser.user_id == self.user.user_id).first()
-            self.language = language_retriever.get_language_from_session_or_user(self.session_id, self.user)
+            self.language = language_retriever.get_language_from_session_or_user(self.user_task_execution.session_id, self.user)
             self.knowledge_collector = KnowledgeCollector(self.user.name, self.user.timezone_offset, self.user.summary,
                                                           self.user.company_description, self.user.goal)
-            self.user_task_execution = UserTaskExecution(self.session_id, self.user_task_execution_pk,
-                                                         self.task_name_for_system,
-                                                         self.task_definition_for_system, self.task_input_values,
-                                                         self.task_result, self.user.user_id)
+
 
             self.todo_list = self.__get_todolist(self.user.user_id)
 
@@ -68,18 +64,16 @@ class RescheduleTodoCortex:
 
 
 
-    def __get_task_info(self, todo_pk):
+    def __get_user_task_execution_pk(self, todo_pk):
         try:
-            session_id, user_task_execution_pk, user_task_pk, task_name_for_system, task_definition_for_system, task_input_values = db.session.query(
-                MdUserTaskExecution.session_id, MdUserTaskExecution.user_task_execution_pk, MdUserTask.user_task_pk, MdTask.name_for_system, MdTask.definition_for_system,
-                MdUserTaskExecution.json_input_values) \
+            user_task_execution_pk= db.session.query(MdUserTaskExecution.user_task_execution_pk) \
                 .join(MdUserTask, MdUserTask.task_fk == MdTask.task_pk) \
                 .join(MdUserTaskExecution, MdUserTask.user_task_pk == MdUserTaskExecution.user_task_fk) \
                 .join(MdTodo, MdUserTaskExecution.user_task_execution_pk == MdTodo.user_task_execution_fk) \
                 .filter(MdTodo.todo_pk == todo_pk) \
                 .first()
 
-            return session_id, user_task_execution_pk, user_task_pk, task_name_for_system, task_definition_for_system, task_input_values
+            return user_task_execution_pk
         except Exception as e:
             raise Exception(f"_get_task_info: {e}")
 

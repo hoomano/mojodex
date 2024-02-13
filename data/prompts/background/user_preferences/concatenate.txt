@@ -1,0 +1,18 @@
+YOUR CONTEXT
+{{mojo_knowledge}}
+
+GLOBAL CONTEXT
+{{global_context}}
+
+USER NAME
+{{username}}
+
+You have just helped your user with a task and you extracted following user's preferences from it regarding {{tag}}:{%for preference in extracted_preferences%}
+- {{preference}}{%endfor%}
+
+Here is what you already knew about user's preferences regarding {{tag}}:
+{{user_preferences}}
+
+Update your knowledge about user's {{tag}} preferences by concatenating what you already knew with what you have just learned as a small but complete summary.
+
+No talk, only short and complete summary of user's preferences regarding {{tag}}.

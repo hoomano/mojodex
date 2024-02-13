@@ -22,26 +22,17 @@ class ExtractTodosCortex:
             self.logger = BackgroundLogger(
                 f"{ExtractTodosCortex.logger_prefix} - user_task_execution_pk {user_task_execution.user_task_execution_pk}")
             self.logger.debug(f"__init__")
-            self.session_id = user_task_execution.session_id  # used to identify any call to openai
 
-            self.user_task_execution_pk = user_task_execution.user_task_execution_pk
+            self.user_task_execution = UserTaskExecution(user_task_execution.user_task_execution_pk)
+            self.user = db.session.query(MdUser).join(MdUserTask, MdUserTask.user_id == MdUser.user_id).filter(MdUserTask.user_task_pk == self.user_task_execution.user_task_fk).first()
 
-            self.user_task_pk, self.task_name_for_system, self.task_definition_for_system, self.task_input_values = self.__get_task_info(
-                user_task_execution)
-
-            self.task_result = self.__get_task_result(user_task_execution)
-            self.user = db.session.query(MdUser).join(MdUserTask, MdUserTask.user_id == MdUser.user_id).filter(
-                MdUserTask.user_task_pk == self.user_task_pk).first()
-            self.user_task_execution = UserTaskExecution(self.session_id, self.user_task_execution_pk, self.task_name_for_system,
-                                                         self.task_definition_for_system, self.task_input_values,
-                                                         self.task_result, self.user.user_id)
 
             self.company = db.session.query(MdCompany).join(MdUser, MdUser.company_fk == MdCompany.company_pk).filter(
                 MdUser.user_id == self.user.user_id).first()
-            self.language = language_retriever.get_language_from_session_or_user(self.session_id, self.user)
+            self.language = language_retriever.get_language_from_session_or_user(self.user_task_execution.session_id, self.user)
             self.knowledge_collector = KnowledgeCollector(self.user.name, self.user.timezone_offset, self.user.summary, self.user.company_description, self.user.goal)
 
-            self.conversation = conversation_retriever.get_conversation_as_string(self.session_id, agent_key='YOU', user_key='USER', with_tags=False)
+            self.conversation = conversation_retriever.get_conversation_as_string(self.user_task_execution.session_id, agent_key='YOU', user_key='USER', with_tags=False)
 
             self.linked_user_task_executions_todos = self.__get_linked_tasks_todos(user_task_execution)
 

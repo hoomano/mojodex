@@ -18,7 +18,6 @@ from app import socketio_message_sender
 from models.llm_calls.mojodex_openai import MojodexOpenAI
 from models.produced_text_manager import ProducedTextManager
 from azure_openai_conf import AzureOpenAIConf
-from packaging import version
 
 class TaskManager:
     logger_prefix = "TaskManager::"
@@ -72,6 +71,18 @@ class TaskManager:
         except Exception as e:
             raise Exception(f"_get_task_tools :: {e}")
 
+    def __get_user_preferences(self):
+        try:
+            result = db.session.query(MdTag.label, MdUserPreference.description)\
+                .join(MdTag, MdTag.tag_pk == MdUserPreference.tag_fk)\
+                .join(MdTaskTagAssociation, MdTaskTagAssociation.tag_fk == MdTag.tag_pk)\
+                .filter(MdUserPreference.user_id == self.user_id)\
+                .filter(MdTaskTagAssociation.task_fk == self.task.task_pk)\
+                .all()
+            return [f"{label}: {description}" for label, description in result] if result else None
+        except Exception as e:
+            raise Exception(f"_get_user_preferences :: {e}")
+
     # setter pour self.task
     def set_task_and_execution(self, task, user_task_execution):
         self.task = task
@@ -104,6 +115,7 @@ class TaskManager:
         self.user_task = self.__get_user_task(self.user_id)
         self.task_execution = user_task_execution if user_task_execution else self.__get_task_execution()
         self.task_tool_associations_json = self.__get_task_tools_json()
+        self.user_preferences = self.__get_user_preferences()
 
 
     def __get_user_task(self, user_id):
@@ -305,9 +317,9 @@ class TaskManager:
                                                   title_end_tag=ProducedTextManager.title_end_tag,
                                                   draft_start_tag=ProducedTextManager.draft_start_tag,
                                                   draft_end_tag=ProducedTextManager.draft_end_tag,
+                                                  user_preferences=self.user_preferences,
                                                   task_tool_associations=self.task_tool_associations_json
                                                   )
-
                     conversation_list = self.__get_conversation_as_list()
                     messages = [{"role": "system", "content": mega_prompt}] + conversation_list
 
@@ -318,8 +330,6 @@ class TaskManager:
                                                            stream=True,
                                                            stream_callback=self.__super_prompt_token_callback,
                                                            )
-
-
 
                 response = responses[0].strip()
 

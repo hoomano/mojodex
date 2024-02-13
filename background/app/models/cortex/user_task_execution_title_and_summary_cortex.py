@@ -16,20 +16,13 @@ class UserTaskExecutionTitleAndSummaryCortex:
             self.logger = BackgroundLogger(
                 f"{UserTaskExecutionTitleAndSummaryCortex.logger_prefix} - user_task_execution_pk {user_task_execution.user_task_execution_pk}")
             self.logger.debug(f"__init__")
-            self.session_id = user_task_execution.session_id  # used to identify any call to openai
-            self.user_task_execution_pk = user_task_execution.user_task_execution_pk
-
-            self.user_task_pk, self.task_name_for_system, self.task_definition_for_system, self.task_input_values = self._get_task_info(
-                user_task_execution)
-
+            
+            self.user_task_execution = UserTaskExecution(user_task_execution.user_task_execution_pk)
             self.user = self._get_user()
-            self.user_task_execution = UserTaskExecution(self.session_id, self.user_task_execution_pk,
-                                                         self.task_name_for_system,
-                                                         self.task_definition_for_system, self.task_input_values,
-                                                         None, self.user.user_id)
+           
 
             self.user_summary = self.user.summary
-            self.user_messages_conversation = conversation_retriever._get_user_messages_as_conversation(self.session_id)
+            self.user_messages_conversation = conversation_retriever._get_user_messages_as_conversation(self.user_task_execution.session_id)
             self.company = db.session.query(MdCompany).join(MdUser, MdUser.company_fk == MdCompany.company_pk).filter(
                 MdUser.user_id == self.user.user_id).first()
 
@@ -69,9 +62,9 @@ class UserTaskExecutionTitleAndSummaryCortex:
     def _get_user(self):
         try:
             user = db.session.query(MdUser).join(MdUserTask, MdUserTask.user_id == MdUser.user_id).filter(
-                MdUserTask.user_task_pk == self.user_task_pk).first()
+                MdUserTask.user_task_pk == self.user_task_execution.user_task_fk).first()
             return user
         except Exception as e:
-            raise Exception(f"_get_user_knowledge: {e}")
+            raise Exception(f"_get_user: {e}")
 
 

@@ -12,6 +12,7 @@ from scheduled_tasks.send_todo_daily_emails import SendTodoDailyEmails
 from scheduled_tasks.purchase_expiration_checker import PurchasesExpirationChecker
 from scheduled_tasks.send_calendar_suggestion_notifications import CalendarSuggestionNotificationSender
 from scheduled_tasks.first_home_chat_of_week import FirstHomeChatOfWeek
+from scheduled_tasks.update_user_preferences import UpdateUserPreferences
 
 push_notifications = 'FIREBASE_PROJECT_ID' in os.environ and os.environ['FIREBASE_PROJECT_ID']
 emails = 'AWS_ACCESS_KEY_ID' in os.environ and os.environ['AWS_ACCESS_KEY_ID']
@@ -28,6 +29,7 @@ if emails:
     SendTodoDailyEmails(3600) # send todo daily emails every 1 hour (filtered by timezone)
     CheckDisengagedFreeTrialUsers(86400)  # check disengaged free trial users every day
 FirstHomeChatOfWeek(3600)
+UpdateUserPreferences(600) # update user preferences every 10 minutes
 
 # Time based tasks
 

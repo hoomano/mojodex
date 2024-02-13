@@ -1,7 +1,10 @@
 # What's a task?
 
 ## Task
-A task on Mojodex is a discrete piece of work, inspired by the [JRC-Eurofound Tasks Framework](https://joint-research-centre.ec.europa.eu/scientific-activities-z/employment/job-tasks-and-work-organisation_en), representing various skills and specializations required to accomplish it.
+A task on Mojodex is a discrete piece of work, inspired by the [JRC-Eurofound Tasks Framework](https://joint-research-centre.ec.europa.eu/scientific-activities-z/employment/job-tasks-and-work-organisation_en) and [O*NET OnLine](https://www.onetonline.org/), representing various skills and specializations required to accomplish it.
+
+## Why?
+We build this "task-centric" assistant to provide the best help to the user, tailored to their needs. Technically, a task is described as a configuration file containing all information the assistant needs. This way, any expert can create a really specific task and the assistant will be able to guide the user through the process of accomplishing it in a conversational, seamless way.
 
 ## Mojodex usage
 A Mojodex user has access to the task corresponding to their profile. This way, the assistant is completely tailored to the user's needs and can provide the best help.

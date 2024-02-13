@@ -1,6 +1,12 @@
 # How To-Do works?
 
-## Extract To-Dos from achieved tasks
+To-dos are stored in the database. Typical technical workflow of a To-Do item is as follow:
+1) extracted from a task execution
+2) organized later if not achieved
+3) reminded to the user
+4) cleared by the user
+
+## 1. Extract To-Dos from achieved tasks
 Mojodex's scheduler is a python module that triggers routes calls at a certain frequency. See `/scheduler/app/main.py`
 
 One of its trigger checks every 10 minutes if a task has just been achieved.
@@ -77,50 +83,7 @@ This json is parsed and items are added to the database, related to the task.
 
 ![extract_todos](../images/to-dos_flow/extract_todos.png)
 
-## Remind the user
-Here comes Mojodex's scheduler again with another hourly trigger.
-
-`/scheduler/app/main.py`
-```python
-from scheduled_tasks.purchase_expiration_checker import PurchasesExpirationChecker
-[...]
-emails = 'AWS_ACCESS_KEY_ID' in os.environ and os.environ['AWS_ACCESS_KEY_ID']
-if emails:
-    [...]
-    SendTodoDailyEmails(3600) # send todo daily emails every 1 hour (filtered by timezone)
-[...] 
-```
-
-> Note that this trigger is only activated if the environment variable `AWS_ACCESS_KEY_ID` is set. This variable is used to send emails through AWS SES, only emails mechanism implemented in Mojodex for now.
-
-
-This triggers calls Mojodex's backend route `/todo_daily_emails` to retrieve all users whose local time is `DAILY_TODO_EMAIL_TIME` (defined in [env vars](../../.env.example)).
-
-
-For each of those users, the assistant will collect all To-Dos that are due for the coming day + the re-organization work it has done (cf step 4) and send those data to the background using route `events_generation` with parameter `'event_type': 'todo_daily_emails'`.
-
-The background uses its `TodoDailyEmailsGenerator` (`background/app/models/events/todo_daily_emails_generator.py`) with prompt `data/prompts/engagement/emails/todo_daily_emails_text_prompt.txt` to draft a friendly reminding emails to send to the user from provided data.
-
-Once an email is ready, the background sends it backend to the backend using route `/event` with parameter so that the backend sends the email to the user using AWS SES and logs it to the database.
-
-`backend/app/routes/event.py`
-```python
-[...]
-mojo_mail_client.send_mail(subject=subject,
-                            recipients=[email],
-                            html=body)
-# add notification to db
-email_event = MdEvent(creation_date=datetime.now(), event_type=event_type,
-                        user_id=user_id,
-                        message=message)
-db.session.add(email_event)
-db.session.commit()
-[...]
-```
-
-![remind_user](../images/to-dos_flow/remind_user.png)
-
-## Organize
+## 2. Organize
 Another hourly trigger of the scheduler takes care of reorganizing user's To-Do list every night to keep it up-to-date.
 
 ```python
@@ -156,8 +119,51 @@ This prompt outputs a json answer that can be parsed so that a new scheduling ca
 
 ![reschedule_todos](../images/to-dos_flow/reschedule_todos.png)
 
-## Bonus Step
-User can of course also act on their own To-Dos. For now, they can take 2 actions:
+## 3. Remind the user
+Here comes Mojodex's scheduler again with another hourly trigger.
+
+`/scheduler/app/main.py`
+```python
+from scheduled_tasks.purchase_expiration_checker import PurchasesExpirationChecker
+[...]
+emails = 'AWS_ACCESS_KEY_ID' in os.environ and os.environ['AWS_ACCESS_KEY_ID']
+if emails:
+    [...]
+    SendTodoDailyEmails(3600) # send todo daily emails every 1 hour (filtered by timezone)
+[...] 
+```
+
+> Note that this trigger is only activated if the environment variable `AWS_ACCESS_KEY_ID` is set. This variable is used to send emails through AWS SES, only emails mechanism implemented in Mojodex for now.
+
+
+This triggers calls Mojodex's backend route `/todo_daily_emails` to retrieve all users whose local time is `DAILY_TODO_EMAIL_TIME` (defined in [env vars](../../.env.example)).
+
+
+For each of those users, the assistant will collect all To-Dos that are due for the coming day + the re-organization work it has done (cf step 4) and send those data to the background using route `events_generation` with parameter `'event_type': 'todo_daily_emails'`.
+
+The background uses its `TodoDailyEmailsGenerator` (`background/app/models/events/todo_daily_emails_generator.py`) with prompt `data/prompts/engagement/emails/todo_daily_emails_text_prompt.txt` to draft a friendly reminding emails to send to the user from provided data.
+
+Once an email is ready, the background sends it to the backend using route `/event` with parameters so that the backend sends the email to the user using AWS SES and logs it to the database.
+
+`backend/app/routes/event.py`
+```python
+[...]
+mojo_mail_client.send_mail(subject=subject,
+                            recipients=[email],
+                            html=body)
+# add notification to db
+email_event = MdEvent(creation_date=datetime.now(), event_type=event_type,
+                        user_id=user_id,
+                        message=message)
+db.session.add(email_event)
+db.session.commit()
+[...]
+```
+
+![remind_user](../images/to-dos_flow/remind_user.png)
+
+## 4. User actions
+Users can of course also act on their own To-Dos. For now, they can take 2 actions:
 - Delete a To-Do item, if it was not relevant to add it or the assistant made any mistake. As any application call, this call is made to the backend and the route is DELETE `/todo`.
 > Note: an item is never deleted for real in the database. It is only marked as deleted so that it does not appear in the user's To-Do list anymore. This is to keep track of all the work the assistant has done.
 `backend/app/routes/todo.py`

@@ -115,4 +115,8 @@ This process is called to update a document in the database when user provides a
 This process is called any time the backend wants to send a notification to the user whether it is a mail, push notification... The Background is only responsible for notification content generation.
 
 
+## System 1/System 2 Abstraction
 
+To draw a parallel with the System 1/System 2 abstraction, **Mojodex's Background embodies the deliberate nature of System 2 thinking.**
+
+It meticulously manages long-running processes and handles batch data tasks with careful attention, akin to System 2's deliberate memory search and complex computations. This component ensures the smooth functioning of Mojodex's operations, providing the necessary depth and thoroughness to complement the swift responsiveness of the Backend.

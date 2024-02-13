@@ -120,4 +120,4 @@ def send_mojo_message_with_ack(self, message, session_id, event_name='mojo_messa
 
 To draw a parallel with the System 1/System 2 abstraction, **Mojodex's Backend functions as the digital counterpart to System 1 thinking.**
 
- It swiftly processes incoming data and orchestrates real-time interactions similar to our intuitive cognitive processes. Operating seamlessly like System 1, the Backend ensures instantaneous feedback and dynamic conversation flows, akin to rapid, non-conscious decision-making.
+It swiftly processes incoming data and orchestrates real-time interactions similar to our intuitive cognitive processes. Operating seamlessly like System 1, the Backend ensures instantaneous feedback and dynamic conversation flows, akin to rapid, non-conscious decision-making.

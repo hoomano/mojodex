@@ -1,6 +1,6 @@
 # Mojodex Backend
 
-The Mojodex Backend is responsible for managing the data and implementing the business logic of the application.
+The Mojodex Backend, inspired by System 1 from cognitive science, is responsible for managing the data and implementing the business logic of the digital assistant.
 
 ## Functionalities
 
@@ -22,6 +22,8 @@ HttpRouteManager(api)
 ```
 
 The API routes are all defined in `backend/app/http_routes.py` in the `HttpRouteManager` class, pointing to related Flask Resources in `backend/app/routes/`.
+
+Here's the link to the [Backend API documentation - Swagger file](/docs/openAPI/backend_api.yaml).
 
 ### Database Access
 The Backend uses SQLAlchemy to interact with the PostgreSQL database, ensuring efficient data management and storage. It can both read and write from the database.
@@ -70,7 +72,7 @@ server_socket = SocketIO(app, ping_timeout=40, ping_interval=15, logger=False, e
 ```
 
 #### Reception of User Messages
-- For web application, user messages in chat are received through socketio `user_message` event.
+- For the web application, user messages in chat are received through socketio `user_message` event.
 ```python
 @server_socket.on('user_message')
 def handle_message(data):

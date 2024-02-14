@@ -52,7 +52,6 @@ In the next section, you will find common sales assistant tasks that you can use
 
 We recommend the following tasks which are the most common and time-consuming for sales people:
 
-- **Lead Qualification**: The Sales Assistant will help sales people to qualify leads and then searching for information about the lead on the internet.
 - **Meeting Recap**: The Sales Assistant will help sales people to recap the meetings they had with their leads.
 - **Event Conversation Recap**: The Sales Assistant will help sales people to recap the conversations they had with leads during events.
 - **Follow-up Email**: The Sales Assistant will help sales people to write follow-up emails to leads.

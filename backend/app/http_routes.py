@@ -49,6 +49,7 @@ from routes.free_users_engagement import FreeUsersEngagementChecker
 from routes.retrieve_produced_text import RetrieveProducedText
 from routes.calendar_suggestion_notification import CalendarSuggestionNotifications
 from routes.home_chat import HomeChat
+from routes.task_json import TaskJson
 class HttpRouteManager:
     def __init__(self, api):
         api.add_resource(Purchase, '/purchase')
@@ -103,3 +104,4 @@ class HttpRouteManager:
         api.add_resource(RetrieveProducedText, "/retrieve_produced_text")
         api.add_resource(CalendarSuggestionNotifications, "/calendar_suggestion_notifications")
         api.add_resource(HomeChat, "/home_chat")
+        api.add_resource(TaskJson, "/task_json")

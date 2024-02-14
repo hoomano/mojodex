@@ -354,4 +354,6 @@ When the assistant sends a message to ask for any precision or when they want to
 
 When the user sends a message during a task execution, the message is sent to the backend through a PUT `user_message` call and the same process as described in part 2.2 is repeated.
 
+> Note: the web application as it is now still uses a socketio event `user_message` to send user's message to the backend. We started moving from this to the REST API `/user_message` as described here for robustness and scalability reasons. Mobile application already uses the REST API.
+
 ![complete_user_task_execution_flow](../images/task_execution/complete_user_task_execution_flow.png)

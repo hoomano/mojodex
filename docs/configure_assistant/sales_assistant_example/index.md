@@ -151,7 +151,9 @@ done
 
 ### 3.4 Associate the tasks to the product
 
-Replace `<BACKOFFICE_SECRET>` and `<task_pk>` with the previously created task pk and run the following command in your terminal:
+For each task created, we need to associate it to the product.
+
+Replace `<BACKOFFICE_SECRET>` and `<task_pk>` with each previously created task pk and run the following command in your terminal as many times as necessary:
 
 ```shell
 curl -X 'PUT' \
@@ -170,7 +172,11 @@ curl -X 'PUT' \
 
 Now, the final part is to provide access to the Sales Assistant to the sales team.
 
+### 4.1 Deployment to the existing users
+
 To do so, we will provide access the sales team accounts to the Sales Assistant product.
+
+Find the list `<user_id>` of the sales team members and run the following command for each user:
 
 In a terminal, run the following command:
 
@@ -189,6 +195,10 @@ curl -X 'PUT' \
   "custom_purchase_id": "string"
 }'
 ```
+
+### 4.2 New sales team members
+
+For new sales team members, during the onboarding process, they will now have to choose the 'Sales Assistant' product, that we just created.
 
 ## Future work
 

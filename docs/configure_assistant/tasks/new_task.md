@@ -134,7 +134,7 @@ From the root of the repository.
 
 STEP 1: Create the json file
 ```
-cp ./docs/configure_assistant/create_tasks/task_spec.json ./docs/configure_assistant/create_tasks/tasks_json/my_task.json
+cp ./docs/configure_assistant/tasks/task_spec.json ./docs/configure_assistant/tasks/tasks_json/my_task.json
 ```
 
 Fill the json values of my_task.json with the ones fitting your need for this task.
@@ -142,7 +142,7 @@ Fill the json values of my_task.json with the ones fitting your need for this ta
 STEP 2: Add the task to the database
 ```
 CURRENT_DATETIME=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-jq --arg datetime "$CURRENT_DATETIME" '. + {datetime: $datetime}' ./docs/configure_assistant/create_tasks/tasks_json/my_task.json > modified_task.json
+jq --arg datetime "$CURRENT_DATETIME" '. + {datetime: $datetime}' ./docs/configure_assistant/tasks/tasks_json/my_task.json > modified_task.json
 
 curl --location --request PUT 'http://localhost:5001/task' \
 --header 'Authorization: backoffice_secret' \

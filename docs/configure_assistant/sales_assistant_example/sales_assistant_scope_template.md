@@ -35,7 +35,6 @@ Review the documented tasks and categorize them by nature and frequency. Instead
 
 | Task                   | Frequency | Time Saved | Error Reduction | Sales Impact | Facilitation Potential | Priority |
 |------------------------|-----------|------------|-----------------|--------------|------------------------|----------|
-| Lead Qualification     | Daily     | High       | Medium          | High         | High                   | 1        |
 | Meeting Recap          | Weekly    | Medium     | High            | Medium       | High                   | 2        |
 | Follow-up Email        | Daily     | High       | Low             | High         | Medium                 | 3        |
 | Event Conversation Recap | Monthly  | Low        | Medium          | Low          | Medium                 | 4        |

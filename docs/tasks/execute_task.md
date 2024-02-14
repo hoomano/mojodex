@@ -221,7 +221,14 @@ user_company_knowledge = KnowledgeManager.get_user_company_knowledge(self.user_t
 ```
 
 #### 3.2. Prompt preparation
-Then, the Jinja2 template is loaded from data directory, rendered with collected data and turned into a system message. This message is then added as the first message of the conversation list containing past exchanges between the user and the assistant in this session.
+
+> 💡The advanced prompting strategy used in the Task Manager is described in detail in the following article: [Advanced Prompting Strategies for Digital Assistant Development](https://blog.hoomano.com/advanced-prompting-strategies-for-digital-assistant-development-b6698996954f)
+
+The task manager's `prompt` is prepared in 3 steps:
+- Load Jinja2 template from `/data` directory
+- Render Jinja2 template with collected data
+- Add the prompt as the first message of the conversation list in this session
+
 
 ```python
 [...]

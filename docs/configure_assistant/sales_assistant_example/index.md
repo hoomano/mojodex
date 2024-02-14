@@ -61,7 +61,11 @@ We recommend the following tasks which are the most common and time-consuming fo
 
 Now that we have a list of tasks, we want to design how Mojodex will facilitate them.
 
-For more information on that process, refer to the [Task Creation Guide](../tasks/whats_a_task.md).
+For each task, you now have a sentence that describes what the team is expecting the Sales Assistant to do.
+
+Use the following route to prepare a task in JSON format for each task: #TODO#
+
+You will need those JSON files for the next step: implementation
 
 ## 3. Implement the Sales Assistant Configuration
 

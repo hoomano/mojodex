@@ -40,7 +40,18 @@ Review the documented tasks and categorize them by nature and frequency. Instead
 | Follow-up Email        | Daily     | High       | Low             | High         | Medium                 | 3        |
 | Event Conversation Recap | Monthly  | Low        | Medium          | Low          | Medium                 | 4        |
 
-### Step 7: Obtain Team Approval and Finalize the Scope
+### Step 7: Describe each task in structured paragraph
+
+Now, use the following template to describe each task:
+```
+You are the sales assistant of the user. The user needs help to (achieve/do/perform) [...]. The user needs this help in the following situation: [...]. You will need the following informations to proceed: [...]. The result of the task is a[{document_type}]
+```
+
+You can add details such as tone, style or format of the document if that's relevant for the task.
+
+This detailed paragraph is the entry point for the team in charge of the implementation to create the tasks.
+
+### Step 8: Obtain Team Approval and Finalize the Scope
 Present the prioritized list to the sales team for validation and finalize the scope based on their consensus. This finalized scope will direct the configuration of the Sales Assistant within Mojodex.
 
 By following this structured approach, you will be equipped with all the information to prepare a Sales Assistant that is precisely tailored to support and facilitate their most impactful tasks.

@@ -19,3 +19,8 @@ The assistant then guides them through the process, asking questions in a conver
 Once the assistant collected all the necessary information, it starts drafting the document resulting from the task. The user can then review and ask for any edit in the chat or directly modify the document.
 
 ![edit_document](./images/edit_document.png)
+
+
+## Next step: How to create a task
+
+To create a task, you need to define the scope of the task and then describe the different components of the task. To help you with that, we provide a [Task Creation Guide](./new_task.md) that will guide you through the process.

@@ -1,0 +1,54 @@
+{
+    "platforms": [
+        "mobile",
+        "webapp"
+    ],
+    "predefined_actions": [],
+    "task_displayed_data": [
+        {
+            "language_code": "en",
+            "name_for_user": "Follow-up email",
+            "definition_for_user": "Get a preliminary follow-up email for your meeting",
+            "json_input": [
+                {
+                    "input_name": "meeting_informations",
+                    "description_for_user": "How was your meeting?",
+                    "description_for_system": "Informations the user gave about the meeting (ex: participants, date, key topics, followup actions...)",
+                    "placeholder": "Record a quick summary of what was discussed.",
+                    "type": "text_area"
+                }
+            ]
+        },
+        {
+            "language_code": "fr",
+            "name_for_user": "E-mail de suivi",
+            "definition_for_user": "Rédigez un e-mail suite à une réunion",
+            "json_input": [
+                {
+                    "description_for_system": "Informations que l'utilisateur a fournies sur la réunion (ex : participants, date, sujets clés, actions de suivi...)",
+                    "description_for_user": "Comment s'est passée votre réunion ?",
+                    "input_name": "informations_sur_la_reunion",
+                    "placeholder": "Enregistrez un rapide résumé de ce qui a été discuté.",
+                    "type": "text_area"
+                }
+            ]
+        }
+    ],
+    "name_for_system": "follow-up_email",
+    "definition_for_system": "The user needs assistance to prepare a follow-up email",
+    "final_instruction": "Write a follow-up email",
+    "output_format_instruction_title": "EMAIL SUBJECT",
+    "output_format_instruction_draft": "CONTENT OF THE EMAIL",
+    "output_type": "email",
+    "icon": "💌",
+    "infos_to_extract": [
+        {
+            "info_name": "meeting_notes",
+            "description": "The notes taken by the user about the meeting"
+        },
+        {
+            "info_name": "call_to_action",
+            "description": "The follow-up that the user expects from the meeting and wants to share if any"
+        }
+    ]
+}

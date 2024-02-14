@@ -1,0 +1,59 @@
+{
+    "datetime": "2024-02-14T10:53:06.502Z",
+    "platforms": [
+        "mobile",
+        "webapp"
+    ],
+    "predefined_actions": [],
+    "task_displayed_data": [
+        {
+            "language_code": "en",
+            "name_for_user": "Event Conversation Recap",
+            "definition_for_user": "Prepare a recap of your conversation during an event",
+            "json_input": [
+                {
+                    "input_name": "event_conversation_details",
+                    "description_for_user": "How was your conversation?",
+                    "description_for_system": "Details about the conversation during the event, that might such as contact information, key discussion points, and possible next steps.",
+                    "placeholder": "Record a quick summary of what was discussed, contact infos and next steps?",
+                    "type": "text_area"
+                }
+            ]
+        },
+        {
+            "language_code": "fr",
+            "name_for_user": "Récapitulatif de Conversation",
+            "definition_for_user": "Résumez une conversation",
+            "json_input": [
+                {
+                    "description_for_system": "Détails sur la conversation pendant l'événement, qui peuvent inclure des informations de contact, les principaux points de discussion et les prochaines étapes possibles.",
+                    "description_for_user": "Comment s'est passée votre conversation ?",
+                    "input_name": "event_conversation_details",
+                    "placeholder": "Enregistrez un bref résumé de ce qui a été discuté, les infos de contact et les prochaines étapes ?",
+                    "type": "text_area"
+                }
+            ]
+        }
+    ],
+    "name_for_system": "prepare_event_conversation_recap",
+    "definition_for_system": "The user needs assistance to prepare a recap of a conversation during an event",
+    "final_instruction": "The conversation happened today, unless otherwise indicated by the user. Write a neat recap summarizing the conversation held at the event",
+    "output_format_instruction_title": "DATE - CONTACT NAME - SUMMARY IN 3-5 WORDS",
+    "output_format_instruction_draft": "CONTACT INFORMATION\n\nKEY DISCUSSION POINTS\n\nNEXT STEPS (if applicable)",
+    "output_type": "conversation_recap",
+    "icon": "🗒️",
+    "infos_to_extract": [
+        {
+            "info_name": "contact_name",
+            "description": "Contact name?"
+        },
+        {
+            "info_name": "key_discussion_points",
+            "description": "Key discussion points?"
+        },
+        {
+            "info_name": "next_steps",
+            "description": "Next steps?"
+        }
+    ]
+}

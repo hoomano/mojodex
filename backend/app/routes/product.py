@@ -27,8 +27,8 @@ class Product(Resource):
             product_label = request.json["product_label"]
             displayed_data = request.json["displayed_data"]
             product_category_pk = request.json["product_category_pk"]
-            product_stripe_id = request.json["product_stripe_id"]
-            product_apple_id = request.json["product_apple_id"]
+            product_stripe_id = request.json["product_stripe_id"] if "product_stripe_id" in request.json else None
+            product_apple_id = request.json["product_apple_id"] if "product_apple_id" in request.json else None
             is_free = request.json["is_free"]
             n_days_validity = request.json["n_days_validity"]
             n_tasks_limit = request.json["n_tasks_limit"]

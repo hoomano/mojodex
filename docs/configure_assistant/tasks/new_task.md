@@ -36,7 +36,7 @@ These fields are used to define the format of the document resulting from the ta
 ```
 "output_type": "meeting_minutes"
 ```
-This field is used to define the type of document resulting from the task. It is used to enable special edition features once the document is ready. The value should match one existing in table 'md_text_type' of your database. Default existing values in database are "meeting_minutes", "email" and "document". You can add more types in the database if needed.
+This field is used to define the type of document resulting from the task. It is used to enable special edition features once the document is ready. The value should match one existing in table 'md_text_type' of your database, if it does not, will be created.
 
 ### Icon
 ```
@@ -137,17 +137,23 @@ STEP 1: Create the json file
 cp ./docs/configure_assistant/tasks/task_spec.json ./docs/configure_assistant/tasks/tasks_json/my_task.json
 ```
 
-Fill the json values of my_task.json with the ones fitting your need for this task.
+Fill the json values of my_task.json with the ones fitting your need for this task. 
+You can get helped by using the dedicated route so that GPT-4 generates a first json for you from your requirements.
+```
+curl --location --request POST 'http://localhost:5001/task_json' \
+--header 'Authorization: backoffice_secret' \
+--header 'Content-Type: application/json' \
+--data-raw '{"datetime": "2024-02-14T17:49:26.545180",
+"task_requirements": "You are the sales assistant of the user. The user needs help to (achieve/do/perform) [...]. The user needs this help in the following situation: [...]. You will need the following informations to proceed: [...]. The result of the task is a[{document_type}]"
+}'
+```
 
 STEP 2: Add the task to the database
 ```
-CURRENT_DATETIME=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-jq --arg datetime "$CURRENT_DATETIME" '. + {datetime: $datetime}' ./docs/configure_assistant/tasks/tasks_json/my_task.json > modified_task.json
-
 curl --location --request PUT 'http://localhost:5001/task' \
 --header 'Authorization: backoffice_secret' \
 --header 'Content-Type: application/json' \
---data @modified_task.json
+--data @my_task.json
 ```
 This command calls the backend REST API to create the task in the database and returns the primary key of the task. You will need this primary key in next step.
 

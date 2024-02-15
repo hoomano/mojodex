@@ -62,7 +62,15 @@ Now that we have a list of tasks, we want to design how Mojodex will facilitate 
 
 For each task, you now have a sentence that describes what the team is expecting the Sales Assistant to do.
 
-Use the following route to prepare a task in JSON format for each task: #TODO#
+Use the following route to prepare a task in JSON format for each task:
+```
+curl --location --request POST 'http://localhost:5001/task_json' \
+--header 'Authorization: backoffice_secret' \
+--header 'Content-Type: application/json' \
+--data-raw '{"datetime": "2024-02-14T17:49:26.545180",
+"task_requirements": "<task_description>"
+}'
+```
 
 You will need those JSON files for the next step: implementation
 
@@ -128,7 +136,7 @@ curl -X 'PUT' \
   "product_apple_id": "",
   "is_free": true,
   "n_days_validity": 99999,
-  "n_tasks_limit": 0
+  "n_tasks_limit": null
 }'
 ```
 

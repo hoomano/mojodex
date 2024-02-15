@@ -51,7 +51,7 @@ from routes.calendar_suggestion_notification import CalendarSuggestionNotificati
 from routes.home_chat import HomeChat
 from routes.tool import Tool
 from routes.task_tool import TaskTool
-
+from routes.task_json import TaskJson
 
 class HttpRouteManager:
     def __init__(self, api):
@@ -109,3 +109,4 @@ class HttpRouteManager:
         api.add_resource(HomeChat, "/home_chat")
         api.add_resource(Tool, "/tool")
         api.add_resource(TaskTool, "/task_tool")
+        api.add_resource(TaskJson, "/task_json")

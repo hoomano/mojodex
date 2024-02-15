@@ -31,6 +31,7 @@ class ProductCategory(Resource):
             displayed_data = request.json["displayed_data"]
             emoji = request.json["emoji"]
             implicit_goal = request.json["implicit_goal"]
+            visible = request.json["visible"]
         except KeyError as e:
             return {"error": f"Missing field {e}"}, 400
 
@@ -59,7 +60,7 @@ class ProductCategory(Resource):
             # Create product category
             product_category = MdProductCategory(label=product_category_label,
                                                 emoji=emoji,
-                                                implicit_goal=implicit_goal)
+                                                implicit_goal=implicit_goal, visible=visible)
             db.session.add(product_category)
             db.session.flush()
             db.session.refresh(product_category)

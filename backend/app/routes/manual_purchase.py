@@ -27,12 +27,25 @@ class ManualPurchase(Resource):
 
         try:
             timestamp = request.json["datetime"]
-            user_id = request.json["user_id"]
+            # user_id or user_email
+
             product_pk = request.json["product_pk"]
         except KeyError as e:
             return {"error": f"Missing field {e}"}, 400
 
         try:
+            # check if at least one of the two fields is present in request.json
+            user_id = request.json.get("user_id")
+            user_email = request.json.get("user_email")
+
+            if not user_id and not user_email:
+                return {"error": "Missing field user_id or user_email"}, 400
+
+
+            if user_id is None and user_email is not None:
+                user = db.session.query(MdUser).filter(MdUser.email == user_email).first()
+                user_id = user.user_id
+                
             product = db.session.query(MdProduct).filter(MdProduct.product_pk == product_pk).first()
             purchase_manager = PurchaseManager()
 

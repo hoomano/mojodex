@@ -40,7 +40,7 @@
     "final_instruction": "The conversation happened today, unless otherwise indicated by the user. Write a neat recap summarizing the conversation held at the event",
     "output_format_instruction_title": "DATE - CONTACT NAME - SUMMARY IN 3-5 WORDS",
     "output_format_instruction_draft": "CONTACT INFORMATION\n\nKEY DISCUSSION POINTS\n\nNEXT STEPS (if applicable)",
-    "output_type": "conversation_recap",
+    "output_type": "document",
     "icon": "🗒️",
     "infos_to_extract": [
         {

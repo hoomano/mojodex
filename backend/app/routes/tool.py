@@ -2,10 +2,9 @@ import os
 
 from flask import request
 from flask_restful import Resource
-from app import db, authenticate
 from db_models import MdTool, MdTaskToolAssociation, MdTask
 from sqlalchemy import func
-
+from app import db
 
 class Tool(Resource):
 

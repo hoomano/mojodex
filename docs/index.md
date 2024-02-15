@@ -1,25 +1,82 @@
 # Welcome!
 
-## Technical Documentation
-Mojodex Architecture is built upon the foundational principles of System 1/System 2 abstraction, a concept derived from cognitive psychology.
 
--  System 1 represents fast, intuitive, and unconscious thinking.
--  System 2 embodies slower, deliberate, and analytical thought processes. 
+Mojodex is an open-source digital assistant platform to help companies and individuals build their own AI-powered assets.
 
-By integrating these cognitive frameworks into its design, Mojodex aims to create a digital assistant system that combines the rapid responsiveness of System 1 with the careful decision-making of System 2. 
+It is designed to be __task-oriented__, __configurable__, and __personalizable__. Mojodex is API-centric, allowing for easy integration with other tools and is available as a web application, mobile application, and Chrome extension.
 
-This documentation provides an overview of Mojodex's architecture, exploring how these cognitive principles inform its structure and functionality.
+> 🌟 __Our motivation is to help in creating a baseline on how to create enterprise level agents__
 
-## Architecture Overview
-![Architecture Overview](images/architecture_overview.png)
+## Why an Open-source Digital Assistant Platform for Enterprises?
 
-## Components
-| Component    | Role                                      | Documentation Link                            |
-|--------------|-------------------------------------------|-----------------------------------------------|
-| Backend      | Communication hub for real-time dialogue and management of application business logic. Mojodex's Backend serves as the digital counterpart to System 1 thinking. | [Backend Documentation](../backend/README.md)  |
-| Background   | Handles intensive tasks behind-the-scenes. Useful for Long-Running Processes and Batch Data Processing. Mojodex's Background embodies the deliberate nature of System 2 thinking.| [Background Documentation](../background/README.md)     |
-| Scheduler    | Executes code at specific times/intervals. Mojodex's Scheduler embodies a proactive aspect akin to System 2 thinking| [Scheduler Documentation](../scheduler/README.md)  |
-| Database     | Stores and manages data                   | [Database Documentation](../pgsql/README.md)      |
-| Mobile App   | Interface for mobile devices              | [Mobile App Documentation](https://github.com/hoomano/mojodex_mobile)|
-| Web App      | Interface for web browsers                | [Web App Documentation](../webapp/README.md)      |
-| Next Proxy   | Manages and authenticates requests from the webapp interface to the backend.             | [Next Proxy Documentation](../webapp/README.md) |
+Mojodex was created to foster the adoption of digital assistants in businesses. The reasons for its open-source release are:
+
+- **Enable Enterprises to Building their AI Assets** : To support companies in creating their own refined prompts, data wheel pipeline of high quality interaction with experts.
+- **On Premise & Tailor-made** : Providing an open-source platform for complete control over the software and data ownership, development, hosting, and evolution.
+- **Boosting Adoption** : Experts and tech team guided teamwork to tailor their assistant to their needs, fostering adoption.
+
+A highly valuable side effect of implementing a digital assistant platform is **Process Optimization**. Configuring their own digital assistant implies to optimizing a company's internal processes, promoting long-term development.
+
+## How to get started?
+
+### Quick Demo Video
+
+
+[![Mojodex Demo](https://img.youtube.com/vi/9m7AZdd5Qyw/0.jpg)](https://www.youtube.com/watch?v=9m7AZdd5Qyw)
+
+
+
+## Key Features
+
+- **Task-Oriented** : Mojodex is designed to assist users by completing specific tasks, making it easier for the assistant to understand and fulfill user needs.
+
+- **Configurable** : Tailored to various professional uses, allowing for role-specific task configurations (sales, recruitment, personal assistance, etc.).
+
+- **Personalizable** : Builds a memory of user interactions and goals to improve task execution.
+
+- **Proactive** : Independently manages tasks, freeing users to focus on other activities through a chat-independent architecture.
+
+- **Multiple User Interfaces** : Includes a web application in this repository, an open-source mobile application, and a Chrome extension.
+
+- **API-Centric Back-End** : Enables easy integration with other tools through a well-defined API exposure.
+
+- **Using OpenAI's GPT-4 Turbo** : Accessible directly via OpenAI or through Azure's functionalities.
+
+
+## Frequently Asked Questions (FAQs)
+
+### What makes the Mojodex open-source platform different from other GPT chat platforms or copilot platforms?
+
+Beyond Chat : Unlike platforms that are solely chat-based, Mojodex is task-oriented, using conversation to achieve the goal of completing tasks and producing deliverables.
+
+### What are the benefits of using Mojodex over other platforms?
+
+- Never Locked: Being open-source, it allows for the creation of custom prompts and working on proprietary processes, rather than sending them to an uncontrolled platform.
+
+- Ease of Integration: The assistant's API-centric architecture facilitates seamless integration with existing tools.
+
+### How about the data privacy and security?
+
+- You own your data: Complete control over data flows, especially towards large language models, enabling users to connect their proprietary LLM solutions and fully manage the data stream.
+
+- As secure as your infrastructure is: For sensitive data, hosting on personal infrastructure provides total control.
+
+### What can I do with the data generated by Mojodex?
+
+Users own their data, allowing the construction of interaction datasets at an enterprise scale, which are invaluable for retraining on specific use cases.
+
+### Can I use open-source LLMs with Mojodex?
+
+Yes, Mojodex is designed to be compatible with open-source LLMs, allowing best of both worlds with the use of proprietary models through APIS and hosted open-source models. This may require some development work.
+
+### What level of effort is required to implement a digital assistant platform?
+
+Here's a breakdown of what is required:
+
+| Effort | Team | Description | Resources |
+| --- | --- | --- | --- |
+| Medium | Management | Define the high level goals and scope of the project – process optimization, reducing mental load, increase productivity, etc. – and the User Team | [See the Sales Assistant Example](./configure_assistant/sales_assistant_example/index.md) |
+| Medium | Management + User Team | Define the metrics to measure the success of the project. | [See the Sales Assistant Example](./configure_assistant/sales_assistant_example/index.md) |
+| High | User Team | Define the tasks the assistant will help with. | [Step by Step Guide for Teamwork](./configure_assistant/sales_assistant_example/sales_assistant_scope_template.md) |
+| Low | Tech Team | Deploy the Mojodex platform. | [See install from GitHub in 3 steps](https://github.com/hoomano/mojodex) |
+| Medium | Tech Team + User Team | Iterate on the configuration of the assistant. | [See the Sales Assistant Example](./configure_assistant/sales_assistant_example/index.md) |

@@ -132,8 +132,6 @@ curl -X 'PUT' \
     }
   ],
   "product_category_pk": <product_category_pk>,
-  "product_stripe_id": "",
-  "product_apple_id": "",
   "is_free": true,
   "n_days_validity": 99999,
   "n_tasks_limit": null
@@ -225,7 +223,7 @@ Now, the final part is to provide access to the Sales Assistant to the sales tea
 
 To do so, we will provide access the sales team accounts to the Sales Assistant product.
 
-Find the list `<user_id>` of the sales team members and run the following command for each user:
+Run the following command for each user identified by their email:
 
 In a terminal, run the following command:
 

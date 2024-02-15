@@ -133,7 +133,8 @@ curl -X 'PUT' \
   ],
   "product_category_pk": <product_category_pk>,
   "is_free": true,
-  "n_days_validity": 99999
+  "n_days_validity": 99999,
+  "n_tasks_limit": null
 }'
 ```
 
@@ -192,7 +193,7 @@ In a terminal, run the following command:
 ```shell
 curl -X 'PUT' \
   'http://localhost:5001/manual_purchase' \
-  -H 'Authorization <BACKOFFICE_SECRET>' \
+  -H 'Authorization: <BACKOFFICE_SECRET>' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{

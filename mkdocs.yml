@@ -6,7 +6,9 @@ theme:
     text: Hanken Grotesk
 
   logo: images/mojodex_logo_4040.png
-
+  features:
+    - content.code.copy
+    
   palette:
 
     # Palette toggle for light mode

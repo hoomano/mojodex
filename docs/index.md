@@ -1,5 +1,4 @@
-# Mojodex Documentation
-
+# Welcome!
 
 ## Technical Documentation
 Mojodex Architecture is built upon the foundational principles of System 1/System 2 abstraction, a concept derived from cognitive psychology.

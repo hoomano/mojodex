@@ -1564,6 +1564,100 @@ paths:
                 properties:
                   error:
                     type: string
+  /task_json:
+    post:
+      tags:
+        - Backoffice
+      summary: Generate json configuration file of a task from requirements description
+      parameters:
+        - in: header
+          name: Authorization
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - datetime
+                - task_requirements
+              properties:
+                datetime:
+                  type: string
+                  format: date-time
+                task_requirements:
+                  type: string
+      responses:
+        '200':
+          description: Task JSON created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  datetime:
+                    type: string
+                    format: date-time
+                  platforms:
+                    type: array
+                    items:
+                      type: string
+                  predefined_actions:
+                    type: array
+                    items:
+                      type: object
+                  task_displayed_data:
+                    type: array
+                    items:
+                      type: object
+                  name_for_system:
+                    type: string
+                  definition_for_system:
+                    type: string
+                  final_instruction:
+                    type: string
+                  output_format_instruction_title:
+                    type: string
+                  output_format_instruction_draft:
+                    type: string
+                  output_type:
+                    type: string
+                  icon:
+                    type: string
+                  infos_to_extract:
+                    type: array
+                    items:
+                      type: object
+        '400':
+          description: Bad request, missing fields or not a JSON request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '403':
+          description: Authentication error, wrong or missing secret
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '500':
+          description: Internal server error when creating new task
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
   /task_tool_query:
     put:
       tags:

@@ -51,7 +51,12 @@ class Task(Resource):
             # ensure output_type is in md_text_type
             output_type_pk = db.session.query(MdTextType.text_type_pk).filter(MdTextType.name == output_type).first()[0]
             if not output_type_pk:
-                return {"error": "unknown_text_type", "details": f"output_type must be in {db.session.query(MdTextType.name).all()}"}, 400
+                # add text_type to md_text_type
+                text_type = MdTextType(name=output_type)
+                db.session.add(text_type)
+                db.session.flush()
+                db.session.refresh(text_type)
+                output_type_pk = text_type.text_type_pk
 
             # ensure that display_data is a list
             if not isinstance(task_displayed_data, list):

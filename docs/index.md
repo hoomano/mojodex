@@ -1,7 +1,9 @@
-# Mojodex Architecture
+# Mojodex Documentation
 
-## Principle
+
+## Technical Documentation
 Mojodex Architecture is built upon the foundational principles of System 1/System 2 abstraction, a concept derived from cognitive psychology.
+
 -  System 1 represents fast, intuitive, and unconscious thinking.
 -  System 2 embodies slower, deliberate, and analytical thought processes. 
 

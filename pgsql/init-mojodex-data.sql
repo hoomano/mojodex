@@ -295,6 +295,8 @@ COPY public.md_task_platform_association (task_platform_association_pk, task_fk,
 --
 
 COPY public.md_tool (tool_pk, name, definition) FROM stdin;
+1	google_search	Make some research on Google
+2	internal_memory	Retrieve past tasks you helped the user with.
 \.
 
 
@@ -592,7 +594,7 @@ SELECT pg_catalog.setval('public.md_todo_seq', 1, false);
 -- Name: md_tool_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
 --
 
-SELECT pg_catalog.setval('public.md_tool_seq', 1, false);
+SELECT pg_catalog.setval('public.md_tool_seq', 2, false);
 
 
 --

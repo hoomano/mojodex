@@ -93,18 +93,18 @@ curl -X 'PUT' \
   -H 'Authorization: <BACKOFFICE_SECRET>' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
-  -d '{
-  "datetime": "2024-02-14T10:46:15.283Z",
-  "label": "string",
-  "displayed_data": [
-    {
-      "language_code": "en",
-      "name_for_user": "Sales",
-      "description_for_user": "Boosting sales? I've got your back!"
-    }
-  ],
-  "emoji": "💼",
-  "implicit_goal": "Drive revenue growth by mastering sales interactions and fostering lasting client relationships."
+  -d '{ \
+  "datetime": "2024-02-14T10:46:15.283Z", \
+  "label": "string", \
+  "displayed_data": [ \
+    { \
+      "language_code": "en", \
+      "name_for_user": "Sales", \
+      "description_for_user": "Boosting sales? I've got your back!" \
+    } \ 
+  ], \
+  "emoji": "💼", \
+  "implicit_goal": "Drive revenue growth by mastering sales interactions and fostering lasting client relationships." \
 }'
 ```
 
@@ -142,6 +142,7 @@ curl -X 'PUT' \
 
 ### 3.3 Setup the tasks
 
+#### 3.3.1 Create the tasks
 The tasks are described in the [`tasks`](./tasks/) folder of the repository. Each task is a JSON file that describes the task and its parameters.
 
 ```shell
@@ -156,6 +157,44 @@ done
 ```
 
 > The terminal will return a response with the `task_pk` for each task. We will need it for the next step.
+
+#### 3.3.2 Specific configuration for the "Qualify Lead" task
+
+For this task, we need to add a tool: Google Search.
+
+This tool will be used to search for information about the lead.
+
+The tool is already available in the Mojodex platform, so we just need to associate it to the task.
+
+Table of default existing tools:
+| tool_pk | name | description |
+| --- | --- | --- |
+| 1 | google_search | Make some research on Google |
+| 2 | internal_memory | Retrieve past tasks you helped the user with. |
+
+We provide a description of the usage of the `google_search` tool for the task:
+> Use this tool to search for information that could help you qualify the lead.\n Start with a general research about the company to find its industry. A google query made only of the company name is usually the best way to go at first. Make sure you spell the company name correctly. Then look for the company's industry trends, news, and recent events.
+
+
+
+Replace `<BACKOFFICE_SECRET>` and `<task_pk>` with the previously created task pk for the "Qualify Lead" task and run the following command in your terminal:
+
+```shell
+curl -X 'PUT' 'http://localhost:5001/task_tool' \
+-H 'Authorization: <BACKOFFICE_SECRET>' \
+-H 'accept: application/json' \
+-H 'Content-Type: application/json' \
+-d @- <<EOF
+{
+  "datetime": "2024-02-14T11:00:00.000Z",
+  "task_pk": <task_pk>,
+  "tool_pk": 1,
+  "usage_description": "Use this tool to search for information that could help you qualify the lead.
+  Start with a general research about the company to find its industry. A google query made only of the company name is usually the best way to go at first. Make sure you spell the company name correctly. Then look for the company's industry trends, news, and recent events."
+}
+EOF
+```
+
 
 ### 3.4 Associate the tasks to the product
 
@@ -184,11 +223,11 @@ Now, the final part is to provide access to the Sales Assistant to the sales tea
 
 To do so, we will provide access the sales team accounts to the Sales Assistant product.
 
-Find the list `<user_id>` of the sales team members and run the following command for each user:
+Run the following command for each user identified by their email:
 
 In a terminal, run the following command:
 
-> ℹ️ Replace `<BACKOFFICE_SECRET>` , `<product_pk>` and `<user_id>` with the actual values.
+> ℹ️ Replace `<BACKOFFICE_SECRET>` , `<product_pk>` and `<user_email>` with the actual values.
 
 ```shell
 curl -X 'PUT' \
@@ -198,9 +237,9 @@ curl -X 'PUT' \
   -H 'Content-Type: application/json' \
   -d '{
   "datetime": "2024-02-14T11:53:58.771Z",
-  "user_id": "<user_id>",
+  "user_email": "demo@example.com",
   "product_pk": <product_pk>,
-  "custom_purchase_id": "string"
+  "custom_purchase_id": "demo"
 }'
 ```
 

@@ -6,6 +6,7 @@ theme:
     text: Hanken Grotesk
 
   logo: images/mojodex_logo_4040.png
+  favicon: images/mojodex_logo_4040.png
   features:
     - content.code.copy
     

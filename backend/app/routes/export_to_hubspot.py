@@ -14,41 +14,6 @@ class HubspotExport(Resource):
     def __init__(self):
         HubspotExport.method_decorators = [authenticate()]
 
-    # From a produced_text_version_pk, suggests company, contact and deal to export to Hubspot and type of engagement
-    def post(self, user_id):
-        error_message = "Error in HubspotExport post method"
-        if not request.is_json:
-            log_error(f"{error_message} : Request must be JSON")
-            return {"error": "Request must be JSON"}, 400
-
-        # data
-        try:
-            timestamp = request.json["datetime"]
-            produced_text_version_pk = request.json["produced_text_version_pk"]
-        except KeyError as e:
-            log_error(f"{error_message} : Missing field {e}")
-            return {"error": f"Missing field {e}"}, 400
-        
-        try:
-            # check produced_text_version_pk exists for user_id
-            produced_text_version = db.session.query(MdProducedTextVersion)\
-                .join(MdProducedText, MdProducedTextVersion.produced_text_fk == MdProducedText.produced_text_pk)\
-                .filter(MdProducedText.user_id == user_id)\
-                .filter(MdProducedTextVersion.produced_text_version_pk == produced_text_version_pk)\
-                .first()
-            if not produced_text_version:
-                log_error(f"{error_message} : produced_text_version_pk {produced_text_version_pk} not found for user_id {user_id}")
-                return {"error": f"produced_text_version_pk {produced_text_version_pk} not found for user_id {user_id}"}, 400
-            
-            title, production = produced_text_version.title, produced_text_version.production
-
-            # TODO: catch proper nouns and search for them in Hubspot
-            # engagement is among ["Note", "Email", "Call", "Meetings"]
-            return {"company": None, "contact": None, "deal": None, "engagement": None}, 200
-        except Exception as e:
-            log_error(f"{error_message} : {str(e)}")
-            return {"error": str(e)}, 500
-
 
     def __search_hubspot(self, search_object, properties, filterGroups):
         try:
@@ -59,13 +24,13 @@ class HubspotExport(Resource):
             url = f"https://api.hubapi.com/crm/v3/objects/{search_object}/search"
 
             payload={
-                        "limit": 20,
+                        "limit": 3,
                         "properties": properties + ["id"],
                         "filterGroups": filterGroups
                     }
             response = requests.request("POST", url, headers=headers, data=json.dumps(payload))
 
-            return response.json()["results"] # TODO: sometime "results" is null
+            return response.json()["results"] if "results" in response.json() else []
 
         except Exception as e:
             raise Exception(f"__search_hubspot: {e}")

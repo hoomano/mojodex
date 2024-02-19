@@ -1,10 +1,8 @@
-name: ci 
+name: deploy-docs 
 on:
   push:
     branches:
-      - master 
       - main
-      - static_doc_site
 permissions:
   contents: write
 jobs:

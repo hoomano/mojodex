@@ -18,7 +18,7 @@ class HubspotExport(Resource):
     def __search_hubspot(self, search_object, properties, filterGroups):
         try:
             headers = {
-                'authorization': f"Bearer {os.environ['HUBSPOT_API_KEY']}",
+                'authorization': f"Bearer {os.environ['HUBSPOT_ACCESS_TOKEN']}",
                 'Content-Type': 'application/json'
                 }
             url = f"https://api.hubapi.com/crm/v3/objects/{search_object}/search"
@@ -138,7 +138,7 @@ class HubspotExport(Resource):
             url = f"https://api.hubapi.com/crm/v4/associations/{engagement_type}/{associated_object_type}/labels"
     
             headers = {
-            'authorization': f"Bearer {os.environ['HUBSPOT_API_KEY']}",
+            'authorization': f"Bearer {os.environ['HUBSPOT_ACCESS_TOKEN']}",
             'Content-Type': 'application/json'
             }
 
@@ -156,7 +156,7 @@ class HubspotExport(Resource):
             url = f"https://api.hubapi.com/crm/v3/objects/{engagement_type}"
 
             headers = {
-            'authorization': f"Bearer {os.environ['HUBSPOT_API_KEY']}",
+            'authorization': f"Bearer {os.environ['HUBSPOT_ACCESS_TOKEN']}",
             'Content-Type': 'application/json'
             }
 

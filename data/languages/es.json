@@ -122,7 +122,11 @@
             },
             "editEmoji": "🎙️",
             "editButton": "Editar",
-            "exportButton": "Exportar"
+            "exportButton": "Exportar",
+            "hubspotIntegration": {
+                "saveAs": "Guardar como ",
+                "in": " en "
+            }
         },
         "todosTab": {
             "title": "Pendientes",

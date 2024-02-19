@@ -122,7 +122,11 @@
 			},
 			"editEmoji": "🎙️",
 			"editButton": "Edit",
-			"exportButton": "Export"
+			"exportButton": "Export",
+			"hubspotIntegration":{
+				"saveAs": "Save as ",
+				"in": " in "
+			}
 		},
 		"todosTab": {
 			"title": "Todos",

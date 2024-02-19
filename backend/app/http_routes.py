@@ -52,6 +52,7 @@ from routes.home_chat import HomeChat
 from routes.tool import Tool
 from routes.task_tool import TaskTool
 from routes.task_json import TaskJson
+from routes.integrations.hubspot import Hubspot
 
 class HttpRouteManager:
     def __init__(self, api):
@@ -110,3 +111,4 @@ class HttpRouteManager:
         api.add_resource(Tool, "/tool")
         api.add_resource(TaskTool, "/task_tool")
         api.add_resource(TaskJson, "/task_json")
+        api.add_resource(Hubspot, "/integrations/hubspot")

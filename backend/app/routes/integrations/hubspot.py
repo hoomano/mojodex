@@ -183,8 +183,7 @@ class Hubspot(Resource):
             ],
             "properties": {
                 "hs_note_body": text,
-                "hs_timestamp": midnight_utc.isoformat(),
-                #"hubspot_owner_id": "11349275740" => Facultative : TODO: check if a user could set it to its account parameter so that it is automatically set
+                "hs_timestamp": midnight_utc.isoformat()
             }
             }
 

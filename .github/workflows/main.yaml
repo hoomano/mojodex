@@ -9,6 +9,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
+      - run: touch .nojekyll
       - uses: actions/checkout@v4
       - name: Configure Git Credentials
         run: |

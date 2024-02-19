@@ -9,13 +9,13 @@ import requests
 import json
 import os
 
-class HubspotExport(Resource):
+class Hubspot(Resource):
    
     def __init__(self):
-        HubspotExport.method_decorators = [authenticate()]
+        Hubspot.method_decorators = [authenticate()]
 
 
-    def __search_hubspot(self, search_object, properties, filterGroups):
+    def __search_hubspot(self, search_object, properties, filterGroups, n_search):
         try:
             headers = {
                 'authorization': f"Bearer {os.environ['HUBSPOT_ACCESS_TOKEN']}",
@@ -24,7 +24,7 @@ class HubspotExport(Resource):
             url = f"https://api.hubapi.com/crm/v3/objects/{search_object}/search"
 
             payload={
-                        "limit": 3,
+                        "limit": n_search,
                         "properties": properties + ["id"],
                         "filterGroups": filterGroups
                     }
@@ -39,12 +39,13 @@ class HubspotExport(Resource):
 
     # Search CRM company / contact or deal on the go from provided search string
     def get(self, user_id):
-        error_message = "Error in HubspotExport get method"
+        error_message = "Error in Hubspot get method"
        
         # data
         try:
             timestamp = request.args["datetime"]
             search_type = request.args["search_type"]
+            n_results = int(request.args["n_results"]) if "n_results" in request.args else 10
             # ensure search_type is among ["companies", "contacts", "deals"]
             if search_type not in ["companies", "contacts", "deals"]:
                 log_error(f"{error_message} : search_type must be among ['companies', 'contacts', 'deals']")
@@ -70,7 +71,7 @@ class HubspotExport(Resource):
                                 ]
                             }
                         ]
-                results = self.__search_hubspot(search_type, properties, filtersGroup)
+                results = self.__search_hubspot(search_type, properties, filtersGroup, n_results)
                
                 companies_list = [{"name": f"{result['properties']['name']}",
                                  "id": result['id']} for result in results]
@@ -101,7 +102,7 @@ class HubspotExport(Resource):
 
                         ]
 
-                results = self.__search_hubspot(search_type, properties, filtersGroup)
+                results = self.__search_hubspot(search_type, properties, filtersGroup, n_results)
 
                 contacts_list = [{"name":f"{result['properties']['firstname']} {result['properties']['lastname']} - {result['properties']['email']}",
                                  "id": result['id']} for result in results]
@@ -123,7 +124,7 @@ class HubspotExport(Resource):
                             }
                         ]
                 
-                results = self.__search_hubspot(search_type, properties, filtersGroup)
+                results = self.__search_hubspot(search_type, properties, filtersGroup, n_results)
 
                 deals_list = [{"name":f"{result['properties']['dealname']}",
                                "id": result['id']} for result in results]
@@ -200,7 +201,7 @@ class HubspotExport(Resource):
 
     # Route to send as an engagement to Hubspot
     def put(self, user_id):
-        error_message = "Error in HubspotExport put method"
+        error_message = "Error in Hubspot put method"
         if not request.is_json:
             log_error(f"{error_message} : Request must be JSON")
             return {"error": "Request must be JSON"}, 400

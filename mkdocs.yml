@@ -9,6 +9,7 @@ theme:
   favicon: images/mojodex_logo_4040.png
   features:
     - content.code.copy
+    - navigation.sections    
     
   palette:
 

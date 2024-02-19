@@ -3,6 +3,8 @@
 
 Mojodex is an open-source digital assistant platform to help companies and individuals build their own AI-powered assets.
 
+It's a complete platform to build, deploy and manage your very own digital assistants.
+
 It is designed to be __task-oriented__, __configurable__, and __personalizable__. Mojodex is API-centric, allowing for easy integration with other tools and is available as a web application, mobile application, and Chrome extension.
 
 > 🌟 __Our motivation is to help in creating a baseline on how to create enterprise level agents__
@@ -11,20 +13,60 @@ It is designed to be __task-oriented__, __configurable__, and __personalizable__
 
 Mojodex was created to foster the adoption of digital assistants in businesses. The reasons for its open-source release are:
 
-- **Enable Enterprises to Building their AI Assets** : To support companies in creating their own refined prompts, data wheel pipeline of high quality interaction with experts.
-- **On Premise & Tailor-made** : Providing an open-source platform for complete control over the software and data ownership, development, hosting, and evolution.
-- **Boosting Adoption** : Experts and tech team guided teamwork to tailor their assistant to their needs, fostering adoption.
+- **Enable Enterprises to Building their own AI Assets**: To support companies in creating their refined prompts and data wheel pipeline of high quality interaction with experts.
+- **On Premise & Tailor-made**: Providing an open-source platform for complete control over the software and data, development, hosting, and evolution.
+- **Boosting Internal Adoption**: Business experts and tech team teamwork to tailor your company's digital assistants, tailored to their needs, fostering adoption.
 
 A highly valuable side effect of implementing a digital assistant platform is **Process Optimization**. Configuring their own digital assistant implies to optimizing a company's internal processes, promoting long-term development.
 
-## How to get started?
+## Demo Video
 
-### Quick Demo Video
+🎥 3'55:
 
 
 [![Mojodex Demo](https://img.youtube.com/vi/9m7AZdd5Qyw/0.jpg)](https://www.youtube.com/watch?v=9m7AZdd5Qyw)
 
+## Quick Start
 
+### Installation
+
+[🧑‍💻 Tech team]: [ Install Plaform Core](https://github.com/hoomano/mojodex)
+
+See the installation video guide here: [https://youtu.be/86_S_cXhhTA](https://youtu.be/86_S_cXhhTA)
+
+[![Mojodex Install](https://img.youtube.com/vi/86_S_cXhhTA/0.jpg)](https://youtu.be/86_S_cXhhTA)
+
+
+- __Optional__ [🧑‍💻 Tech team]: [Build your local mobile app](https://github.com/hoomano/mojodex_mobile)
+
+### Getting started: Easy steps to get started with Mojodex
+
+Goal: Get a good understanding of the platform
+
+[🧑‍🤝‍🧑 Whole Team]: Test the existing examples on the web app and the mobile app
+
+1. Try the demo on your local install
+> - Prepare a meeting recap
+> - Write a LinkedIn Post
+> - Prepare a sales pitch
+> - Build good understanding of the platform
+
+2. [Configure a Sales Assistant Example](./2._Make_Your_Own_Assistant/sales_assistant_example/index.md)
+> - Configure your own sales assistant using the provided example
+> - Define the tasks the assistant will help with
+> - Learn how to iterate on the configuration of the platform
+
+### To go further: Work on your long term AI strategy
+
+Goal: Build your company's future-proof investment with AI.
+
+[👩‍💼🧑‍💼 Whole Team]: Define the high level goals and scope of the project – process optimization, reducing mental load, increase productivity, etc. – and the User Team
+
+[👩‍💼🧑‍💼 Whole Team]: Define the metrics to measure the success of the project.
+
+[👩‍💼🧑‍💼 Whole Team]: Define the tasks the assistant will help with
+
+> 🌟 This is the kind of project that makes a team working 
 
 ## Key Features
 

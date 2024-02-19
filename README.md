@@ -1,5 +1,5 @@
 # ![mojodex](/webapp/public/images/logo/mojodex_logo_4040.png) MOJODEX
-[![](https://dcbadge.vercel.app/api/server/zJhWkwyS?style=flat)](https://discord.gg/zJhWkwyS)
+[![](https://dcbadge.vercel.app/api/server/zJhWkwyS?style=flat)](https://discord.gg/ARjCZ7cTK3)
 [![Twitter Follow](https://img.shields.io/twitter/follow/HoomanoCompany?style=social)](https://twitter.com/HoomanoCompany)
 
 

@@ -17,7 +17,7 @@ MISTRAL_API_KEY=your-api-key
 
 ## Coverage
 
-> For the assessment, `mistral-medium`has been tested on the most challenging task: `"ANSWER_USER"`, which is the most challenging task.
+> For the assessment, `mistral-medium`has been tested on feature: `"ANSWER_USER"`, which is the most challenging feature.
 > 
 > See blog post for a better understanding of the challenge: [Advanced Prompting Strategies for Digital Assistant Development](https://blog.hoomano.com/advanced-prompting-strategies-for-digital-assistant-development-b6698996954f)
 

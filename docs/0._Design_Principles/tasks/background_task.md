@@ -9,36 +9,42 @@ Those are often API calls, but can also be database queries, file reading, etc.
 Tasks are provided with tools at configuration.
 
 Here are implemented tools for now:
-- Google search: the agent can search for information on the web
-- Internal Memory: the agent can search for past task restults
+
+| Tool | Label | Description |
+| --- | --- | --- |
+| Google search | `google_search` | the agent can search for information on the web |
+| Internal Memory | `internal_memory` | the agent can search for past task restults |
 
 ## Concepts
 
 ### Tool
 A tool is defined by:
+
 - a name, identifying it both in the database and in the background code
 - a definition, explaining what the tool does
 
-> Example Tool: 
-> ```json
-> {
->     "name": "google_search",
->     "definition": "Make some research on Google"
-> }
-> ```
+Example Tool:
+
+```json
+{
+    "name": "google_search",
+    "definition": "Make some research on Google"
+}
+```
 
 ### Task Tool Association
 A task tool is the association of a task with a tool. This association includes a task, a tool and a description of how the tool is used in the task ("usage_description").
 
-> Example for tool `google_search` used in task `qualify_lead`:
-> ```json
-> {
-> ...
->     "usage_description": "Use this tool to search for information that could help you qualify the lead.\n Start with a general research about the company to find its industry. A google query made only of the company name is usually the best way to go at first. Make sure you spell the company name correctly. Then look for the company's industry trends, news, and recent events."
-> }
->```
+Example for tool `google_search` used in task `qualify_lead`:
+```json
+{
+...
+    "usage_description": "Use this tool to search for information that could help you qualify the lead.\n Start with a general research about the company to find its industry. A google query made only of the company name is usually the best way to go at first. Make sure you spell the company name correctly. Then look for the company's industry trends, news, and recent events."
+}
+```
 
 ### Task Tool Execution
+
 A Task Tool Execution refers to the execution of a tool in background during a task run time as decided by the assistant.
 
 It is associated to the running User Task Execution and the selected Task Tool Association. It also references the user's approval datetime as required for launching the tool execution.
@@ -46,6 +52,7 @@ It is associated to the running User Task Execution and the selected Task Tool A
 ### Task Tool Query
 A tool can be used several times in 1 execution. Each time it is used, a Task Tool Query is created. The maxiumum number of queries is defined by the tool itself.
 A Task Tool Query contains:
+
 - the query as json data containing all parameters used for the tool call
 - the result date
 - the result as a list of json data
@@ -65,6 +72,7 @@ This is defined in the `data/prompts/tasks/run.txt` prompt template:
 
 
 If the assistant decides to use a tool, this decision will come along with:
+
 - the name of the tool to use
 - an explanation of how it intends to use the tool, addressed to the user
 
@@ -80,6 +88,7 @@ From same file:
 ```
 
 In this case, the assistant's response is managed by `backend/app/models/tasks/task_tool_manager.py` that will:
+
 - remove the tags from the assistant's response to extract tool name and the assistant's message to the user
 - create a Task Tool Execution in the database
 
@@ -103,13 +112,15 @@ class TaskToolManager:
 
 This response is sent to the frontend and the user must then approve the assistant's tool usage request to trigger tool execution in background. This is done through a call to route POST `backend/app/routes/task_tool_execution.py`. 
 
-![ask_for_tool_execution_approval](../../../docs/images/task_execution/ask_for_tool_execution_approval.PNG)
+![ask_for_tool_execution_approval](/images/task_execution/ask_for_tool_execution_approval.PNG)
 
 This approval call:
+
 - sets the user's approval datetime in the Task Tool Execution object in the database
 - triggers the tool execution in background
 
-> Note: Background tasks have been implemented on mobile app only for now. The web application still misses route call to approve tool usage request.
+!!! info
+    Background tasks have been implemented on mobile app only for now. The web application still misses route call to approve tool usage request.
 
 > If the user does not approve the tool usage request, the interaction will continue as usual.
 
@@ -166,8 +177,8 @@ Once generated, the message is stored in database as any other assistant message
 #### 3. Notify user
 If push notifications are enabled, a notification title and text will also be generated and sent to the user's mobile app to inform them that the task is ready to be continued.
 
-> The task interaction then go on as usual. The assistant is always provided with the available tools and can decide at any step to re-use a tool, for example, if the user asks it to.
+> The task interaction then goes on as usual. The assistant is always provided with the available tools and can decide at any step to re-use a tool, for example, if the user asks it to.
 
 
-Once the toll execution process is over, the queries can be retrieved and displayed to the user.
-![task_result_with_tool_sources](../../../docs/images/task_execution/task_result_with_tool_sources.jpeg)
+Once the tool execution process is over, the queries can be retrieved and displayed to the user.
+![task_result_with_tool_sources](/images/task_execution/task_result_with_tool_sources.jpeg)

@@ -23,6 +23,9 @@ class MojodexMistralAI():
         self.api_key = mistral_conf["api_key"]
         self.model = mistral_conf["api_model"]
         self.label = label
+
+        self.client = MistralClient(api_key=self.api_key)
+
         # if dataset_dir does not exist, create it
         if not os.path.exists(self.dataset_dir):
             os.mkdir(self.dataset_dir)
@@ -58,7 +61,6 @@ class MojodexMistralAI():
                     logging.warning("n_responses must be 1 if stream is True")
 
                 
-                client = MistralClient(api_key=self.api_key)
 
                 # Convert messages into Mistral ChatMessages
                 if len(messages) == 1:
@@ -66,7 +68,7 @@ class MojodexMistralAI():
                 else:
                     messages = [ChatMessage(role=message['role'], content=message['content']) for message in messages]
 
-                stream_response = client.chat_stream(model=self.model, messages=messages, temperature=temperature, max_tokens=max_tokens)
+                stream_response = self.client.chat_stream(model=self.model, messages=messages, temperature=temperature, max_tokens=max_tokens)
             
                 if stream:
                     complete_text = ""

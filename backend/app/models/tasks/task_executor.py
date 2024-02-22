@@ -56,7 +56,7 @@ class TaskExecutor:
                 db_message = self.save_mojo_message_to_db(message, 'mojo_message')
                 message["message_pk"] = db_message.message_pk
                 message["audio"] = self.message_will_have_audio(message)
-
+               
                 socketio_message_sender.send_mojo_message_with_ack(message, self.session_id, event_name='draft_message')
                 if message["audio"]:
                     self.generate_voice(db_message)

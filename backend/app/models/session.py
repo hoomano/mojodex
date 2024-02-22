@@ -108,8 +108,8 @@ class Session:
     def _get_language(self):
         session_language = db.session.query(MdSession.language) \
             .filter(MdSession.session_id == self.id) \
-            .first()[0]
-        return session_language if session_language else self._get_user().language_code
+            .first()
+        return session_language[0] if session_language else None
 
     def _mojo_token_callback(self, partial_text):
         try:
@@ -157,6 +157,7 @@ class Session:
 
     def receive_human_message(self, event_name, message):
         try:
+            print(f"🟢 user_message: {message}")
             app_version = version.parse(message["version"]) if "version" in message else version.parse("0.0.0")
             if self._get_number_of_messages() == 0 and self._get_session_db().starting_mode == 'chat':
                 sender = "user"
@@ -168,7 +169,7 @@ class Session:
 
             # Home chat session here ??
             # with response_message = ...
-            if "home_chat_pk" in message and message["home_chat_pk"]:
+            if "origin" in message and message["origin"] == "home_chat":
                 response_event_name, response_message = self.__manage_home_chat_session(message, app_version)
             else:
                 # For now only task sessions
@@ -188,7 +189,7 @@ class Session:
                 if response_message["audio"]:
                     output_filename = os.path.join(self.__get_mojo_messages_audio_storage(), f"{message_pk}.mp3")
                     try:
-                        self.voice_generator.text_to_speech(response_message["text"], self._get_language(), self.user_id, output_filename)
+                        self.voice_generator.text_to_speech(response_message["text"], None, self.user_id, output_filename)
                     except Exception as e:
                         db_message.in_error_state = datetime.now()
                         log_error(str(e), session_id=self.id)
@@ -202,7 +203,8 @@ class Session:
 
     def __manage_home_chat_session(self, message, app_version):
         try:
-            home_chat_manager = HomeChatManager(session_id=self.id, user=self._get_user(), mojo_token_callback=self._mojo_token_callback)
+            home_chat_manager = HomeChatManager(session_id=self.id, user=self._get_user(), platform=self.__get_platform(),
+                                                 voice_generator=self.voice_generator, mojo_messages_audio_storage=self.__get_mojo_messages_audio_storage(), mojo_token_callback=self._mojo_token_callback)
             response_event_name, response_message = home_chat_manager.response_to_user_message(app_version, user_message=message)
             return response_event_name, response_message
         except Exception as e:

@@ -1,0 +1,17 @@
+You are currently helping the user with task {{task.task_pk}}.
+{{task.name_for_system}}: {{task.description}}
+
+PRIMARY INFO NEEDED TO COMPLETE THE TASK
+{{ task.infos_to_extract | tojson(indent=4) }}
+
+TASK OUTPUT FORMAT
+{{ title_start_tag }}{{task.output_format_instruction_title}}{{ title_end_tag }}
+{{ draft_start_tag }}{{task.output_format_instruction_draft}}{{ draft_end_tag }}
+
+TASK INSTRUCTION
+{{task.final_instruction}}
+
+{%if task_tool_associations%}TOOLS TO USE
+{%for task_tool_association in task_tool_associations %}{{task_tool_association.tool_name}}: {{task_tool_association.usage_description}}
+{%endfor%}{%endif%}
+{%if audio_message%}The user's messages are transcriptions of audio messages.{%endif%}

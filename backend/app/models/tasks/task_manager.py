@@ -197,6 +197,8 @@ class TaskManager:
             mojo_message = self.__answer_user(
                 app_version, user_message, tag_proper_nouns=tag_proper_nouns)
 
+            if mojo_message is not None:
+                mojo_message["user_task_execution_pk"] = self.task_execution.user_task_execution_pk
             return 'mojo_message', mojo_message
         except Exception as e:
             raise Exception(
@@ -370,6 +372,7 @@ class TaskManager:
 
     def __mojo_message_to_db(self, mojo_message, event_name):
         try:
+            mojo_message["user_task_execution_pk"] = self.task_execution.user_task_execution_pk
             db_message = MdMessage(session_id=self.session_id, sender='mojo', event_name=event_name,
                                    message=mojo_message,
                                    creation_date=datetime.now(), message_date=datetime.now())

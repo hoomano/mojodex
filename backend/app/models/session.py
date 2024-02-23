@@ -254,8 +254,6 @@ class Session:
             message = MdMessage(session_id=self.id, sender=sender, event_name=event_name, message=message,
                                 creation_date=datetime.now(), message_date=message_date)
             db.session.add(message)
-            db.session.flush()
-            db.session.refresh(message)
             db.session.commit()
             return message
         except Exception as e:

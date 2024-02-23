@@ -19,19 +19,16 @@ class AssistantMessageGenerator(ABC):
         self.mojo_messages_audio_storage = mojo_messages_audio_storage
         self.mojo_token_callback = mojo_token_callback
         self.language = None
+        self.running_task = None
+        self.running_user_task = None
+        self.running_user_task_execution = None
+        self.running_task_displayed_data = None
         self.task_input_manager = TaskInputsManager(session_id, self.remove_tags_from_text)
         self.task_tool_manager = TaskToolManager(session_id, self.remove_tags_from_text)
         self.task_executor = TaskExecutor(session_id, self.user_id, self._mojo_message_to_db, self._message_will_have_audio, self._generate_voice)
         self.logger = MojodexBackendLogger(f"{logger_prefix} -- session {session_id}")
 
-
-    @abstractmethod
-    def _get_user_task_execution_pk():
-        raise NotImplementedError
     
-    @abstractmethod
-    def _get_running_task_name():
-        raise NotImplementedError
 
     @staticmethod
     def remove_tags_from_text(text, start_tag, end_tag):
@@ -97,7 +94,7 @@ class AssistantMessageGenerator(ABC):
         
     def _mojo_message_to_db(self, mojo_message, event_name):
         try:
-            user_task_execution_pk = self._get_user_task_execution_pk()
+            user_task_execution_pk = self.running_user_task_execution.user_task_execution_pk if self.running_user_task_execution else None
             if user_task_execution_pk:
                 mojo_message["user_task_execution_pk"] = user_task_execution_pk
             db_message = MdMessage(session_id=self.session_id, sender='mojo', event_name=event_name,
@@ -118,8 +115,8 @@ class AssistantMessageGenerator(ABC):
         try:
             self.voice_generator.text_to_speech(db_message.message["text"], self.language, self.user_id,
                                                 output_filename,
-                                                user_task_execution_pk=self._get_user_task_execution_pk(),
-                                                task_name_for_system=self._get_running_task_name())
+                                                user_task_execution_pk=self.running_user_task_execution.user_task_execution_pk if self.running_user_task_execution else None,
+                                                task_name_for_system=self.running_task.name_for_system if self.running_task else None,)
 
         except Exception as e:
             db_message.in_error_state = datetime.now()

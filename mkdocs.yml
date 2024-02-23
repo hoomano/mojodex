@@ -27,7 +27,10 @@ theme:
         icon: material/brightness-4
         name: Switch to light mode
 
-markdown_extensions:
+markdown_extensions:r
+  - def_list
+  - pymdownx.tasklist:
+      custom_checkbox: true
   - pymdownx.highlight:
       anchor_linenums: true
       line_spans: __span
@@ -37,7 +40,6 @@ markdown_extensions:
   - pymdownx.superfences
   - admonition
   - pymdownx.details
-  - pymdownx.superfences
 
 extra_css:
   - stylesheets/extra.css

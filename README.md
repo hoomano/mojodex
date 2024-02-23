@@ -7,7 +7,9 @@ Mojodex is an open-source digital assistant platform to help companies and indiv
 
 It is designed to be task-oriented, configurable, and personalizable. Mojodex is API-centric, allowing for easy integration with other tools and is available as a web application, mobile application, and Chrome extension.
 
-> __Our motivation is to help in creating a baseline on how to create enterprise level agents__
+📚 Complete doc here: [https://hoomano.github.io/mojodex/](https://hoomano.github.io/mojodex/)
+
+> __Our motivation is to help companies build enterprise level agents__
 
 ## Demo
 

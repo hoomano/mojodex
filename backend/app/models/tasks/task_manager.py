@@ -16,6 +16,7 @@ from models.tasks.task_tool_manager import TaskToolManager
 
 from app import socketio_message_sender
 from models.llm_calls.mojodex_openai import MojodexOpenAI
+#from models.llm_calls.mojodex_mistral import MojodexMistralAI, mistral_medium_conf
 from models.produced_text_manager import ProducedTextManager
 from azure_openai_conf import AzureOpenAIConf
 from packaging import version
@@ -27,6 +28,9 @@ class TaskManager:
 
     answer_user_prompt = "/data/prompts/tasks/run.txt"
     user_answerer = MojodexOpenAI(AzureOpenAIConf.azure_gpt4_turbo_conf, "ANSWER_USER", AzureOpenAIConf.azure_gpt4_32_conf)
+    
+    # EXPERIMENTAL: MistralAI see doc [here](docs/llm_providers/mistral.md)
+    #user_answerer = MojodexMistralAI(mistral_medium_conf, "ANSWER_USER")
 
     def __init__(
         self, user, session_id, platform, voice_generator, mojo_messages_audio_storage,

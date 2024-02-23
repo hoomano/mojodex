@@ -7,7 +7,7 @@ from mojodex_core.entities import *
 from models.session import Session
 from models.user_audio_file_manager import UserAudioFileManager
 from packaging import version
-
+from sqlalchemy.orm.attributes import flag_modified
 
 class UserMessage(Resource):
     general_backend_error_message = "Oops, something weird has happened. We'll help you by email!"
@@ -110,8 +110,8 @@ class UserMessage(Resource):
                         .order_by(MdMessage.creation_date.desc()) \
                         .first()
                     if previous_agent_message:
-                        
                         if previous_agent_message.message and "user_task_execution_pk" in previous_agent_message.message:
+
                             user_task_execution_pk = previous_agent_message.message["user_task_execution_pk"]
                             result = db.session.query(MdUserTaskExecution, MdTask) \
                                 .filter(MdUserTaskExecution.user_task_execution_pk == user_task_execution_pk) \
@@ -182,6 +182,9 @@ class UserMessage(Resource):
 
                     message.message = {"text": decoded_text, "message_pk": message.message_pk,
                                        "audio_duration": file_duration, 'message_id': message_id}
+                
+                if user_task_execution_pk:
+                        message.message["user_task_execution_pk"] = user_task_execution_pk
                 db.session.flush()
 
                 session_db = db.session.query(MdSession).filter(MdSession.session_id == session_id).first()

@@ -36,7 +36,7 @@ class TaskExecutor:
                 self.logger.debug(f"ProducedTextManager.draft_start_tag in mojo_text")
                 produced_text_manager = ProducedTextManager(self.session_id, self.user_id, user_task_execution_pk, use_draft_placeholder=use_draft_placeholder, task_name_for_system=task.name_for_system)
                 produced_text, produced_text_version = produced_text_manager.extract_and_save_produced_text(
-                    mojo_text, text_type_pk=task.output_text_type_fk, user_message=user_message)
+                    mojo_text, text_type_pk=task.output_text_type_fk if task else None, user_message=user_message)
                 text_type = db.session.query(MdTextType.name).filter(
                     MdTextType.text_type_pk == produced_text_version.text_type_fk).first()[0]
 
@@ -46,9 +46,9 @@ class TaskExecutor:
                     "produced_text_pk": produced_text.produced_text_pk,
                     "produced_text_version_pk": produced_text_version.produced_text_version_pk,
                     "user_task_execution_pk": user_task_execution_pk,
-                    "task_name": task_displayed_data.name_for_user,
-                    "task_pk": task.task_pk,
-                    "task_icon": task.icon,
+                    "task_name": task_displayed_data.name_for_user if task_displayed_data else None,
+                    "task_pk": task.task_pk if task else None,
+                    "task_icon": task.icon if task else None,
                     "text_type": text_type,
                     "text_with_tags": self.execution_start_tag+mojo_text+self.execution_end_tag,
                     "text": ProducedTextManager.remove_tags(mojo_text)

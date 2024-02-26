@@ -112,7 +112,7 @@ class TaskToolManager:
 
 This response is sent to the frontend and the user must then approve the assistant's tool usage request to trigger tool execution in background. This is done through a call to route POST `backend/app/routes/task_tool_execution.py`. 
 
-![ask_for_tool_execution_approval](/images/task_execution/ask_for_tool_execution_approval.PNG)
+![ask_for_tool_execution_approval](../../images/task_execution/ask_for_tool_execution_approval.PNG)
 
 This approval call:
 
@@ -181,4 +181,4 @@ If push notifications are enabled, a notification title and text will also be ge
 
 
 Once the tool execution process is over, the queries can be retrieved and displayed to the user.
-![task_result_with_tool_sources](/images/task_execution/task_result_with_tool_sources.jpeg)
+![task_result_with_tool_sources](../../images/task_execution/task_result_with_tool_sources.jpeg)

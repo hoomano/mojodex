@@ -9,13 +9,13 @@ We build this "task-centric" assistant to provide the best help to the user, tai
 ## Mojodex usage
 A Mojodex user has access to the task corresponding to their profile. This way, the assistant is completely tailored to the user's needs and can provide the best help.
 
-![tasks](../images/tasks/tasks.png)
+![tasks](../../images/tasks/tasks.png)
 
 On the web or mobile app interface, the user directly selects the task they want to accomplish. This makes it easy for the user to ask for the help they need without having to think about how to phrase their request.
 The assistant then guides them through the process, asking questions in a conversational way though a chat interface.
 
-![starting_task](../images/tasks/starting_task.png)
+![starting_task](../../images/tasks/starting_task.png)
 
 Once the assistant collected all the necessary information, it starts drafting the document resulting from the task. The user can then review and ask for any edit in the chat or directly modify the document.
 
-![edit_document](../images/tasks/edit_document.png)
+![edit_document](../../images/tasks/edit_document.png)

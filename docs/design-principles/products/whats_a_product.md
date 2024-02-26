@@ -17,7 +17,7 @@ A product has:
 - an eventual **ID** that can be used to identify it in the payment system (Stripe or Apple implemented for now)
 - a **product_category** to which it belongs
 
-![purchasable_product](../images/products/purchasable_product.png)
+![purchasable_product](../../images/products/purchasable_product.png)
 
 A product is refered as a *subscription* when:
 - it has no limit number of tasks
@@ -43,14 +43,14 @@ A product category has:
 - a **visible** boolean status : flag to indicate if it's visible or not from the user's interface at the time to choose a category
 - an **implicit goal**: This goal will be affected to the user account as their initial goal. This goal is then used in the assistant's prompt to drive the assistance by this goal.
 
-![product_categories](../images/products/product_categories.png)
+![product_categories](../../images/products/product_categories.png)
 
 ### Purchase
 A purchase is the relation between a user and a product. It is created when a product is affected to a user, no matter if it's a free trial, a consumable or a subscription.
 The purchase object contains metadata about the purchase, such as dates, status, ids...
 The purchase will also be used to tag any [user task execution](../tasks/execute_task.md) to keep track of the user's activity.
 
-![manage_plans_page](../images/products/manage_plans_page.png)
+![manage_plans_page](../../images/products/manage_plans_page.png)
 
 ### User Task
 When a new purchase is created (e.g. a product is affected to a user), the user is granted access to the tasks of the product. This creates an association between the user and each task of the product. This association is stored in the dedicated DB table `md_user_task`.
@@ -63,7 +63,7 @@ When a user creates an account, they go through a process we call "onboarding". 
 - affect them a free trial product
 - later suggest them adapted products
 
-![onboarding_product_categories](../images/products/onboarding_categories.png)
+![onboarding_product_categories](../../images/products/onboarding_categories.png)
 
 ### Free trial
 When a user selects a product category at onboarding, they are automatically affected a free trial product.

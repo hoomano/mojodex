@@ -1,4 +1,4 @@
-# Mojodex Configuration Guide
+# Sales Assistant Configuration Example
 
 In this documentation, we will go through the process of configuring the Mojodex platform for a specific use case.
 
@@ -82,7 +82,7 @@ With the scope and tasks designed, we can implement the configuration in Mojodex
 
 First, we need to setup the category for the Sales Assistant.
 
-> ℹ️ See the environment setup documentation to get your token. [Environment file](../../../.env.example)
+> ℹ️ See the environment setup documentation to get your token: `.env.example`
 >
 > `BACKOFFICE_SECRET=<your_token>`
 
@@ -143,7 +143,12 @@ curl -X 'PUT' \
 ### 3.3 Setup the tasks
 
 #### 3.3.1 Create the tasks
-The tasks are described in the [`tasks`](./tasks/) folder of the repository. Each task is a JSON file that describes the task and its parameters.
+The tasks are described in the `tasks` folder of the repository. Each task is a JSON file that describes the task and its parameters.
+
+- Qualify Leads: [Qualify Leads](../../guides/sales_assistant_example/tasks/qualify_lead.json)
+- Meeting Recap: [Meeting Recap](../../guides/sales_assistant_example/tasks/meeting_recap.json)
+- Event Conversation Recap: [Event Conversation Recap](../../guides/sales_assistant_example/tasks/event_conversation_recap.json)
+- Follow-up Email: [Follow-up Email](../../guides/sales_assistant_example/tasks/follow_up_email.json)
 
 ```shell
 for task in tasks/*.json; do

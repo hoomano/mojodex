@@ -1,11 +1,11 @@
 # Create a new product
 
-> Read [What's a product documentation](../../products/whats_a_product.md) before creating a new product.
+> Read [What's a product documentation](../../design-principles/products/whats_a_product.md) before creating a new product.
 
 ## Creating a product category
 - STEP 1: Create the json file
 ```
-cp ./docs/configure_assistant/products/product_category_spec.json ./docs/configure_assistant/products/products_json/my_product_category.json
+cp ./docs/guides/products/product_category_spec.json ./docs/guides/products/products_json/my_product_category.json
 ```
 Fill the json values of my_product_category.json with the ones fitting your need for this product category.
 
@@ -19,13 +19,13 @@ curl -X 'PUT' \
   -H 'Authorization: <BACKOFFICE_SECRET>' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
-  -d @./docs/configure_assistant/products/products_json/my_product_category.json
+  -d @./docs/guides/products/products_json/my_product_category.json
 ```
 
 ## Creating a product
 - STEP 1: Create the json file
 ```
-cp ./docs/configure_assistant/products/product_spec.json ./docs/configure_assistant/products/products_json/my_product.json
+cp ./docs/guides/products/product_spec.json ./docs/guides/products/products_json/my_product.json
 ```
 
 Fill the json values of my_product.json with the ones fitting your need for this product.
@@ -39,10 +39,10 @@ curl -X 'PUT' \
     -H 'Authorization: <BACKOFFICE_SECRET>' \
     -H 'accept: application/json' \
     -H 'Content-Type: application/json' \
-    -d @./docs/configure_assistant/products/products_json/my_product.json
+    -d @./docs/guides/products/products_json/my_product.json
 ```
 
-> Remember a product category must have 1 free trial product (as defined in the [What's a product documentation](../../products/whats_a_product.md)). This product will be the one associated by default to users selecting the category at onboarding. If no free trial product is defined, the users will encounter an error at onboarding.
+> Remember a product category must have 1 free trial product (as defined in the [What's a product documentation](../../design-principles/products/whats_a_product.md)). This product will be the one associated by default to users selecting the category at onboarding. If no free trial product is defined, the users will encounter an error at onboarding.
 
 ## Associating tasks to the product
 Now that your product is created, you need to associate the tasks to the product. For each task you want to associate, run the following command in your terminal:
@@ -85,6 +85,6 @@ curl -X 'PUT' \
 > Remember, a user can't have 2 active subscriptions at the same time. If a user is affected with a new subscription, the previous one is automatically cancelled.
 
 #### Buying a product using an implemented payment service
-The user can also buy a product using Stripe or Apple in-app purchase flow, detailed in the [How it works documentation](../../products/how_it_works.md).
+The user can also buy a product using Stripe or Apple in-app purchase flow, detailed in the [How it works documentation](../../design-principles/products/how_it_works.md).
 
 

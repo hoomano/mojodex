@@ -1,6 +1,6 @@
 ---
 template: home.html
-title: Mojodex - the open source digital assistant 
+title: Mojodex - Open Source Enterprise Digital Assistant Platform
 hide:
   - toc
   - navigation

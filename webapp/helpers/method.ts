@@ -48,11 +48,11 @@ export const updateTaskMessageFormat = (
             source: message?.source,
             answer: message?.answer,
             messageFor: chatUsedFrom,
-            tool_execution_fk: message?.tool_execution_fk,
+            task_tool_execution_fk: message?.task_tool_execution_fk,
             showTaskMessage:
               chatUsedFrom === ChatUsedFrom.Task &&
               message?.question &&
-              message?.tool_execution_fk,
+              message?.task_tool_execution_fk,
           });
         }
       } else {

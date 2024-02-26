@@ -26,6 +26,7 @@ const ChatInput = ({
   textEditEnd,
   onSend,
 }: ChatInputType) => {
+
   const [message, setMessage] = useState(prompt);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 

@@ -89,8 +89,8 @@ nav:
         - Internal Memory: technical-architecture/existing_tools/internal_memory.md
       - Integration:
         - Hubspot: technical-architecture/integration/hubspot.md
-  - Guides:
-    - Overview: guides/index.md
+  - Build your own Digital Assistants:
+    - Getting Started: guides/index.md
     - Configure a new product: guides/products/new_product.md
     - Configure a new task: guides/tasks/new_task.md
     - New Task example: guides/tasks/example.md

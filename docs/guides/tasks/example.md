@@ -95,7 +95,7 @@ With this JSON file carefuly crafted, I just need to use the REST API to update 
 
 After a couple tries, Mia and I decided to tweak it a bit. We added a twist to the `"final_instruction"` to fit best with Mia's preferences.
 
-> ℹ️ To update a task, refer to the [backend REST API](/docs/openAPI/backend_api.yaml)
+> ℹ️ To update a task, refer to the [backend REST API](../../openAPI/backend_api.yaml)
 
 
 ### Conclusion

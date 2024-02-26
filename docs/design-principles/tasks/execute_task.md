@@ -32,7 +32,7 @@ The task execution process involves several concepts matching database tables.
 #### Produced text version
 - A `produced_text_version` represents a version of the result of a task execution. It contains the content of the result and the date of the version.
 
-![task_execution](../images/task_execution/task_execution_concepts.png)
+![task_execution](../../images/task_execution/task_execution_concepts.png)
 
 ## Task execution workflow
 
@@ -41,7 +41,7 @@ The task execution workflow is a sequence of events that occur from the moment a
 ### 1. User Task Execution Creation
 Creation of execution is done as soon as the user hits the card of the task they want to create.
 
-![select_task](../images/tasks/tasks.png)
+![select_task](../../images/tasks/tasks.png)
 
 This generates a call to PUT `/user_task_execution` to the backend (`backend/app/routes/user_task_execution.py`), specifying the `user_task` the user wants to execute.
 This call creates a User Task Execution instance in the database and a `session` if not already exists (which is the case in current Mojodex implementations).
@@ -63,7 +63,7 @@ class UserTaskExecution(Resource):
         db.session.commit()
 ```
 
-This call also returns the input fields to display to the user in the interface so that user have the instructions to start. Those input fields are the one defined in [the task's json configuration file as `json_input`](../configure_assistant/tasks/task_spec.json).
+This call also returns the input fields to display to the user in the interface so that user have the instructions to start. Those input fields are the one defined in [the task's json configuration file as `json_input`](../../guides/tasks/task_spec.json).
 ```python
 return {**{"user_task_execution_pk": task_execution.user_task_execution_pk,
                      "json_input": json_input,
@@ -72,9 +72,9 @@ return {**{"user_task_execution_pk": task_execution.user_task_execution_pk,
                      }, **session_creation[0]}, 200
 ```
 
-![task_instructions](../images/tasks/starting_task.png)
+![task_instructions](../../images/tasks/starting_task.png)
 
-![instanciate_user_task_execution](../images/task_execution/instanciate_user_task_execution.png)
+![instanciate_user_task_execution](../../images/task_execution/instanciate_user_task_execution.png)
 
 ### 2. User Task Execution Start
 From those instructions, there are 2 ways to start the task:
@@ -114,7 +114,7 @@ The `Task Manager` is the epicenter of task execution. The function `start_task_
 
 > The Task Manager detailled flow is described in part 3.
 
-![start_user_task_execution_from_form](../images/task_execution/start_user_task_execution_from_form.png)
+![start_user_task_execution_from_form](../../images/task_execution/start_user_task_execution_from_form.png)
 
 #### 2.2. User Task Execution Start from user message
 On the mobile app, the user sees the same instructions as in the web's form but is free to send to the assistant the first message they want. 
@@ -193,7 +193,7 @@ class Session:
 
 > The Task Manager detailled flow is described in part 3.
 
-![start_user_task_execution_with_message](../images/task_execution/start_user_task_execution_with_message.png)
+![start_user_task_execution_with_message](../../images/task_execution/start_user_task_execution_with_message.png)
      
 ### 3. Task Manager
 The `Task Manager` is the epicenter of task execution. It is responsible for managing the execution of a task by the user and the assistant.
@@ -363,4 +363,4 @@ When the user sends a message during a task execution, the message is sent to th
 
 > Note: the web application as it is now still uses a socketio event `user_message` to send user's message to the backend. We started moving from this to the REST API `/user_message` as described here for robustness and scalability reasons. Mobile application already uses the REST API.
 
-![complete_user_task_execution_flow](../images/task_execution/complete_user_task_execution_flow.png)
+![complete_user_task_execution_flow](../../images/task_execution/complete_user_task_execution_flow.png)

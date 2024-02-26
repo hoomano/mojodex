@@ -23,7 +23,7 @@ HttpRouteManager(api)
 
 The API routes are all defined in `backend/app/http_routes.py` in the `HttpRouteManager` class, pointing to related Flask Resources in `backend/app/routes/`.
 
-Here's the link to the [Backend API documentation - Swagger file](/docs/openAPI/backend_api.yaml).
+Here's the link to the [Backend API documentation - Swagger file](../openAPI/backend_api.yaml).
 
 ### Database Access
 The Backend uses SQLAlchemy to interact with the PostgreSQL database, ensuring efficient data management and storage. It can both read and write from the database.
@@ -116,7 +116,7 @@ def send_mojo_message_with_ack(self, message, session_id, event_name='mojo_messa
         if remaining_tries > 0:
             executor.submit(waiting_for_acknowledgment)
 ```
-![receving_messages](../docs/images/receiving_messages.png)
+![receving_messages](../images/receiving_messages.png)
 
 
 ## System 1/System 2 Abstraction

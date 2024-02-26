@@ -81,7 +81,7 @@ The result of the prompt is a json list of dictionnary defining To-Do items.
 
 This json is parsed and items are added to the database, related to the task.
 
-![extract_todos](../images/to-dos_flow/extract_todos.png)
+![extract_todos](../../images/to-dos_flow/extract_todos.png)
 
 ## 2. Organize
 Another hourly trigger of the scheduler takes care of reorganizing user's To-Do list every night to keep it up-to-date.
@@ -117,7 +117,7 @@ Provide the new scheduled date.
 
 This prompt outputs a json answer that can be parsed so that a new scheduling can be added to database.
 
-![reschedule_todos](../images/to-dos_flow/reschedule_todos.png)
+![reschedule_todos](../../images/to-dos_flow/reschedule_todos.png)
 
 ## 3. Remind the user
 Here comes Mojodex's scheduler again with another hourly trigger.
@@ -136,7 +136,7 @@ if emails:
 > Note that this trigger is only activated if the environment variable `AWS_ACCESS_KEY_ID` is set. This variable is used to send emails through AWS SES, only emails mechanism implemented in Mojodex for now.
 
 
-This triggers calls Mojodex's backend route `/todo_daily_emails` to retrieve all users whose local time is `DAILY_TODO_EMAIL_TIME` (defined in [env vars](../../.env.example)).
+This triggers calls Mojodex's backend route `/todo_daily_emails` to retrieve all users whose local time is `DAILY_TODO_EMAIL_TIME` (defined in *env vars* see: `.env.example`).
 
 
 For each of those users, the assistant will collect all To-Dos that are due for the coming day + the re-organization work it has done (cf step 4) and send those data to the background using route `events_generation` with parameter `'event_type': 'todo_daily_emails'`.
@@ -160,7 +160,7 @@ db.session.commit()
 [...]
 ```
 
-![remind_user](../images/to-dos_flow/remind_user.png)
+![remind_user](../../images/to-dos_flow/remind_user.png)
 
 ## 4. User actions
 Users can of course also act on their own To-Dos. For now, they can take 2 actions:
@@ -192,6 +192,6 @@ class Todos(Resource):
 ```
 
 
-![user_actions](../images/to-dos_flow/user_actions.png)
+![user_actions](../../images/to-dos_flow/user_actions.png)
 
-> Note: find every API specification in the [Backend API documentation](../openAPI/backend_api.yaml) and the [Background API documentation](../openAPI/background_api.yaml)
+> Note: find every API specification in the [Backend API documentation](../../openAPI/backend_api.yaml) and the [Background API documentation](../../openAPI/background_api.yaml)

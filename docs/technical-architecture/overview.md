@@ -13,16 +13,16 @@ This documentation provides an overview of Mojodex's architecture, exploring how
 [Learn more about the System 1/System 2 abstraction](https://en.wikipedia.org/wiki/Thinking,_Fast_and_Slow)
 
 ## Architecture Overview
-![Architecture Overview](images/architecture_overview.png)
+![Architecture Overview](../images/architecture_overview.png)
 
 ## Components
 | Component    | Role                                      | Documentation Link                            |
 |--------------|-------------------------------------------|-----------------------------------------------|
-| Backend      | Communication hub for real-time dialogue and management of application business logic. Mojodex's Backend serves as the digital counterpart to System 1 thinking. | [Backend Documentation](../backend/README.md)  |
-| Background   | Handles intensive tasks behind-the-scenes. Useful for Long-Running Processes and Batch Data Processing. Mojodex's Background embodies the deliberate nature of System 2 thinking.| [Background Documentation](../background/README.md)     |
-| Scheduler    | Executes code at specific times/intervals. Mojodex's Scheduler embodies a proactive aspect akin to System 2 thinking| [Scheduler Documentation](../scheduler/README.md)  |
-| Database     | Stores and manages data                   | [Database Documentation](../pgsql/README.md)      |
+| Backend      | Communication hub for real-time dialogue and management of application business logic. Mojodex's Backend serves as the digital counterpart to System 1 thinking. | [Backend Documentation](backend.md)  |
+| Background   | Handles intensive tasks behind-the-scenes. Useful for Long-Running Processes and Batch Data Processing. Mojodex's Background embodies the deliberate nature of System 2 thinking.| [Background Documentation](background.md)     |
+| Scheduler    | Executes code at specific times/intervals. Mojodex's Scheduler embodies a proactive aspect akin to System 2 thinking| [Scheduler Documentation](scheduler.md)  |
+| Database     | Stores and manages data                   | [Database Documentation](database.md)      |
 | Mobile App   | Interface for mobile devices              | [Mobile App Documentation](https://github.com/hoomano/mojodex_mobile)|
-| Web App      | Interface for web browsers                | [Web App Documentation](../webapp/README.md)      |
-| Next Proxy   | Manages and authenticates requests from the webapp interface to the backend.             | [Next Proxy Documentation](../webapp/README.md) |
+| Web App      | Interface for web browsers                | [Web App Documentation](webapp.md)      |
+| Next Proxy   | Manages and authenticates requests from the webapp interface to the backend.             | [Next Proxy Documentation](webapp.md) |
 

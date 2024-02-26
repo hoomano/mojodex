@@ -11,7 +11,7 @@ This feature was thought to be the sparkle of proactivity in Mojodex. The idea i
 ## Mojodex usage
 
 ### Generating to-dos items
-When running [a task](../configure_assistant/tasks/whats_a_task.md) on Mojodex, user may mention some next steps it has to take regarding this task.
+When running [a task](../../design-principles/tasks/whats_a_task.md) on Mojodex, user may mention some next steps it has to take regarding this task.
 
 > Example: 
 > - get in touch in 3 days

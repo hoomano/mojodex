@@ -1,16 +1,23 @@
-site_name: Mojodex Documentation
+site_name: Mojodex - Open Source Enterprise Digital Assistant Platform
+site_url: https://hoomano.github.io/mojodex
 
 theme:
   name: material
+  custom_dir: docs/overrides
   font: 
     text: Hanken Grotesk
-
   logo: images/mojodex_logo_4040.png
   favicon: images/mojodex_logo_4040.png
   features:
     - content.code.copy
-    - navigation.sections    
-    
+    - navigation.sections
+    - navigation.instant
+    - navigation.tabs
+    - navigation.footer
+  icon:
+    repo: fontawesome/brands/github
+
+
   palette:
 
     # Palette toggle for light mode
@@ -40,6 +47,53 @@ markdown_extensions:
   - pymdownx.superfences
   - admonition
   - pymdownx.details
+  - attr_list
+  - md_in_html
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+
 
 extra_css:
   - stylesheets/extra.css
+
+nav:
+  - Home: index.md
+  - Docs:
+    - Getting Started: getting-started.md
+    - Design Principles:
+      - Task-oriented design: 
+        - What's a task: design-principles/tasks/whats_a_task.md
+        - Execute a task: design-principles/tasks/execute_task.md
+        - Background tasks: design-principles/tasks/background_task.md
+      - Organized by products:
+        - What's a product: design-principles/products/whats_a_product.md
+        - How it works: design-principles/products/how_it_works.md
+      - Proactive To-do: 
+        - What's a to-do: design-principles/to-do_list/whats_a_todo.md
+        - How it works: design-principles/to-do_list/how_todo_works.md
+    - Technical Architecture:
+      - Overview: technical-architecture/overview.md
+      - Backend: technical-architecture/backend.md
+      - Database: technical-architecture/database.md
+      - Webapp: technical-architecture/webapp.md
+      - Background: technical-architecture/background.md
+      - Scheduler: technical-architecture/scheduler.md
+      - LLM Features:  
+        - Overview: technical-architecture/llm-features/index.md
+        - OpenAI: technical-architecture/llm-features/openai.md
+        - Azure OpenAI Services: technical-architecture/llm-features/azure.md
+        - Mistral AI: technical-architecture/llm-features/mistral.md
+      - Tools:
+        - Google Search: technical-architecture/existing_tools/google_search.md
+        - Internal Memory: technical-architecture/existing_tools/internal_memory.md
+      - Integration:
+        - Hubspot: technical-architecture/integration/hubspot.md
+  - Guides:
+    - Overview: guides/index.md
+    - Configure a new product: guides/products/new_product.md
+    - Configure a new task: guides/tasks/new_task.md
+    - New Task example: guides/tasks/example.md
+    - Add a new tool: guides/tools/new_tool.md
+    - Tutorial - Sales Assistant Example: guides/sales_assistant_example/index.md
+    - Sales Assistant Team Guide: guides/sales_assistant_example/sales_assistant_scope_template.md

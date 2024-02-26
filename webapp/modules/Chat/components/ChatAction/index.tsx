@@ -1,4 +1,4 @@
-import { useContext } from "react";
+import { useContext, useState } from "react";
 
 import ChatContext from "modules/Chat/helpers/ChatContext";
 
@@ -17,7 +17,7 @@ const scrollToLastMsg = (messageId: string) => {
   });
 };
 
-const ChatAction = () => {
+const ChatAction = ({ showPopup }: { showPopup: () => void }) => {
   const session = useContextSession();
 
   const { chatState, setChatState } = useContext(
@@ -45,7 +45,7 @@ const ChatAction = () => {
     textEditEnd();
     let allMessages = messages;
     const currentMessageId = messages.length;
-      
+
     const newMessage = {
       id: currentMessageId,
       from: "user",
@@ -53,16 +53,16 @@ const ChatAction = () => {
       type: "message",
     };
     allMessages = [...allMessages, newMessage];
-    
 
-    function toISOStringLocal(date : Date) {
+
+    function toISOStringLocal(date: Date) {
       const offsetMs = date.getTimezoneOffset() * 60 * 1000;
-      const msLocal =  date.getTime() - offsetMs;
+      const msLocal = date.getTime() - offsetMs;
       const dateLocal = new Date(msLocal);
       const iso = dateLocal.toISOString();
       const isoLocal = iso.slice(0, 19);
       return isoLocal;
-  }
+    }
 
     // Send the message to the server
     if (socket) {
@@ -122,16 +122,7 @@ const ChatAction = () => {
 
   const onApproveTool = () => {
     console.log("Approve tool");
-    // send approval to server
-    const payload = {
-      datetime: new Date().toISOString(),
-      task_tool_execution_pk: messages[messages.length - 1].task_tool_execution_fk,
-    };
-    sendTaskToolExecutionApproval.mutate(payload, {
-      onSuccess: () => {
-        console.log("Approved tool");
-      },
-    });
+
 
     // add new message "ok" and disable "waiting for answer..."
     let allMessages = messages;
@@ -156,7 +147,21 @@ const ChatAction = () => {
       inputDisabled: true,
       focusInput: false,
     });
+
+    // send approval to server
+    const payload = {
+      datetime: new Date().toISOString(),
+      task_tool_execution_pk: messages[messages.length - 1].task_tool_execution_fk,
+    };
+    showPopup();
+   /* sendTaskToolExecutionApproval.mutate(payload, {
+      onSuccess: () => {
+        console.log("Approved tool");
+      },
+    });*/
+
   };
+
 
   const onRejectTool = () => {
     console.log("Reject tool");
@@ -171,6 +176,7 @@ const ChatAction = () => {
     });
   };
 
+
   // print last message if there is one
   if (messages.length > 0) {
     const lastMessage = messages[messages.length - 1];
@@ -183,20 +189,20 @@ const ChatAction = () => {
   }
 
 
-    return (
-      <ChatInput
-        onSend={sendMessage}
-        inputDisabled={inputDisabled}
-        isMobile={isMobile}
-        focusInput={focusInput}
-        textEdit={textEditHandler}
-        textEditEnd={textEditEnd}
-        prompt={prompt}
-        initial_msg={initialMsg}
-      />
+  return (
+    <ChatInput
+      onSend={sendMessage}
+      inputDisabled={inputDisabled}
+      isMobile={isMobile}
+      focusInput={focusInput}
+      textEdit={textEditHandler}
+      textEditEnd={textEditEnd}
+      prompt={prompt}
+      initial_msg={initialMsg}
+    />
 
-    );
-  
+  );
+
 };
 
 export default ChatAction;

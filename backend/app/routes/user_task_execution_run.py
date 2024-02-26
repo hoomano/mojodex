@@ -117,7 +117,7 @@ class UserTaskExecutionRun(Resource):
             db.session.refresh(user_task_execution)
             db.session.commit()
 
-            task_manager = TaskManager(user, user_task_execution.session_id, platform, voice_generator,
+            task_manager = TaskManager(user, user_task_execution.session_id, platform, app_version, voice_generator,
                                        mojo_messages_audio_storage,
                                        task=task,
                                        user_task_execution=user_task_execution)

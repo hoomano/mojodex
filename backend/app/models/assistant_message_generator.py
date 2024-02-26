@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
-from app import db, log_error
+
+import requests
+from app import db, log_error, placeholder_generator, server_socket
 from mojodex_backend_logger import MojodexBackendLogger
 from db_models import *
 from datetime import datetime
@@ -10,7 +12,10 @@ from models.tasks.task_tool_manager import TaskToolManager
 
 class AssistantMessageGenerator(ABC):
 
-    def __init__(self, user, session_id, platform, voice_generator, mojo_messages_audio_storage, logger_prefix, mojo_token_callback):
+    user_language_start_tag = "<user_language>"
+    user_language_end_tag = "</user_language>"
+
+    def __init__(self, user, session_id, platform, voice_generator, mojo_messages_audio_storage, logger_prefix, mojo_token_callback, app_version):
         self.user_id = user.user_id
         self.username = user.name
         self.session_id = session_id
@@ -18,6 +23,7 @@ class AssistantMessageGenerator(ABC):
         self.voice_generator = voice_generator
         self.mojo_messages_audio_storage = mojo_messages_audio_storage
         self.mojo_token_callback = mojo_token_callback
+        self.app_version = app_version
         self.language = None
         self.running_task = None
         self.running_user_task = None
@@ -42,6 +48,125 @@ class AssistantMessageGenerator(ABC):
     def _answer_user(self, *args):
         raise NotImplementedError
     
+    @abstractmethod
+    def _token_callback(self, partial_text):
+        raise NotImplementedError
+    
+    @abstractmethod
+    def _get_message_placeholder(self):
+        raise NotImplementedError
+    
+    @abstractmethod
+    def _get_execution_placeholder(self):
+        raise NotImplementedError
+    
+    @abstractmethod
+    def _generate_assistant_response(self, tag_proper_nouns=False):
+        raise NotImplementedError
+    
+    @abstractmethod
+    def _manage_response_tag(self, response, user_message, use_draft_placeholder):
+        raise NotImplementedError
+    
+    def response_to_user_message(self, user_message, tag_proper_nouns=False):
+        try:
+            if self.running_user_task_execution:
+                server_socket.start_background_task(self._give_title_and_summary_task_execution,
+                                                self.running_user_task_execution.user_task_execution_pk)
+            mojo_message = self._answer_user(user_message, tag_proper_nouns=tag_proper_nouns)
+            if mojo_message and self.running_user_task_execution:
+                mojo_message['user_task_execution_pk'] = self.running_user_task_execution.user_task_execution_pk
+            return 'mojo_message', mojo_message, self.language
+        except Exception as e:
+            raise Exception(f"response_to_user_message :: {e}")
+    
+    def _give_title_and_summary_task_execution(self, user_task_execution_pk):
+        try:
+            # call background backend /end_user_task_execution to update user task execution title and summary
+            uri = f"{os.environ['BACKGROUND_BACKEND_URI']}/user_task_execution_title_and_summary"
+            pload = {'datetime': datetime.now().isoformat(),
+                     'user_task_execution_pk': user_task_execution_pk}
+            internal_request = requests.post(uri, json=pload)
+            if internal_request.status_code != 200:
+                log_error(
+                    f"Error while calling background user_task_execution_title_and_summary : {internal_request.json()}")
+        except Exception as e:
+            print(f"🔴 _give_title_and_summary_task_execution :: {e}")
+
+    def _get_empty_json_input_values(self):
+        try:
+            empty_json_input_values = []
+            for input in self.running_task_displayed_data.json_input:
+                input["value"] = None
+                empty_json_input_values.append(input)
+            return empty_json_input_values
+        except Exception as e:
+            raise Exception(f"_get_empty_json_input_values :: {e}")
+
+    def _manage_placeholders(self, use_message_placeholder, use_draft_placeholder):
+        try:
+            if use_message_placeholder:
+                response = self._get_message_placeholder()
+            elif use_draft_placeholder:
+                response = self._get_execution_placeholder()
+                placeholder_generator.stream(response, self._token_callback)
+            return response
+        except Exception as e:
+            raise Exception(f"_manage_placeholders :: {e}")
+        
+    def _extract_placeholders_from_user_message(self, user_message):
+        try:
+            use_message_placeholder = user_message["use_message_placeholder"] if (
+                    "use_message_placeholder" in user_message) else False
+            use_draft_placeholder = user_message["use_draft_placeholder"] if (
+                    "use_draft_placeholder" in user_message) else False
+        except Exception as e:
+            use_message_placeholder, use_draft_placeholder = False, False
+        return use_message_placeholder, use_draft_placeholder
+    
+    def _answer_user(self, user_message=None, use_message_placeholder=False, use_draft_placeholder=False, tag_proper_nouns=False):
+        self.logger.debug(f"_answer_user")
+        
+        try:
+            if user_message is not None:
+                use_message_placeholder, use_draft_placeholder = self._extract_placeholders_from_user_message(user_message)
+
+            if use_message_placeholder or use_draft_placeholder:
+                response = self._manage_placeholders(use_message_placeholder, use_draft_placeholder)
+            else:
+                response = self._generate_assistant_response(tag_proper_nouns=tag_proper_nouns)
+                
+            
+            self._manage_response_language_tag(response)
+            response = self._manage_response_tag(response, user_message, use_draft_placeholder)
+            return response
+
+        except Exception as e:
+            raise Exception(f"_answer_user :: {e}")
+    
+    def _get_produced_text_done(self):
+        try:
+            if self.running_user_task_execution is None:
+                return False
+            return db.session.query(MdProducedText).filter(
+                MdProducedText.user_task_execution_fk == self.running_user_task_execution.user_task_execution_pk).count() > 1
+        except Exception as e:
+            raise Exception(f"_get_produced_text_done :: {e}")
+
+    def _get_task_tools_json(self):
+        try:
+            if self.running_task is None:
+                return None
+            task_tool_associations = db.session.query(MdTaskToolAssociation, MdTool)\
+                .join(MdTool, MdTool.tool_pk == MdTaskToolAssociation.tool_fk)\
+                .filter(MdTaskToolAssociation.task_fk == self.running_task.task_pk).all()
+            return [{"task_tool_association_pk": task_tool_association.task_tool_association_pk,
+                     "usage_description": task_tool_association.usage_description,
+                     "tool_name": tool.name}
+                    for task_tool_association, tool in task_tool_associations]
+        except Exception as e:
+            raise Exception(f"_get_task_tools_json :: {e}")
+
     def _get_all_session_messages(self, session_id):
         try:
             messages = db.session.query(MdMessage).filter(MdMessage.session_id == session_id).order_by(
@@ -121,3 +246,20 @@ class AssistantMessageGenerator(ABC):
         except Exception as e:
             db_message.in_error_state = datetime.now()
             log_error(str(e), session_id=self.session_id, notify_admin=True)
+
+    def _manage_response_language_tag(self, response):
+        try:
+            if self.language is None and AssistantMessageGenerator.user_language_start_tag in response:
+                try:
+                    self.language = self.remove_tags_from_text(response, AssistantMessageGenerator.user_language_start_tag,
+                                                                      AssistantMessageGenerator.user_language_end_tag).lower()
+                    self.logger.info(f"language: {self.language}")
+                    # update session
+                    db_session = db.session.query(MdSession).filter(MdSession.session_id == self.session_id).first()
+                    db_session.language = self.language
+                    db.session.commit()
+                except Exception as e:
+                    db.session.rollback()
+                    self.logger.error(f"Error while updating session language: {e}")
+        except Exception as e:
+            raise Exception(f"_manage_response_language_tag :: {e}")

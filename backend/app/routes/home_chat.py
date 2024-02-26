@@ -36,8 +36,8 @@ class HomeChat(Resource):
             language = user.language_code if user.language_code else "en"
 
             # first message
-            home_chat_manager = HomeChatManager(session_id, user, platform=platform)
-            message = home_chat_manager.generate_first_message(app_version, use_message_placeholder=use_message_placeholder)
+            home_chat_manager = HomeChatManager(session_id, user, platform=platform, app_version=app_version)
+            message = home_chat_manager.generate_first_message(use_message_placeholder=use_message_placeholder)
             db_message = MdMessage(session_id=session_id, message=message, sender=SessionModel.agent_message_key,
                                 event_name='home_chat_message', creation_date=datetime.now(), message_date=datetime.now())
             db.session.add(db_message)

@@ -170,10 +170,12 @@ class Session:
             # Home chat session here ??
             # with response_message = ...
             if "origin" in message and message["origin"] == "home_chat":
-                response_event_name, response_message = self.__manage_home_chat_session(message, app_version)
-            else:
+                response_event_name, response_message, response_language = self.__manage_home_chat_session(message, app_version)
+            elif 'user_task_execution_pk' in message:
                 # For now only task sessions
-                response_event_name, response_message = self.__manage_task_session(message, app_version)
+                response_event_name, response_message, response_language = self.__manage_task_session(message, app_version)
+            else:
+                raise Exception("Unknown message origin")
 
             if response_message:
                 if "session_id" not in response_message:
@@ -189,7 +191,7 @@ class Session:
                 if response_message["audio"]:
                     output_filename = os.path.join(self.__get_mojo_messages_audio_storage(), f"{message_pk}.mp3")
                     try:
-                        self.voice_generator.text_to_speech(response_message["text"], None, self.user_id, output_filename)
+                        self.voice_generator.text_to_speech(response_message["text"], response_language, self.user_id, output_filename)
                     except Exception as e:
                         db_message.in_error_state = datetime.now()
                         log_error(str(e), session_id=self.id)
@@ -203,38 +205,25 @@ class Session:
 
     def __manage_home_chat_session(self, message, app_version):
         try:
-            home_chat_manager = HomeChatManager(session_id=self.id, user=self._get_user(), platform=self.__get_platform(),
+            home_chat_manager = HomeChatManager(session_id=self.id, user=self._get_user(), platform=self.__get_platform(), app_version=app_version,
                                                  voice_generator=self.voice_generator, mojo_messages_audio_storage=self.__get_mojo_messages_audio_storage(), mojo_token_callback=self._mojo_token_callback)
-            response_event_name, response_message = home_chat_manager.response_to_user_message(app_version, user_message=message)
-            return response_event_name, response_message
+            response_event_name, response_message, response_language = home_chat_manager.response_to_user_message(user_message=message)
+            return response_event_name, response_message, response_language
         except Exception as e:
             raise Exception(f"__manage_home_chat_session :: {e}")
 
     def __manage_task_session(self, message, app_version):
         try:
-            if "user_task_execution_pk" in message:
-                running_task, user_task_execution = self._find_task_for_user_task_execution_pk(
+            running_task, user_task_execution = self._find_task_for_user_task_execution_pk(
                     message["user_task_execution_pk"])
-            else:
-                task_classifier = TaskClassifier(self.user_id)
-                running_task = task_classifier.classify(self._get_conversation())
-                user_task_execution = None
-            if running_task is None:
-                chitchat = DefaultChitChat(self.id, self._get_user())
-                response_event_name, response_message = chitchat.response_to_user_message(message,
-                                                                                          self._mojo_token_callback)
-            else:
-                task_manager = TaskManager(self._get_user(), self.id, self.__get_platform(), self.voice_generator, self.__get_mojo_messages_audio_storage())
-                task_manager.set_task_and_execution(running_task, user_task_execution)
-                tag_proper_nouns = self.__get_platform() == "mobile"
-                response_event_name, response_message = task_manager.response_to_user_message(app_version, user_message=message,
-                                                                                               mojo_token_callback=self._mojo_token_callback,
-                                                                                                   tag_proper_nouns=tag_proper_nouns)
+            task_manager = TaskManager(self._get_user(), self.id, self.__get_platform(), app_version, self.voice_generator, self.__get_mojo_messages_audio_storage(),  mojo_token_callback=self._mojo_token_callback)
+            task_manager.set_task_and_execution(running_task, user_task_execution)
+            tag_proper_nouns = self.__get_platform() == "mobile"
+            response_event_name, response_message, response_language = task_manager.response_to_user_message(user_message=message, tag_proper_nouns=tag_proper_nouns)
 
-            return response_event_name, response_message
+            return response_event_name, response_message, response_language
         except Exception as e:
             raise Exception(f"__manage_task_session :: {e}")
-
 
 
     def _new_message(self, message, sender, event_name):

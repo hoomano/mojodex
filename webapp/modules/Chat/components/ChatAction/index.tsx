@@ -121,7 +121,6 @@ const ChatAction = ({ showPopup }: { showPopup: () => void }) => {
   };
 
   const onApproveTool = () => {
-    console.log("Approve tool");
 
 
     // add new message "ok" and disable "waiting for answer..."

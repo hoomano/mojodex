@@ -153,10 +153,10 @@ const ChatAction = ({ showPopup }: { showPopup: () => void }) => {
       datetime: new Date().toISOString(),
       task_tool_execution_pk: messages[messages.length - 1].task_tool_execution_fk,
     };
-    showPopup();
+
     sendTaskToolExecutionApproval.mutate(payload, {
       onSuccess: () => {
-        console.log("Approved tool");
+        showPopup();
       },
     });
 

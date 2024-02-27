@@ -164,7 +164,6 @@ const ChatAction = ({ showPopup }: { showPopup: () => void }) => {
 
 
   const onRejectTool = () => {
-    console.log("Reject tool");
     // remove task_tool_execution_fk from last message
     let allMessages = messages;
     allMessages[allMessages.length - 1].task_tool_execution_fk = null;

@@ -19,7 +19,6 @@ const useSocket = () => {
   const { sessionId, messages, isMobile, chatUsedFrom } = chatState;
 
   mojoMessageCallbackRef.current = (msg: MessageType) => {
-    console.log("👉 New mojo message: ", msg);
     try {
       // If we receive old message, do not proceed further
       if (msg?.message_pk) {
@@ -34,14 +33,12 @@ const useSocket = () => {
       }
 
       let allMessages = [...messages];
-      console.log("🟢🟢🟢");
       // if last message is from mojo, replace question with msg.text, else, add new message
       if (
         allMessages.length > 0 &&
         allMessages[allMessages.length - 1].from === "agent" &&
         allMessages[allMessages.length - 1]?.isMojoToken
       ) {
-        console.log("🟢 1");
         allMessages[allMessages.length - 1].question = msg.text;
         allMessages[allMessages.length - 1].content =
           msg.text + "\n" + allMessages[allMessages.length - 1].content;
@@ -50,7 +47,6 @@ const useSocket = () => {
         allMessages[allMessages.length - 1].id = msg.message_pk;
         allMessages[allMessages.length - 1].task_tool_execution_fk = msg?.task_tool_execution_fk;
       } else {
-        console.log("🟢 2");
         const newMessage = {
           id: msg.message_pk,
           from: "agent",

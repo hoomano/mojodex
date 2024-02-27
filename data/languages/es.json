@@ -104,7 +104,8 @@
                 "title": "Trabajo en ello!",
                 "textContent": {
                     "notifAllowed": "Por favor permita las notificaciones para que pueda avisarle cuando termine mi trabajo",
-                    "notNotifAllowed": "Le haré saber cuando termine mi trabajo"
+                    "notNotifAllowed": "Le haré saber cuando termine mi trabajo",
+                    "webapp": "Esto requerirá algo de tiempo, vuelve más tarde para comprobar mi trabajo"
                 },
                 "acceptButtonText": {
                     "notifAllowed": "Mantenme informado",

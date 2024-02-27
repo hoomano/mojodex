@@ -23,7 +23,7 @@ const ChatAction = ({ showPopup }: { showPopup: () => void }) => {
   const { chatState, setChatState } = useContext(
     ChatContext
   ) as ChatContextType;
-
+  
   const userLanguage = session?.authorization?.language_code;
   const sendTaskToolExecutionApproval = useApproveTaskToolExecution();
 
@@ -154,11 +154,11 @@ const ChatAction = ({ showPopup }: { showPopup: () => void }) => {
       task_tool_execution_pk: messages[messages.length - 1].task_tool_execution_fk,
     };
     showPopup();
-   /* sendTaskToolExecutionApproval.mutate(payload, {
+    sendTaskToolExecutionApproval.mutate(payload, {
       onSuccess: () => {
         console.log("Approved tool");
       },
-    });*/
+    });
 
   };
 

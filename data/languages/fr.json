@@ -104,7 +104,8 @@
                 "title": "J'y travaille!",
                 "textContent": {
                     "notifAllowed": "Autorisez les notifications et je vous informerai une fois mon travail terminé",
-                    "notNotifAllowed": "Je vous informerai une fois mon travail terminé"
+                    "notNotifAllowed": "Je vous informerai une fois mon travail terminé",
+                    "webapp": "Cela va prendre un peu de temps, revenez plus tard pour voir mon travail"
                 },
                 "acceptButtonText": {
                     "notifAllowed": "Notifie moi",

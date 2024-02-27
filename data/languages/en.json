@@ -104,7 +104,8 @@
 				"title": "I'm on it !",
 				"textContent":{
 					"notifAllowed": "Please allow notifications and I will let you know once my work is done",
-					"notNotifAllowed": "I will let you know once my work is done"
+					"notNotifAllowed": "I will let you know once my work is done",
+					"webapp": "This will require some time, come back later to check my work"
 				},
 				"acceptButtonText": {
 					"notifAllowed": "Notify me",

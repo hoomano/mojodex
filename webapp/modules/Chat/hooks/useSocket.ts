@@ -45,6 +45,7 @@ const useSocket = () => {
         // add produced_text to the message
         allMessages[allMessages.length - 1].produced_text = msg.produced_text;
         allMessages[allMessages.length - 1].id = msg.message_pk;
+        allMessages[allMessages.length - 1].task_tool_execution_fk = msg?.task_tool_execution_fk;
       } else {
         const newMessage = {
           id: msg.message_pk,
@@ -59,11 +60,11 @@ const useSocket = () => {
           source: msg?.source,
           answer: msg?.answer,
           messageFor: chatUsedFrom,
-          tool_execution_fk: msg?.tool_execution_fk,
+          task_tool_execution_fk: msg?.task_tool_execution_fk,
           showTaskMessage:
             chatUsedFrom === ChatUsedFrom.Task &&
             msg?.question &&
-            msg?.tool_execution_fk,
+            msg?.task_tool_execution_fk,
         };
         allMessages = [...allMessages, newMessage];
       }

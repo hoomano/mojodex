@@ -18,6 +18,9 @@ class PlaceholderGenerator:
     waiting_message_placeholder = "Waiting..."
     done_message_placeholder = "Done!"
 
+    welcome_message_header_placeholder = "Welcome! 👋"
+    welcome_message_body_placeholder = "This is a welcome message placeholder."
+
     def stream(self, message, stream_callback, n_initial_chars=3, sleep_time=0.1, n_chars_batch=3):
         try:
             # fake a stream by calling stream_callback every 0.3s

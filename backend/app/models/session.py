@@ -157,7 +157,6 @@ class Session:
 
     def receive_human_message(self, event_name, message):
         try:
-            print(f"🟢 user_message: {message}")
             app_version = version.parse(message["version"]) if "version" in message else version.parse("0.0.0")
             if self._get_number_of_messages() == 0 and self._get_session_db().starting_mode == 'chat':
                 sender = "user"

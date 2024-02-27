@@ -122,15 +122,15 @@ class UserTaskExecutionRun(Resource):
                                        task=task,
                                        user_task_execution=user_task_execution)
 
-            def browse_missing_info_callback(app_version, task_manager, use_message_placeholder, use_draft_placeholder, tag_proper_nouns):
-                task_manager.start_task_from_form(app_version, use_message_placeholder=use_message_placeholder, use_draft_placeholder=use_draft_placeholder, tag_proper_nouns=tag_proper_nouns)
+            def browse_missing_info_callback( task_manager, use_message_placeholder, use_draft_placeholder, tag_proper_nouns):
+                task_manager.start_task_from_form(use_message_placeholder=use_message_placeholder, use_draft_placeholder=use_draft_placeholder, tag_proper_nouns=tag_proper_nouns)
                 return
 
             use_message_placeholder = request.json['use_message_placeholder'] if (
                         'use_message_placeholder' in request.json) else False
             use_draft_placeholder = request.json['use_draft_placeholder'] if ('use_draft_placeholder' in request.json) else False
 
-            server_socket.start_background_task(browse_missing_info_callback, app_version, task_manager, use_message_placeholder, use_draft_placeholder, platform=="mobile")
+            server_socket.start_background_task(browse_missing_info_callback, task_manager, use_message_placeholder, use_draft_placeholder, platform=="mobile")
 
             return {"success": "ok"}, 200
 

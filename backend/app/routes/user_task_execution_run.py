@@ -119,8 +119,7 @@ class UserTaskExecutionRun(Resource):
 
             task_manager = TaskManager(user, user_task_execution.session_id, platform, app_version, voice_generator,
                                        mojo_messages_audio_storage,
-                                       task=task,
-                                       user_task_execution=user_task_execution)
+                                       user_task_execution_pk=user_task_execution_pk)
 
             def browse_missing_info_callback( task_manager, use_message_placeholder, use_draft_placeholder, tag_proper_nouns):
                 task_manager.start_task_from_form(use_message_placeholder=use_message_placeholder, use_draft_placeholder=use_draft_placeholder, tag_proper_nouns=tag_proper_nouns)

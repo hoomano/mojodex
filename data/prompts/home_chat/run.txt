@@ -1,23 +1,6 @@
-YOUR CONTEXT
-{{mojo_knowledge}}
 
-GLOBAL CONTEXT
-{{global_context}}
-
-USER NAME
-{{username}}
-
-TASKS YOU CAN HELP THE USER WITH{%for task in tasks%}
-- task_pk: {{task.task_pk}} - {{task.name_for_system}}: {{task.description}}{%endfor%}
-
-If you can do something for the user that is not listed above, go ahead without a specific task.
-If you want to run a task, make it clear to the user first.
-
-{%if running_task%}{{task_specific_instructions}}{%endif%}
 
 Answer in following format:
-<task_pk><The task_pk of the task you want to run to help the user - "null" if no specific task></task_pk>
-{%if language is none%}<user_language><2 letters language code></user_language>{%endif%}
 {%if not running_task%}{if you want to present the user with a draft of a document they asked}<execution><The draft of the document as result of user's request></execution>{else}<message_to_user><Your message to the user></message_to_user>{endif}
 {%else%}
 {if <task_pk> == null}<message_to_user><Your message to the user></message_to_user>{else}

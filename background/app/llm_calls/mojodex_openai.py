@@ -40,9 +40,18 @@ class MojodexOpenAI(MojoOpenAI):
         except Exception as e:
             send_admin_error_email(f"Error in Mojodex OpenAI __write_in_dataset: {e}")
 
-    def chat(self, messages, user_id, temperature, max_tokens, n_responses=1,
+
+    def chat(self, messages, user_id, temperature, max_tokens,
+            frequency_penalty=0, presence_penalty=0, stream=False, stream_callback=None, json_format=False,
+            user_task_execution_pk=None, task_name_for_system=None, retries=12):
+        return self.recursive_chat(messages, user_id, temperature, max_tokens,
+                frequency_penalty=frequency_penalty, presence_penalty=presence_penalty, stream=stream, stream_callback=stream_callback, json_format=json_format,
+                user_task_execution_pk=user_task_execution_pk, task_name_for_system=task_name_for_system, n_additional_calls_if_finish_reason_is_length=0, retries=retries)
+
+
+    def recursive_chat(self, messages, user_id, temperature, max_tokens,
              frequency_penalty=0, presence_penalty=0, stream=False, stream_callback=None, json_format=False,
-             user_task_execution_pk=None, task_name_for_system=None, retries=12):
+             user_task_execution_pk=None, task_name_for_system=None, n_additional_calls_if_finish_reason_is_length=0, retries=12):
         try:
             # check complete number of tokens in prompt
             try:
@@ -52,10 +61,12 @@ class MojodexOpenAI(MojoOpenAI):
                 send_admin_error_email(f"{MojodexOpenAI.logger_prefix}: chat - n_tokens_prompt & n_tokens_conversation: {e}")
                 n_tokens_prompt, n_tokens_conversation = 0, 0
 
-            responses = super().openAIChatCompletion(messages, user_id, temperature, max_tokens, n_responses=n_responses,
+            responses = super().openAIChatCompletion(messages, user_id, temperature, max_tokens,
                                                      frequency_penalty=frequency_penalty, presence_penalty=presence_penalty,
                                                      json_format=json_format, stream=stream,
-                                                     stream_callback=stream_callback)
+                                                     stream_callback=stream_callback,
+                                                     n_additional_calls_if_finish_reason_is_length=n_additional_calls_if_finish_reason_is_length)
+
             n_tokens_response = 0
             try:
                 for response in responses:
@@ -65,7 +76,7 @@ class MojodexOpenAI(MojoOpenAI):
 
             tokens_costs_manager.on_tokens_counted(user_id, n_tokens_prompt, n_tokens_conversation, n_tokens_response,
                                                    self.model, self.label, user_task_execution_pk, task_name_for_system)
-            self.__write_in_dataset({"temperature": temperature, "max_tokens": max_tokens, "n_responses": n_responses,
+            self.__write_in_dataset({"temperature": temperature, "max_tokens": max_tokens, "n_responses": 1,
                                      "frequency_penalty": frequency_penalty, "presence_penalty": presence_penalty,
                                      "messages": messages, "responses": responses}, task_name_for_system, "chat")
             return responses
@@ -74,7 +85,7 @@ class MojodexOpenAI(MojoOpenAI):
             if retries == 0:
                 raise Exception(f"🔴 Error in Mojodex OpenAI chat: {type(e).__name__} despite all retries {e}")
             time.sleep(30)
-            return self.chat(messages, user_id, temperature, max_tokens, n_responses=n_responses,
+            return self.chat(messages, user_id, temperature, max_tokens,
                              frequency_penalty=frequency_penalty, presence_penalty=presence_penalty,
                              json_format=json_format, stream=stream, stream_callback=stream_callback,
                              user_task_execution_pk=user_task_execution_pk, task_name_for_system=task_name_for_system, retries=retries-1)

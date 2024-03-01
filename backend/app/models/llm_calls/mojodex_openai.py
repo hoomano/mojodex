@@ -51,9 +51,19 @@ class MojodexOpenAI(MojoOpenAI):
         except Exception as e:
             log_error(f"Error in Mojodex OpenAI __write_in_dataset: {e}", notify_admin=True)
 
-    def chat(self, messages, user_id, temperature, max_tokens, n_responses=1,
+    def chat(self, messages, user_id, temperature, max_tokens,
+                frequency_penalty=0, presence_penalty=0, stream=False, stream_callback=None, json_format=False,
+                user_task_execution_pk=None, task_name_for_system=None):
+        return self.recursive_chat(messages, user_id, temperature, max_tokens,
+                                    frequency_penalty=frequency_penalty, presence_penalty=presence_penalty,
+                                    stream=stream, stream_callback=stream_callback, json_format=json_format,
+                                    user_task_execution_pk=user_task_execution_pk,
+                                    task_name_for_system=task_name_for_system,
+                                    n_additional_calls_if_finish_reason_is_length=0)
+
+    def recursive_chat(self, messages, user_id, temperature, max_tokens,
              frequency_penalty=0, presence_penalty=0, stream=False, stream_callback=None, json_format=False,
-             user_task_execution_pk=None, task_name_for_system=None):
+             user_task_execution_pk=None, task_name_for_system=None, n_additional_calls_if_finish_reason_is_length=0):
         try:
 
             # check complete number of tokens in prompt
@@ -61,14 +71,14 @@ class MojodexOpenAI(MojoOpenAI):
             n_tokens_conversation = self.num_tokens_from_messages(messages[1:])
 
             try:
-                responses = super().openAIChatCompletion(messages, user_id, temperature, max_tokens, n_responses=n_responses,
+                responses = super().openAIChatCompletion(messages, user_id, temperature, max_tokens,
                                                          frequency_penalty=frequency_penalty, presence_penalty=presence_penalty,
                                                          json_format=json_format, stream=stream,
-                                                         stream_callback=stream_callback)
+                                                         stream_callback=stream_callback, n_additional_calls_if_finish_reason_is_length=n_additional_calls_if_finish_reason_is_length)
             except openai.RateLimitError:
                 # try to use backup engine
                 if self.backup_engine:
-                    responses = self.backup_engine.openAIChatCompletion(messages, user_id, temperature, max_tokens, n_responses=n_responses,
+                    responses = self.backup_engine.openAIChatCompletion(messages, user_id, temperature, max_tokens,
                                                          frequency_penalty=frequency_penalty, presence_penalty=presence_penalty,
                                                          stream=stream,
                                                          stream_callback=stream_callback)
@@ -80,7 +90,7 @@ class MojodexOpenAI(MojoOpenAI):
 
             tokens_costs_manager.on_tokens_counted(user_id, n_tokens_prompt, n_tokens_conversation, n_tokens_response,
                                                    self.model, self.label, user_task_execution_pk, task_name_for_system)
-            self.__write_in_dataset({"temperature": temperature, "max_tokens": max_tokens, "n_responses": n_responses,
+            self.__write_in_dataset({"temperature": temperature, "max_tokens": max_tokens, "n_responses": 1,
                                         "frequency_penalty": frequency_penalty, "presence_penalty": presence_penalty,
                                         "messages": messages, "responses": responses}, task_name_for_system, "chat")
             return responses

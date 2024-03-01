@@ -119,7 +119,7 @@ class MojoOpenAI:
                                              assistant_response=assistant_response + " " + response,
                                              n_additional_calls_if_finish_reason_is_length=n_additional_calls_if_finish_reason_is_length,
                                              n_calls=n_calls + 1)
-        return [response] # [] is a legacy from the previous version that could return several completion. Need complete refacto to remove
+        return [response] # [] is a legacy from the previous version that could return several completions. Need complete refacto to remove.
 
     def openAIEmbedding(self, text):
         """

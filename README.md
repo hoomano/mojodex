@@ -1,7 +1,4 @@
 # ![mojodex](/webapp/public/images/logo/mojodex_logo_4040.png) MOJODEX
-[![](https://dcbadge.vercel.app/api/server/zJhWkwyS?style=flat)](https://discord.gg/4Dun59xwcX)
-[![Twitter Follow](https://img.shields.io/twitter/follow/HoomanoCompany?style=social)](https://twitter.com/HoomanoCompany)
-
 
 Mojodex is an open-source digital assistant platform to help companies and individuals build their own AI-powered assets.
 

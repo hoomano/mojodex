@@ -104,7 +104,6 @@ class MojoOpenAI:
                         except Exception as e:
                             logging.error(f"🔴 Error in streamCallback: {e}")
 
-            response = complete_text
         else:
             response = completion.choices[0].message.content
             finish_reason = completion.choices[0].finish_reason

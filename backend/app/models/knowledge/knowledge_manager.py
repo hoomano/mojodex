@@ -1,6 +1,6 @@
 from datetime import datetime
 from app import db
-from db_models import MdUser, MdCompany
+from mojodex_core.entities import MdUser, MdCompany
 from jinja2 import Template
 
 

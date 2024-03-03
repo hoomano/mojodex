@@ -5,7 +5,7 @@ from flask_restful import Resource
 from models.session import Session as SessionModel
 from app import authenticate, db, log_error, server_socket
 from datetime import datetime, timedelta
-from db_models import *
+from mojodex_core.entities import *
 from packaging import version
 
 from models.session_creator import SessionCreator

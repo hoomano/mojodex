@@ -2,7 +2,7 @@ import os
 from flask import request
 from flask_restful import Resource
 from app import db, authenticate, log_error, executor, time_manager
-from db_models import *
+from mojodex_core.entities import *
 from datetime import datetime
 from models.session_creator import SessionCreator
 from sqlalchemy import func, and_, or_, text

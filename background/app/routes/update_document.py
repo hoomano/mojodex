@@ -1,6 +1,6 @@
 from flask import request
 from flask_restful import Resource
-from db_models import *
+from mojodex_core.entities import *
 from app import db, document_manager
 from models.documents.website_parser import WebsiteParser
 

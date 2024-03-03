@@ -2,7 +2,7 @@ import json
 
 import requests
 from google.oauth2 import service_account
-from db_models import *
+from mojodex_core.entities import *
 from mojodex_backend_logger import MojodexBackendLogger
 from app import log_error, db
 import google.auth.transport.requests

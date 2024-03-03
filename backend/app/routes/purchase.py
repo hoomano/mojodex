@@ -6,7 +6,7 @@ from flask import request
 from flask_restful import Resource
 from datetime import datetime
 from app import authenticate, log_error, db, send_admin_email
-from db_models import *
+from mojodex_core.entities import *
 
 from mojodex_backend_logger import MojodexBackendLogger
 

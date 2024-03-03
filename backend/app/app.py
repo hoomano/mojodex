@@ -38,7 +38,7 @@ from functools import wraps
 import jwt
 
 from datetime import datetime
-from db_models import *
+from mojodex_core.entities import *
 
 from mojodex_backend_logger import MojodexBackendLogger
 

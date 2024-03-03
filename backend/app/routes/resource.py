@@ -5,7 +5,7 @@ import requests
 from flask import request
 from flask_restful import Resource
 from app import db, log_error, document_manager, authenticate, executor, translator
-from db_models import *
+from mojodex_core.entities import *
 
 from models.documents.website_parser import WebsiteParser
 from typing import List, Dict, Any

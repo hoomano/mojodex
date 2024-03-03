@@ -4,7 +4,7 @@ from datetime import datetime
 from flask import request
 from flask_restful import Resource
 from app import db, authenticate, log_error, server_socket, executor, main_logger
-from db_models import *
+from mojodex_core.entities import *
 from sqlalchemy.orm.attributes import flag_modified
 from models.tasks.task_manager import TaskManager
 from models.session import Session

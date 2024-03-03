@@ -3,7 +3,7 @@ from datetime import datetime
 from flask import request
 from flask_restful import Resource
 from app import db, authenticate, log_error, server_socket, time_manager, main_logger
-from db_models import *
+from mojodex_core.entities import *
 from models.session import Session
 from models.user_audio_file_manager import UserAudioFileManager
 from packaging import version

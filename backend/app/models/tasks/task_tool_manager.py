@@ -1,5 +1,5 @@
 from app import db
-from db_models import MdTaskToolExecution
+from mojodex_core.entities import MdTaskToolExecution
 from mojodex_backend_logger import MojodexBackendLogger
 
 

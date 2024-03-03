@@ -3,7 +3,7 @@ import os
 from flask import request
 from flask_restful import Resource
 from app import db
-from db_models import *
+from mojodex_core.entities import *
 
 class Product(Resource):
     active_status = "active"

@@ -2,7 +2,6 @@ itsdangerous<2.0.1
 flask==2.0.1
 Flask-WTF==1.1.1
 flask_restful==0.3.10
-sqlalchemy==1.4.31
 flask-sqlalchemy==2.4.4
 gevent==23.9.1
 gevent-websocket==0.10.1
@@ -17,7 +16,6 @@ ipython==8.12.2
 psycopg2-binary==2.9.9
 bs4==0.0.1
 pydantic==1.10.9
-pgvector==0.2.4
 --index-url https://pypi.fury.io/gantry-ml/
 --extra-index-url https://pypi.org/simple/
 gantry-logger==0.0.1a4

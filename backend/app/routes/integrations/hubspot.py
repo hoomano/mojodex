@@ -4,7 +4,7 @@ from flask import request
 from flask_restful import Resource
 from datetime import datetime, time
 from app import db, authenticate, log_error
-from db_models import MdProducedTextVersion, MdProducedText
+from mojodex_core.entities import MdProducedTextVersion, MdProducedText
 import requests
 import json
 import os

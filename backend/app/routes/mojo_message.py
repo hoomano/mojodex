@@ -5,7 +5,7 @@ from flask import request
 from flask_restful import Resource
 from models.session import Session as SessionModel
 from app import db, log_error, authenticate, main_logger
-from db_models import *
+from mojodex_core.entities import *
 
 from models.voice_generator import VoiceGenerator
 

@@ -1,7 +1,7 @@
 import jwt
 from flask_restful import Resource, request
 from app import db, mojo_mail_client, log_error
-from db_models import *
+from mojodex_core.entities import *
 from jinja2 import Template
 from werkzeug.security import generate_password_hash
 from datetime import datetime, timedelta

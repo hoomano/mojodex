@@ -1,7 +1,7 @@
 import time
 
 from app import db
-from db_models import MdTextType
+from mojodex_core.entities import MdTextType
 from models.produced_text_manager import ProducedTextManager
 from mojodex_backend_logger import MojodexBackendLogger
 from app import socketio_message_sender

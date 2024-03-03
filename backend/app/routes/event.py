@@ -4,7 +4,7 @@ from datetime import datetime
 from flask import request
 from flask_restful import Resource
 from app import db, log_error, mojo_mail_client, push_notification_sender
-from db_models import *
+from mojodex_core.entities import *
 
 
 

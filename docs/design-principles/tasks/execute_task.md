@@ -47,7 +47,7 @@ This generates a call to PUT `/user_task_execution` to the backend (`backend/app
 This call creates a User Task Execution instance in the database and a `session` if not already exists (which is the case in current Mojodex implementations).
 
 ```python
-from db_models import MdUserTaskExecution
+from mojodex_core.entities import MdUserTaskExecution
 [...]
 class UserTaskExecution(Resource):
     [...]

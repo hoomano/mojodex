@@ -1,4 +1,4 @@
-from db_models import *
+from mojodex_core.entities import *
 from background_logger import BackgroundLogger
 from models.session_title_generator import SessionTitleGenerator
 from app import db, language_retriever

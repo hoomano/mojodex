@@ -6,7 +6,7 @@ import requests
 from flask import request
 from flask_restful import Resource
 from app import db, authenticate, log_error, executor
-from db_models import *
+from mojodex_core.entities import *
 from jinja2 import Template
 
 from models.documents.website_parser import WebsiteParser

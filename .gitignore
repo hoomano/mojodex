@@ -12,3 +12,8 @@ data/postgresql/*
 data/users/*
 .env
 site/
+
+venv/
+*.egg-info
+
+workbook.ipynb

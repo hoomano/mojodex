@@ -1,6 +1,6 @@
 from app import db
 from background_logger import BackgroundLogger
-from db_models import MdSession
+from mojodex_core.entities import MdSession
 
 
 class LanguageRetriever:

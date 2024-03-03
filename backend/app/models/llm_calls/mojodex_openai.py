@@ -6,7 +6,7 @@ import time
 import openai
 from pydub import AudioSegment
 from app import tokens_costs_manager, whisper_costs_manager, log_error, db
-from db_models import MdUserVocabulary
+from mojodex_core.entities import MdUserVocabulary
 
 from models.llm_calls.mojo_openai import MojoOpenAI
 

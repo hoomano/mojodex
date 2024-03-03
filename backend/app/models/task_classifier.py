@@ -2,7 +2,7 @@ import time
 
 from app import db, log_error, timing_logger
 import os
-from db_models import *
+from mojodex_core.entities import *
 from jinja2 import Template
 from models.llm_calls.mojodex_openai import MojodexOpenAI
 from mojodex_backend_logger import MojodexBackendLogger

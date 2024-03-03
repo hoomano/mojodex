@@ -1,7 +1,7 @@
 from flask import request
 from flask_restful import Resource
 from app import db, executor
-from db_models import *
+from mojodex_core.entities import *
 
 from models.cortex.first_session_message_cortex import FirstSessionMessageCortex
 

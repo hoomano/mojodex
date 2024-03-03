@@ -1,7 +1,7 @@
 from flask import request
 from flask_restful import Resource
 from app import db, executor
-from db_models import *
+from mojodex_core.entities import *
 
 from models.cortex.user_task_execution_title_and_summary_cortex import UserTaskExecutionTitleAndSummaryCortex
 

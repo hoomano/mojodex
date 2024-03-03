@@ -16,7 +16,8 @@ services:
 
   mojodex-backend:
     build: 
-      context: ./backend
+      context: .
+      dockerfile: ./backend/Dockerfile
     image: mojodex/backend
     container_name: mojodex_backend
     env_file:
@@ -42,7 +43,8 @@ services:
 
   mojodex-background:
     build: 
-      context: ./background
+      context: .
+      dockerfile: ./background/Dockerfile
     image: mojodex/background
     container_name: mojodex_background
     env_file:

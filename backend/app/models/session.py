@@ -1,7 +1,7 @@
 import os
 import requests
 from app import db, log_error, server_socket, executor, time_manager, socketio_message_sender, main_logger
-from db_models import *
+from mojodex_core.entities import *
 from datetime import datetime
 from models.voice_generator import VoiceGenerator
 from models.task_classifier import TaskClassifier

@@ -7,7 +7,7 @@ from app import db, placeholder_generator
 from models.knowledge.knowledge_manager import KnowledgeManager
 
 from models.llm_calls.mojodex_openai import MojodexOpenAI
-from db_models import *
+from mojodex_core.entities import *
 from azure_openai_conf import AzureOpenAIConf
 from sqlalchemy import and_
 

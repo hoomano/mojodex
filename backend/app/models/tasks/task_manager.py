@@ -1,5 +1,5 @@
 from app import db, log_error, server_socket, executor, timing_logger, placeholder_generator
-from db_models import *
+from mojodex_core.entities import *
 from datetime import datetime
 from jinja2 import Template
 import os

@@ -6,7 +6,7 @@ from app import authenticate, db, log_error, server_socket
 from models.llm_calls.mojodex_openai import MojodexOpenAI
 from datetime import datetime, timedelta
 from jinja2 import Template
-from db_models import *
+from mojodex_core.entities import *
 
 from azure_openai_conf import AzureOpenAIConf
 

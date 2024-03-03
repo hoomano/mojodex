@@ -4,7 +4,7 @@ from app import db, timing_logger
 import time
 from jinja2 import Template
 import os
-from db_models import *
+from mojodex_core.entities import *
 
 from mojodex_backend_logger import MojodexBackendLogger
 from azure_openai_conf import AzureOpenAIConf

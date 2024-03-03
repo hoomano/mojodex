@@ -1,7 +1,7 @@
 import threading
 
 from app import db, server_socket
-from db_models import *
+from mojodex_core.entities import *
 from jinja2 import Template
 
 from models.produced_text_manager import ProducedTextManager

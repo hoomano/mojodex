@@ -5,7 +5,7 @@ from bs4 import BeautifulSoup
 from flask import request
 from flask_restful import Resource
 from app import authenticate, log_error, db
-from db_models import MdPurchase, MdProduct, MdProductCategory, MdUser, MdEvent
+from mojodex_core.entities import MdPurchase, MdProduct, MdProductCategory, MdUser, MdEvent
 from models.purchase_manager import PurchaseManager
 
 from app import send_admin_email

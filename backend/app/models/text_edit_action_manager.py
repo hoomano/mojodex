@@ -1,7 +1,7 @@
 import os
 from datetime import datetime
 
-from db_models import *
+from mojodex_core.entities import *
 from app import db, log_error, server_socket, main_logger, socketio_message_sender
 
 from models.session import Session

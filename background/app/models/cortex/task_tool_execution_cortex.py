@@ -1,7 +1,7 @@
 import os
 
 from app import db, language_retriever, conversation_retriever
-from db_models import *
+from mojodex_core.entities import *
 from background_logger import BackgroundLogger
 from gantry.logger.eval_logger import EvalLogger
 from jinja2 import Template

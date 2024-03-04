@@ -25,11 +25,11 @@ class InternalMemoryTool(Tool):
     information_extractor = MojodexOpenAI(AzureOpenAIConf.azure_gpt4_turbo_conf, "INTERNAL_MEMORY_INFORMATION_EXTRACTOR")
 
 
-    def __init__(self, user_id, task_tool_execution_pk, user_task_execution_pk, task_name_for_system, gantry_logger, conversation_list, *args):
+    def __init__(self, user_id, task_tool_execution_pk, user_task_execution_pk, task_name_for_system, **kwargs):
         self.logger = BackgroundLogger(f"{InternalMemoryTool.logger_prefix}")
         self.logger.debug(f"__init__")
-        self.gantry_logger = gantry_logger
-        self.conversation_list = conversation_list
+        self.gantry_logger = kwargs.get("gantry_logger")
+        self.conversation_list = kwargs.get("conversation_list", [])
         super().__init__(InternalMemoryTool.name, InternalMemoryTool.tool_specifications, task_tool_execution_pk,
                          self.logger, user_id, user_task_execution_pk, task_name_for_system, self.n_total_usages)
 

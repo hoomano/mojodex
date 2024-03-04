@@ -53,7 +53,7 @@ class Tool(ABC):
 
                 results = Tool.json_params_generator.chat(messages, user_id,
                                                           temperature=0,
-                                                          max_tokens=300,
+                                                          max_tokens=2000,
                                                           json_format=True,
                                                           user_task_execution_pk=self.user_task_execution_pk,
                                                           task_name_for_system=self.task_name_for_system)
@@ -66,29 +66,36 @@ class Tool(ABC):
 
     def activate(self, tool_execution_context, usage_description, knowledge_collector, user_id):
         try:
-            results = []
+            queries, results = [], []
             for usage in range(self.n_total_usages):
                 json_params = self.__generate_tool_query(
                     knowledge_collector.mojo_knowledge,
                     knowledge_collector.global_context,
                     knowledge_collector.user_name,
                     knowledge_collector.user_company_knowledge,
-                    tool_execution_context, usage_description, results, self.n_total_usages, user_id)
+                    tool_execution_context, usage_description, queries, self.n_total_usages, user_id)
 
                 task_tool_query_pk = self.__save_query_to_db(json_params)
                 result = self.run_tool(json_params, tool_execution_context, usage_description, knowledge_collector)
                 self.logger.debug(f"activate :: result {result}")
                 self.__save_result_to_db(task_tool_query_pk, result)
                 json_params.update({"result": result})
-                results.append(json_params)
-
-            return results
+                queries.append(json_params)  # queries = [{'query': '', 'result': ''}, ...]
+                if result:
+                    results.append(result) # results = [result1, result2, ...]
+            # if results is empty, it means that the tool did not return any result
+            return queries, results
         except Exception as e:
             raise Exception(f"activate :: {e}")
 
     @abstractmethod
     def run_tool(self, json_params, tool_execution_context, usage_description, knowledge_collector):
         pass
+
+    def generate_produced_text(self):
+        # By default, a tool does not directly create a produced text
+        # Next steps will generate a message addressed to the user to ask for confirmation before writing the produced text
+        return None
 
     def __save_query_to_db(self, query):
         try:

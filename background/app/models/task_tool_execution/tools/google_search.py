@@ -26,7 +26,7 @@ class GoogleSearchTool(Tool):
     scrapper_prompt = "/data/prompts/background/task_tool_execution/google_search/scrapper_prompt.txt"
     scrapper = MojodexOpenAI(AzureOpenAIConf.azure_gpt4_turbo_conf, "WEB_SCRAPPER")
 
-    def __init__(self, user_id, task_tool_execution_pk, user_task_execution_pk, task_name_for_system, *args):
+    def __init__(self, user_id, task_tool_execution_pk, user_task_execution_pk, task_name_for_system, **kwargs):
         try:
             if "SERPAPI_KEY" not in os.environ:
                 raise Exception("SERPAPI_KEY is not defined")
@@ -124,7 +124,7 @@ class GoogleSearchTool(Tool):
                         result["link"] = organic_result["link"]
                     toret.append(result)
             else:
-                toret = ["No good search result found"]
+                toret = []
             return toret
         except Exception as e:
             raise Exception(f"__serp_api: {e}")

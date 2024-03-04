@@ -13,11 +13,14 @@ from models.task_tool_execution.message_writer import MessageWriter
 
 from models.events.task_tool_execution_notifications_generator import TaskToolExecutionNotificationsGenerator
 
+from datetime import datetime
+import requests
 
 class TaskToolExecutionCortex:
     logger_prefix = "TaskToolExecutionCortex"
     title_start_tag, title_end_tag = "<title>", "</title>"
     draft_start_tag, draft_end_tag = "<draft>", "</draft>"
+    execution_start_tag, execution_end_tag = "<execution>", "</execution>"
     available_tools = [GoogleSearchTool, InternalMemoryTool]
 
     tool_execution_context_template = "/data/prompts/background/task_tool_execution/tool_execution_context_template.txt"
@@ -46,17 +49,28 @@ class TaskToolExecutionCortex:
             self.logger.debug(f"execute_task_tool")
             gantry_logger = EvalLogger("/data/internal_memory_data.jsonl")
             try:
-                result = self._run_tool(gantry_logger)
+                tool_queries, produced_text = self._run_tool(gantry_logger)
             except Exception as e:
                 self.logger.error(f"execute_task_tool :: {e}")
-                result = None # go on supposing Mojo has not found anything
+                tool_queries, produced_text = None, None # go on supposing Mojo has not found anything
 
-            message_writer = MessageWriter(self.title_start_tag, self.title_end_tag, self.draft_start_tag, self.draft_end_tag)
-            mojo_message = message_writer.write_and_send_message(self.knowledge_collector, self.task, self.tool, self.task_tool,
-                                                                 self.conversation, result, self.language, self.user.user_id,
-                                                                 self.user_task_execution.session_id, self.user_task_execution.user_task_execution_pk)
+            if produced_text:
+                title, production = produced_text['title'], produced_text['production']
+                produced_text_pk, produced_text_version_pk = self.__save_produced_text_to_db(title, production)
+            else:
+                message_writer = MessageWriter(self.title_start_tag, self.title_end_tag, self.draft_start_tag,
+                                               self.draft_end_tag)
+                mojo_message = message_writer.write_message(self.knowledge_collector, self.task, self.tool,
+                                                            self.task_tool,
+                                                            self.conversation, tool_queries, self.language,
+                                                            self.user.user_id,
+                                                            self.user_task_execution.user_task_execution_pk)
+
+                # add user_task_execution_pk to the message
+                mojo_message["user_task_execution_pk"] = self.user_task_execution.user_task_execution_pk
+                self.__save_message_to_db(mojo_message)
             try:
-                gantry_logger.end({"response": mojo_message['text']})
+                gantry_logger.end({"response": f"{title}\n{production}" if produced_text else mojo_message['text']})
                 gantry_logger.close()
             except Exception as e:
                 self.logger.error(f"execute_task_tool :: gantry_logger end:: {e}")
@@ -75,10 +89,17 @@ class TaskToolExecutionCortex:
             if tool_class is None:
                 raise Exception(f"Tool {self.tool.name} not found")
             # TODO: I think n_total_usages might be dependent on the task_tool_association too
-            tool = tool_class(self.user.user_id, self.task_tool_execution_pk, self.user_task_execution.user_task_execution_pk, self.task.name_for_system, gantry_logger, self.conversation_list) # instanciate the tool
             tool_execution_context = self._get_tool_execution_context()
-            result = tool.activate(tool_execution_context, self.task_tool.usage_description, self.knowledge_collector, user_id=self.user.user_id)
-            return result
+            tool = tool_class(self.user.user_id, self.task_tool_execution_pk,
+                              self.user_task_execution.user_task_execution_pk, self.task.name_for_system,
+                              user_task_inputs=self.user_task_inputs, gantry_logger=gantry_logger,
+                              conversation_list=self.conversation_list)  # instanciate the tool
+
+            tool_queries, tool_results = tool.activate(tool_execution_context, self.task_tool.usage_description,
+                                                       self.knowledge_collector, user_id=self.user.user_id)
+            produced_text = tool.generate_produced_text() if tool_results else None
+
+            return tool_queries, produced_text
         except Exception as e:
             raise Exception(f"_run_tool :: {e}")
 
@@ -98,7 +119,7 @@ class TaskToolExecutionCortex:
     def _get_tool_execution_context(self):
 
         # Following is only useful for webapp form
-        user_task_inputs=[{k: input[k] for k in
+        self.user_task_inputs=[{k: input[k] for k in
                                  ("input_name", "description_for_system", "type", "value")} for input in
                                 self.user_task_execution.json_input_values if input["value"]]
 
@@ -108,10 +129,37 @@ class TaskToolExecutionCortex:
                                                             tool=self.tool,
                                                      task_tool_association=self.task_tool,
                                                             conversation=self.conversation,
-                                                            user_task_inputs=user_task_inputs,
+                                                            user_task_inputs=self.user_task_inputs,
                                                             title_start_tag=TaskToolExecutionCortex.title_start_tag,
                                                             title_end_tag=TaskToolExecutionCortex.title_end_tag,
                                                             draft_start_tag=TaskToolExecutionCortex.draft_start_tag,
                                                             draft_end_tag=TaskToolExecutionCortex.draft_end_tag)
         return tool_execution_context
 
+    def __save_message_to_db(self, message):
+        try:
+            # Save in db => send to mojodex-backend
+            uri = f"{os.environ['MOJODEX_BACKEND_URI']}/mojo_message"
+            pload = {'datetime': datetime.now().isoformat(), "message": message,
+                     "session_id": self.user_task_execution.session_id}
+            headers = {'Authorization': os.environ['MOJODEX_BACKGROUND_SECRET'], 'Content-Type': 'application/json'}
+            internal_request = requests.put(uri, json=pload, headers=headers)
+            if internal_request.status_code != 200:
+                raise Exception(str(internal_request.json()))
+        except Exception as e:
+            raise Exception(f"__save_message_to_db: {e}")
+
+    def __save_produced_text_to_db(self, title, production):
+        try:
+            # Save in db => send to mojodex-backend
+            uri = f"{os.environ['MOJODEX_BACKEND_URI']}/produced_text"
+            pload = {'datetime': datetime.now().isoformat(), "production": production, "title": title,
+                     "session_id": self.user_task_execution.session_id, "user_id": self.user.user_id,
+                     "user_task_execution_pk": self.user_task_execution.user_task_execution_pk}
+            headers = {'Authorization': os.environ['MOJODEX_BACKGROUND_SECRET'], 'Content-Type': 'application/json'}
+            internal_request = requests.post(uri, json=pload, headers=headers)
+            if internal_request.status_code != 200:
+                raise Exception(str(internal_request.json()))
+            return internal_request.json()["produced_text_pk"], internal_request.json()["produced_text_version_pk"]
+        except Exception as e:
+            raise Exception(f"__save_produced_text_to_db: {e}")

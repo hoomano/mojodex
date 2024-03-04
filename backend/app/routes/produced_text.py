@@ -1,8 +1,9 @@
+import os
 from datetime import datetime
 from sqlalchemy import func
 from flask import request
 from flask_restful import Resource
-from app import db, authenticate, log_error
+from app import db, authenticate, log_error, authenticate_function
 from mojodex_core.entities import *
 
 
@@ -12,7 +13,7 @@ from models.produced_text_manager import ProducedTextManager
 class ProducedText(Resource):
 
     def __init__(self):
-        ProducedText.method_decorators = [authenticate()]
+        ProducedText.method_decorators = [authenticate(methods=["GET", "DELETE"])]
 
     def get(self, user_id):
 
@@ -87,7 +88,19 @@ class ProducedText(Resource):
 
 
     # save (new or update)
-    def post(self, user_id):
+    def post(self):
+        try:
+            user_id = None
+            secret = request.headers['Authorization']
+            if secret != os.environ["MOJODEX_BACKGROUND_SECRET"]:
+                auth = authenticate_function(request.headers['Authorization'])
+                if auth[0] is not True:
+                    return auth
+                user_id = auth[1]
+        except KeyError:
+            log_error(f"Error updating user summary : Missing Authorization secret in headers")
+            return {"error": f"Missing Authorization secret in headers"}, 403
+
         if not request.is_json:
             log_error(f"Error saving produced_text : Request must be JSON")
             return {"error": "Request must be JSON"}, 400
@@ -95,8 +108,12 @@ class ProducedText(Resource):
         try:
             timestamp = request.json["datetime"]
             produced_text_pk = request.json["produced_text_pk"] if "produced_text_pk" in request.json else None
+            user_task_execution_pk = request.json[
+                "user_task_execution_pk"] if "user_task_execution_pk" in request.json else None
+            session_id = request.json["session_id"] if "session_id" in request.json else None
             production = request.json["production"]
             title = request.json["title"] if "title" in request.json else None
+            user_id = user_id if user_id else request.json["user_id"]
         except KeyError as e:
             log_error(f"Error saving produced_text : Missing field {e}")
             return {"error": f"Missing field {e}"}, 400
@@ -119,8 +136,9 @@ class ProducedText(Resource):
             else:
                 # new
                 produced_text = MdProducedText(
-                    creation_date=datetime.now(),
-                    user_id = user_id
+                    user_task_execution_fk=user_task_execution_pk,
+                    user_id=user_id,
+                    session_id=session_id
                 )
                 db.session.add(produced_text)
                 db.session.flush()
@@ -141,7 +159,7 @@ class ProducedText(Resource):
             )
             db.session.add(produced_text_version)
             db.session.commit()
-            return {"produced_text_pk": produced_text.produced_text_pk}, 200
+            return {"produced_text_pk": produced_text.produced_text_pk, "produced_text_version_pk": produced_text_version.produced_text_version_pk}, 200
         except Exception as e:
             db.session.rollback()
             log_error(f"Error saving produced_text : {e}")

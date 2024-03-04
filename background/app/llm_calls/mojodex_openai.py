@@ -85,10 +85,11 @@ class MojodexOpenAI(MojoOpenAI):
             if retries == 0:
                 raise Exception(f"🔴 Error in Mojodex OpenAI chat: {type(e).__name__} despite all retries {e}")
             time.sleep(30)
-            return self.chat(messages, user_id, temperature, max_tokens,
+            return self.recursive_chat(messages, user_id, temperature, max_tokens,
                              frequency_penalty=frequency_penalty, presence_penalty=presence_penalty,
                              json_format=json_format, stream=stream, stream_callback=stream_callback,
-                             user_task_execution_pk=user_task_execution_pk, task_name_for_system=task_name_for_system, retries=retries-1)
+                             user_task_execution_pk=user_task_execution_pk, task_name_for_system=task_name_for_system,
+                                       n_additional_calls_if_finish_reason_is_length=n_additional_calls_if_finish_reason_is_length,retries=retries-1)
         except Exception as e:
             raise Exception(f"🔴 Error in Mojodex OpenAI chat of type {type(e).__name__}: {e}")
 

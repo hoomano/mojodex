@@ -104,7 +104,7 @@ class MojoOpenAI:
                         except Exception as e:
                             logging.error(f"🔴 Error in streamCallback: {e}")
 
-            response = assistant_response + complete_text
+            response = complete_text
         else:
             response = completion.choices[0].message.content
             finish_reason = completion.choices[0].finish_reason
@@ -119,7 +119,7 @@ class MojoOpenAI:
                                              assistant_response=assistant_response + " " + response,
                                              n_additional_calls_if_finish_reason_is_length=n_additional_calls_if_finish_reason_is_length,
                                              n_calls=n_calls + 1)
-        return [response] # [] is a legacy from the previous version that could return several completions. Need complete refacto to remove.
+        return [assistant_response + " " + response] # [] is a legacy from the previous version that could return several completions. Need complete refacto to remove.
 
     def openAIEmbedding(self, text):
         """

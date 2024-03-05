@@ -9,11 +9,24 @@ To use Mistral AI, you need to have a Mistral AI account and create an API key.
 
 ## Configure Mistral AI
 
+
+### Mistral `La Plateforme`
 In your `.env` file, add the following:
 
 ```bash
+# Mistral API
 MISTRAL_API_KEY=your-api-key
 ```
+### Mistral `Azure Deployment`
+
+In your `.env` file, add the following:
+
+```bash
+# Azure Mistral API
+MISTRAL_AZURE_API_BASE=<your-azure-api-endpoint>
+MISTRAL_AZURE_API_KEY=<your-azure-api-key>
+```
+
 
 ## Coverage
 

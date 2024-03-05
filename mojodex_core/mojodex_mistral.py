@@ -2,6 +2,7 @@ import json
 import logging
 import os
 
+logging.basicConfig(level=logging.INFO)
 
 from mojodex_core.logging_handler import log_error
 
@@ -14,6 +15,11 @@ mistral_medium_conf = {
     "api_key": os.environ.get("MISTRAL_API_KEY"),
     "api_model": "mistral-medium",
 }
+azure_mistral_large_conf = {
+    "api_key": os.environ.get("MISTRAL_AZURE_API_KEY"),
+    "endpoint": os.environ.get("MISTRAL_AZURE_API_BASE"),
+    "api_model": "mistral-large",
+}
 
 
 class MojodexMistralAI():
@@ -22,9 +28,13 @@ class MojodexMistralAI():
     def __init__(self, mistral_conf, label):
         self.api_key = mistral_conf["api_key"]
         self.model = mistral_conf["api_model"]
+        self.endpoint = mistral_conf.get("endpoint") if mistral_conf.get("endpoint") else "https://api.mistral.ai"
         self.label = label
 
-        self.client = MistralClient(api_key=self.api_key)
+        self.client = MistralClient(
+            api_key=self.api_key,
+            endpoint=azure_mistral_large_conf["endpoint"],
+            )
 
         # if dataset_dir does not exist, create it
         if not os.path.exists(self.dataset_dir):
@@ -67,6 +77,8 @@ class MojodexMistralAI():
                     messages = [ChatMessage(role='user', content=messages[0]['content'])]
                 else:
                     messages = [ChatMessage(role=message['role'], content=message['content']) for message in messages]
+                
+                logging.info(f"messages={messages}")
 
                 stream_response = self.client.chat_stream(model=self.model, messages=messages, temperature=temperature, max_tokens=max_tokens)
             
@@ -74,7 +86,7 @@ class MojodexMistralAI():
                     complete_text = ""
                     for chunk in stream_response:
                         partial_token = chunk.choices[0].delta.content
-                        complete_text += partial_token
+                        complete_text += partial_token if partial_token else ""
                         if stream_callback is not None:
                             try:
                                 stream_callback(complete_text)

@@ -6,7 +6,7 @@ from mojodex_core.entities import *
 
 from jinja2 import Template
 
-from models.llm_calls.mojodex_openai import MojodexOpenAI
+from mojodex_core.mojodex_openai import MojodexOpenAI
 
 from azure_openai_conf import AzureOpenAIConf
 

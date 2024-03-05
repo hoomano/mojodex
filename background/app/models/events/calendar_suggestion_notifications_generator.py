@@ -3,8 +3,8 @@ import json
 from jinja2 import Template
 
 from background_logger import BackgroundLogger
-from llm_calls.mojodex_openai import MojodexOpenAI
-from llm_calls.json_loader import json_decode_retry
+from mojodex_core.mojodex_openai import MojodexOpenAI
+from mojodex_core.json_loader import json_decode_retry
 from azure_openai_conf import AzureOpenAIConf
 
 from app import send_admin_error_email, on_json_error

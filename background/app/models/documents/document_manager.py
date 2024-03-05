@@ -3,7 +3,7 @@ import requests
 from datetime import datetime
 
 from models.documents.document_chunk_manager import DocumentChunkManager
-from llm_calls.mojodex_openai import MojodexOpenAI
+from mojodex_core.mojodex_openai import MojodexOpenAI
 
 from background_logger import BackgroundLogger
 

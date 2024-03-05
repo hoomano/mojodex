@@ -1,5 +1,5 @@
 from datetime import datetime
-from mojodex_core.mojodex_openai import MojodexOpenAI
+from mojodex_backend_openai import MojodexBackendOpenAI
 from app import db, timing_logger
 import time
 from jinja2 import Template
@@ -12,14 +12,14 @@ from azure_openai_conf import AzureOpenAIConf
 class ProducedTextManager:
     logger_prefix = "📝 ProducedTextManager"
 
-    embedder = MojodexOpenAI(AzureOpenAIConf.azure_conf_embedding, "PRODUCED_TEXT_EMBEDDER")
+    embedder = MojodexBackendOpenAI(AzureOpenAIConf.azure_conf_embedding, "PRODUCED_TEXT_EMBEDDER")
 
     is_edition_prompt = "/data/prompts/produced_text_manager/is_edition_prompt.txt"
 
-    is_edition_generator = MojodexOpenAI(AzureOpenAIConf.azure_gpt4_turbo_conf, "IS_EDITION_WRITING", AzureOpenAIConf.azure_gpt4_32_conf)
+    is_edition_generator = MojodexBackendOpenAI(AzureOpenAIConf.azure_gpt4_turbo_conf, "IS_EDITION_WRITING", AzureOpenAIConf.azure_gpt4_32_conf)
 
     get_text_type_prompt = "/data/prompts/produced_text_manager/get_text_type_prompt.txt"
-    text_type_deducer = MojodexOpenAI(AzureOpenAIConf.azure_gpt4_turbo_conf, "TEXT_TYPE_DEDUCER", AzureOpenAIConf.azure_gpt4_32_conf)
+    text_type_deducer = MojodexBackendOpenAI(AzureOpenAIConf.azure_gpt4_turbo_conf, "TEXT_TYPE_DEDUCER", AzureOpenAIConf.azure_gpt4_32_conf)
 
     title_start_tag, title_end_tag = "<title>", "</title>"
     draft_start_tag, draft_end_tag = "<draft>", "</draft>"

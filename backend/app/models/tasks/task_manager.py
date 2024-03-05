@@ -15,7 +15,7 @@ from models.tasks.task_inputs_manager import TaskInputsManager
 from models.tasks.task_tool_manager import TaskToolManager
 
 from app import socketio_message_sender
-from mojodex_core.mojodex_openai import MojodexOpenAI
+from mojodex_backend_openai import MojodexBackendOpenAI
 #from mojodex_core.mojodex_mistral import MojodexMistralAI, mistral_medium_conf
 from models.produced_text_manager import ProducedTextManager
 from azure_openai_conf import AzureOpenAIConf
@@ -27,7 +27,7 @@ class TaskManager:
     user_language_end_tag = "</user_language>"
 
     answer_user_prompt = "/data/prompts/tasks/run.txt"
-    user_answerer = MojodexOpenAI(AzureOpenAIConf.azure_gpt4_turbo_conf, "ANSWER_USER", AzureOpenAIConf.azure_gpt4_32_conf)
+    user_answerer = MojodexBackendOpenAI(AzureOpenAIConf.azure_gpt4_turbo_conf, "ANSWER_USER", AzureOpenAIConf.azure_gpt4_32_conf)
     
     # EXPERIMENTAL: MistralAI see doc [here](docs/llm_providers/mistral.md)
     #user_answerer = MojodexMistralAI(mistral_medium_conf, "ANSWER_USER")

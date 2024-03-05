@@ -45,7 +45,7 @@ from mojodex_backend_logger import MojodexBackendLogger
 main_logger = MojodexBackendLogger("main_logger")
 
 try:
-    from email_sender import MojoAwsMail
+    from mojodex_core.email_sender import MojoAwsMail
     mojo_mail_client = MojoAwsMail(sender_name=os.environ['SENDER_NAME'], sender_email=os.environ['SENDER_EMAIL'],
                                    region="eu-west-3")
 except Exception as e:

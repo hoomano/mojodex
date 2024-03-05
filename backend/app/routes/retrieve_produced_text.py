@@ -6,14 +6,14 @@ from flask_restful import Resource
 from app import db, log_error, document_manager
 from mojodex_core.entities import *
 
-from mojodex_core.mojodex_openai import MojodexOpenAI
+from mojodex_backend_openai import MojodexBackendOpenAI
 
 from azure_openai_conf import AzureOpenAIConf
 from sqlalchemy import func
 
 
 class RetrieveProducedText(Resource):
-    embedder = MojodexOpenAI(AzureOpenAIConf.azure_conf_embedding, "PRODUCED_TEXT_QUERY_EMBEDDER")
+    embedder = MojodexBackendOpenAI(AzureOpenAIConf.azure_conf_embedding, "PRODUCED_TEXT_QUERY_EMBEDDER")
 
     def get(self):
         log_message = "Error retrieving produced_texts"

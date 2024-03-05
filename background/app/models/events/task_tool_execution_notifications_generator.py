@@ -1,6 +1,6 @@
 from jinja2 import Template
 from background_logger import BackgroundLogger
-from mojodex_core.mojodex_openai import MojodexOpenAI
+from mojodex_background_openai import MojodexBackgroundOpenAI
 from mojodex_core.json_loader import json_decode_retry
 from app import on_json_error
 from azure_openai_conf import AzureOpenAIConf
@@ -11,7 +11,7 @@ from models.events.events_generator import EventsGenerator
 class TaskToolExecutionNotificationsGenerator(EventsGenerator):
     logger_prefix = "TaskToolExecutionNotificationsGenerator::"
     notification_text_prompt = "/data/prompts/engagement/notifications/task_tool_execution_notification_text_prompt.txt"
-    notification_text_generator = MojodexOpenAI(AzureOpenAIConf.azure_gpt4_turbo_conf,
+    notification_text_generator = MojodexBackgroundOpenAI(AzureOpenAIConf.azure_gpt4_turbo_conf,
                                                 "TASK_TOOL_NOTIFICATION")
 
     def __init__(self):

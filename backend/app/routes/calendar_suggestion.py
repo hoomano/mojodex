@@ -3,7 +3,7 @@ import time
 from flask import request
 from flask_restful import Resource
 from app import authenticate, db, log_error, server_socket
-from mojodex_core.mojodex_openai import MojodexOpenAI
+from mojodex_backend_openai import MojodexBackendOpenAI
 from datetime import datetime, timedelta
 from jinja2 import Template
 from mojodex_core.entities import *
@@ -20,12 +20,12 @@ class CalendarSuggestion(Resource):
 
 
     calendar_suggestion_generator_from_calendar_prompt = "generate_suggestion.txt"
-    calendar_suggestion_generator_from_calendar = MojodexOpenAI(AzureOpenAIConf.azure_gpt4_turbo_conf,
+    calendar_suggestion_generator_from_calendar = MojodexBackendOpenAI(AzureOpenAIConf.azure_gpt4_turbo_conf,
                                                          "CALENDAR_SUGGESTION_GENERATOR",
                                                          AzureOpenAIConf.azure_gpt4_32_conf)
 
     calendar_suggestion_waiting_prompt = "waiting_message.txt"
-    calendar_suggestion_waiting_generator = MojodexOpenAI(AzureOpenAIConf.azure_gpt4_turbo_conf, "CALENDAR_SUGGESTION_WAITING_TEXT",
+    calendar_suggestion_waiting_generator = MojodexBackendOpenAI(AzureOpenAIConf.azure_gpt4_turbo_conf, "CALENDAR_SUGGESTION_WAITING_TEXT",
                                         AzureOpenAIConf.azure_gpt4_32_conf)
 
     def __init__(self):

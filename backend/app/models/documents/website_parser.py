@@ -4,7 +4,7 @@ import os
 import requests
 from bs4 import BeautifulSoup
 from jinja2 import Template
-from mojodex_core.mojodex_openai import MojodexOpenAI
+from mojodex_backend_openai import MojodexBackendOpenAI
 
 from mojodex_backend_logger import MojodexBackendLogger
 from azure_openai_conf import AzureOpenAIConf
@@ -16,7 +16,7 @@ class WebsiteParser:
 
     extract_website_info_prompt = "/data/prompts/website_parser/extract_infos_from_webpage.txt"
 
-    website_info_extractor = MojodexOpenAI(AzureOpenAIConf.azure_gpt4_turbo_conf, "EXTRACT_COMPANY_INFO_FROM_WEBSITE",
+    website_info_extractor = MojodexBackendOpenAI(AzureOpenAIConf.azure_gpt4_turbo_conf, "EXTRACT_COMPANY_INFO_FROM_WEBSITE",
                                            AzureOpenAIConf.azure_gpt4_32_conf)
 
     def __init__(self):

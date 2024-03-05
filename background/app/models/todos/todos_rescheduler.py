@@ -3,7 +3,7 @@ from datetime import datetime
 
 import requests
 from jinja2 import Template
-from mojodex_core.mojodex_openai import MojodexOpenAI
+from mojodex_background_openai import MojodexBackgroundOpenAI
 from mojodex_core.json_loader import json_decode_retry
 from background_logger import BackgroundLogger
 from app import on_json_error
@@ -17,7 +17,7 @@ class TodosRescheduler:
     todos_scheduling_url = "/todos_scheduling"
 
     todos_rescheduler_prompt = "/data/prompts/background/todos/reschedule_todo.txt"
-    todos_rescheduler = MojodexOpenAI(AzureOpenAIConf.azure_gpt4_turbo_conf, "TODOS_RESCHEDULER")
+    todos_rescheduler = MojodexBackgroundOpenAI(AzureOpenAIConf.azure_gpt4_turbo_conf, "TODOS_RESCHEDULER")
 
     def __init__(self, todo_pk, user_task_execution, knowledge_collector, todo_description, n_scheduled,
                  first_scheduled_date, todo_list):

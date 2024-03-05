@@ -5,7 +5,7 @@ from mojodex_core.entities import *
 from jinja2 import Template
 
 from models.produced_text_manager import ProducedTextManager
-from mojodex_core.mojodex_openai import MojodexOpenAI
+from mojodex_backend_openai import MojodexBackendOpenAI
 from azure_openai_conf import AzureOpenAIConf
 
 
@@ -13,7 +13,7 @@ class DefaultChitChat:
     logger_prefix = "DefaultChitChat::"
 
     chit_chat_prompt = "/data/prompts/chit_chat/chit_chat_prompt.txt"
-    chit_chat_generator = MojodexOpenAI(AzureOpenAIConf.azure_gpt4_turbo_conf, "CHIT_CHAT", AzureOpenAIConf.azure_gpt4_32_conf)
+    chit_chat_generator = MojodexBackendOpenAI(AzureOpenAIConf.azure_gpt4_turbo_conf, "CHIT_CHAT", AzureOpenAIConf.azure_gpt4_32_conf)
 
     _answer_user_acceptable_time = 6  # 3 s
 

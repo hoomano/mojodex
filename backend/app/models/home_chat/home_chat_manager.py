@@ -6,7 +6,7 @@ from mojodex_backend_logger import MojodexBackendLogger
 from app import db, placeholder_generator
 from models.knowledge.knowledge_manager import KnowledgeManager
 
-from mojodex_core.mojodex_openai import MojodexOpenAI
+from mojodex_backend_openai import MojodexBackendOpenAI
 from mojodex_core.entities import *
 from azure_openai_conf import AzureOpenAIConf
 from sqlalchemy import and_
@@ -17,7 +17,7 @@ from models.home_chat.task_suggestion_manager import TaskSuggestionManager
 class HomeChatManager:
     logger_prefix = "HomeChatManager::"
     answer_user_prompt = "/data/prompts/home_chat/run.txt"
-    user_answerer = MojodexOpenAI(AzureOpenAIConf.azure_gpt4_turbo_conf, "HOME_CHAT",
+    user_answerer = MojodexBackendOpenAI(AzureOpenAIConf.azure_gpt4_turbo_conf, "HOME_CHAT",
                                   AzureOpenAIConf.azure_gpt4_32_conf)
 
     user_message_start_tag, user_message_end_tag = "<message_body>", "</message_body>"

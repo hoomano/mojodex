@@ -1,6 +1,6 @@
 from datetime import datetime
-from models.costs_manager.costs_manager import CostsManager
-from app import log_error
+from mojodex_core.costs_manager.costs_manager import CostsManager
+from mojodex_core.logging_handler import log_error
 
 class WhisperCostsManager(CostsManager):
     logger_prefix = "WhisperCostsManager"

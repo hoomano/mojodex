@@ -113,7 +113,7 @@ timing_logger = TimingLogger("/data/timing_logs.log")
 def authenticate_function(token):
     try:
         payload = jwt.decode(token, os.environ["JWT_SECRET"], algorithms=os.environ["ENCODING_ALGORITHM"])
-        user_id = payload["sub"].split("__mojodex__")[0]
+        user_id = payload["sub"].split(os.environ['TOKEN_SECRET_SPLITTER'])[0]
         return True, user_id
     except KeyError:
         return {"error": "Authorization key required"}, 403
@@ -215,7 +215,7 @@ def handle_message(data):
             return # ok
         token = data['token']
         payload = jwt.decode(token, os.environ["JWT_SECRET"], algorithms=os.environ["ENCODING_ALGORITHM"])
-        payload_split = payload["sub"].split("__mojodex__")
+        payload_split = payload["sub"].split(os.environ['TOKEN_SECRET_SPLITTER'])
         if payload_split:
             user_id = payload_split[0]
             join_room(f"mojo_events_{user_id}")

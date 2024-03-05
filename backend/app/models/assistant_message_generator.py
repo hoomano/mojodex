@@ -270,12 +270,13 @@ class AssistantMessageGenerator(ABC):
                                                          TaskExecutor.execution_end_tag)
                 self._draft_token_stream_callback(text)
     
-    def response_to_user_message(self, user_message, tag_proper_nouns=False):
+    def launch_mojo_message_generation(self, user_message=None, use_message_placeholder=False, use_draft_placeholder=False, tag_proper_nouns=False):
         try:
             if self.running_user_task_execution:
                 server_socket.start_background_task(self._give_title_and_summary_task_execution,
                                                 self.running_user_task_execution.user_task_execution_pk)
-            mojo_message = self._answer_user(user_message, tag_proper_nouns=tag_proper_nouns)
+            mojo_message = self._generate_mojo_message(user_message,  use_message_placeholder=use_message_placeholder,
+                                             use_draft_placeholder=use_draft_placeholder, tag_proper_nouns=tag_proper_nouns)
             if mojo_message and self.running_user_task_execution:
                 mojo_message['user_task_execution_pk'] = self.running_user_task_execution.user_task_execution_pk
             return 'mojo_message', mojo_message, self.language
@@ -326,7 +327,7 @@ class AssistantMessageGenerator(ABC):
             use_message_placeholder, use_draft_placeholder = False, False
         return use_message_placeholder, use_draft_placeholder
     
-    def _answer_user(self, user_message=None, use_message_placeholder=False, use_draft_placeholder=False, tag_proper_nouns=False):
+    def _generate_mojo_message(self, user_message=None, use_message_placeholder=False, use_draft_placeholder=False, tag_proper_nouns=False):
         self.logger.debug(f"_answer_user")
         
         try:

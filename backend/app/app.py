@@ -304,7 +304,7 @@ def socketio_event_callback(event_name, data):
             message = {"error": "No session_id provided", "session_id": data.get("session_id")}
             emit('error', message)
             return
-        session.process_chat_message(event_name, data)
+        session.process_chat_message(data)
     except Exception as e:
         message = {"error": str(e), "session_id": data.get("session_id")}
         emit('error', message)

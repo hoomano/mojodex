@@ -201,7 +201,7 @@ class UserMessage(Resource):
                                      "message_date": message_date.isoformat(),
                                    "use_message_placeholder": use_message_placeholder, "use_draft_placeholder": use_draft_placeholder}
 
-                server_socket.start_background_task(session.process_chat_message, "user_message", session_message)
+                server_socket.start_background_task(session.process_chat_message, session_message)
 
             except Exception as e:
                 # mark message as in_error_state so that next retry will go through transcription again

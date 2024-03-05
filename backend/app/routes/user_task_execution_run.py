@@ -6,9 +6,6 @@ from flask_restful import Resource
 from app import db, authenticate, log_error, server_socket, executor, main_logger
 from mojodex_core.entities import *
 from sqlalchemy.orm.attributes import flag_modified
-from models.tasks.task_manager import TaskManager
-from models.session import Session
-from models.voice_generator import VoiceGenerator
 from packaging import version
 
 class UserTaskExecutionRun(Resource):
@@ -67,69 +64,22 @@ class UserTaskExecutionRun(Resource):
                 flag_modified(user_task_execution, "json_input_values")
                 db.session.commit()
 
-            task, user = (
-                db.session
-                .query(
-                    MdTask,
-                    MdUser
-                    )
-                .join(
-                    MdUserTask, 
-                    MdUserTask.task_fk == MdTask.task_pk
-                )
-                .join(
-                    MdUser, 
-                    MdUser.user_id == MdUserTask.user_id
-                )
-                .filter(
-                    MdUserTask.user_task_pk == user_task_execution.user_task_fk
-                )
-                .filter(
-                    MdUserTask.enabled == True
-                )
-                .first())
-
-            if task is None:
-                return {"error": "Task not found or disabled"}, 400
-
-            if 'SPEECH_KEY' in os.environ and 'SPEECH_REGION' in os.environ:
-                try:
-                    voice_generator = VoiceGenerator() if platform == "mobile" else None
-                except Exception as e:
-                    voice_generator = None
-                    main_logger.error(f"{UserTaskExecutionRun.logger_prefix}:: Can't initialize voice generator")
-            else:
-                voice_generator = None
-
-
-            user_storage = os.path.join(Session.sessions_storage, user.user_id)
-            if not os.path.exists(user_storage):
-                os.makedirs(user_storage, exist_ok=True)
-            session_storage = os.path.join(user_storage, user_task_execution.session_id)
-            if not os.path.exists(session_storage):
-                os.makedirs(session_storage, exist_ok=True)
-            mojo_messages_audio_storage = os.path.join(session_storage, "mojo_messages_audios")
-            if not os.path.exists(mojo_messages_audio_storage):
-                os.makedirs(mojo_messages_audio_storage, exist_ok=True)
 
             user_task_execution.start_date = datetime.now()
-            db.session.flush()
-            db.session.refresh(user_task_execution)
             db.session.commit()
 
-            task_manager = TaskManager(user, user_task_execution.session_id, platform, app_version, voice_generator,
-                                       mojo_messages_audio_storage,
-                                       user_task_execution_pk=user_task_execution_pk)
+            from models.session import Session as SessionModel
+            session = SessionModel(user_task_execution.session_id)
 
-            def browse_missing_info_callback( task_manager, use_message_placeholder, use_draft_placeholder, tag_proper_nouns):
-                task_manager.start_task_from_form(use_message_placeholder=use_message_placeholder, use_draft_placeholder=use_draft_placeholder, tag_proper_nouns=tag_proper_nouns)
+            def launch_process(session, app_version, platform, user_task_execution_pk, use_message_placeholder, use_draft_placeholder):
+                session.process_form_input( app_version, platform, user_task_execution_pk, use_message_placeholder=use_message_placeholder, use_draft_placeholder=use_draft_placeholder)
                 return
 
             use_message_placeholder = request.json['use_message_placeholder'] if (
                         'use_message_placeholder' in request.json) else False
             use_draft_placeholder = request.json['use_draft_placeholder'] if ('use_draft_placeholder' in request.json) else False
 
-            server_socket.start_background_task(browse_missing_info_callback, task_manager, use_message_placeholder, use_draft_placeholder, platform=="mobile")
+            server_socket.start_background_task(launch_process, session, app_version, platform, user_task_execution_pk, use_message_placeholder, use_draft_placeholder)
 
             return {"success": "ok"}, 200
 

@@ -3,7 +3,7 @@ import os
 from jinja2 import Template
 
 from background_logger import BackgroundLogger
-from mojodex_core.mojodex_openai import MojodexOpenAI
+from mojodex_background_openai import MojodexBackgroundOpenAI
 from mojodex_core.json_loader import json_decode_retry
 from azure_openai_conf import AzureOpenAIConf
 
@@ -18,7 +18,7 @@ class DailyEmailsGenerator(EventsGenerator):
     logger_prefix = "DailyEmailsGenerator::"
     message_from_mojodex_email = "/data/mails/message_from_mojodex.html"
     daily_email_text_prompt = "/data/prompts/engagement/emails/daily_emails_text_prompt.txt"
-    daily_email_text_generator = MojodexOpenAI(AzureOpenAIConf.azure_gpt4_turbo_conf, "DAILY_EMAIL_GENERATOR")
+    daily_email_text_generator = MojodexBackgroundOpenAI(AzureOpenAIConf.azure_gpt4_turbo_conf, "DAILY_EMAIL_GENERATOR")
 
     reminder_email_type="reminder_email"
     summary_email_type="summary_email"

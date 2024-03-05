@@ -3,7 +3,7 @@ import logging
 import os
 
 
-from app import log_error
+from mojodex_core.logging_handler import log_error
 
 from mistralai.client import MistralClient
 from mistralai.models.chat_completion import ChatMessage

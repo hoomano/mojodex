@@ -3,7 +3,7 @@ import requests
 from datetime import datetime
 
 from models.documents.document_chunk_manager import DocumentChunkManager
-from mojodex_core.mojodex_openai import MojodexOpenAI
+from mojodex_background_openai import MojodexBackgroundOpenAI
 
 from background_logger import BackgroundLogger
 
@@ -16,7 +16,7 @@ class DocumentManager:
     def __init__(self):
         self.logger = BackgroundLogger(f"{DocumentManager.logger_prefix}")
 
-        self.embedder = MojodexOpenAI(AzureOpenAIConf.azure_conf_embedding, "DOCUMENT_EMBEDDING")
+        self.embedder = MojodexBackgroundOpenAI(AzureOpenAIConf.azure_conf_embedding, "DOCUMENT_EMBEDDING")
 
         self.document_chunk_manager = DocumentChunkManager()
 

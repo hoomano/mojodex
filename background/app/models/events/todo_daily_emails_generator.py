@@ -5,7 +5,7 @@ from datetime import datetime
 from jinja2 import Template
 
 from background_logger import BackgroundLogger
-from mojodex_core.mojodex_openai import MojodexOpenAI
+from mojodex_background_openai import MojodexBackgroundOpenAI
 
 from azure_openai_conf import AzureOpenAIConf
 
@@ -22,7 +22,7 @@ class TodoDailyEmailsGenerator(EventsGenerator):
     logger_prefix = "TodoDailyEmailsGenerator::"
     message_from_mojodex_email = "/data/mails/message_from_mojodex.html"
     todo_daily_email_text_prompt = "/data/prompts/engagement/emails/todo_daily_emails_text_prompt.txt"
-    todo_daily_email_text_generator = MojodexOpenAI(AzureOpenAIConf.azure_gpt4_turbo_conf,
+    todo_daily_email_text_generator = MojodexBackgroundOpenAI(AzureOpenAIConf.azure_gpt4_turbo_conf,
                                                     "DAILY_EMAIL_GENERATOR")
     todo_daily_email_type = "todo_daily_email"
 

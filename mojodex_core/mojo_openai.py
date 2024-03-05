@@ -1,6 +1,8 @@
 from openai import OpenAI, AzureOpenAI
-import logging
+from mojodex_core.logging_handler import MojodexCoreLogger
 import tiktoken
+
+mojo_openai_logger = MojodexCoreLogger("mojo_openai_logger")
 
 
 class MojoOpenAI:
@@ -24,8 +26,6 @@ class MojoOpenAI:
                 max_retries=self.max_retries
             ) if api_type == 'azure' else OpenAI(api_key=api_key)
 
-            # DEBUG was too verbose and applied to openai
-            logging.basicConfig(level=logging.WARNING)
         except Exception as e:
             raise Exception(f"🔴 Error initializing MojoOpenAI __init__  : {e}")
 
@@ -102,7 +102,7 @@ class MojoOpenAI:
                         try:
                             stream_callback(complete_text)
                         except Exception as e:
-                            logging.error(f"🔴 Error in streamCallback: {e}")
+                           mojo_openai_logger.error(f"🔴 Error in streamCallback: {e}")
 
         else:
             response = completion.choices[0].message.content

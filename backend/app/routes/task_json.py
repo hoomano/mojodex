@@ -5,7 +5,7 @@ from flask import request
 from flask_restful import Resource
 from app import db, log_error
 from mojodex_core.entities import MdTextType
-from mojodex_core.mojodex_openai import MojodexOpenAI
+from mojodex_backend_openai import MojodexBackendOpenAI
 from azure_openai_conf import AzureOpenAIConf
 from jinja2 import Template
 from mojodex_core.json_loader import json_decode_retry
@@ -14,7 +14,7 @@ from app import on_json_error
 class TaskJson(Resource):
 
     task_json_prompt = "/data/prompts/tasks/generate_json.txt"
-    task_json_generator = MojodexOpenAI(AzureOpenAIConf.azure_gpt4_turbo_conf, "GENERATE_TASK_JSON", AzureOpenAIConf.azure_gpt4_32_conf)
+    task_json_generator = MojodexBackendOpenAI(AzureOpenAIConf.azure_gpt4_turbo_conf, "GENERATE_TASK_JSON", AzureOpenAIConf.azure_gpt4_32_conf)
 
     def __get_text_types(self):
         try:

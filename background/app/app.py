@@ -37,7 +37,7 @@ from background_logger import BackgroundLogger
 main_logger = BackgroundLogger("main_logger")
 
 try:
-    from email_sender import MojoAwsMail
+    from mojodex_core.email_sender import MojoAwsMail
     mojo_mail_client = MojoAwsMail(sender_name=os.environ['SENDER_NAME'], sender_email=os.environ['SENDER_EMAIL'], region="eu-west-3")
 except Exception as e:
     main_logger.error(f"Error while initializing MojoAwsMail : {e}")
@@ -53,9 +53,9 @@ def send_admin_error_email(error_message):
     except Exception as e:
         main_logger.error(f"Error while sending admin email : {e}")
 
-from costs_manager.tokens_costs_manager import TokensCostsManager
-from costs_manager.serp_api_costs_manager import SerpAPICostsManager
-from costs_manager.news_api_costs_manager import NewsAPICostsManager
+from mojodex_core.costs_manager.tokens_costs_manager import TokensCostsManager
+from mojodex_core.costs_manager.serp_api_costs_manager import SerpAPICostsManager
+from mojodex_core.costs_manager.news_api_costs_manager import NewsAPICostsManager
 tokens_costs_manager = TokensCostsManager()
 serp_api_costs_manager = SerpAPICostsManager()
 news_api_costs_manager = NewsAPICostsManager()

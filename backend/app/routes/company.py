@@ -10,7 +10,7 @@ from mojodex_core.entities import *
 from jinja2 import Template
 
 from models.documents.website_parser import WebsiteParser
-from mojodex_core.mojodex_openai import MojodexOpenAI
+from mojodex_backend_openai import MojodexBackendOpenAI
 
 from azure_openai_conf import AzureOpenAIConf
 from mojodex_core.json_loader import json_decode_retry
@@ -19,7 +19,7 @@ from app import on_json_error
 
 class Company(Resource):
     correct_company_info_prompt = "/data/prompts/company/correct_company_infos.txt"
-    company_info_corrector = MojodexOpenAI(AzureOpenAIConf.azure_gpt4_turbo_conf,
+    company_info_corrector = MojodexBackendOpenAI(AzureOpenAIConf.azure_gpt4_turbo_conf,
                                            "CORRECT_COMPANY_INFO_FROM_FEEDBACK",
                                            AzureOpenAIConf.azure_gpt4_32_conf
                                            )

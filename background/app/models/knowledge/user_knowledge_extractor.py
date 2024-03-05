@@ -2,7 +2,7 @@ import os
 
 import requests
 from jinja2 import Template
-from mojodex_core.mojodex_openai import MojodexOpenAI
+from mojodex_background_openai import MojodexBackgroundOpenAI
 from datetime import datetime
 
 from background_logger import BackgroundLogger
@@ -14,7 +14,7 @@ class UserKnowledgeExtractor:
     logger_prefix = "UserKnowledgeExtractor::"
 
     extract_user_knowledge_prompt = "/data/prompts/background/knowledge/user_knowledge_extractor/extract_user_knowledge_prompt.txt"
-    user_knowledge_extractor = MojodexOpenAI(AzureOpenAIConf.azure_gpt4_turbo_conf,"EXTRACT_USER_KNOWLEDGE")
+    user_knowledge_extractor = MojodexBackgroundOpenAI(AzureOpenAIConf.azure_gpt4_turbo_conf,"EXTRACT_USER_KNOWLEDGE")
 
     def __init__(self, session_id, user_id, conversation):
         self.logger = BackgroundLogger(

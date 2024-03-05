@@ -6,7 +6,7 @@ from models.session import Session as SessionModel
 from mojodex_backend_logger import MojodexBackendLogger
 from azure_openai_conf import AzureOpenAIConf
 
-from mojodex_core.mojodex_openai import MojodexOpenAI
+from mojodex_backend_openai import MojodexBackendOpenAI
 
 
 class UserAudioFileManager:
@@ -15,7 +15,7 @@ class UserAudioFileManager:
     def __init__(self):
         try:
             self.logger = MojodexBackendLogger(f"{UserAudioFileManager.logger_prefix}")
-            self.mojodex_whisper = MojodexOpenAI(AzureOpenAIConf.azure_whisper_conf, "whisper-azure")
+            self.mojodex_whisper = MojodexBackendOpenAI(AzureOpenAIConf.azure_whisper_conf, "whisper-azure")
         except Exception as e:
             raise Exception(f"Error in initializing UserAudioFileManager: {e}")
 

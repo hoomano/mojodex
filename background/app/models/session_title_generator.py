@@ -4,7 +4,7 @@ from datetime import datetime
 import requests
 from background_logger import BackgroundLogger
 from jinja2 import Template
-from mojodex_core.mojodex_openai import MojodexOpenAI
+from mojodex_background_openai import MojodexBackgroundOpenAI
 
 from azure_openai_conf import AzureOpenAIConf
 
@@ -13,7 +13,7 @@ class SessionTitleGenerator:
     logger_prefix = "SessionTitleGenerator::"
 
     generate_title_prompt = "/data/prompts/background/session_started/generate_title_prompt.txt"
-    title_generator = MojodexOpenAI(AzureOpenAIConf.azure_gpt4_turbo_conf, "GENERATE_SESSION_TITLE")
+    title_generator = MojodexBackgroundOpenAI(AzureOpenAIConf.azure_gpt4_turbo_conf, "GENERATE_SESSION_TITLE")
 
     def __init__(self, session_id, user_id, knwoledge_collector):
         try:

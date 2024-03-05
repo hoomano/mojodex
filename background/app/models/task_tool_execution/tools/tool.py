@@ -6,7 +6,7 @@ from datetime import datetime
 
 import requests
 from jinja2 import Template
-from mojodex_core.mojodex_openai import MojodexOpenAI
+from mojodex_background_openai import MojodexBackgroundOpenAI
 from mojodex_core.json_loader import json_decode_retry
 from app import on_json_error
 from azure_openai_conf import AzureOpenAIConf
@@ -16,7 +16,7 @@ class Tool(ABC):
     task_tool_query_url = "task_tool_query"
 
     params_generator_prompt = "/data/prompts/background/task_tool_execution/generate_tool_params.txt"
-    json_params_generator = MojodexOpenAI(AzureOpenAIConf.azure_gpt4_turbo_conf, "TOOL_PARAMS_GENERATOR")
+    json_params_generator = MojodexBackgroundOpenAI(AzureOpenAIConf.azure_gpt4_turbo_conf, "TOOL_PARAMS_GENERATOR")
 
     def __init__(self, name, tool_specifications, task_tool_execution_pk, logger, user_id, user_task_execution_pk,
                  task_name_for_system, n_total_usages):

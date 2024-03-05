@@ -3,12 +3,18 @@ import os
 import time
 
 import openai
-from app import tokens_costs_manager, send_admin_error_email
 
-from llm_calls.mojo_openai import MojoOpenAI
+from mojodex_core.costs_manager.tokens_costs_manager import TokensCostsManager
+
+from mojodex_core.logging_handler import  send_admin_error_email
+from mojodex_core.costs_manager.tokens_costs_manager import TokensCostsManager
+tokens_costs_manager = TokensCostsManager()
 
 
-class MojodexOpenAI(MojoOpenAI):
+from mojodex_core.mojo_openai import MojoOpenAI
+
+
+class MojodexBackgroundOpenAI(MojoOpenAI):
     logger_prefix = "MojodexOpenAI"
     dataset_dir = "/data/prompts_dataset"
 
@@ -58,7 +64,7 @@ class MojodexOpenAI(MojoOpenAI):
                 n_tokens_prompt = self.num_tokens_from_messages(messages[:1])
                 n_tokens_conversation = self.num_tokens_from_messages(messages[1:])
             except Exception as e:
-                send_admin_error_email(f"{MojodexOpenAI.logger_prefix}: chat - n_tokens_prompt & n_tokens_conversation: {e}")
+                send_admin_error_email(f"{MojodexBackendOpenAI.logger_prefix}: chat - n_tokens_prompt & n_tokens_conversation: {e}")
                 n_tokens_prompt, n_tokens_conversation = 0, 0
 
             responses = super().openAIChatCompletion(messages, user_id, temperature, max_tokens,
@@ -72,7 +78,7 @@ class MojodexOpenAI(MojoOpenAI):
                 for response in responses:
                     n_tokens_response += self.num_tokens_from_messages([{'role':'assistant', 'content':response}])
             except Exception as e:
-                send_admin_error_email(f"{MojodexOpenAI.logger_prefix}: chat - num_tokens_from_messages: {e}")
+                send_admin_error_email(f"{MojodexBackendOpenAI.logger_prefix}: chat - num_tokens_from_messages: {e}")
 
             tokens_costs_manager.on_tokens_counted(user_id, n_tokens_prompt, n_tokens_conversation, n_tokens_response,
                                                    self.model, self.label, user_task_execution_pk, task_name_for_system)
@@ -98,7 +104,7 @@ class MojodexOpenAI(MojoOpenAI):
             try:
                 n_tokens_prompt = self.num_tokens_from_string(text)
             except Exception as e:
-                send_admin_error_email(f"{MojodexOpenAI.logger_prefix}: embed - num_tokens_from_string: {e}")
+                send_admin_error_email(f"{MojodexBackendOpenAI.logger_prefix}: embed - num_tokens_from_string: {e}")
                 n_tokens_prompt = 0
             responses = super().openAIEmbedding(text)
             tokens_costs_manager.on_tokens_counted(user_id, n_tokens_prompt, 0, 0,

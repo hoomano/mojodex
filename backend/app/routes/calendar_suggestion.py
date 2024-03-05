@@ -3,7 +3,7 @@ import time
 from flask import request
 from flask_restful import Resource
 from app import authenticate, db, log_error, server_socket
-from models.llm_calls.mojodex_openai import MojodexOpenAI
+from mojodex_core.mojodex_openai import MojodexOpenAI
 from datetime import datetime, timedelta
 from jinja2 import Template
 from mojodex_core.entities import *
@@ -11,7 +11,7 @@ from mojodex_core.entities import *
 from azure_openai_conf import AzureOpenAIConf
 
 from placeholder_generator import PlaceholderGenerator
-from models.llm_calls.json_loader import json_decode_retry
+from mojodex_core.json_loader import json_decode_retry
 from app import on_json_error
 from packaging import version
 

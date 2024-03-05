@@ -3,12 +3,12 @@ import os
 from datetime import datetime
 
 from jinja2 import Template
-from llm_calls.mojodex_openai import MojodexOpenAI
+from mojodex_core.mojodex_openai import MojodexOpenAI
 import requests
 from azure_openai_conf import AzureOpenAIConf
 from background_logger import BackgroundLogger
 from models.task_tool_execution.tools.tool import Tool
-from llm_calls.json_loader import json_decode_retry
+from mojodex_core.json_loader import json_decode_retry
 from app import on_json_error
 
 class InternalMemoryTool(Tool):

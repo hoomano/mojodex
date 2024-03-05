@@ -4,7 +4,7 @@ from datetime import datetime
 import requests
 from background_logger import BackgroundLogger
 from jinja2 import Template
-from llm_calls.mojodex_openai import MojodexOpenAI
+from mojodex_core.mojodex_openai import MojodexOpenAI
 
 from azure_openai_conf import AzureOpenAIConf
 

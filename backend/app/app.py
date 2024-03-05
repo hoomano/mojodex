@@ -83,11 +83,6 @@ def log_error(error_message, session_id=None, notify_admin=False):
         main_logger.error(f"Error while logging error : {e}")
 
 
-from models.costs_manager.tokens_costs_manager import TokensCostsManager
-from models.costs_manager.whisper_costs_manager import WhisperCostsManager
-
-tokens_costs_manager = TokensCostsManager()
-whisper_costs_manager = WhisperCostsManager()
 
 from placeholder_generator import PlaceholderGenerator
 

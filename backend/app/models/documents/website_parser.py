@@ -4,11 +4,11 @@ import os
 import requests
 from bs4 import BeautifulSoup
 from jinja2 import Template
-from models.llm_calls.mojodex_openai import MojodexOpenAI
+from mojodex_core.mojodex_openai import MojodexOpenAI
 
 from mojodex_backend_logger import MojodexBackendLogger
 from azure_openai_conf import AzureOpenAIConf
-from models.llm_calls.json_loader import json_decode_retry
+from mojodex_core.json_loader import json_decode_retry
 from app import on_json_error
 
 class WebsiteParser:

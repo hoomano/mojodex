@@ -2,7 +2,7 @@ import json
 import os
 from IPython.utils import io
 from jinja2 import Template
-from llm_calls.mojodex_openai import MojodexOpenAI
+from mojodex_core.mojodex_openai import MojodexOpenAI
 from serpapi import GoogleSearch
 import requests
 from bs4 import BeautifulSoup

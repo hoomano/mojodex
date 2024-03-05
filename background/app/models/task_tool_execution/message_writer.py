@@ -23,14 +23,13 @@ class MessageWriter:
         self.draft_start_tag = draft_start_tag
         self.draft_end_tag = draft_end_tag
 
-    def write_and_send_message(self, knowledge_collector, task, tool, task_tool_association, conversation, results,
+    def write_message(self, knowledge_collector, task, tool, task_tool_association, conversation, results,
                                language, user_id, session_id, user_task_execution_pk):
         try:
             self.logger.info(f"write_and_send_message")
             message_text = self._write_message(knowledge_collector, task, tool, task_tool_association, conversation,
                                                results, language, user_id, user_task_execution_pk)
             message = {"text": message_text, "text_with_tags": f"{MessageWriter.tool_result_start_tag}{message_text}{MessageWriter.tool_result_end_tag}"}
-            self._save_to_db(message, session_id)
             return message
         except Exception as e:
             raise Exception(f"{self.logger_prefix} write_and_send_message :: {e}")
@@ -59,7 +58,7 @@ class MessageWriter:
             messages = [{"role": "system", "content": prompt}]
             responses = MessageWriter.writer.chat(messages, user_id,
                                                   temperature=0,
-                                                  max_tokens=1000,
+                                                  max_tokens=3000,
                                                   user_task_execution_pk=user_task_execution_pk,
                                                   task_name_for_system=task.name_for_system,
                                                   )
@@ -68,15 +67,3 @@ class MessageWriter:
             return response
         except Exception as e:
             raise Exception(f"_write_message :: {e}")
-
-    def _save_to_db(self, message, session_id):
-        try:
-            # Save in db => send to mojodex-backend
-            uri = f"{os.environ['MOJODEX_BACKEND_URI']}/mojo_message"
-            pload = {'datetime': datetime.now().isoformat(), "message": message, "session_id": session_id}
-            headers = {'Authorization': os.environ['MOJODEX_BACKGROUND_SECRET'], 'Content-Type': 'application/json'}
-            internal_request = requests.put(uri, json=pload, headers=headers)
-            if internal_request.status_code != 200:
-                raise Exception(str(internal_request.json()))
-        except Exception as e:
-            raise Exception(f"_save_to_db: {e}")

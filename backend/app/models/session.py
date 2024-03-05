@@ -20,9 +20,7 @@ class Session:
     def __init__(self, session_id):
         """
         A session is a full interaction between the user and Mojo
-        :param user_id: id of the user
         :param session_id: id of the session
-        :param input: input of the user to start the session
         """
         self.id = session_id
         user = self._get_user()
@@ -107,7 +105,7 @@ class Session:
             log_error(
                 f"Error while calling background first_session_message : {internal_request.json()}")
 
-    def receive_human_message(self, event_name, message):
+    def process_chat_message(self, event_name, message):
         try:
             app_version = version.parse(message["version"]) if "version" in message else version.parse("0.0.0")
             platform = message["platform"] if "platform" in message else "webapp"
@@ -151,9 +149,12 @@ class Session:
             db.session.close()
         except Exception as e:
             db.session.rollback()
-            message = socketio_message_sender.send_error("Error during session new_receive_human_message: " + str(e), self.id, user_message_pk=self.__get_last_user_message())
+            message = socketio_message_sender.send_error("Error during session process_chat_message: " + str(e), self.id, user_message_pk=self.__get_last_user_message())
             self._new_message(message, Session.agent_message_key, 'error')
             db.session.close()
+
+    def process_form_input(self):
+        pass
 
     def __manage_home_chat_session(self, message, app_version, platform):
         try:

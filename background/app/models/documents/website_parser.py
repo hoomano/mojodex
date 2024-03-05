@@ -7,7 +7,7 @@ from app import document_manager
 
 from background_logger import BackgroundLogger
 from jinja2 import Template
-from mojodex_core.mojodex_openai import MojodexOpenAI
+from mojodex_background_openai import MojodexBackgroundOpenAI
 
 from azure_openai_conf import AzureOpenAIConf
 
@@ -18,7 +18,7 @@ class WebsiteParser:
     MAX_WEBSITE_PAGES = 100
 
     website_chunk_validation_prompt = "/data/prompts/background/website_parser/is_website_chunk_relevant.txt"
-    website_chunk_validator = MojodexOpenAI(AzureOpenAIConf.azure_gpt4_turbo_conf,"WEBSITE_CHUNK_VALIDATOR")
+    website_chunk_validator = MojodexBackgroundOpenAI(AzureOpenAIConf.azure_gpt4_turbo_conf,"WEBSITE_CHUNK_VALIDATOR")
 
     def __init__(self):
         self.logger = BackgroundLogger(f"{WebsiteParser.logger_prefix}")

@@ -4,7 +4,7 @@ from app import db, log_error, timing_logger
 import os
 from mojodex_core.entities import *
 from jinja2 import Template
-from mojodex_core.mojodex_openai import MojodexOpenAI
+from mojodex_backend_openai import MojodexBackendOpenAI
 from mojodex_backend_logger import MojodexBackendLogger
 
 from azure_openai_conf import AzureOpenAIConf
@@ -14,7 +14,7 @@ class TaskClassifier:
     logger_prefix = "TaskClassifier::"
     task_classification_prompt = "/data/prompts/task_classification_prompt.txt"
 
-    task_classifier = MojodexOpenAI(AzureOpenAIConf.azure_gpt4_turbo_conf, "TASK_CLASSIFICATION",
+    task_classifier = MojodexBackendOpenAI(AzureOpenAIConf.azure_gpt4_turbo_conf, "TASK_CLASSIFICATION",
                                     AzureOpenAIConf.azure_gpt4_32_conf)
 
     def __init__(self, user_id):

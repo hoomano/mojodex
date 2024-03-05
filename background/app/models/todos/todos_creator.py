@@ -3,7 +3,7 @@ from datetime import datetime
 
 import requests
 from jinja2 import Template
-from mojodex_core.mojodex_openai import MojodexOpenAI
+from mojodex_background_openai import MojodexBackgroundOpenAI
 from mojodex_core.json_loader import json_decode_retry
 from background_logger import BackgroundLogger
 from app import on_json_error
@@ -17,7 +17,7 @@ class TodosCreator:
     todos_url = "/todos"
 
     todos_extractor_prompt = "/data/prompts/background/todos/extract_todos.txt"
-    todos_extractor = MojodexOpenAI(AzureOpenAIConf.azure_gpt4_turbo_conf, "TODOS_EXTRACTOR")
+    todos_extractor = MojodexBackgroundOpenAI(AzureOpenAIConf.azure_gpt4_turbo_conf, "TODOS_EXTRACTOR")
 
     def __init__(self, user_task_execution, knowledge_collector, language, conversation,
                  linked_user_task_executions_todos):

@@ -2,7 +2,7 @@ import json
 import os
 from IPython.utils import io
 from jinja2 import Template
-from mojodex_core.mojodex_openai import MojodexOpenAI
+from mojodex_background_openai import MojodexBackgroundOpenAI
 from serpapi import GoogleSearch
 import requests
 from bs4 import BeautifulSoup
@@ -24,7 +24,7 @@ class GoogleSearchTool(Tool):
     n_total_usages = 3
 
     scrapper_prompt = "/data/prompts/background/task_tool_execution/google_search/scrapper_prompt.txt"
-    scrapper = MojodexOpenAI(AzureOpenAIConf.azure_gpt4_turbo_conf, "WEB_SCRAPPER")
+    scrapper = MojodexBackgroundOpenAI(AzureOpenAIConf.azure_gpt4_turbo_conf, "WEB_SCRAPPER")
 
     def __init__(self, user_id, task_tool_execution_pk, user_task_execution_pk, task_name_for_system, **kwargs):
         try:

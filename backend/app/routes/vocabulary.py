@@ -6,7 +6,7 @@ from mojodex_core.entities import *
 
 from jinja2 import Template
 
-from mojodex_core.mojodex_openai import MojodexOpenAI
+from mojodex_backend_openai import MojodexBackendOpenAI
 
 from azure_openai_conf import AzureOpenAIConf
 
@@ -18,7 +18,7 @@ from sqlalchemy.orm.attributes import flag_modified
 
 class Vocabulary(Resource):
     proper_nouns_tagger_prompt = "/data/prompts/resources/proper_nouns_tagger.txt"
-    proper_nouns_tagger = MojodexOpenAI(AzureOpenAIConf.azure_gpt4_turbo_conf, "SPELLING_CORRECTOR",
+    proper_nouns_tagger = MojodexBackendOpenAI(AzureOpenAIConf.azure_gpt4_turbo_conf, "SPELLING_CORRECTOR",
                                         AzureOpenAIConf.azure_gpt4_32_conf)
 
     def __init__(self):

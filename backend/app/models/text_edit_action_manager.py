@@ -10,7 +10,7 @@ from models.tasks.task_manager import TaskManager
 from models.tasks.task_executor import TaskExecutor
 from models.produced_text_manager import ProducedTextManager
 
-from mojodex_core.mojodex_openai import MojodexOpenAI
+from mojodex_backend_openai import MojodexBackendOpenAI
 from azure_openai_conf import AzureOpenAIConf
 
 
@@ -18,7 +18,7 @@ class TextEditActionManager:
     logger_prefix = "TextEditActionManager"
 
 
-    text_edit_executor = MojodexOpenAI(AzureOpenAIConf.azure_gpt4_turbo_conf, "TEXT_EDIT_EXECUTOR",
+    text_edit_executor = MojodexBackendOpenAI(AzureOpenAIConf.azure_gpt4_turbo_conf, "TEXT_EDIT_EXECUTOR",
                                        AzureOpenAIConf.azure_gpt4_32_conf)
 
     def __init__(

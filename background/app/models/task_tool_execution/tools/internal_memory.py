@@ -3,7 +3,7 @@ import os
 from datetime import datetime
 
 from jinja2 import Template
-from mojodex_core.mojodex_openai import MojodexOpenAI
+from mojodex_background_openai import MojodexBackgroundOpenAI
 import requests
 from azure_openai_conf import AzureOpenAIConf
 from background_logger import BackgroundLogger
@@ -22,7 +22,7 @@ class InternalMemoryTool(Tool):
 
     produced_text_retrieval_url = "retrieve_produced_text"
     information_extractor_prompt = "/data/prompts/background/task_tool_execution/internal_memory/information_extractor.txt"
-    information_extractor = MojodexOpenAI(AzureOpenAIConf.azure_gpt4_turbo_conf, "INTERNAL_MEMORY_INFORMATION_EXTRACTOR")
+    information_extractor = MojodexBackgroundOpenAI(AzureOpenAIConf.azure_gpt4_turbo_conf, "INTERNAL_MEMORY_INFORMATION_EXTRACTOR")
 
 
     def __init__(self, user_id, task_tool_execution_pk, user_task_execution_pk, task_name_for_system, **kwargs):

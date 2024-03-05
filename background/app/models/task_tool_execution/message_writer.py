@@ -3,7 +3,7 @@ from datetime import datetime
 
 import requests
 from jinja2 import Template
-from mojodex_core.mojodex_openai import MojodexOpenAI
+from mojodex_background_openai import MojodexBackgroundOpenAI
 from azure_openai_conf import AzureOpenAIConf
 from background_logger import BackgroundLogger
 
@@ -13,7 +13,7 @@ class MessageWriter:
     tool_result_start_tag, tool_result_end_tag = "<tool_results>", "</tool_results>"
 
     message_prompt = "/data/prompts/background/task_tool_execution/message_writer/message_prompt.txt"
-    writer = MojodexOpenAI(AzureOpenAIConf.azure_gpt4_turbo_conf, "TASK_TOOL_EXECUTION_MESSAGE_WRITER")
+    writer = MojodexBackgroundOpenAI(AzureOpenAIConf.azure_gpt4_turbo_conf, "TASK_TOOL_EXECUTION_MESSAGE_WRITER")
 
     def __init__(self, title_start_tag, title_end_tag, draft_start_tag, draft_end_tag):
         self.logger = BackgroundLogger(f"{MessageWriter.logger_prefix}")

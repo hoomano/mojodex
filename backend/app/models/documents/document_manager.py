@@ -8,7 +8,7 @@ from mojodex_backend_logger import MojodexBackendLogger
 
 from azure_openai_conf import AzureOpenAIConf
 
-from mojodex_core.mojodex_openai import MojodexOpenAI
+from mojodex_backend_openai import MojodexBackendOpenAI
 
 
 class DocumentManager:
@@ -16,7 +16,7 @@ class DocumentManager:
 
     def __init__(self):
         self.logger = MojodexBackendLogger(f"{DocumentManager.logger_prefix}")
-        self.embedder = MojodexOpenAI(AzureOpenAIConf.azure_conf_embedding, "DOCUMENT_EMBEDDING")
+        self.embedder = MojodexBackendOpenAI(AzureOpenAIConf.azure_conf_embedding, "DOCUMENT_EMBEDDING")
         self.embedder.model = "text-embedding-ada-002"
 
     def __embedded(self, text, user_id, user_task_execution_pk=None, task_name_for_system=None):

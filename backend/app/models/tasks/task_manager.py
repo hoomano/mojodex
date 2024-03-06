@@ -15,12 +15,13 @@ from models.tasks.task_inputs_manager import TaskInputsManager
 from models.tasks.task_tool_manager import TaskToolManager
 
 from app import socketio_message_sender
-#from mojodex_backend_openai import MojodexBackendOpenAI
-from mojodex_core.mojodex_mistral import MojodexMistralAI, azure_mistral_large_conf
+
+from app import llm, llm_conf, llm_backup_conf
 
 from models.produced_text_manager import ProducedTextManager
-from azure_openai_conf import AzureOpenAIConf
+from llm_api.mojodex_backend_openai import OpenAIConf
 from packaging import version
+
 
 class TaskManager:
     logger_prefix = "TaskManager::"
@@ -28,14 +29,13 @@ class TaskManager:
     user_language_end_tag = "</user_language>"
 
     answer_user_prompt = "/data/prompts/tasks/run.txt"
-    #user_answerer = MojodexBackendOpenAI(AzureOpenAIConf.azure_gpt4_turbo_conf, "ANSWER_USER", AzureOpenAIConf.azure_gpt4_32_conf)
-    
-    # EXPERIMENTAL: MistralAI see doc [here](docs/technical-architecture/llm-features/mistral.md)
-    user_answerer = MojodexMistralAI(azure_mistral_large_conf, "ANSWER_USER")
+
+    user_answerer = llm(llm_conf, label="ANSWER_USER",
+                        llm_backup_conf=llm_backup_conf)
 
     def __init__(
-        self, user, session_id, platform, voice_generator, mojo_messages_audio_storage,
-        task=None, user_task_execution=None):
+            self, user, session_id, platform, voice_generator, mojo_messages_audio_storage,
+            task=None, user_task_execution=None):
         try:
             self.logger = MojodexBackendLogger(
                 f"{TaskManager.logger_prefix} -- session {session_id}")
@@ -58,9 +58,12 @@ class TaskManager:
                 self.task_execution = None
                 self.task_displayed_data = None
             self.lexical_produced_text_waiting_for_acknowledgment = None
-            self.task_input_manager = TaskInputsManager(session_id, TaskManager.remove_tags_from_text)
-            self.task_tool_manager = TaskToolManager(session_id, TaskManager.remove_tags_from_text)
-            self.task_executor = TaskExecutor(session_id, self.user_id, self.__mojo_message_to_db, self.__message_will_have_audio, self.__generate_voice)
+            self.task_input_manager = TaskInputsManager(
+                session_id, TaskManager.remove_tags_from_text)
+            self.task_tool_manager = TaskToolManager(
+                session_id, TaskManager.remove_tags_from_text)
+            self.task_executor = TaskExecutor(
+                session_id, self.user_id, self.__mojo_message_to_db, self.__message_will_have_audio, self.__generate_voice)
 
         except Exception as e:
             raise Exception(f"{TaskManager.logger_prefix} :: __init__ :: {e}")
@@ -80,14 +83,14 @@ class TaskManager:
     # setter pour self.task
     def set_task_and_execution(self, task, user_task_execution):
         self.task = task
-        
+
         self.task_displayed_data = (
             db.session
             .query(
                 MdTaskDisplayedData,
             )
             .join(
-                MdUser, 
+                MdUser,
                 MdUser.user_id == self.user_id
             )
             .filter(
@@ -110,14 +113,14 @@ class TaskManager:
         self.task_execution = user_task_execution if user_task_execution else self.__get_task_execution()
         self.task_tool_associations_json = self.__get_task_tools_json()
 
-
     def __get_user_task(self, user_id):
         try:
             user_task = db.session.query(MdUserTask).filter(MdUserTask.user_id == user_id,
                                                             MdUserTask.task_fk == self.task.task_pk).first()
             if user_task is None:
                 # For the moment, every task is available to every user. When it comes time to restrict tasks, user_task should be created before that (even before classification)
-                user_task = MdUserTask(user_id=user_id, task_fk=self.task.task_pk)
+                user_task = MdUserTask(
+                    user_id=user_id, task_fk=self.task.task_pk)
                 db.session.add(user_task)
                 db.session.commit()
             return user_task
@@ -193,21 +196,25 @@ class TaskManager:
             server_socket.start_background_task(self.__give_title_and_summary_task_execution,
                                                 self.task_execution.user_task_execution_pk)
             self.mojo_token_callback = mojo_token_callback
-            mojo_message = self.__answer_user(app_version, user_message, tag_proper_nouns=tag_proper_nouns)
+            mojo_message = self.__answer_user(
+                app_version, user_message, tag_proper_nouns=tag_proper_nouns)
 
             return 'mojo_message', mojo_message
         except Exception as e:
-            raise Exception(f"{TaskManager.logger_prefix} :: response_to_user_message :: {e}")
+            raise Exception(
+                f"{TaskManager.logger_prefix} :: response_to_user_message :: {e}")
 
     def __prepare_answers(self, app_version, use_message_placeholder=False, use_draft_placeholder=False, tag_proper_nouns=False):
         try:
             mojo_message = self.__answer_user(app_version, use_message_placeholder=use_message_placeholder,
-                                             use_draft_placeholder=use_draft_placeholder, tag_proper_nouns=tag_proper_nouns)
-            self.logger.debug(f"__prepare_answers :: mojo_message : {mojo_message}")
+                                              use_draft_placeholder=use_draft_placeholder, tag_proper_nouns=tag_proper_nouns)
+            self.logger.debug(
+                f"__prepare_answers :: mojo_message : {mojo_message}")
             if mojo_message is not None:
                 self.__new_mojo_message(mojo_message, app_version)
         except Exception as e:
-            raise Exception(f"{TaskManager.logger_prefix} :: __prepare_answers :: {e}")
+            raise Exception(
+                f"{TaskManager.logger_prefix} :: __prepare_answers :: {e}")
 
     def start_task_from_form(self, app_version, use_message_placeholder=False, use_draft_placeholder=False, tag_proper_nouns=False):
         try:
@@ -222,7 +229,8 @@ class TaskManager:
             db.session.close()
         except Exception as e:
             try:
-                log_error(f"{TaskManager.logger_prefix} :: response_to_user_message :: {e}")
+                log_error(
+                    f"{TaskManager.logger_prefix} :: response_to_user_message :: {e}")
                 last_user_message_pk = self.__get_last_user_message()
                 message = socketio_message_sender.send_error("Error during session receive_system_message: " + str(e),
                                                              self.session_id, user_message_pk=last_user_message_pk)
@@ -264,9 +272,9 @@ class TaskManager:
         try:
             if user_message:
                 use_message_placeholder = user_message["use_message_placeholder"] if (
-                        "use_message_placeholder" in user_message) else False
+                    "use_message_placeholder" in user_message) else False
                 use_draft_placeholder = user_message["use_draft_placeholder"] if (
-                        "use_draft_placeholder" in user_message) else False
+                    "use_draft_placeholder" in user_message) else False
         except Exception as e:
             use_message_placeholder, use_draft_placeholder = False, False
         try:
@@ -281,7 +289,8 @@ class TaskManager:
             self.produced_text_done = self.__get_produced_text_done()
             mojo_knowledge = KnowledgeManager.get_mojo_knowledge()
             global_context = KnowledgeManager.get_global_context_knowledge()
-            user_company_knowledge = KnowledgeManager.get_user_company_knowledge(self.user_task.user_id)
+            user_company_knowledge = KnowledgeManager.get_user_company_knowledge(
+                self.user_task.user_id)
 
             if use_message_placeholder or use_draft_placeholder:
                 if use_message_placeholder:
@@ -291,7 +300,8 @@ class TaskManager:
                                f"{ProducedTextManager.title_start_tag}{placeholder_generator.mojo_draft_title}{ProducedTextManager.title_end_tag}" \
                                f"{ProducedTextManager.draft_start_tag}{placeholder_generator.mojo_draft_body}{ProducedTextManager.title_end_tag}" \
                                f"{TaskExecutor.execution_end_tag}"
-                placeholder_generator.stream(response, self.__super_prompt_token_callback)
+                placeholder_generator.stream(
+                    response, self.__super_prompt_token_callback)
             else:
                 with open(self.answer_user_prompt, 'r') as f:
                     template = Template(f.read())
@@ -314,7 +324,8 @@ class TaskManager:
                                                   )
 
                     conversation_list = self.__get_conversation_as_list()
-                    messages = [{"role": "system", "content": mega_prompt}] + conversation_list
+                    messages = [
+                        {"role": "system", "content": mega_prompt}] + conversation_list
 
                 responses = TaskManager.user_answerer.chat(messages, self.user_task.user_id,
                                                            temperature=0, max_tokens=2000,
@@ -324,8 +335,6 @@ class TaskManager:
                                                            stream_callback=self.__super_prompt_token_callback,
                                                            )
 
-
-
                 response = responses[0].strip()
 
             if self.language is None and TaskManager.user_language_start_tag in response:
@@ -334,12 +343,14 @@ class TaskManager:
                                                                       TaskManager.user_language_end_tag).lower()
                     self.logger.info(f"language: {self.language}")
                     # update session
-                    db_session = db.session.query(MdSession).filter(MdSession.session_id == self.session_id).first()
+                    db_session = db.session.query(MdSession).filter(
+                        MdSession.session_id == self.session_id).first()
                     db_session.language = self.language
                     db.session.commit()
                 except Exception as e:
                     db.session.rollback()
-                    self.logger.error(f"Error while updating session language: {e}")
+                    self.logger.error(
+                        f"Error while updating session language: {e}")
             if TaskInputsManager.ask_user_input_start_tag in response:
                 return self.task_input_manager.manage_ask_input_text(response)
             if TaskToolManager.tool_usage_start_tag in response:
@@ -347,11 +358,12 @@ class TaskManager:
                                                                      self.task_execution.user_task_execution_pk,
                                                                      self.task_tool_associations_json)
             if TaskExecutor.execution_start_tag in response:
-                self.logger.debug(f"TaskExecutor.execution_start_tag in response")
+                self.logger.debug(
+                    f"TaskExecutor.execution_start_tag in response")
                 return self.task_executor.manage_execution_text(execution_text=response, task=self.task, task_displayed_data=self.task_displayed_data,
                                                                 user_task_execution_pk=self.task_execution.user_task_execution_pk,
                                                                 user_message=user_message,
-                                                                app_version = app_version,
+                                                                app_version=app_version,
                                                                 use_draft_placeholder=use_draft_placeholder)
             return {"text": response}
 
@@ -361,8 +373,8 @@ class TaskManager:
     def __mojo_message_to_db(self, mojo_message, event_name):
         try:
             db_message = MdMessage(session_id=self.session_id, sender='mojo', event_name=event_name,
-                                message=mojo_message,
-                                creation_date=datetime.now(), message_date=datetime.now())
+                                   message=mojo_message,
+                                   creation_date=datetime.now(), message_date=datetime.now())
             db.session.add(db_message)
             db.session.commit()
             db.session.refresh(db_message)
@@ -373,23 +385,28 @@ class TaskManager:
     def __new_mojo_message(self, mojo_message, app_version):
         try:
             self.logger.debug(f"__new_mojo_message :: {mojo_message}")
-            db_message = self.__mojo_message_to_db(mojo_message, 'mojo_message')
+            db_message = self.__mojo_message_to_db(
+                mojo_message, 'mojo_message')
             message_pk = db_message.message_pk
             mojo_message["message_pk"] = message_pk
-            mojo_message["audio"] = self.__message_will_have_audio(mojo_message)
+            mojo_message["audio"] = self.__message_will_have_audio(
+                mojo_message)
 
-            socketio_message_sender.send_mojo_message_with_ack(mojo_message, self.session_id)
+            socketio_message_sender.send_mojo_message_with_ack(
+                mojo_message, self.session_id)
             if mojo_message["audio"]:
                 self.__generate_voice(db_message)
             return message_pk
         except Exception as e:
-            raise Exception(f"__new_mojo_message :: message: {mojo_message} :: {e}")
+            raise Exception(
+                f"__new_mojo_message :: message: {mojo_message} :: {e}")
 
     def __message_will_have_audio(self, mojo_message):
         return "text" in mojo_message and self.platform == "mobile" and self.voice_generator is not None
 
     def __generate_voice(self, db_message):
-        output_filename = os.path.join(self.mojo_messages_audio_storage, f"{db_message.message_pk}.mp3")
+        output_filename = os.path.join(
+            self.mojo_messages_audio_storage, f"{db_message.message_pk}.mp3")
         try:
             self.voice_generator.text_to_speech(db_message.message["text"], self.language, self.user_id,
                                                 output_filename,
@@ -410,13 +427,16 @@ class TaskManager:
             for message in messages:
                 if message.sender == "user":  # Session.user_message_key:
                     if "text" in message.message:
-                        conversation.append({"role": user_key, "content": message.message['text']})
+                        conversation.append(
+                            {"role": user_key, "content": message.message['text']})
                 elif message.sender == "mojo":  # Session.agent_message_key:
                     if "text" in message.message:
                         if "text_with_tags" in message.message:
-                            conversation.append({"role": agent_key, "content": message.message['text_with_tags']})
+                            conversation.append(
+                                {"role": agent_key, "content": message.message['text_with_tags']})
                         else:
-                            conversation.append({"role": agent_key, "content": message.message['text']})
+                            conversation.append(
+                                {"role": agent_key, "content": message.message['text']})
                 else:
                     raise Exception("Unknown message sender")
             return conversation

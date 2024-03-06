@@ -6,9 +6,9 @@ from mojodex_backend_logger import MojodexBackendLogger
 from app import db, placeholder_generator
 from models.knowledge.knowledge_manager import KnowledgeManager
 
-from mojodex_backend_openai import MojodexBackendOpenAI
+from app import llm, llm_conf, llm_backup_conf
+
 from mojodex_core.entities import *
-from azure_openai_conf import AzureOpenAIConf
 from sqlalchemy import and_
 
 from models.home_chat.task_suggestion_manager import TaskSuggestionManager
@@ -17,12 +17,11 @@ from models.home_chat.task_suggestion_manager import TaskSuggestionManager
 class HomeChatManager:
     logger_prefix = "HomeChatManager::"
     answer_user_prompt = "/data/prompts/home_chat/run.txt"
-    user_answerer = MojodexBackendOpenAI(AzureOpenAIConf.azure_gpt4_turbo_conf, "HOME_CHAT",
-                                  AzureOpenAIConf.azure_gpt4_32_conf)
+    user_answerer = llm(llm_conf, label="HOME_CHAT",
+                        llm_backup_conf=llm_backup_conf)
 
     user_message_start_tag, user_message_end_tag = "<message_body>", "</message_body>"
     user_message_header_start_tag, user_message_header_end_tag = "<message_header>", "</message_header>"
-
 
     def __init__(self, session_id, user, mojo_token_callback=None):
         self.logger = MojodexBackendLogger(
@@ -30,8 +29,8 @@ class HomeChatManager:
         self.session_id = session_id
         self.user = user
         self.mojo_token_callback = mojo_token_callback
-        self.task_suggestion_manager = TaskSuggestionManager(session_id, self.remove_tags_from_text)
-
+        self.task_suggestion_manager = TaskSuggestionManager(
+            session_id, self.remove_tags_from_text)
 
     def __get_user_tasks(self):
         try:
@@ -50,11 +49,12 @@ class HomeChatManager:
     def __get_this_week_home_conversations(self):
         try:
             # 1. get list of this week's home_chat sessions
-            week_start_date = datetime.now().date() - timedelta(days=datetime.now().date().weekday())
+            week_start_date = datetime.now().date(
+            ) - timedelta(days=datetime.now().date().weekday())
             sessions = db.session.query(MdSession)\
-            .join(MdHomeChat, MdSession.session_id == MdHomeChat.session_id)\
-            .filter(and_(MdHomeChat.start_date.isnot(None), MdHomeChat.start_date >= week_start_date))\
-            .filter(MdSession.user_id == self.user.user_id)\
+                .join(MdHomeChat, MdSession.session_id == MdHomeChat.session_id)\
+                .filter(and_(MdHomeChat.start_date.isnot(None), MdHomeChat.start_date >= week_start_date))\
+                .filter(MdSession.user_id == self.user.user_id)\
                 .all()
             if not sessions:
                 return []
@@ -70,7 +70,8 @@ class HomeChatManager:
 
     def __get_this_week_task_executions(self):
         try:
-            week_start_date = datetime.now().date() - timedelta(days=datetime.now().date().weekday())
+            week_start_date = datetime.now().date(
+            ) - timedelta(days=datetime.now().date().weekday())
             # last 20 tasks executions of the user this week order by start_date
             user_task_executions = db.session.query(MdUserTaskExecution.title, MdUserTaskExecution.summary, MdTask.name_for_system) \
                 .join(MdUserTask, MdUserTaskExecution.user_task_fk == MdUserTask.user_task_pk) \
@@ -88,18 +89,18 @@ class HomeChatManager:
         except Exception as e:
             raise Exception(f"__get_this_week_task_executions :: {e}")
 
-
     @staticmethod
     def remove_tags_from_text(text, start_tag, end_tag):
         try:
             return text.split(start_tag)[1].split(end_tag)[0].strip() if start_tag in text else ""
         except Exception as e:
-            raise Exception(f"remove_tags_from_text :: text: {text} - start_tag: {start_tag} - end_tag: {end_tag} - {e}")
+            raise Exception(
+                f"remove_tags_from_text :: text: {text} - start_tag: {start_tag} - end_tag: {end_tag} - {e}")
 
     def __use_placeholder(self, user_message):
         try:
             return user_message["use_message_placeholder"] if (
-                    "use_message_placeholder" in user_message) else False
+                "use_message_placeholder" in user_message) else False
         except Exception as e:
             return False
 
@@ -113,7 +114,7 @@ class HomeChatManager:
             else:
                 # remove tags and stream
                 text = HomeChatManager.remove_tags_from_text(partial_text, HomeChatManager.user_message_start_tag,
-                                                         HomeChatManager.user_message_end_tag)
+                                                             HomeChatManager.user_message_end_tag)
                 if self.mojo_token_callback:
                     self.mojo_token_callback(text)
         except Exception as e:
@@ -140,7 +141,8 @@ class HomeChatManager:
             global_context = KnowledgeManager.get_global_context_knowledge()
             previous_conversations = self.__get_this_week_home_conversations()
             user_tasks = self.__get_user_tasks()
-            user_task_executions= self.__get_this_week_task_executions() if os.environ["ENVIRONMENT"] == "prod" else []
+            user_task_executions = self.__get_this_week_task_executions(
+            ) if os.environ["ENVIRONMENT"] == "prod" else []
             conversation_list = self.__get_conversation_as_list()
 
             if use_message_placeholder:
@@ -154,34 +156,36 @@ class HomeChatManager:
                                                        global_context=global_context,
                                                        username=self.user.name,
                                                        tasks=user_tasks,
-                                                       first_time_this_week=len(previous_conversations) == 0,
+                                                       first_time_this_week=len(
+                                                           previous_conversations) == 0,
                                                        previous_conversations=previous_conversations,
                                                        user_task_executions=user_task_executions,
                                                        audio_message=True,
-                                                       first_message=len(conversation_list) == 0,
+                                                       first_message=len(
+                                                           conversation_list) == 0,
                                                        language=self.user.language_code if self.user.language_code else "en"
-                                                  )
+                                                       )
 
                     with open("/data/home_chat_prompt.txt", "w") as f:
                         f.write(home_chat_prompt)
 
-
-                    messages = [{"role": "system", "content": home_chat_prompt}] + conversation_list
+                    messages = [
+                        {"role": "system", "content": home_chat_prompt}] + conversation_list
 
                 responses = HomeChatManager.user_answerer.chat(messages, self.user.user_id,
-                                                           temperature=1, max_tokens=2000,
-                                                           stream=True, stream_callback=self.__token_callback)
+                                                               temperature=1, max_tokens=2000,
+                                                               stream=True, stream_callback=self.__token_callback)
 
                 response = responses[0].strip()
 
                 with open("/data/home_chat_response.txt", "w") as f:
                     f.write(response)
 
-
             mojo_message = {"text_with_tags": response}
-            if HomeChatManager.user_message_header_start_tag in response and len(conversation_list) == 0: # first message only
+            # first message only
+            if HomeChatManager.user_message_header_start_tag in response and len(conversation_list) == 0:
                 header = HomeChatManager.remove_tags_from_text(response, HomeChatManager.user_message_header_start_tag,
-                                                             HomeChatManager.user_message_header_end_tag)
+                                                               HomeChatManager.user_message_header_end_tag)
                 mojo_message["header"] = header
 
             if HomeChatManager.user_message_start_tag in response:
@@ -190,7 +194,8 @@ class HomeChatManager:
                 mojo_message["body"] = body
 
             if TaskSuggestionManager.task_pk_start_tag in response:
-                task_response = self.task_suggestion_manager.manage_task_suggestion_text(response)
+                task_response = self.task_suggestion_manager.manage_task_suggestion_text(
+                    response)
                 # add all items of dict task_response to mojo_message
                 mojo_message.update(task_response)
             if "header" in mojo_message and "body" in mojo_message:
@@ -203,7 +208,6 @@ class HomeChatManager:
 
         except Exception as e:
             raise Exception(f"__answer_user :: {e}")
-
 
     def __get_conversation_as_string(self, session_id, agent_key="Agent", user_key="User", with_tags=True):
         try:
@@ -242,16 +246,18 @@ class HomeChatManager:
             for message in messages:
                 if message.sender == "user":  # Session.user_message_key:
                     if "text" in message.message:
-                        conversation.append({"role": user_key, "content": message.message['text']})
+                        conversation.append(
+                            {"role": user_key, "content": message.message['text']})
                 elif message.sender == "mojo":  # Session.agent_message_key:
                     if "text" in message.message:
                         if "text_with_tags" in message.message:
-                            conversation.append({"role": agent_key, "content": message.message['text_with_tags']})
+                            conversation.append(
+                                {"role": agent_key, "content": message.message['text_with_tags']})
                         else:
-                            conversation.append({"role": agent_key, "content": message.message['text']})
+                            conversation.append(
+                                {"role": agent_key, "content": message.message['text']})
                 else:
                     raise Exception("Unknown message sender")
             return conversation
         except Exception as e:
             raise Exception("Error during _get_conversation: " + str(e))
-

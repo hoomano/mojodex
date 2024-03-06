@@ -42,6 +42,46 @@ from mojodex_core.entities import *
 
 from mojodex_backend_logger import MojodexBackendLogger
 
+# Setup the LLM Engine
+# Read the .env file to check which LLM engine to use
+llm_engine = os.environ.get("LLM_ENGINE", "openai")
+
+if llm_engine == "openai":
+    from llm_api.mojodex_backend_openai import MojodexBackendOpenAI, OpenAIConf
+    # check the .env file to see which LLM_API_PROVIDER is set
+    llm_conf = OpenAIConf.gpt4_turbo_conf
+    llm_backup_conf = OpenAIConf.gpt4_32_conf
+
+    llm = MojodexBackendOpenAI
+elif llm_engine == "mistral":
+    from llm_api.mojodex_backend_mistralai import MojodexMistralAI, MistralAIConf
+    # check the .env file to see which LLM_API_PROVIDER is set
+    if os.environ.get("LLM_API_PROVIDER") == "azure":
+        llm_conf = MistralAIConf.azure_mistral_large_conf
+        llm_backup_conf = MistralAIConf.mistral_large_conf
+    else:
+        llm_conf = MistralAIConf.mistral_large_conf
+        llm_backup_conf = MistralAIConf.azure_mistral_large_conf
+    llm = MojodexMistralAI
+else:
+    raise Exception(f"Unknown LLM engine: {llm_engine}")
+
+# Setup the embedder
+embedding_engine = os.environ.get("EMBEDDING_ENGINE", "openai")
+if embedding_engine == "openai":
+    embedder = MojodexBackendOpenAI
+    embedding_conf = OpenAIConf.conf_embedding
+else:
+    raise Exception(f"Unknown embedding engine: {embedding_engine}")
+
+# Setup the stt engine
+stt_engine = os.environ.get("STT_ENGINE", "whisper")
+if stt_engine == "whisper":
+    # TODO: weird having a STT provded by an LLM API but we'll keep it for now
+    from llm_api.mojodex_backend_openai import MojodexBackendOpenAI, OpenAIConf
+    stt = MojodexBackendOpenAI
+    stt_conf = OpenAIConf.whisper_conf
+
 main_logger = MojodexBackendLogger("main_logger")
 
 try:

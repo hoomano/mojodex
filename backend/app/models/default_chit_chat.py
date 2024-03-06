@@ -5,15 +5,16 @@ from mojodex_core.entities import *
 from jinja2 import Template
 
 from models.produced_text_manager import ProducedTextManager
-from mojodex_backend_openai import MojodexBackendOpenAI
-from azure_openai_conf import AzureOpenAIConf
+
+from app import llm, llm_conf, llm_backup_conf
 
 
 class DefaultChitChat:
     logger_prefix = "DefaultChitChat::"
 
     chit_chat_prompt = "/data/prompts/chit_chat/chit_chat_prompt.txt"
-    chit_chat_generator = MojodexBackendOpenAI(AzureOpenAIConf.azure_gpt4_turbo_conf, "CHIT_CHAT", AzureOpenAIConf.azure_gpt4_32_conf)
+    chit_chat_generator = llm(
+        llm_conf, label="CHIT_CHAT", llm_backup_conf=llm_backup_conf)
 
     _answer_user_acceptable_time = 6  # 3 s
 
@@ -33,11 +34,13 @@ class DefaultChitChat:
     def response_to_user_message(self, user_message, partial_text_callback):
         try:
 
-            event_name, response_message = self._answer_user(user_message, partial_text_callback)
+            event_name, response_message = self._answer_user(
+                user_message, partial_text_callback)
 
             return event_name, response_message
         except Exception as e:
-            raise Exception(f"{DefaultChitChat.logger_prefix} :: response_to_user_message :: {e}")
+            raise Exception(
+                f"{DefaultChitChat.logger_prefix} :: response_to_user_message :: {e}")
 
     def _answer_user(self, user_message, partial_text_callback):
         try:
@@ -51,14 +54,17 @@ class DefaultChitChat:
                                                    draft_start_tag=ProducedTextManager.draft_start_tag,
                                                    draft_end_tag=ProducedTextManager.draft_end_tag)
 
-            displayed_workspace_draft = user_message.get("displayed_workspace_draft", None)
-            displayed_workspace_title = user_message.get("displayed_workspace_title", None)
+            displayed_workspace_draft = user_message.get(
+                "displayed_workspace_draft", None)
+            displayed_workspace_title = user_message.get(
+                "displayed_workspace_title", None)
             last_user_text = user_message.get("text", "")
             current_title = f"{ProducedTextManager.title_start_tag}\n{displayed_workspace_title}\n{ProducedTextManager.title_end_tag}\n" if displayed_workspace_title is not None else ""
             current_draft = f"{ProducedTextManager.draft_start_tag}\n{displayed_workspace_draft}\n{ProducedTextManager.draft_end_tag}\n" if displayed_workspace_draft is not None else ""
             messages = [{"role": "system", "content": chit_chat_prompt}] + self._get_conversation_as_list(
                 without_last_message=True) + \
-                       [{"role": "user", "content": current_title + current_draft + last_user_text}]
+                [{"role": "user", "content": current_title +
+                    current_draft + last_user_text}]
             self._answer_user_timer.cancel()
 
             responses = DefaultChitChat.chit_chat_generator.chat(messages, self.user.user_id,
@@ -68,7 +74,8 @@ class DefaultChitChat:
 
             text = responses[0].strip()
             if ProducedTextManager.draft_start_tag in text:
-                produced_text_manager = ProducedTextManager(self.session_id, self.user.user_id)
+                produced_text_manager = ProducedTextManager(
+                    self.session_id, self.user.user_id)
                 produced_text, produced_text_version = produced_text_manager.extract_and_save_produced_text(text,
                                                                                                             user_message)
                 text_type = db.session.query(MdTextType.name).filter(
@@ -96,13 +103,16 @@ class DefaultChitChat:
             for message in messages:
                 if message.sender == "user":  # Session.user_message_key:
                     if "text" in message.message:
-                        conversation.append({"role": user_key, "content": message.message['text']})
+                        conversation.append(
+                            {"role": user_key, "content": message.message['text']})
                 elif message.sender == "mojo":  # Session.agent_message_key:
                     if "text" in message.message:
                         if "text_with_tags" in message.message:
-                            conversation.append({"role": agent_key, "content": message.message['text_with_tags']})
+                            conversation.append(
+                                {"role": agent_key, "content": message.message['text_with_tags']})
                         else:
-                            conversation.append({"role": agent_key, "content": message.message['text']})
+                            conversation.append(
+                                {"role": agent_key, "content": message.message['text']})
                 else:
                     raise Exception("Unknown message sender")
             return conversation

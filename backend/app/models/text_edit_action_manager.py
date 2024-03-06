@@ -10,16 +10,14 @@ from models.tasks.task_manager import TaskManager
 from models.tasks.task_executor import TaskExecutor
 from models.produced_text_manager import ProducedTextManager
 
-from mojodex_backend_openai import MojodexBackendOpenAI
-from azure_openai_conf import AzureOpenAIConf
+from app import llm, llm_conf, llm_backup_conf
 
 
 class TextEditActionManager:
     logger_prefix = "TextEditActionManager"
 
-
-    text_edit_executor = MojodexBackendOpenAI(AzureOpenAIConf.azure_gpt4_turbo_conf, "TEXT_EDIT_EXECUTOR",
-                                       AzureOpenAIConf.azure_gpt4_32_conf)
+    text_edit_executor = llm(llm_conf, label="TEXT_EDIT_EXECUTOR",
+                                       llm_backup_conf=llm_backup_conf)
 
     def __init__(
             self,
@@ -46,7 +44,8 @@ class TextEditActionManager:
                 self.voice_generator = VoiceGenerator()
             except Exception as e:
                 self.voice_generator = None
-                main_logger.error(f"{TextEditActionManager.logger_prefix}:: Can't initialize voice generator")
+                main_logger.error(
+                    f"{TextEditActionManager.logger_prefix}:: Can't initialize voice generator")
         else:
             self.voice_generator = None
 
@@ -59,7 +58,8 @@ class TextEditActionManager:
                 temperature=0.3,
                 max_tokens=2000,
                 stream=True,
-                stream_callback=lambda stream_output_text: self.__send_draft_token(token_text=stream_output_text),
+                stream_callback=lambda stream_output_text: self.__send_draft_token(
+                    token_text=stream_output_text),
                 user_task_execution_pk=self.user_task_execution_pk,
                 task_name_for_system=self.task_name_for_system
             )[0]  # Because chat returns a list
@@ -108,7 +108,6 @@ class TextEditActionManager:
 
             draft_message["audio"] = "text" in draft_message and self.platform == "mobile" and self.voice_generator
 
-
             # Send message to frontend
             socketio_message_sender.send_mojo_message_with_ack(
                 message=draft_message,
@@ -121,7 +120,6 @@ class TextEditActionManager:
                 self.__text_to_speech(draft_message, db_message)
 
             db.session.close()
-
 
         except Exception as e:
             db.session.close()
@@ -185,12 +183,14 @@ class TextEditActionManager:
             session_storage = os.path.join(user_storage, self.session_id)
             if not os.path.exists(session_storage):
                 os.makedirs(session_storage, exist_ok=True)
-            mojo_messages_audio_storage = os.path.join(session_storage, "mojo_messages_audios")
+            mojo_messages_audio_storage = os.path.join(
+                session_storage, "mojo_messages_audios")
             if not os.path.exists(mojo_messages_audio_storage):
                 os.makedirs(mojo_messages_audio_storage, exist_ok=True)
 
             # Define the output filename
-            output_filename = os.path.join(mojo_messages_audio_storage, f"{message['message_pk']}.mp3")
+            output_filename = os.path.join(
+                mojo_messages_audio_storage, f"{message['message_pk']}.mp3")
 
             # Generate audio
             self.voice_generator.text_to_speech(
@@ -206,4 +206,3 @@ class TextEditActionManager:
             db_message.in_error_state = datetime.now()
             log_error(f"{TextEditActionManager.logger_prefix} :: __text_to_speech : {str(e)}",
                       session_id=self.session_id, notify_admin=True)
-

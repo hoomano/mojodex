@@ -4,20 +4,23 @@ import os
 import requests
 from bs4 import BeautifulSoup
 from jinja2 import Template
-from mojodex_backend_openai import MojodexBackendOpenAI
+
 
 from mojodex_backend_logger import MojodexBackendLogger
-from azure_openai_conf import AzureOpenAIConf
+
+from app import llm, llm_conf, llm_backup_conf
+
 from mojodex_core.json_loader import json_decode_retry
 from app import on_json_error
+
 
 class WebsiteParser:
     logger_prefix = "WebsiteParser"
 
     extract_website_info_prompt = "/data/prompts/website_parser/extract_infos_from_webpage.txt"
 
-    website_info_extractor = MojodexBackendOpenAI(AzureOpenAIConf.azure_gpt4_turbo_conf, "EXTRACT_COMPANY_INFO_FROM_WEBSITE",
-                                           AzureOpenAIConf.azure_gpt4_32_conf)
+    website_info_extractor = llm(llm_conf, label="EXTRACT_COMPANY_INFO_FROM_WEBSITE",
+                                 llm_backup_conf=llm_backup_conf)
 
     def __init__(self):
         self.logger = MojodexBackendLogger(f"{WebsiteParser.logger_prefix}")
@@ -52,7 +55,8 @@ class WebsiteParser:
                 else:
                     raise Exception("🔴 Empty webpage text, giving up...")
             # remove multiple \n by only one
-            webpage_text = "\n".join([line for line in webpage_text.split("\n") if line.strip() != ""])
+            webpage_text = "\n".join(
+                [line for line in webpage_text.split("\n") if line.strip() != ""])
 
             return webpage_text
         except Exception as e:
@@ -64,7 +68,8 @@ class WebsiteParser:
             self.logger.debug(f"__scrap_webpage")
             with open(WebsiteParser.extract_website_info_prompt, 'r') as f:
                 template = Template(f.read())
-            prompt = template.render(url=website_url, text_content=webpage_text)
+            prompt = template.render(
+                url=website_url, text_content=webpage_text)
             messages = [{"role": "user", "content": prompt}]
 
             responses = WebsiteParser.website_info_extractor.chat(messages, user_id,
@@ -77,7 +82,8 @@ class WebsiteParser:
 
     def get_company_name_and_description(self, user_id, website_url):
         try:
-            self.logger.debug(f"get_company_name_and_description: {website_url}")
+            self.logger.debug(
+                f"get_company_name_and_description: {website_url}")
             webpage_text = self.__get_webpage_text(website_url)
             self.logger.debug("Get webpage text")
             infos = self.__scrap_webpage(user_id, website_url, webpage_text)

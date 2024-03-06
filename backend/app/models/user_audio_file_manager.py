@@ -4,9 +4,8 @@ import os
 from models.session import Session as SessionModel
 
 from mojodex_backend_logger import MojodexBackendLogger
-from azure_openai_conf import AzureOpenAIConf
 
-from mojodex_backend_openai import MojodexBackendOpenAI
+from app import stt, stt_conf
 
 
 class UserAudioFileManager:
@@ -14,8 +13,9 @@ class UserAudioFileManager:
 
     def __init__(self):
         try:
-            self.logger = MojodexBackendLogger(f"{UserAudioFileManager.logger_prefix}")
-            self.mojodex_whisper = MojodexBackendOpenAI(AzureOpenAIConf.azure_whisper_conf, "whisper-azure")
+            self.logger = MojodexBackendLogger(
+                f"{UserAudioFileManager.logger_prefix}")
+            self.stt = stt(stt_conf, label="whisper-azure")
         except Exception as e:
             raise Exception(f"Error in initializing UserAudioFileManager: {e}")
 
@@ -32,7 +32,6 @@ class UserAudioFileManager:
         except Exception as e:
             raise Exception(f"ERROR CONVERTING {filepath}: {e}")
 
-
     def __get_audio_storage_path(self, user_id, session_id, message_type):
         try:
             user_storage = os.path.join(SessionModel.sessions_storage, user_id)
@@ -43,11 +42,14 @@ class UserAudioFileManager:
                 os.makedirs(session_storage)
 
             if message_type == "user_message":
-                audio_storage = os.path.join(session_storage, "user_messages_audios")
+                audio_storage = os.path.join(
+                    session_storage, "user_messages_audios")
             elif message_type == "process_step_message":
-                audio_storage = os.path.join(user_storage, "process_steps_audio")
+                audio_storage = os.path.join(
+                    user_storage, "process_steps_audio")
             elif message_type == "user_followup":
-                audio_storage = os.path.join(user_storage, "user_followups_audio")
+                audio_storage = os.path.join(
+                    user_storage, "user_followups_audio")
             else:
                 raise Exception(f"Unknown message type : {message_type}")
 
@@ -60,7 +62,8 @@ class UserAudioFileManager:
 
     def __store_audio_file(self, file, extension, user_id, session_id, message_type, message_id):
         try:
-            audio_storage = self.__get_audio_storage_path(user_id, session_id, message_type)
+            audio_storage = self.__get_audio_storage_path(
+                user_id, session_id, message_type)
             message_id = f"{message_id}.{extension}"
             audio_file_path = os.path.join(audio_storage, message_id)
 
@@ -77,25 +80,28 @@ class UserAudioFileManager:
         except Exception as e:
             raise Exception(f"Error in storing audio file: {e}")
 
-
     def extract_text_and_duration(self, file, extension, user_id, session_id, message_type, message_id, user_task_execution_pk=None, task_name_for_system=None):
         try:
             # backup_calls is for calling openai api in case default mode 'whisper azure'
             if file is not None:
-                audio_file_path = self.__store_audio_file(file, extension, user_id, session_id, message_type, message_id)
+                audio_file_path = self.__store_audio_file(
+                    file, extension, user_id, session_id, message_type, message_id)
             else:
-                audio_storage = self.__get_audio_storage_path(user_id, session_id, message_type)
+                audio_storage = self.__get_audio_storage_path(
+                    user_id, session_id, message_type)
                 # find any file in this path that name without extension is message_id
-                search_pattern = os.path.join(audio_storage,  f"{message_id}.*")
+                search_pattern = os.path.join(
+                    audio_storage,  f"{message_id}.*")
                 # Use glob.glob() to find all matching files, considering any file extension
                 matching_files = glob.glob(search_pattern)
                 if not matching_files:
-                    raise Exception(f"Audio file not found for message_id: {message_id}")
+                    raise Exception(
+                        f"Audio file not found for message_id: {message_id}")
                 audio_file_path = matching_files[0]
 
-            transcription, file_duration = self.mojodex_whisper.transcript(audio_file_path, user_id,
-                                                                                           user_task_execution_pk=user_task_execution_pk,
-                                                                                           task_name_for_system=task_name_for_system)
+            transcription, file_duration = self.stt.transcript(audio_file_path, user_id,
+                                                               user_task_execution_pk=user_task_execution_pk,
+                                                               task_name_for_system=task_name_for_system)
 
             return transcription, file_duration
         except Exception as e:

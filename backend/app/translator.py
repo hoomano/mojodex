@@ -1,15 +1,12 @@
 from jinja2 import Template
 
-from mojodex_backend_openai import MojodexBackendOpenAI
-
-from azure_openai_conf import AzureOpenAIConf
-
+from app import llm, llm_conf, llm_backup_conf
 
 class Translator:
     translation_prompt = "/data/prompts/resources/translation.txt"
 
-    translator = MojodexBackendOpenAI(AzureOpenAIConf.azure_gpt4_turbo_conf, "GET_LANGUAGE",
-                               AzureOpenAIConf.azure_gpt4_32_conf)
+    translator = llm(llm_conf, label="GET_LANGUAGE",
+                               llm_backup_conf=llm_backup_conf)
 
     def translate(self, text, user_id, language="english"):
         try:

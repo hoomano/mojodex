@@ -9,19 +9,56 @@ from mojodex_core.logging_handler import  log_error
 from mojodex_core.db import db_session
 from mojodex_core.entities import MdUserVocabulary
 
-from mojodex_core.mojo_openai import MojoOpenAI
+from llm_api.backend_llm import BackendLLM
+from mojodex_core.llm_engine.providers.openai_llm import OpenAILLM
 
 from mojodex_core.costs_manager.tokens_costs_manager import TokensCostsManager
+from mojodex_core.llm_engine.providers.openai_embedding import OpenAIEmbeddingProvider
 from mojodex_core.costs_manager.whisper_costs_manager import WhisperCostsManager
 
 tokens_costs_manager = TokensCostsManager()
 whisper_costs_manager = WhisperCostsManager()
 
+class OpenAIConf:
 
-class MojodexBackendOpenAI(MojoOpenAI):
+    gpt4_32_conf = {
+        "api_key": os.environ.get("GPT4_AZURE_OPENAI_KEY", os.environ.get("OPENAI_API_KEY")),
+        "api_base": os.environ.get("GPT4_AZURE_OPENAI_API_BASE"),
+        "api_type": os.environ.get("BACKUP_MODEL_API_TYPE"),
+        "api_version": os.environ.get("GPT4_AZURE_OPENAI_API_VERSION"),
+        "deployment_id": os.environ.get("GPT4_AZURE_OPENAI_DEPLOYMENT_ID", 'gpt-4-32k')
+    } if 'BACKUP_MODEL_API_TYPE' in os.environ and 'GPT4_AZURE_OPENAI_KEY' in os.environ else None
+
+    gpt4_turbo_conf = {
+        "api_key": os.environ.get("GPT4_TURBO_AZURE_OPENAI_KEY",  os.environ.get("OPENAI_API_KEY")),
+        "api_base": os.environ.get("GPT4_TURBO_AZURE_OPENAI_API_BASE"),
+        "api_type": os.environ.get("LLM_API_PROVIDER"),
+        "api_version": os.environ.get("GPT4_TURBO_AZURE_OPENAI_API_VERSION"),
+        "deployment_id": os.environ.get("GPT4_TURBO_AZURE_OPENAI_DEPLOYMENT_ID", 'gpt-4-1106-preview')
+    }
+
+    conf_embedding = {
+        "api_key": os.environ.get("ADA_EMBEDDING_AZURE_OPENAI_KEY", os.environ.get("OPENAI_API_KEY")),
+        "api_base": os.environ.get("ADA_EMBEDDING_AZURE_OPENAI_API_BASE"),
+        "api_type": os.environ.get("EMBEDDING_API_PROVIDER"),
+        "api_version": os.environ.get("ADA_EMBEDDING_AZURE_OPENAI_API_VERSION"),
+        "deployment_id": os.environ.get("ADA_EMBEDDING_AZURE_OPENAI_DEPLOYMENT_ID", "text-embedding-ada-002")
+    }
+
+    whisper_conf = {
+        "api_key": os.environ.get("WHISPER_AZURE_OPENAI_KEY",  os.environ.get("OPENAI_API_KEY")),
+        "api_base": os.environ.get("WHISPER_AZURE_OPENAI_API_BASE"),
+        "api_type": os.environ.get("STT_API_PROVIDER"),
+        "api_version": os.environ.get("WHISPER_AZURE_VERSION"),
+        "deployment_id": os.environ.get("WHISPER_AZURE_OPENAI_DEPLOYMENT_ID", "whisper-1")
+    }
+
+
+
+class MojodexBackendOpenAI(BackendLLM, OpenAILLM, OpenAIEmbeddingProvider):
     dataset_dir = "/data/prompts_dataset"
 
-    def __init__(self, azure_conf, label, azure_conf_backup_rate_limit_exceeded=None, max_retries=0):
+    def __init__(self, azure_conf, label='unknown', llm_backup_conf=None, max_retries=0):
         api_key = azure_conf["api_key"]
         api_base = azure_conf["api_base"]
         api_version = azure_conf["api_version"]
@@ -36,27 +73,15 @@ class MojodexBackendOpenAI(MojoOpenAI):
         if not os.path.exists(os.path.join(self.dataset_dir, "chat", self.label)):
             os.mkdir(os.path.join(self.dataset_dir, "chat", self.label))
         super().__init__(api_key, api_base, api_version, model, api_type=api_type, max_retries=max_retries)
-        if azure_conf_backup_rate_limit_exceeded:
-            self.backup_engine = MojoOpenAI(azure_conf_backup_rate_limit_exceeded["api_key"],
-                                            azure_conf_backup_rate_limit_exceeded["api_base"],
-                                            azure_conf_backup_rate_limit_exceeded["api_version"],
-                                            azure_conf_backup_rate_limit_exceeded["deployment_id"],
+        if llm_backup_conf:
+            self.backup_engine = OpenAILLM(llm_backup_conf["api_key"],
+                                            llm_backup_conf["api_base"],
+                                            llm_backup_conf["api_version"],
+                                            llm_backup_conf["deployment_id"],
                                             api_type=api_type, max_retries=2)
         else:
             self.backup_engine = None
 
-
-    def __write_in_dataset(self, json_data, task_name_for_system, type):
-        try:
-            # write data in MojodexOpenAI.dataset_dir/label/task_name_for_system.json
-            directory = f"{self.dataset_dir}/{type}/{self.label}/{task_name_for_system}"
-            if not os.path.exists(directory):
-                os.mkdir(directory)
-            filename = len(os.listdir(directory)) + 1
-            with open(os.path.join(directory, f"{filename}.json"), "w") as f:
-                json.dump(json_data, f)
-        except Exception as e:
-            log_error(f"Error in Mojodex OpenAI __write_in_dataset: {e}", notify_admin=True)
 
     def chat(self, messages, user_id, temperature, max_tokens,
                 frequency_penalty=0, presence_penalty=0, stream=False, stream_callback=None, json_format=False,
@@ -78,14 +103,14 @@ class MojodexBackendOpenAI(MojoOpenAI):
             n_tokens_conversation = self.num_tokens_from_messages(messages[1:])
 
             try:
-                responses = super().openAIChatCompletion(messages, user_id, temperature, max_tokens,
+                responses = super().chatCompletion(messages, user_id, temperature, max_tokens,
                                                          frequency_penalty=frequency_penalty, presence_penalty=presence_penalty,
                                                          json_format=json_format, stream=stream,
                                                          stream_callback=stream_callback, n_additional_calls_if_finish_reason_is_length=n_additional_calls_if_finish_reason_is_length)
             except openai.RateLimitError:
                 # try to use backup engine
                 if self.backup_engine:
-                    responses = self.backup_engine.openAIChatCompletion(messages, user_id, temperature, max_tokens,
+                    responses = self.backup_engine.chatCompletion(messages, user_id, temperature, max_tokens,
                                                          frequency_penalty=frequency_penalty, presence_penalty=presence_penalty,
                                                          stream=stream,
                                                          stream_callback=stream_callback)
@@ -97,7 +122,7 @@ class MojodexBackendOpenAI(MojoOpenAI):
 
             tokens_costs_manager.on_tokens_counted(user_id, n_tokens_prompt, n_tokens_conversation, n_tokens_response,
                                                    self.model, self.label, user_task_execution_pk, task_name_for_system)
-            self.__write_in_dataset({"temperature": temperature, "max_tokens": max_tokens, "n_responses": 1,
+            self._write_in_dataset({"temperature": temperature, "max_tokens": max_tokens, "n_responses": 1,
                                         "frequency_penalty": frequency_penalty, "presence_penalty": presence_penalty,
                                         "messages": messages, "responses": responses}, task_name_for_system, "chat")
             return responses
@@ -112,7 +137,7 @@ class MojodexBackendOpenAI(MojoOpenAI):
                 n_tokens_prompt = self.num_tokens_from_string(text)
             except Exception as e:
                 n_tokens_prompt = 0
-            responses = super().openAIEmbedding(text)
+            responses = super().get_embedding(text)
             tokens_costs_manager.on_tokens_counted(user_id, n_tokens_prompt, 0, 0,
                                                    self.model, self.label, user_task_execution_pk, task_name_for_system)
             return responses
@@ -168,3 +193,4 @@ class MojodexBackendOpenAI(MojoOpenAI):
                                                  user_task_execution_pk=user_task_execution_pk,
                                                  task_name_for_system=task_name_for_system, mode=self.label)
         return transcription_text, file_duration
+

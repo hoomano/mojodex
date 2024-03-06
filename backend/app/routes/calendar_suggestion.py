@@ -3,30 +3,30 @@ import time
 from flask import request
 from flask_restful import Resource
 from app import authenticate, db, log_error, server_socket
-from mojodex_backend_openai import MojodexBackendOpenAI
+
 from datetime import datetime, timedelta
 from jinja2 import Template
 from mojodex_core.entities import *
 
-from azure_openai_conf import AzureOpenAIConf
+from app import llm, llm_conf, llm_backup_conf
 
 from placeholder_generator import PlaceholderGenerator
 from mojodex_core.json_loader import json_decode_retry
 from app import on_json_error
 from packaging import version
 
+
 class CalendarSuggestion(Resource):
     calendar_suggestion_prompt_dir = "/data/prompts/calendar_suggestion"
 
-
     calendar_suggestion_generator_from_calendar_prompt = "generate_suggestion.txt"
-    calendar_suggestion_generator_from_calendar = MojodexBackendOpenAI(AzureOpenAIConf.azure_gpt4_turbo_conf,
-                                                         "CALENDAR_SUGGESTION_GENERATOR",
-                                                         AzureOpenAIConf.azure_gpt4_32_conf)
+    calendar_suggestion_generator_from_calendar = llm(llm_conf,
+                                                      label="CALENDAR_SUGGESTION_GENERATOR",
+                                                      llm_backup_conf=llm_backup_conf)
 
     calendar_suggestion_waiting_prompt = "waiting_message.txt"
-    calendar_suggestion_waiting_generator = MojodexBackendOpenAI(AzureOpenAIConf.azure_gpt4_turbo_conf, "CALENDAR_SUGGESTION_WAITING_TEXT",
-                                        AzureOpenAIConf.azure_gpt4_32_conf)
+    calendar_suggestion_waiting_generator = llm(llm_conf, label="CALENDAR_SUGGESTION_WAITING_TEXT",
+                                                llm_backup_conf=llm_backup_conf)
 
     def __init__(self):
         CalendarSuggestion.method_decorators = [authenticate()]
@@ -38,14 +38,15 @@ class CalendarSuggestion(Resource):
     def __get_global_context(self, timezoneOffsetMinutes):
         with open("/data/knowledge/global_context.txt", 'r') as f:
             template = Template(f.read())
-            timestamp = datetime.utcnow() - timedelta(minutes=timezoneOffsetMinutes if timezoneOffsetMinutes else 0)
+            timestamp = datetime.utcnow(
+            ) - timedelta(minutes=timezoneOffsetMinutes if timezoneOffsetMinutes else 0)
             return template.render(weekday=timestamp.strftime("%A"),
                                    datetime=timestamp.strftime("%d %B %Y"),
                                    time=timestamp.strftime("%H:%M"))
 
     def __get_calendar_suggestion(self, user_id, use_placeholders=False):
         try:
-            if not use_placeholders: # if placeholder, create one
+            if not use_placeholders:  # if placeholder, create one
                 # try to find a calendar suggestion pre-set and not used
                 calendar_suggestion = db.session.query(MdCalendarSuggestion) \
                     .filter(MdCalendarSuggestion.user_id == user_id) \
@@ -66,7 +67,8 @@ class CalendarSuggestion(Resource):
 
     def __generate_calendar_suggestion(self, user_id, calendar_suggestion_pk, use_placeholder, planning, app_version):
         try:
-            user = db.session.query(MdUser).filter(MdUser.user_id == user_id).first()
+            user = db.session.query(MdUser).filter(
+                MdUser.user_id == user_id).first()
 
             def get_user_tasks(user_id):
                 user_tasks = db.session.query(MdTask) \
@@ -94,7 +96,6 @@ class CalendarSuggestion(Resource):
                     "date": start_date.strftime("%Y-%m-%d-%Hh:%Mm"),
                 } for task, title, start_date in user_tasks_done_today]
 
-
             if use_placeholder:
                 # await 10 seconds to simulate openai
                 time.sleep(10)
@@ -111,26 +112,27 @@ class CalendarSuggestion(Resource):
                         template = Template(f.read())
                         prompt = template.render(
                             mojo_knowledge=self.__get_mojo_knwoledge(),
-                            global_context=self.__get_global_context(user.timezone_offset),
+                            global_context=self.__get_global_context(
+                                user.timezone_offset),
                             username=user.name,
                             user_company_knowledge=user.company_description,
                             user_business_goal=user.goal,
                             language=user.language_code,
                             user_tasks=get_user_tasks(user_id),
                             user_planning=planning,
-                            user_tasks_done_today=get_user_tasks_done_today(user_id)
+                            user_tasks_done_today=get_user_tasks_done_today(
+                                user_id)
                         )
 
                     messages = [{"role": "system", "content": prompt}]
                     responses = CalendarSuggestion.calendar_suggestion_generator_from_calendar.chat(messages, user_id,
-                                                                                             temperature=1,
-                                                                                             max_tokens=1000,
-                                                                                             json_format=True)
+                                                                                                    temperature=1,
+                                                                                                    max_tokens=1000,
+                                                                                                    json_format=True)
                     response = responses[0]
                     return response
 
                 data = generate(planning)
-
 
             calendar_suggestion = db.session.query(MdCalendarSuggestion) \
                 .filter(MdCalendarSuggestion.calendar_suggestion_pk == calendar_suggestion_pk) \
@@ -141,45 +143,48 @@ class CalendarSuggestion(Resource):
             task_pk_to_display = None
             if data and not ("in_user_today_tasks" in data and data["in_user_today_tasks"]):
                 calendar_suggestion.event_id = data["event_id"] if "event_id" in data else None
-                calendar_suggestion.suggestion_text = data["message_for_user"].strip() if "message_for_user" in data else None
-                calendar_suggestion.calendar_suggestion_title = data["message_title"].strip() if "message_title" in data else None
-                calendar_suggestion.calendar_suggestion_emoji = data["message_emoji"].strip() if "message_emoji" in data else None
+                calendar_suggestion.suggestion_text = data["message_for_user"].strip(
+                ) if "message_for_user" in data else None
+                calendar_suggestion.calendar_suggestion_title = data["message_title"].strip(
+                ) if "message_title" in data else None
+                calendar_suggestion.calendar_suggestion_emoji = data["message_emoji"].strip(
+                ) if "message_emoji" in data else None
                 calendar_suggestion.proposed_task_fk = data["task_pk"] if "task_pk" in data else None
                 if "event_id" in data:
                     # find the end date of the event
-                    event = next(filter(lambda x: x["eventId"] == data["event_id"], planning))
+                    event = next(
+                        filter(lambda x: x["eventId"] == data["event_id"], planning))
                     calendar_suggestion.reminder_date = datetime.strptime(event["eventEndDate"],
-                                                                      "%Y-%m-%dT%H:%M:%S.%f%z") if "eventEndDate" in event else None
+                                                                          "%Y-%m-%dT%H:%M:%S.%f%z") if "eventEndDate" in event else None
                     db.session.flush()
 
                     # if there is an event and event is not started yet, do not propose any task
-                    event_start_date = datetime.strptime(event["eventStartDate"], "%Y-%m-%dT%H:%M:%S.%f%z") if "eventStartDate" in event else None
+                    event_start_date = datetime.strptime(
+                        event["eventStartDate"], "%Y-%m-%dT%H:%M:%S.%f%z") if "eventStartDate" in event else None
                     if event_start_date and event_start_date > datetime.now(event_start_date.tzinfo):
-                        task_pk_to_display = None # Do not display any task if event is not started yet
+                        task_pk_to_display = None  # Do not display any task if event is not started yet
                     else:
                         task_pk_to_display = calendar_suggestion.proposed_task_fk
 
-
             message = {
-                    "calendar_suggestion_pk": calendar_suggestion.calendar_suggestion_pk,
-                    "message_text": calendar_suggestion.suggestion_text,
-                    "message_title": calendar_suggestion.calendar_suggestion_title,
-                    "message_emoji": calendar_suggestion.calendar_suggestion_emoji,
-                    "task_pk": task_pk_to_display
-                }
-            server_socket.emit('calendar_suggestion', message, to=f"mojo_events_{user_id}")
-
-
+                "calendar_suggestion_pk": calendar_suggestion.calendar_suggestion_pk,
+                "message_text": calendar_suggestion.suggestion_text,
+                "message_title": calendar_suggestion.calendar_suggestion_title,
+                "message_emoji": calendar_suggestion.calendar_suggestion_emoji,
+                "task_pk": task_pk_to_display
+            }
+            server_socket.emit('calendar_suggestion', message,
+                               to=f"mojo_events_{user_id}")
 
             db.session.commit()
             db.session.close()
         except Exception as e:
-            server_socket.emit('calendar_suggestion', {"error": "error"}, to=f"mojo_events_{user_id}")
+            server_socket.emit('calendar_suggestion', {
+                               "error": "error"}, to=f"mojo_events_{user_id}")
 
             db.session.rollback()
             db.session.close()
             log_error(f"generate_calendar_suggestion: {e}", notify_admin=True)
-
 
     def __get_waiting_message(self, user_id, use_placeholders=False):
         try:
@@ -197,7 +202,8 @@ class CalendarSuggestion(Resource):
     def __generate_waiting_message(self, user_id):
         try:
 
-            user = db.session.query(MdUser).filter(MdUser.user_id == user_id).first()
+            user = db.session.query(MdUser).filter(
+                MdUser.user_id == user_id).first()
             # Answer using openai
             with open(os.path.join(CalendarSuggestion.calendar_suggestion_prompt_dir,
                                    CalendarSuggestion.calendar_suggestion_waiting_prompt),
@@ -211,7 +217,7 @@ class CalendarSuggestion(Resource):
                 )
             messages = [{"role": "system", "content": prompt}]
             responses = CalendarSuggestion.calendar_suggestion_waiting_generator.chat(messages, user_id, temperature=1,
-                                                                               max_tokens=1000)
+                                                                                      max_tokens=1000)
             return responses[0]
         except Exception as e:
             raise Exception(f"get_waiting_message: {e}")
@@ -223,16 +229,20 @@ class CalendarSuggestion(Resource):
             )
             db.session.add(calendar_suggestion)
             db.session.flush()
-            waiting_json = self.__get_waiting_message(user_id, use_placeholders=False)
-            calendar_suggestion.waiting_message = waiting_json["waiting_message"].strip() if "waiting_message" in waiting_json else None
-            calendar_suggestion.ready_message = waiting_json["done_message"].strip() if "done_message" in waiting_json else None
+            waiting_json = self.__get_waiting_message(
+                user_id, use_placeholders=False)
+            calendar_suggestion.waiting_message = waiting_json["waiting_message"].strip(
+            ) if "waiting_message" in waiting_json else None
+            calendar_suggestion.ready_message = waiting_json["done_message"].strip(
+            ) if "done_message" in waiting_json else None
             db.session.commit()
             db.session.close()
             return calendar_suggestion
         except Exception as e:
             db.session.rollback()
             db.session.close()
-            log_error(f"prepare_next_calendar_suggestion: {e}", notify_admin=True)
+            log_error(
+                f"prepare_next_calendar_suggestion: {e}", notify_admin=True)
 
     def __has_next_calendar_suggestion(self, user_id):
         try:
@@ -246,16 +256,16 @@ class CalendarSuggestion(Resource):
             log_error(f"has_next_calendar_suggestion: {e}", notify_admin=True)
             return False
 
-
-
     # route to put a new calendar suggestion in backend. Returns waiting message.
+
     def put(self, user_id):
         error_message = "Error getting calendar suggestion"
 
         try:
             timestamp = request.json["datetime"]
             user_planning = request.json["user_planning"]
-            app_version = version.parse(request.json["version"]) if "version" in request.json else version.parse("0.0.0")
+            app_version = version.parse(
+                request.json["version"]) if "version" in request.json else version.parse("0.0.0")
         except KeyError:
             return {"error": "Missing timezone in args"}, 400
 
@@ -266,27 +276,33 @@ class CalendarSuggestion(Resource):
             for event in user_planning:
                 if not isinstance(event, dict):
                     return {"error": "user_planning must be a list of dict"}, 400
-            use_placeholders = 'use_placeholder' in request.json and request.json['use_placeholder']
+            use_placeholders = 'use_placeholder' in request.json and request.json[
+                'use_placeholder']
 
             # remove from user_planning events that have been managed in past calendar suggestions
             event_managed_today = db.session.query(MdCalendarSuggestion.event_id) \
                 .filter(MdCalendarSuggestion.user_id == user_id) \
                 .filter(MdCalendarSuggestion.creation_date >= datetime.now().replace(hour=0, minute=0,
-                                                                                 second=0, microsecond=0)) \
+                                                                                     second=0, microsecond=0)) \
                 .all()
-            event_managed_today = [event_id for event_id, in event_managed_today]
-            planning = [event for event in user_planning if event["eventId"] not in event_managed_today]
+            event_managed_today = [
+                event_id for event_id, in event_managed_today]
+            planning = [
+                event for event in user_planning if event["eventId"] not in event_managed_today]
             if len(planning) == 0:
                 return {}, 200
 
             # find pre-set calendar suggestion for this user or create new one
-            calendar_suggestion = self.__get_calendar_suggestion(user_id, use_placeholders=use_placeholders)
+            calendar_suggestion = self.__get_calendar_suggestion(
+                user_id, use_placeholders=use_placeholders)
 
-            server_socket.start_background_task(self.__generate_calendar_suggestion, user_id, calendar_suggestion.calendar_suggestion_pk, use_placeholders, planning, app_version)
+            server_socket.start_background_task(self.__generate_calendar_suggestion, user_id,
+                                                calendar_suggestion.calendar_suggestion_pk, use_placeholders, planning, app_version)
 
             try:
                 if not calendar_suggestion.waiting_message:
-                    waiting_json=self.__get_waiting_message(user_id, use_placeholders=use_placeholders)
+                    waiting_json = self.__get_waiting_message(
+                        user_id, use_placeholders=use_placeholders)
                     calendar_suggestion.waiting_message = waiting_json[
                         "waiting_message"].strip() if "waiting_message" in waiting_json else None
                     calendar_suggestion.ready_message = waiting_json[
@@ -300,8 +316,10 @@ class CalendarSuggestion(Resource):
             calendar_suggestion.waiting_message_sent = datetime.now()
             db.session.flush()
             try:
-                if not self.__has_next_calendar_suggestion(user_id): # if no preset calendar_suggestion
-                    server_socket.start_background_task(self.__prepare_next_calendar_suggestion, user_id)
+                # if no preset calendar_suggestion
+                if not self.__has_next_calendar_suggestion(user_id):
+                    server_socket.start_background_task(
+                        self.__prepare_next_calendar_suggestion, user_id)
             except Exception as e:
                 log_error(f"{error_message} : {e}", notify_admin=True)
 
@@ -324,7 +342,8 @@ class CalendarSuggestion(Resource):
         try:
             timestamp = request.args["datetime"]
             calendar_suggestion_pk = request.args["calendar_suggestion_pk"]
-            app_version = version.parse(request.args["version"]) if "version" in request.args else version.parse("0.0.0")
+            app_version = version.parse(
+                request.args["version"]) if "version" in request.args else version.parse("0.0.0")
         except KeyError as e:
             return {"error": f"Missing field: {e}"}, 400
 
@@ -380,7 +399,8 @@ class CalendarSuggestion(Resource):
                 # update calendar_suggestion
                 calendar_suggestion.reminder = True
             elif "user_task_execution_pk" in request.json:
-                calendar_suggestion.triggered_user_task_execution_pk = request.json["user_task_execution_pk"]
+                calendar_suggestion.triggered_user_task_execution_pk = request.json[
+                    "user_task_execution_pk"]
 
             calendar_suggestion.user_reaction_date = datetime.now()
             db.session.commit()

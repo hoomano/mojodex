@@ -5,17 +5,15 @@ import re
 from azure.cognitiveservices.speech import SpeechConfig, SpeechSynthesizer
 from azure.cognitiveservices.speech.audio import AudioOutputConfig
 from jinja2 import Template
-from mojodex_backend_openai import MojodexBackendOpenAI
-
-from azure_openai_conf import AzureOpenAIConf
 
 from app import log_error
 
+from app import llm, llm_conf, llm_backup_conf
 
 class VoiceGenerator:
     get_language_prompt = "/data/prompts/resources/get_language.txt"
 
-    language_catcher = MojodexBackendOpenAI(AzureOpenAIConf.azure_gpt4_turbo_conf, "GET_LANGUAGE", AzureOpenAIConf.azure_gpt4_32_conf)
+    language_catcher = llm(llm_conf, label="GET_LANGUAGE", llm_backup_conf=llm_backup_conf)
 
     # masculine voices
     available_voices_file = "/data/speech_synthesizer_available_voices.json"

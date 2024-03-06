@@ -1,25 +1,29 @@
 from datetime import datetime
-from mojodex_backend_openai import MojodexBackendOpenAI
+
 from app import db, timing_logger
 import time
 from jinja2 import Template
 import os
-from mojodex_core.entities import *
+from mojodex_core.entities import MdProducedText, MdMessage, MdProducedTextVersion, MdTextType
 
 from mojodex_backend_logger import MojodexBackendLogger
-from azure_openai_conf import AzureOpenAIConf
+
+from app import llm, llm_conf, llm_backup_conf, embedder, embedding_conf
+
 
 class ProducedTextManager:
     logger_prefix = "📝 ProducedTextManager"
 
-    embedder = MojodexBackendOpenAI(AzureOpenAIConf.azure_conf_embedding, "PRODUCED_TEXT_EMBEDDER")
+    embedder = embedder(embedding_conf, label="PRODUCED_TEXT_EMBEDDER")
 
     is_edition_prompt = "/data/prompts/produced_text_manager/is_edition_prompt.txt"
 
-    is_edition_generator = MojodexBackendOpenAI(AzureOpenAIConf.azure_gpt4_turbo_conf, "IS_EDITION_WRITING", AzureOpenAIConf.azure_gpt4_32_conf)
+    is_edition_generator = llm(
+        llm_conf, label="IS_EDITION_WRITING", llm_backup_conf=llm_backup_conf)
 
     get_text_type_prompt = "/data/prompts/produced_text_manager/get_text_type_prompt.txt"
-    text_type_deducer = MojodexBackendOpenAI(AzureOpenAIConf.azure_gpt4_turbo_conf, "TEXT_TYPE_DEDUCER", AzureOpenAIConf.azure_gpt4_32_conf)
+    text_type_deducer = llm(
+        llm_conf, label="TEXT_TYPE_DEDUCER", llm_backup_conf=llm_backup_conf)
 
     title_start_tag, title_end_tag = "<title>", "</title>"
     draft_start_tag, draft_end_tag = "<draft>", "</draft>"
@@ -28,7 +32,6 @@ class ProducedTextManager:
     def remove_tags(text):
         return text.replace(ProducedTextManager.draft_start_tag, "").replace(ProducedTextManager.draft_end_tag, "")\
             .replace(ProducedTextManager.title_start_tag, "").replace(ProducedTextManager.title_end_tag, "")
-
 
     def __init__(self, session_id, user_id=None, user_task_execution_pk=None, task_name_for_system=None, use_draft_placeholder=False):
         self.logger = MojodexBackendLogger(
@@ -42,20 +45,24 @@ class ProducedTextManager:
     def extract_and_save_produced_text(self, mojo_text, text_type_pk=None, user_message=None):
         try:
             self.logger.debug(f"extract_and_save_produced_text")
-            text_type = db.session.query(MdTextType.name).filter(MdTextType.text_type_pk == text_type_pk).first()[0] if text_type_pk is not None else None
+            text_type = db.session.query(MdTextType.name).filter(
+                MdTextType.text_type_pk == text_type_pk).first()[0] if text_type_pk is not None else None
             """Extract the text produced by the system"""
             # le texte produit par le systeme est entre <draft> et </draft>
             if ProducedTextManager.title_start_tag and ProducedTextManager.title_end_tag in mojo_text:
-                start = mojo_text.find(ProducedTextManager.title_start_tag) + len(ProducedTextManager.title_start_tag)
+                start = mojo_text.find(
+                    ProducedTextManager.title_start_tag) + len(ProducedTextManager.title_start_tag)
                 end = mojo_text.find(ProducedTextManager.title_end_tag)
                 title = mojo_text[start:end]
                 # remove title and tags from message
-                mojo_text = mojo_text.replace(f"{ProducedTextManager.title_start_tag}{title}{ProducedTextManager.title_end_tag}", "")
+                mojo_text = mojo_text.replace(
+                    f"{ProducedTextManager.title_start_tag}{title}{ProducedTextManager.title_end_tag}", "")
                 title = title.strip()
             else:
                 title = None
             if ProducedTextManager.draft_start_tag and ProducedTextManager.draft_end_tag in mojo_text:
-                start = mojo_text.find(ProducedTextManager.draft_start_tag) + len(ProducedTextManager.draft_start_tag)
+                start = mojo_text.find(
+                    ProducedTextManager.draft_start_tag) + len(ProducedTextManager.draft_start_tag)
                 end = mojo_text.find(ProducedTextManager.draft_end_tag)
                 text = mojo_text[start:end].strip()
             else:
@@ -63,12 +70,14 @@ class ProducedTextManager:
                     ProducedTextManager.title_end_tag, "").strip()
             return self._save_produced_text(text, title, text_type, user_message)
         except Exception as e:
-            raise Exception(f"{ProducedTextManager.logger_prefix}:: extract_and_save_produced_text:: {e}")
+            raise Exception(
+                f"{ProducedTextManager.logger_prefix}:: extract_and_save_produced_text:: {e}")
 
     def _save_produced_text(self, text, title, text_type, user_message=None):
         try:
             text_to_edit_pk = self._is_edition() if user_message is not None else None
-            self.logger.debug(f'_save_produced_text:: text_to_edit_pk {text_to_edit_pk}')
+            self.logger.debug(
+                f'_save_produced_text:: text_to_edit_pk {text_to_edit_pk}')
             if text_to_edit_pk is not None:
                 produced_text = db.session.query(MdProducedText).filter(
                     MdProducedText.produced_text_pk == text_to_edit_pk).first()
@@ -82,15 +91,17 @@ class ProducedTextManager:
             if text_type is None:
                 text_type = self._get_produced_text_type(text)
 
-            text_type_pk = db.session.query(MdTextType.text_type_pk).filter(MdTextType.name == text_type).first()[0]
+            text_type_pk = db.session.query(MdTextType.text_type_pk).filter(
+                MdTextType.name == text_type).first()[0]
             embedding = ProducedTextManager.embed_produced_text(title, text, self.user_id, user_task_execution_pk=self.user_task_execution_pk,
-                                                    task_name_for_system=self.task_name_for_system)
+                                                                task_name_for_system=self.task_name_for_system)
             new_version = MdProducedTextVersion(produced_text_fk=produced_text.produced_text_pk, title=title,
                                                 production=text,
                                                 creation_date=datetime.now(), text_type_fk=text_type_pk, embedding=embedding)
             db.session.add(new_version)
             db.session.commit()
-            self.logger.debug(f'_save_produced_text:: produced_text_pk {produced_text.produced_text_pk} - new_version_pk {new_version.produced_text_version_pk}')
+            self.logger.debug(
+                f'_save_produced_text:: produced_text_pk {produced_text.produced_text_pk} - new_version_pk {new_version.produced_text_version_pk}')
             return produced_text, new_version
         except Exception as e:
             raise Exception(f"_save_produced_text:: {e}")
@@ -107,8 +118,8 @@ class ProducedTextManager:
                 if produced_text:
                     return produced_text.produced_text_pk
 
-
-            session_messages_with_produced_text = self._get_session_messages_with_produced_text()  # est ce qu'il y a deja un texte produit par le systeme ?
+            # est ce qu'il y a deja un texte produit par le systeme ?
+            session_messages_with_produced_text = self._get_session_messages_with_produced_text()
 
             if len(session_messages_with_produced_text) == 0:
                 return None  # on n'est pas en édition
@@ -120,7 +131,7 @@ class ProducedTextManager:
                     f"édition, on prend le dernier par défaut")
 
             if self.use_draft_placeholder:
-                text="edition"
+                text = "edition"
             else:
                 with open(ProducedTextManager.is_edition_prompt, "r") as f:
                     template = Template(f.read())
@@ -129,13 +140,14 @@ class ProducedTextManager:
 
                 messages = [{"role": "system", "content": is_edition_prompt}]
                 responses = ProducedTextManager.is_edition_generator.chat(messages, self.user_id,
-                                                                                temperature=0, max_tokens=20,
-                                                                                user_task_execution_pk=self.user_task_execution_pk,
-                                                                                task_name_for_system=self.task_name_for_system,
-                                                                             )
+                                                                          temperature=0, max_tokens=20,
+                                                                          user_task_execution_pk=self.user_task_execution_pk,
+                                                                          task_name_for_system=self.task_name_for_system,
+                                                                          )
                 text = responses[0].strip().lower()
             end_time = time.time()
-            timing_logger.log_timing(start_time, end_time, f"{ProducedTextManager.logger_prefix}:: _is_edition")
+            timing_logger.log_timing(
+                start_time, end_time, f"{ProducedTextManager.logger_prefix}:: _is_edition")
             return session_messages_with_produced_text[-1].message["produced_text_pk"] if text == "edition" else None
 
         except Exception as e:
@@ -144,19 +156,21 @@ class ProducedTextManager:
     def _get_produced_text_type(self, text):
         """Return the type of the produced text among the available enum, based on the text itself"""
         start_time = time.time()
-        types_enum = db.session.query(MdProducedTextType).all()
+        types_enum = db.session.query(MdTextType).all()
         with open(ProducedTextManager.get_text_type_prompt, "r") as f:
             template = Template(f.read())
-            get_text_type_prompt = template.render(text=text, types_enum=types_enum)
+            get_text_type_prompt = template.render(
+                text=text, types_enum=types_enum)
         messages = [{"role": "system", "content": get_text_type_prompt}]
         responses = ProducedTextManager.text_type_deducer.chat(messages, self.user_id,
-                                                                     temperature=0, max_tokens=20,
-                                                                           user_task_execution_pk=self.user_task_execution_pk,
-                                                                           task_name_for_system=self.task_name_for_system,
-                                                                       )
+                                                               temperature=0, max_tokens=20,
+                                                               user_task_execution_pk=self.user_task_execution_pk,
+                                                               task_name_for_system=self.task_name_for_system,
+                                                               )
         text_type = responses[0].strip().lower()
         end_time = time.time()
-        timing_logger.log_timing(start_time, end_time, f"{ProducedTextManager.logger_prefix}:: _get_produced_text_type")
+        timing_logger.log_timing(
+            start_time, end_time, f"{ProducedTextManager.logger_prefix}:: _get_produced_text_type")
         return text_type if text_type in types_enum else None
 
     def _get_session_messages_with_produced_text(self):
@@ -189,7 +203,6 @@ class ProducedTextManager:
             return conversation
         except Exception as e:
             raise Exception("Error during _get_conversation: " + str(e))
-
 
     @staticmethod
     def embed_produced_text(title, production, user_id, user_task_execution_pk=None, task_name_for_system=None):

@@ -109,7 +109,7 @@ class User(Resource):
                     log_error(f"Error logging user {email}: Missing field : microsoft_token", notify_admin=True)
                     return {"error": User.general_backend_error_message}, 400
 
-                uri = f"{os.environ['MOJO_MICROSOFT_API_URI']}/me"
+                uri = f"{os.environ['MICROSOFT_AD_API_URI']}/me"
                 headers = {'Authorization': f"Bearer {microsoft_token}"}
                 internal_request = requests.get(uri, headers=headers)
 

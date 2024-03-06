@@ -32,7 +32,7 @@ def generate_token(user_id):
     payload = {
         'iat': datetime.utcnow(),
         "exp": datetime.utcnow() + timedelta(days=180),
-        'sub': user_id + '__mojodex__' + ''.join(
+        'sub': user_id + os.environ['TOKEN_SECRET_SPLITTER'] + ''.join(
             random.choices(string.ascii_uppercase + string.digits, k=10)) + datetime.utcnow().isoformat()
     }
     return jwt.encode(payload, os.environ["JWT_SECRET"], algorithm=os.environ["ENCODING_ALGORITHM"])

@@ -15,7 +15,7 @@ class MessageWriter:
     tool_result_start_tag, tool_result_end_tag = "<tool_results>", "</tool_results>"
 
     message_prompt = "/data/prompts/background/task_tool_execution/message_writer/message_prompt.txt"
-    writer = llm(llm_conf, "TASK_TOOL_EXECUTION_MESSAGE_WRITER")
+    writer = llm(llm_conf, label="TASK_TOOL_EXECUTION_MESSAGE_WRITER")
 
     def __init__(self, title_start_tag, title_end_tag, draft_start_tag, draft_end_tag):
         self.logger = BackgroundLogger(f"{MessageWriter.logger_prefix}")

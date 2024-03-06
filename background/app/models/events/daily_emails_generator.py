@@ -19,7 +19,7 @@ class DailyEmailsGenerator(EventsGenerator):
     logger_prefix = "DailyEmailsGenerator::"
     message_from_mojodex_email = "/data/mails/message_from_mojodex.html"
     daily_email_text_prompt = "/data/prompts/engagement/emails/daily_emails_text_prompt.txt"
-    daily_email_text_generator = llm(llm_conf, "DAILY_EMAIL_GENERATOR")
+    daily_email_text_generator = llm(llm_conf, label="DAILY_EMAIL_GENERATOR")
 
     reminder_email_type = "reminder_email"
     summary_email_type = "summary_email"

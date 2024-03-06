@@ -25,7 +25,7 @@ class GoogleSearchTool(Tool):
     n_total_usages = 3
 
     scrapper_prompt = "/data/prompts/background/task_tool_execution/google_search/scrapper_prompt.txt"
-    scrapper = llm(llm_conf, "WEB_SCRAPPER")
+    scrapper = llm(llm_conf, label="WEB_SCRAPPER")
 
     def __init__(self, user_id, task_tool_execution_pk, user_task_execution_pk, task_name_for_system, **kwargs):
         try:

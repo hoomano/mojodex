@@ -12,7 +12,7 @@ from app import llm, llm_conf
 class TaskToolExecutionNotificationsGenerator(EventsGenerator):
     logger_prefix = "TaskToolExecutionNotificationsGenerator::"
     notification_text_prompt = "/data/prompts/engagement/notifications/task_tool_execution_notification_text_prompt.txt"
-    notification_text_generator = llm(llm_conf, "TASK_TOOL_NOTIFICATION")
+    notification_text_generator = llm(llm_conf, label="TASK_TOOL_NOTIFICATION")
 
     def __init__(self):
         self.logger = BackgroundLogger(

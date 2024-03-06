@@ -18,7 +18,7 @@ class TodosCreator:
     todos_url = "/todos"
 
     todos_extractor_prompt = "/data/prompts/background/todos/extract_todos.txt"
-    todos_extractor = llm(llm_conf, "TODOS_EXTRACTOR")
+    todos_extractor = llm(llm_conf, label="TODOS_EXTRACTOR")
 
     def __init__(self, user_task_execution, knowledge_collector, language, conversation,
                  linked_user_task_executions_todos):

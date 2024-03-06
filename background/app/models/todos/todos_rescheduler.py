@@ -18,7 +18,7 @@ class TodosRescheduler:
     todos_scheduling_url = "/todos_scheduling"
 
     todos_rescheduler_prompt = "/data/prompts/background/todos/reschedule_todo.txt"
-    todos_rescheduler = llm(llm_conf, "TODOS_RESCHEDULER")
+    todos_rescheduler = llm(llm_conf, label="TODOS_RESCHEDULER")
 
     def __init__(self, todo_pk, user_task_execution, knowledge_collector, todo_description, n_scheduled,
                  first_scheduled_date, todo_list):

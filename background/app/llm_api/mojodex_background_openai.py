@@ -25,7 +25,7 @@ class OpenAIConf:
         "deployment_id": os.environ.get("GPT4_TURBO_AZURE_OPENAI_DEPLOYMENT_ID", 'gpt-4-1106-preview')
     }
 
-    azure_conf_embedding = {
+    embedding_conf = {
         "api_key": os.environ.get("ADA_EMBEDDING_AZURE_OPENAI_KEY", os.environ.get("OPENAI_API_KEY")),
         "api_base": os.environ.get("ADA_EMBEDDING_AZURE_OPENAI_API_BASE"),
         "api_type": os.environ.get("EMBEDDING_API_PROVIDER"),
@@ -38,12 +38,12 @@ class MojodexBackgroundOpenAI(BackgroundLLM, OpenAILLM, OpenAIEmbeddingProvider)
     logger_prefix = "MojodexBackgroundOpenAI"
     dataset_dir = "/data/prompts_dataset"
 
-    def __init__(self, azure_conf, label='unknown', max_retries=0):
-        api_key = azure_conf["api_key"]
-        api_base = azure_conf["api_base"]
-        api_version = azure_conf["api_version"]
-        api_type = azure_conf["api_type"]
-        self.model = azure_conf["deployment_id"]
+    def __init__(self, openai_conf, label='unknown', max_retries=0):
+        api_key = openai_conf["api_key"]
+        api_base = openai_conf["api_base"]
+        api_version = openai_conf["api_version"]
+        api_type = openai_conf["api_type"]
+        self.model = openai_conf["deployment_id"]
         self.label = label
         # if dataset_dir does not exist, create it
         if not os.path.exists(self.dataset_dir):

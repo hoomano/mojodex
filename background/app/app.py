@@ -72,7 +72,7 @@ else:
 embedding_engine = os.environ.get("EMBEDDING_ENGINE", "openai")
 if embedding_engine == "openai":
     embedder = MojodexBackgroundOpenAI
-    embedding_conf = OpenAIConf.azure_conf_embedding
+    embedding_conf = OpenAIConf.embedding_conf
 else:
     raise Exception(f"Unknown embedding engine: {embedding_engine}")
 

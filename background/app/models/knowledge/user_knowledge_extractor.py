@@ -15,7 +15,7 @@ class UserKnowledgeExtractor:
     logger_prefix = "UserKnowledgeExtractor::"
 
     extract_user_knowledge_prompt = "/data/prompts/background/knowledge/user_knowledge_extractor/extract_user_knowledge_prompt.txt"
-    user_knowledge_extractor = llm(llm_conf, "EXTRACT_USER_KNOWLEDGE")
+    user_knowledge_extractor = llm(llm_conf, label="EXTRACT_USER_KNOWLEDGE")
 
     def __init__(self, session_id, user_id, conversation):
         self.logger = BackgroundLogger(

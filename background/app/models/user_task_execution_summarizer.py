@@ -13,7 +13,8 @@ class UserTaskExecutionSummarizer:
     logger_prefix = "UserTaskExecutionSummarizer::"
 
     task_execution_summary_prompt = "/data/prompts/background/user_task_execution_end/user_task_execution_summarizer/task_execution_summary_prompt.txt"
-    task_execution_summarizer = llm(llm_conf,"TASK_EXECUTION_SUMMARIZER")
+    task_execution_summarizer = llm(
+        llm_conf, label="TASK_EXECUTION_SUMMARIZER")
 
     def __init__(self, knowledge_collector, user_task_execution, user_messages_conversation):
         try:
@@ -26,7 +27,8 @@ class UserTaskExecutionSummarizer:
             self._save_to_db()
         except Exception as e:
             send_admin_error_email(f"{self.logger.name} : {e}")
-            raise Exception(f"{UserTaskExecutionSummarizer.logger_prefix} __init__: {e}")
+            raise Exception(
+                f"{UserTaskExecutionSummarizer.logger_prefix} __init__: {e}")
 
     def _task_execution_summary(self, retry=3):
         prompt, response = None, None
@@ -59,14 +61,16 @@ class UserTaskExecutionSummarizer:
             return title, summary
         except Exception as e:
             if retry > 0:
-                self.logger.warning(f"_task_execution_summary : {e}, retrying...")
+                self.logger.warning(
+                    f"_task_execution_summary : {e}, retrying...")
                 self._task_execution_summary(retry=retry - 1)
             else:
                 # Save in file and we will open it only if the user gave access to their data
                 file_path = f"/data/task_execution_summary_error_{self.user_task_execution.user_task_execution_pk}.txt"
                 with open(file_path, "w") as f:
                     f.write(f"PROMPT:\n{prompt} \n\n\n RESPONSE:\n{response}")
-                raise Exception(f"_task_execution_summary:: {e} - data available in {file_path}")
+                raise Exception(
+                    f"_task_execution_summary:: {e} - data available in {file_path}")
 
     def _save_to_db(self):
         try:
@@ -74,7 +78,8 @@ class UserTaskExecutionSummarizer:
             uri = f"{os.environ['MOJODEX_BACKEND_URI']}/user_task_execution_summary"
             pload = {'datetime': datetime.now().isoformat(), 'title': self.title, 'summary': self.summary,
                      'user_task_execution_pk': self.user_task_execution.user_task_execution_pk}
-            headers = {'Authorization': os.environ['MOJODEX_BACKGROUND_SECRET'], 'Content-Type': 'application/json'}
+            headers = {
+                'Authorization': os.environ['MOJODEX_BACKGROUND_SECRET'], 'Content-Type': 'application/json'}
             internal_request = requests.post(uri, json=pload, headers=headers)
             if internal_request.status_code != 200:
                 # I can't write complete pload for privacy reasons so just checking keys

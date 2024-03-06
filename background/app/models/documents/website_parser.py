@@ -19,7 +19,7 @@ class WebsiteParser:
     MAX_WEBSITE_PAGES = 100
 
     website_chunk_validation_prompt = "/data/prompts/background/website_parser/is_website_chunk_relevant.txt"
-    website_chunk_validator = llm(llm_conf, "WEBSITE_CHUNK_VALIDATOR")
+    website_chunk_validator = llm(llm_conf, label="WEBSITE_CHUNK_VALIDATOR")
 
     def __init__(self):
         self.logger = BackgroundLogger(f"{WebsiteParser.logger_prefix}")

@@ -12,7 +12,8 @@ from app import llm, llm_conf
 class DailyNotificationsGenerator(EventsGenerator):
     logger_prefix = "DailyNotificationsGenerator::"
     daily_notification_text_prompt = "/data/prompts/engagement/notifications/daily_notification_text_prompt.txt"
-    daily_notification_text_generator = llm(llm_conf, "DAILY_NOTIFICATION")
+    daily_notification_text_generator = llm(
+        llm_conf, label="DAILY_NOTIFICATION")
 
     def __init__(self):
         self.logger = BackgroundLogger(

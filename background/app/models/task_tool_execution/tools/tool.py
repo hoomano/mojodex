@@ -17,7 +17,7 @@ class Tool(ABC):
     task_tool_query_url = "task_tool_query"
 
     params_generator_prompt = "/data/prompts/background/task_tool_execution/generate_tool_params.txt"
-    json_params_generator = llm(llm_conf, "TOOL_PARAMS_GENERATOR")
+    json_params_generator = llm(llm_conf, label="TOOL_PARAMS_GENERATOR")
 
     def __init__(self, name, tool_specifications, task_tool_execution_pk, logger, user_id, user_task_execution_pk,
                  task_name_for_system, n_total_usages):

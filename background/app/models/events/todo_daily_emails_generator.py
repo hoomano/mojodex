@@ -24,7 +24,7 @@ class TodoDailyEmailsGenerator(EventsGenerator):
     message_from_mojodex_email = "/data/mails/message_from_mojodex.html"
     todo_daily_email_text_prompt = "/data/prompts/engagement/emails/todo_daily_emails_text_prompt.txt"
     todo_daily_email_text_generator = llm(llm_conf,
-                                          "DAILY_EMAIL_GENERATOR")
+                                          label="DAILY_EMAIL_GENERATOR")
     todo_daily_email_type = "todo_daily_email"
 
     def __init__(self):

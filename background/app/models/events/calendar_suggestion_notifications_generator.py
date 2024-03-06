@@ -19,7 +19,7 @@ class CalendarSuggestionNotificationsGenerator(EventsGenerator):
     logger_prefix = "CalendarSuggestionNotificationsGenerator::"
     calendar_suggestion_notification_text_prompt = "/data/prompts/engagement/notifications/calendar_suggestion_reminder_notification.txt"
     calendar_suggestion_notification_text_generator = llm(llm_conf,
-                                                          "CALENDAR_SUGGESTION_NOTIFICATION")
+                                                          label="CALENDAR_SUGGESTION_NOTIFICATION")
 
     def __init__(self):
         self.logger = BackgroundLogger(

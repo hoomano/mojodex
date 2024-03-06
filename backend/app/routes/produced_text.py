@@ -37,14 +37,14 @@ class ProducedText(Resource):
                     log_error(f"Error getting produced_text : ProducedText with produced_text_pk {produced_text_pk} does not exist for this user")
                     return {"error": f"Invalid produced_text produced_text_pk: {produced_text_pk} for this user"}, 400
                 produced_text, produced_text_version = result
-                text_type = db.session.query(MdTextType.name).filter(MdTextType.text_type_pk == produced_text_version.text_type_fk).first()[0]
+                text_type = db.session.query(MdTextType.name).filter(MdTextType.text_type_pk == produced_text_version.text_type_fk).first()
                 return {"produced_text_pk": produced_text.produced_text_pk,
                         "user_task_execution_fk": produced_text.user_task_execution_fk,
                         "user_id": produced_text.user_id,
                         "production": produced_text_version.production,
                         "title": produced_text_version.title,
                         "creation_date": produced_text_version.creation_date.isoformat(),
-                        "text_type": text_type,
+                        "text_type": text_type[0] if text_type is not None else None,
                         }, 200
 
             # if no produced_text_pk is provided, return n_produced_texts first produced_texts
@@ -70,6 +70,8 @@ class ProducedText(Resource):
             & (MdProducedText.user_id == user_id)
             ).order_by(MdProducedTextVersion.creation_date.desc()).limit(n_produced_texts).offset(offset).all()
 
+            text_type = db.session.query(MdTextType.name).filter(
+                MdTextType.text_type_pk == produced_text_version.text_type_fk).first()
 
             return {"produced_texts": [{"produced_text_pk": produced_text.produced_text_pk,
                         "user_task_execution_fk": produced_text.user_task_execution_fk,
@@ -77,8 +79,7 @@ class ProducedText(Resource):
                         "production": produced_text_version.production,
                         "title": produced_text_version.title,
                         "creation_date": produced_text_version.creation_date.isoformat(),
-                        "text_type": db.session.query(MdTextType.name).filter(
-                MdTextType.text_type_pk == produced_text_version.text_type_fk).first()[0],
+                        "text_type": text_type[0] if text_type is not None else None,
                         } for produced_text, produced_text_version in results]}, 200
 
         except Exception as e:

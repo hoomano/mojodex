@@ -7,7 +7,7 @@ import logging
 import os
 from mojodex_core.llm_engine.llm import LLM
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.ERROR)
 
 
 class MistralAILLM(LLM):
@@ -60,10 +60,10 @@ class MistralAILLM(LLM):
                 messages = [ChatMessage(
                     role=message['role'], content=message['content']) for message in messages]
 
-            stream_response = self.client.chat_stream(
-                model=self.model, messages=messages, temperature=temperature, max_tokens=max_tokens)
-
             if stream:
+                stream_response = self.client.chat_stream(
+                    model=self.model, messages=messages, temperature=temperature, max_tokens=max_tokens)
+
                 complete_text = ""
                 for chunk in stream_response:
                     partial_token = chunk.choices[0].delta.content
@@ -74,6 +74,11 @@ class MistralAILLM(LLM):
                         except Exception as e:
                             logging.error(
                                 f"🔴 Error in streamCallback : {e}")
+            else:
+                response = self.client.chat(
+                    model=self.model, messages=messages, temperature=temperature, max_tokens=max_tokens)
+
+                complete_text = response.choices[0].message.content
             # [content.text for content in stream_response.choices]
             return [complete_text]
 

@@ -4,6 +4,7 @@ from mojodex_core.llm_engine.providers.openai_embedding import OpenAIEmbeddingPr
 import os
 from mojodex_core.logging_handler import log_error
 
+
 class MistralAIConf:
 
     mistral_medium_conf = {
@@ -23,18 +24,17 @@ class MistralAIConf:
     }
 
 
-
 class MojodexMistralAI(BackendLLM, MistralAILLM, OpenAIEmbeddingProvider):
     dataset_dir = "/data/prompts_dataset"
 
-    def __init__(self, mistral_conf, label='unknown', max_retries=0):
+    def __init__(self, mistral_conf, label='unknown', llm_backup_conf=None, max_retries=0):
         api_key = mistral_conf["api_key"]
         self.model = mistral_conf["api_model"]
 
         endpoint = mistral_conf.get("endpoint") if mistral_conf.get(
             "endpoint") else None
-        api_type= "azure" if mistral_conf.get("endpoint") else "la_plateforme"
-        
+        api_type = "azure" if mistral_conf.get("endpoint") else "la_plateforme"
+
         self.label = label
 
         # if dataset_dir does not exist, create it
@@ -44,25 +44,42 @@ class MojodexMistralAI(BackendLLM, MistralAILLM, OpenAIEmbeddingProvider):
             os.mkdir(os.path.join(self.dataset_dir, "chat"))
         if not os.path.exists(os.path.join(self.dataset_dir, "chat", self.label)):
             os.mkdir(os.path.join(self.dataset_dir, "chat", self.label))
-        
-        super().__init__(api_key, endpoint, self.model, api_type=api_type, max_retries=max_retries)
 
+        BackendLLM.__init__(
+            self, mistral_conf, llm_backup_conf=llm_backup_conf, label=label, max_retries=max_retries)
+        MistralAILLM.__init__(self, api_key, endpoint, self.model,
+                              api_type=api_type, max_retries=max_retries)
 
-    
+        # TODO: use self.backup_engine to manage rate limits
+        if llm_backup_conf:
+            self.backup_engine = MistralAILLM(llm_backup_conf["api_key"],
+                                              llm_backup_conf.get("endpoint") if mistral_conf.get(
+                                                  "endpoint") else None,
+                                              llm_backup_conf["api_model"],
+                                              api_type="azure" if llm_backup_conf.get(
+                                                  "endpoint") else "la_plateforme",
+                                              max_retries=2)
+        else:
+            self.backup_engine = None
+
     def chat(self, messages, user_id, temperature, max_tokens, n_responses=1,
-                       frequency_penalty=0, presence_penalty=0, stream=False, stream_callback=None, json_format=False,
-                       user_task_execution_pk=None, task_name_for_system=None):
+             frequency_penalty=0, presence_penalty=0, stream=False, stream_callback=None, json_format=False,
+             user_task_execution_pk=None, task_name_for_system=None):
         try:
 
             responses = super().chatCompletion(messages, temperature, max_tokens, n_responses=n_responses,
-                                   frequency_penalty=frequency_penalty, presence_penalty=presence_penalty, stream=stream, stream_callback=stream_callback, json_format=json_format)
-
-            self._write_in_dataset({"temperature": temperature, "max_tokens": max_tokens, "n_responses": n_responses,
-                                     "frequency_penalty": frequency_penalty, "presence_penalty": presence_penalty,
-                                     "messages": [{'role': message.role, 'content': message.content} for message in messages], "responses": responses, "model_config": self.model}, task_name_for_system, "chat")
+                                               frequency_penalty=frequency_penalty, presence_penalty=presence_penalty, stream=stream, stream_callback=stream_callback, json_format=json_format)
+            try:
+                self._write_in_dataset({"temperature": temperature, "max_tokens": max_tokens, "n_responses": n_responses,
+                                    "frequency_penalty": frequency_penalty, "presence_penalty": presence_penalty,
+                                    "messages": [{'role': message.get('role') if message.get('role') else 'unknown', 'content': message.get('content') if message.get('content') else "no_content"} for message in messages], "responses": responses, "model_config": self.model}, task_name_for_system, "chat")
+            except Exception as e:
+                log_error(
+                    f"Error while writing in dataset for user_id: {user_id} - user_task_execution_pk: {user_task_execution_pk} - task_name_for_system: {task_name_for_system}: {e}", notify_admin=False)
+                log_error(messages, notify_admin=False)
             return responses
         except Exception as e:
             log_error(
                 f"Error in Mojodex Mistral AI chat for user_id: {user_id} - user_task_execution_pk: {user_task_execution_pk} - task_name_for_system: {task_name_for_system}: {e}", notify_admin=False)
             raise Exception(
-                f"🔴 Error in Mojodex OpenAI chat: {e} - model: {self.model}")
+                f"🔴 Error in Mojodex Mistral AI chat: {e} - model: {self.model}")

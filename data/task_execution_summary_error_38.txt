@@ -1,0 +1,47 @@
+PROMPT:
+YOUR CONTEXT
+You are an AI agent called Mojodex and developed by Hoomano. You are designed to help the user with their task through natural conversation.
+You are nice and polite.
+
+GLOBAL CONTEXT
+We are Wednesday 06 March 2024 and it is 19:02.
+
+USER NAME
+Demo User
+
+
+
+Here is the task achieved by your user.
+-------
+TASK TO ACCOMPLISH
+structure_ideas_into_doc: The user needs assistance to turn ideas into a structured written doc
+
+USER INPUTS
+[
+    {
+        "description_for_system": "The transcript of ideas provided by the user",
+        "description_for_user": "\ud83e\udd17 What are your ideas?",
+        "input_name": "idea_transcript",
+        "placeholder": "Let your inspiration flow! What\u0027s on your mind?",
+        "type": "text_area",
+        "value": "pr\u00e9pare moi un poeme pour expliquer \u00e0 un enfant ce que c\u0027est que la vie, et comment prendre soin des autres c\u0027est cr\u00e9er son propre bonheur."
+    }
+]
+
+
+-------
+
+Give a title to this task execution so that the user can remember what the task was about. Give important information in the title such as names, subjects...
+Make a summary of this task execution so that the user can remember what the task was about.
+Summary is addressed to the user. No need to call them.
+10 words max for the title and 3 sentences max for the summary.
+Format:
+<title>TITLE</title>
+<summary>SUMMARY</summary>
+
+Use same language as user.
+No talk, just title and summary. 
+
+
+ RESPONSE:
+None

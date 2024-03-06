@@ -63,6 +63,7 @@ else:
 # Setup the embedder
 embedding_engine = os.environ.get("EMBEDDING_ENGINE", "openai")
 if embedding_engine == "openai":
+    from llm_api.mojodex_background_openai import MojodexBackgroundOpenAI, OpenAIConf
     embedder = MojodexBackgroundOpenAI
     embedding_conf = OpenAIConf.embedding_conf
 else:

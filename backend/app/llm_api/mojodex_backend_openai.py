@@ -72,7 +72,9 @@ class MojodexBackendOpenAI(BackendLLM, OpenAILLM, OpenAIEmbeddingProvider):
             os.mkdir(os.path.join(self.dataset_dir, "chat"))
         if not os.path.exists(os.path.join(self.dataset_dir, "chat", self.label)):
             os.mkdir(os.path.join(self.dataset_dir, "chat", self.label))
-        super().__init__(api_key, api_base, api_version, model, api_type=api_type, max_retries=max_retries)
+        BackendLLM.__init__(self, azure_conf, llm_backup_conf=llm_backup_conf, label=label, max_retries=max_retries)
+        OpenAILLM.__init__(self, api_key, api_base, api_version, model, api_type=api_type, max_retries=max_retries)
+
         if llm_backup_conf:
             self.backup_engine = OpenAILLM(llm_backup_conf["api_key"],
                                             llm_backup_conf["api_base"],

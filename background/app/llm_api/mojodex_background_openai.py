@@ -52,8 +52,10 @@ class MojodexBackgroundOpenAI(BackgroundLLM, OpenAILLM, OpenAIEmbeddingProvider)
             os.mkdir(os.path.join(self.dataset_dir, "chat"))
         if not os.path.exists(os.path.join(self.dataset_dir, "chat", self.label)):
             os.mkdir(os.path.join(self.dataset_dir, "chat", self.label))
-        super().__init__(api_key, api_base, api_version, self.model,
+        BackgroundLLM.__init__(self, openai_conf, label=label, max_retries=max_retries)
+        OpenAILLM.__init__(self, api_key, api_base, api_version, self.model,
                          api_type=api_type, max_retries=max_retries)
+        
 
     def chat(self, messages, user_id, temperature, max_tokens,
              frequency_penalty=0, presence_penalty=0, stream=False, stream_callback=None, json_format=False,

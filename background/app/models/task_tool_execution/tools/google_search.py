@@ -5,7 +5,7 @@ from jinja2 import Template
 from serpapi import GoogleSearch
 import requests
 from bs4 import BeautifulSoup
-from background.app.llm_api.mojodex_background_openai import OpenAIConf
+from llm_api.mojodex_background_openai import OpenAIConf
 from background_logger import BackgroundLogger
 from models.task_tool_execution.tools.tool import Tool
 from app import serp_api_costs_manager

@@ -2,14 +2,6 @@ from gevent import monkey
 
 monkey.patch_all()
 
-from models.documents.document_manager import DocumentManager
-from conversation_retriever import ConversationRetriever
-from http_routes import HttpRouteManager
-from language_retriever import LanguageRetriever
-from mojodex_core.costs_manager.news_api_costs_manager import NewsAPICostsManager
-from mojodex_core.costs_manager.serp_api_costs_manager import SerpAPICostsManager
-
-from mojodex_core.costs_manager.tokens_costs_manager import TokensCostsManager
 
 from datetime import datetime
 
@@ -101,16 +93,21 @@ def send_admin_error_email(error_message):
     except Exception as e:
         main_logger.error(f"Error while sending admin email : {e}")
 
-
+from mojodex_core.costs_manager.tokens_costs_manager import TokensCostsManager
+from mojodex_core.costs_manager.serp_api_costs_manager import SerpAPICostsManager
+from mojodex_core.costs_manager.news_api_costs_manager import NewsAPICostsManager
 tokens_costs_manager = TokensCostsManager()
 serp_api_costs_manager = SerpAPICostsManager()
 news_api_costs_manager = NewsAPICostsManager()
 
 
+from models.documents.document_manager import DocumentManager
 document_manager = DocumentManager()
 
+from language_retriever import LanguageRetriever
 language_retriever = LanguageRetriever()
 
+from conversation_retriever import ConversationRetriever
 conversation_retriever = ConversationRetriever()
 
 
@@ -121,7 +118,7 @@ def on_json_error(result, function_name, retries):
     raise Exception(
         f"{function_name} - incorrect JSON: aborting after {retries} retries...  data available in {error_path}")
 
-
+from http_routes import HttpRouteManager
 HttpRouteManager(api)
 
 

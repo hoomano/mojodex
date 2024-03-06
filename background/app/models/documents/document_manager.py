@@ -4,11 +4,11 @@ from datetime import datetime
 
 from models.documents.document_chunk_manager import DocumentChunkManager
 
-from app import embedder, embedding_conf
+
 
 from background_logger import BackgroundLogger
 
-from background.app.llm_api.mojodex_background_openai import OpenAIConf
+from llm_api.mojodex_background_openai import OpenAIConf
 
 
 class DocumentManager:
@@ -16,7 +16,7 @@ class DocumentManager:
 
     def __init__(self):
         self.logger = BackgroundLogger(f"{DocumentManager.logger_prefix}")
-
+        from app import embedder, embedding_conf
         self.embedder = embedder(embedding_conf, label="DOCUMENT_EMBEDDING")
 
         self.document_chunk_manager = DocumentChunkManager()

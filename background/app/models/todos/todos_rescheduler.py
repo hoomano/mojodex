@@ -3,13 +3,14 @@ from datetime import datetime
 
 import requests
 from jinja2 import Template
-from mojodex_background_openai import MojodexBackgroundOpenAI
 from mojodex_core.json_loader import json_decode_retry
 from background_logger import BackgroundLogger
 from app import on_json_error
-from azure_openai_conf import AzureOpenAIConf
+from background.app.llm_api.mojodex_background_openai import OpenAIConf
 
 from app import send_admin_error_email
+
+from app import llm, llm_conf
 
 
 class TodosRescheduler:
@@ -17,7 +18,7 @@ class TodosRescheduler:
     todos_scheduling_url = "/todos_scheduling"
 
     todos_rescheduler_prompt = "/data/prompts/background/todos/reschedule_todo.txt"
-    todos_rescheduler = MojodexBackgroundOpenAI(AzureOpenAIConf.azure_gpt4_turbo_conf, "TODOS_RESCHEDULER")
+    todos_rescheduler = llm(llm_conf, "TODOS_RESCHEDULER")
 
     def __init__(self, todo_pk, user_task_execution, knowledge_collector, todo_description, n_scheduled,
                  first_scheduled_date, todo_list):
@@ -28,7 +29,8 @@ class TodosRescheduler:
         self.n_scheduled = n_scheduled
         self.first_scheduled_date = first_scheduled_date
         self.todo_list = todo_list
-        self.logger = BackgroundLogger(f"{TodosRescheduler.logger_prefix} - todo_pk {todo_pk}")
+        self.logger = BackgroundLogger(
+            f"{TodosRescheduler.logger_prefix} - todo_pk {todo_pk}")
 
     def reschedule_and_save(self):
         try:
@@ -44,7 +46,8 @@ class TodosRescheduler:
                                        f"This is not blocking, only this todo {self.todo_pk} will not be rescheduled.")
                 save_to_db = False
             if save_to_db:
-                self.__save_to_db(json_result['argument'], json_result['reschedule_date'])
+                self.__save_to_db(
+                    json_result['argument'], json_result['reschedule_date'])
 
         except Exception as e:
             raise Exception(f"{self.logger_prefix} : reschedule_and_save: {e}")
@@ -87,7 +90,8 @@ class TodosRescheduler:
             # Save follow-ups in db => send to mojodex-backend
             pload = {'datetime': datetime.now().isoformat(), 'argument': argument, 'reschedule_date': reschedule_date,
                      'todo_fk': self.todo_pk}
-            headers = {'Authorization': os.environ['MOJODEX_BACKGROUND_SECRET'], 'Content-Type': 'application/json'}
+            headers = {
+                'Authorization': os.environ['MOJODEX_BACKGROUND_SECRET'], 'Content-Type': 'application/json'}
             internal_request = requests.put(uri, json=pload, headers=headers)
             if internal_request.status_code != 200:
                 raise Exception(str(internal_request.json()))

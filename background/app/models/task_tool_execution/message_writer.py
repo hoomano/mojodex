@@ -3,9 +3,11 @@ from datetime import datetime
 
 import requests
 from jinja2 import Template
-from mojodex_background_openai import MojodexBackgroundOpenAI
-from azure_openai_conf import AzureOpenAIConf
+
+from background.app.llm_api.mojodex_background_openai import OpenAIConf
 from background_logger import BackgroundLogger
+
+from app import llm, llm_conf
 
 
 class MessageWriter:
@@ -13,7 +15,7 @@ class MessageWriter:
     tool_result_start_tag, tool_result_end_tag = "<tool_results>", "</tool_results>"
 
     message_prompt = "/data/prompts/background/task_tool_execution/message_writer/message_prompt.txt"
-    writer = MojodexBackgroundOpenAI(AzureOpenAIConf.azure_gpt4_turbo_conf, "TASK_TOOL_EXECUTION_MESSAGE_WRITER")
+    writer = llm(llm_conf, "TASK_TOOL_EXECUTION_MESSAGE_WRITER")
 
     def __init__(self, title_start_tag, title_end_tag, draft_start_tag, draft_end_tag):
         self.logger = BackgroundLogger(f"{MessageWriter.logger_prefix}")
@@ -24,15 +26,17 @@ class MessageWriter:
         self.draft_end_tag = draft_end_tag
 
     def write_message(self, knowledge_collector, task, tool, task_tool_association, conversation, results,
-                               language, user_id, session_id, user_task_execution_pk):
+                      language, user_id, session_id, user_task_execution_pk):
         try:
             self.logger.info(f"write_and_send_message")
             message_text = self._write_message(knowledge_collector, task, tool, task_tool_association, conversation,
                                                results, language, user_id, user_task_execution_pk)
-            message = {"text": message_text, "text_with_tags": f"{MessageWriter.tool_result_start_tag}{message_text}{MessageWriter.tool_result_end_tag}"}
+            message = {"text": message_text,
+                       "text_with_tags": f"{MessageWriter.tool_result_start_tag}{message_text}{MessageWriter.tool_result_end_tag}"}
             return message
         except Exception as e:
-            raise Exception(f"{self.logger_prefix} write_and_send_message :: {e}")
+            raise Exception(
+                f"{self.logger_prefix} write_and_send_message :: {e}")
 
     def _write_message(self, knowledge_collector, task, tool, task_tool_association, conversation, results, language,
                        user_id, user_task_execution_pk):

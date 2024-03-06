@@ -7,9 +7,10 @@ from app import document_manager
 
 from background_logger import BackgroundLogger
 from jinja2 import Template
-from mojodex_background_openai import MojodexBackgroundOpenAI
 
-from azure_openai_conf import AzureOpenAIConf
+from background.app.llm_api.mojodex_background_openai import OpenAIConf
+
+from app import llm, llm_conf
 
 
 class WebsiteParser:
@@ -18,7 +19,7 @@ class WebsiteParser:
     MAX_WEBSITE_PAGES = 100
 
     website_chunk_validation_prompt = "/data/prompts/background/website_parser/is_website_chunk_relevant.txt"
-    website_chunk_validator = MojodexBackgroundOpenAI(AzureOpenAIConf.azure_gpt4_turbo_conf,"WEBSITE_CHUNK_VALIDATOR")
+    website_chunk_validator = llm(llm_conf, "WEBSITE_CHUNK_VALIDATOR")
 
     def __init__(self):
         self.logger = BackgroundLogger(f"{WebsiteParser.logger_prefix}")
@@ -36,10 +37,12 @@ class WebsiteParser:
             anchor_tags = soup.find_all('a')
 
             # Extract the href attribute from each anchor tag and join it with the base URL
-            page_urls = [urljoin(base_url, anchor.get('href')) for anchor in anchor_tags]
+            page_urls = [urljoin(base_url, anchor.get('href'))
+                         for anchor in anchor_tags]
 
             # Remove ending "/" from URLs
-            page_urls = [url[:-1] if url.endswith('/') else url for url in page_urls]
+            page_urls = [
+                url[:-1] if url.endswith('/') else url for url in page_urls]
 
             # Return the list of page URLs unique
             return list(set(page_urls))
@@ -61,7 +64,8 @@ class WebsiteParser:
                     self.logger.warning("🔴 Empty webpage text, giving up...")
                     return None
             # remove multiple \n by only one
-            webpage_text = "\n".join([line for line in webpage_text.split("\n") if line.strip() != ""])
+            webpage_text = "\n".join(
+                [line for line in webpage_text.split("\n") if line.strip() != ""])
 
             return webpage_text
         except Exception as e:
@@ -74,8 +78,10 @@ class WebsiteParser:
             # Remove ending "/" from base_url
             if base_url[-1] == "/":
                 base_url = base_url[:-1]
-            all_page_urls = self.__get_all_page_urls(base_url) if all_urls else [base_url]
-            self.logger.debug(f"website_to_doc: found {len(all_page_urls)} pages")
+            all_page_urls = self.__get_all_page_urls(
+                base_url) if all_urls else [base_url]
+            self.logger.debug(
+                f"website_to_doc: found {len(all_page_urls)} pages")
             text_list = []
             for link in all_page_urls[:WebsiteParser.MAX_WEBSITE_PAGES]:
                 text = self.__get_webpage_text(link)
@@ -92,10 +98,12 @@ class WebsiteParser:
         try:
             with open(WebsiteParser.website_chunk_validation_prompt, "r") as f:
                 template = Template(f.read())
-                prompt = template.render(company_name=self.company_name, chunk_text=chunk_text)
+                prompt = template.render(
+                    company_name=self.company_name, chunk_text=chunk_text)
             messages = [{"role": "user", "content": prompt}]
 
-            responses = WebsiteParser.website_chunk_validator.chat(messages, user_id, temperature=0, max_tokens=5)
+            responses = WebsiteParser.website_chunk_validator.chat(
+                messages, user_id, temperature=0, max_tokens=5)
             return responses[0].lower().strip() == "yes"
         except Exception as e:
             raise Exception(f"__validate_website_chunk: {e}")

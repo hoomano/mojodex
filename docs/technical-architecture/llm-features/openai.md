@@ -7,7 +7,7 @@ OPENAI_API_KEY=your-api-key
 ```
 
 !!! note "Switching from OpenAI to Azure OpenAI Services"
-    This is made easy by changing the `MAIN_MODEL_API_TYPE` in your `.env` file.
+    This is made easy by changing the `LLM_API_PROVIDER` in your `.env` file.
 
 ## Setup a backup engine
 

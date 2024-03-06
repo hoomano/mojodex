@@ -3,9 +3,8 @@ import json
 from jinja2 import Template
 
 from background_logger import BackgroundLogger
-from mojodex_background_openai import MojodexBackgroundOpenAI
 from mojodex_core.json_loader import json_decode_retry
-from azure_openai_conf import AzureOpenAIConf
+from background.app.llm_api.mojodex_background_openai import OpenAIConf
 
 from app import send_admin_error_email, on_json_error
 
@@ -13,15 +12,18 @@ from models.events.events_generator import EventsGenerator
 
 from models.knowledge.knowledge_collector import KnowledgeCollector
 
+from app import llm, llm_conf
+
 
 class CalendarSuggestionNotificationsGenerator(EventsGenerator):
     logger_prefix = "CalendarSuggestionNotificationsGenerator::"
     calendar_suggestion_notification_text_prompt = "/data/prompts/engagement/notifications/calendar_suggestion_reminder_notification.txt"
-    calendar_suggestion_notification_text_generator = MojodexBackgroundOpenAI(AzureOpenAIConf.azure_gpt4_turbo_conf,
-                                                                "CALENDAR_SUGGESTION_NOTIFICATION")
+    calendar_suggestion_notification_text_generator = llm(llm_conf,
+                                                          "CALENDAR_SUGGESTION_NOTIFICATION")
 
     def __init__(self):
-        self.logger = BackgroundLogger(f"{CalendarSuggestionNotificationsGenerator.logger_prefix}")
+        self.logger = BackgroundLogger(
+            f"{CalendarSuggestionNotificationsGenerator.logger_prefix}")
         self.logger.info("__init__")
 
     def generate_events(self, mojo_knowledge, calendar_suggestions):
@@ -49,9 +51,11 @@ class CalendarSuggestionNotificationsGenerator(EventsGenerator):
                     self.send_event(user_id, message={"title": notification_title, "body": notification_body},
                                     event_type="calendar_suggestion_notification", data=data)
                 except Exception as e:
-                    send_admin_error_email(f"{self.logger.name} : Error preparing notification for user {user_id}: {e}")
+                    send_admin_error_email(
+                        f"{self.logger.name} : Error preparing notification for user {user_id}: {e}")
         except Exception as e:
-            send_admin_error_email(f"{self.logger.name} : Error preparing notifications: {e}")
+            send_admin_error_email(
+                f"{self.logger.name} : Error preparing notifications: {e}")
 
     @json_decode_retry(retries=3, required_keys=["title", "message"], on_json_error=on_json_error)
     def __generate_notif_text(self, mojo_knowledge, global_context, user_id, username, user_company_knowledge,
@@ -74,12 +78,12 @@ class CalendarSuggestionNotificationsGenerator(EventsGenerator):
             messages = [{"role": "system", "content": prompt}]
             notification_message = \
                 CalendarSuggestionNotificationsGenerator.calendar_suggestion_notification_text_generator.chat(messages, user_id,
-                                                                                                    temperature=1,
-                                                                                                    max_tokens=50,
-                                                                                                    json_format=True,
-                                                                                                    user_task_execution_pk=None,
-                                                                                                    task_name_for_system=task_name
-                                                                                                    )[0]
+                                                                                                              temperature=1,
+                                                                                                              max_tokens=50,
+                                                                                                              json_format=True,
+                                                                                                              user_task_execution_pk=None,
+                                                                                                              task_name_for_system=task_name
+                                                                                                              )[0]
             # try to load as json to extract title and body
             return notification_message
         except Exception as e:

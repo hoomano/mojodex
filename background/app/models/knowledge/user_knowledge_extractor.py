@@ -2,19 +2,20 @@ import os
 
 import requests
 from jinja2 import Template
-from mojodex_background_openai import MojodexBackgroundOpenAI
 from datetime import datetime
 
 from background_logger import BackgroundLogger
 
-from azure_openai_conf import AzureOpenAIConf
+from background.app.llm_api.mojodex_background_openai import OpenAIConf
+
+from app import llm, llm_conf
 
 
 class UserKnowledgeExtractor:
     logger_prefix = "UserKnowledgeExtractor::"
 
     extract_user_knowledge_prompt = "/data/prompts/background/knowledge/user_knowledge_extractor/extract_user_knowledge_prompt.txt"
-    user_knowledge_extractor = MojodexBackgroundOpenAI(AzureOpenAIConf.azure_gpt4_turbo_conf,"EXTRACT_USER_KNOWLEDGE")
+    user_knowledge_extractor = llm(llm_conf, "EXTRACT_USER_KNOWLEDGE")
 
     def __init__(self, session_id, user_id, conversation):
         self.logger = BackgroundLogger(
@@ -28,7 +29,8 @@ class UserKnowledgeExtractor:
             # update user summary
             with open(UserKnowledgeExtractor.extract_user_knowledge_prompt, "r") as f:
                 template = Template(f.read())
-                prompt = template.render(conversation=self.conversation, existing_summary=current_summary)
+                prompt = template.render(
+                    conversation=self.conversation, existing_summary=current_summary)
             messages = [{"role": "user", "content": prompt}]
 
             response = UserKnowledgeExtractor.user_knowledge_extractor.chat(messages, self.user_id,
@@ -43,11 +45,14 @@ class UserKnowledgeExtractor:
     def _save_user_summary(self, summary):
         try:
             uri = f"{os.environ['MOJODEX_BACKEND_URI']}/user_summary"
-            pload = {'datetime': datetime.now().isoformat(), 'session_id': self.session_id, 'summary': summary}
-            headers = {'Authorization': os.environ['MOJODEX_BACKGROUND_SECRET'], 'Content-Type': 'application/json'}
+            pload = {'datetime': datetime.now().isoformat(
+            ), 'session_id': self.session_id, 'summary': summary}
+            headers = {
+                'Authorization': os.environ['MOJODEX_BACKGROUND_SECRET'], 'Content-Type': 'application/json'}
             internal_request = requests.post(uri, json=pload, headers=headers)
             if internal_request.status_code != 200:
-                self.logger.error(f"_save_user_summary :: {internal_request.text}")
+                self.logger.error(
+                    f"_save_user_summary :: {internal_request.text}")
                 return {"error": f"Error while calling background _save_user_summary : {internal_request.text}"}, 400
         except Exception as e:
             raise Exception(f"_save_user_summary :: {e}")

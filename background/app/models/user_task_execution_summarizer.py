@@ -1,12 +1,11 @@
 import os
 from datetime import datetime
 import requests
-from mojodex_background_openai import MojodexBackgroundOpenAI
 from jinja2 import Template
 
 from background_logger import BackgroundLogger
-from azure_openai_conf import AzureOpenAIConf
 
+from app import llm, llm_conf
 from app import send_admin_error_email
 
 
@@ -14,7 +13,7 @@ class UserTaskExecutionSummarizer:
     logger_prefix = "UserTaskExecutionSummarizer::"
 
     task_execution_summary_prompt = "/data/prompts/background/user_task_execution_end/user_task_execution_summarizer/task_execution_summary_prompt.txt"
-    task_execution_summarizer = MojodexBackgroundOpenAI(AzureOpenAIConf.azure_gpt4_turbo_conf,"TASK_EXECUTION_SUMMARIZER")
+    task_execution_summarizer = llm(llm_conf,"TASK_EXECUTION_SUMMARIZER")
 
     def __init__(self, knowledge_collector, user_task_execution, user_messages_conversation):
         try:

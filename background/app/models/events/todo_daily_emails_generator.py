@@ -5,9 +5,8 @@ from datetime import datetime
 from jinja2 import Template
 
 from background_logger import BackgroundLogger
-from mojodex_background_openai import MojodexBackgroundOpenAI
 
-from azure_openai_conf import AzureOpenAIConf
+from background.app.llm_api.mojodex_background_openai import OpenAIConf
 
 from app import send_admin_error_email
 
@@ -17,17 +16,20 @@ from app import on_json_error
 
 from models.knowledge.knowledge_collector import KnowledgeCollector
 
+from app import llm, llm_conf
+
 
 class TodoDailyEmailsGenerator(EventsGenerator):
     logger_prefix = "TodoDailyEmailsGenerator::"
     message_from_mojodex_email = "/data/mails/message_from_mojodex.html"
     todo_daily_email_text_prompt = "/data/prompts/engagement/emails/todo_daily_emails_text_prompt.txt"
-    todo_daily_email_text_generator = MojodexBackgroundOpenAI(AzureOpenAIConf.azure_gpt4_turbo_conf,
-                                                    "DAILY_EMAIL_GENERATOR")
+    todo_daily_email_text_generator = llm(llm_conf,
+                                          "DAILY_EMAIL_GENERATOR")
     todo_daily_email_type = "todo_daily_email"
 
     def __init__(self):
-        self.logger = BackgroundLogger(f"{TodoDailyEmailsGenerator.logger_prefix}")
+        self.logger = BackgroundLogger(
+            f"{TodoDailyEmailsGenerator.logger_prefix}")
         self.logger.info("__init__")
 
     def generate_events(self, mojo_knowledge, users):
@@ -54,10 +56,12 @@ class TodoDailyEmailsGenerator(EventsGenerator):
                     self.send_event(user_id, message={"subject": subject, "body": body, 'email': email},
                                     event_type=TodoDailyEmailsGenerator.todo_daily_email_type)
                 except Exception as e:
-                    send_admin_error_email(f"Error sending todo daily remind_email to {email} : {e}")
+                    send_admin_error_email(
+                        f"Error sending todo daily remind_email to {email} : {e}")
 
         except Exception as e:
-            send_admin_error_email(f"{self.logger.name} : Error preparing emails: {e}")
+            send_admin_error_email(
+                f"{self.logger.name} : Error preparing emails: {e}")
 
     @json_decode_retry(retries=3, required_keys=["subject", "body"], on_json_error=on_json_error)
     def __generate_emails_text(self, mojo_knowledge, global_context, user_id, username, user_company_knowledge,

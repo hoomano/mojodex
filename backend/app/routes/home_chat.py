@@ -12,8 +12,6 @@ from packaging import version
 from models.session_creator import SessionCreator
 
 from models.voice_generator import VoiceGenerator
-
-from models.home_chat.home_chat_manager import HomeChatManager
 from sqlalchemy import extract, text, func, and_
 
 
@@ -36,7 +34,7 @@ class HomeChat(Resource):
             user = db.session.query(MdUser).filter(MdUser.user_id == user_id).first()
 
             # first message
-            home_chat_manager = WelcomeMessageGenerator(use_message_placeholder=True)
+            home_chat_manager = WelcomeMessageGenerator(user=user, use_message_placeholder=use_message_placeholder)
             message = home_chat_manager.generate_message()
             db_message = MdMessage(session_id=session_id, message=message, sender=SessionModel.agent_message_key,
                                 event_name='home_chat_message', creation_date=datetime.now(), message_date=datetime.now())

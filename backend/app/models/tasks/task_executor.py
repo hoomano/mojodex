@@ -28,7 +28,7 @@ class TaskExecutor:
         try:
             self.logger.debug(f"manage_execution_text")
             if self.execution_start_tag and self.execution_end_tag in execution_text:
-                mojo_text = AssistantMessageGenerator.remove_tags_function(execution_text, self.execution_start_tag, self.execution_end_tag)
+                mojo_text = AssistantMessageGenerator.remove_tags_from_text(execution_text, self.execution_start_tag, self.execution_end_tag)
             else:
                 mojo_text = execution_text
             if ProducedTextManager.draft_start_tag in mojo_text:

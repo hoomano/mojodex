@@ -74,8 +74,8 @@ class TaskEnabledChatState(ChatState):
 
 class TaskEnabledChatContext(ChatContext):
 
-    def __init__(self, user, session_id, origin, user_messages_are_audio, chat_state):
-        super().__init__(user, session_id, origin, user_messages_are_audio, chat_state)
+    def __init__(self, user, session_id, user_messages_are_audio, chat_state):
+        super().__init__(user, session_id, user_messages_are_audio, chat_state)
     
 class TaskEnabledAssistantResponseGenerator(AssistantResponseGenerator, ABC):
     task_specific_instructions_prompt = "/data/prompts/tasks/task_specific_instructions.txt"
@@ -83,25 +83,28 @@ class TaskEnabledAssistantResponseGenerator(AssistantResponseGenerator, ABC):
     message_generator = MojodexOpenAI(AzureOpenAIConf.azure_gpt4_turbo_conf, "CHAT", AzureOpenAIConf.azure_gpt4_32_conf)
 
     def __init__(self, prompt_template_path, mojo_message_token_stream_callback, draft_token_stream_callback, use_message_placeholder, use_draft_placeholder, tag_proper_nouns, chat_context, llm_call_temperature):
-        super().__init__(prompt_template_path, self.message_generator, chat_context, use_message_placeholder, use_draft_placeholder, tag_proper_nouns, llm_call_temperature)
-        self.mojo_message_token_stream_callback = mojo_message_token_stream_callback
-        self.draft_token_stream_callback = draft_token_stream_callback
-        self.task_input_manager = TaskInputsManager(chat_context.session_id)
-        self.task_tool_manager = TaskToolManager(chat_context.session_id)
-        self.task_executor = TaskExecutor(chat_context.session_id, chat_context.user_id)
+        try:
+            super().__init__(prompt_template_path, self.message_generator, chat_context, use_message_placeholder, use_draft_placeholder, tag_proper_nouns, llm_call_temperature)
+            self.mojo_message_token_stream_callback = mojo_message_token_stream_callback
+            self.draft_token_stream_callback = draft_token_stream_callback
+            self.task_input_manager = TaskInputsManager(chat_context.session_id)
+            self.task_tool_manager = TaskToolManager(chat_context.session_id)
+            self.task_executor = TaskExecutor(chat_context.session_id, chat_context.user_id)
+        except Exception as e:
+            raise Exception(f"TaskEnabledAssistantResponseGenerator :: __init__ :: {e}")
 
     # getter for running_task
     @property
     def running_task(self):
-        return self.chat_context.state.running_task
+        return self.context.state.running_task
     
     @property
     def running_user_task_execution(self):
-        return self.chat_context.state.running_user_task_execution
+        return self.context.state.running_user_task_execution
     
     @property
     def running_task_displayed_data(self):
-        return self.chat_context.state.running_task_displayed_data
+        return self.context.state.running_task_displayed_data
     
     def _handle_placeholder(self):
         try:
@@ -121,21 +124,20 @@ class TaskEnabledAssistantResponseGenerator(AssistantResponseGenerator, ABC):
         try:
             mojo_knowledge = KnowledgeManager.get_mojo_knowledge()
             global_context = KnowledgeManager.get_global_context_knowledge()
-            user_company_knowledge = KnowledgeManager.get_user_company_knowledge(self.chat_context.user_id)
+            user_company_knowledge = KnowledgeManager.get_user_company_knowledge(self.context.user_id)
             available_user_tasks = self.__get_available_user_tasks()
             task_specific_instructions = self.__get_specific_task_instructions(self.running_task) if self.running_task else None
-            produced_text_done = self.chat_context.state.get_produced_text_done()
+            produced_text_done = self.context.state.get_produced_text_done()
 
             return self.prompt_template.render(mojo_knowledge=mojo_knowledge,
                                                     global_context=global_context,
-                                                    username=self.chat_context.username,
+                                                    username=self.context.username,
                                                     user_company_knowledge=user_company_knowledge,
-                                                    general_chat = self.chat_context.origin=='home_chat',
                                                     tasks = available_user_tasks,
                                                     running_task=self.running_task,
                                                     task_specific_instructions=task_specific_instructions,
                                                     produced_text_done=produced_text_done,
-                                                    audio_message=self.chat_context.user_messages_are_audio,
+                                                    audio_message=self.context.user_messages_are_audio,
                                                     tag_proper_nouns=self.tag_proper_nouns
                                                     )
         except Exception as e:
@@ -166,6 +168,12 @@ class TaskEnabledAssistantResponseGenerator(AssistantResponseGenerator, ABC):
     def _get_message_placeholder(self):
         pass
 
+    def generate_message(self):
+        message = super().generate_message()
+        if message and self.running_user_task_execution:
+            message['user_task_execution_pk'] = self.running_user_task_execution.user_task_execution_pk
+        return message
+
     ### SPECIFIC METHODS FOR TASKS ###
     def _get_task_execution_placeholder(self):
         return f"{TaskExecutor.execution_start_tag}" \
@@ -180,7 +188,7 @@ class TaskEnabledAssistantResponseGenerator(AssistantResponseGenerator, ABC):
         try:
             user_tasks = db.session.query(MdTask).\
                 join(MdUserTask, MdTask.task_pk == MdUserTask.task_fk).\
-                filter(MdUserTask.user_id == self.chat_context.user_id).\
+                filter(MdUserTask.user_id == self.context.user_id).\
                 filter(MdUserTask.enabled==True).all()
             return [{
                 'task_pk': task.task_pk,

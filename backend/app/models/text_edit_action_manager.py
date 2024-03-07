@@ -1,12 +1,12 @@
 import os
 from datetime import datetime
+from models.session.assistant_message_generator import AssistantMessageGenerator
 
 from mojodex_core.entities import *
 from app import db, log_error, server_socket, main_logger, socketio_message_sender
 
 from models.session.session import Session
 from models.voice_generator import VoiceGenerator
-from models.tasks.task_manager import TaskManager
 from models.tasks.task_executor import TaskExecutor
 from models.produced_text_manager import ProducedTextManager
 
@@ -149,7 +149,7 @@ class TextEditActionManager:
 
     def __get_title_without_tags(self, edited_text):
         try:
-            return TaskManager.remove_tags_from_text(
+            return AssistantMessageGenerator.remove_tags_from_text(
                 text=edited_text.strip(),
                 start_tag=ProducedTextManager.title_start_tag,
                 end_tag=ProducedTextManager.title_end_tag
@@ -159,7 +159,7 @@ class TextEditActionManager:
 
     def __get_draft_without_tags(self, edited_text):
         try:
-            return TaskManager.remove_tags_from_text(
+            return AssistantMessageGenerator.remove_tags_from_text(
                 text=edited_text.strip(),
                 start_tag=ProducedTextManager.draft_start_tag,
                 end_tag=ProducedTextManager.draft_end_tag

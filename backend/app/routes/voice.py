@@ -10,8 +10,6 @@ from mojodex_core.entities import *
 from flask import send_file
 from packaging import version
 
-from models.tasks.task_manager import TaskManager
-
 
 class Voice(Resource):
     def __init__(self):

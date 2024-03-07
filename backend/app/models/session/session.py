@@ -1,5 +1,6 @@
 import os
 from app import db, log_error, server_socket, time_manager, socketio_message_sender, main_logger
+from models.session.general_chat_response_generator import GeneralChatResponseGenerator
 from models.session.task_assistant_response_generator import TaskAssistantResponseGenerator
 from models.session.assistant_message_generator import AssistantMessageGenerator
 from mojodex_core.entities import *
@@ -222,11 +223,12 @@ class Session:
         # Home chat session here ??
         # with response_message = ...
         if "origin" in message and message["origin"] == "home_chat":
-            return self.__manage_home_chat_session(message, app_version, self.platform)
+            user_task_execution_pk = message['user_task_execution_pk'] if 'user_task_execution_pk' in message else None
+            return self.__manage_home_chat_session(self.platform, user_task_execution_pk)
         elif 'user_task_execution_pk' in message:
             # For now only task sessions
             user_task_execution_pk = message['user_task_execution_pk']
-            return self.__manage_task_session(app_version, self.platform, user_task_execution_pk, user_message=message)
+            return self.__manage_task_session(self.platform, user_task_execution_pk)
         else:
             raise Exception("Unknown message origin")
 
@@ -246,7 +248,7 @@ class Session:
             function: The function that manages the task session.
         """
         self.platform = platform
-        return self.__manage_task_session(app_version, self.platform, user_task_execution_pk, user_message=None, use_message_placeholder=use_message_placeholder, use_draft_placeholder=use_draft_placeholder)
+        return self.__manage_task_session(app_version, self.platform, user_task_execution_pk, use_message_placeholder=use_message_placeholder, use_draft_placeholder=use_draft_placeholder)
 
     def process_mojo_message(self, response_message, response_language):
         """
@@ -284,13 +286,11 @@ class Session:
         except Exception as e:
             raise Exception(f"process_mojo_message :: {e}")
 
-    def __manage_home_chat_session(self, message, app_version, platform):
+    def __manage_home_chat_session(self, platform, user_task_execution_pk, use_message_placeholder=False, use_draft_placeholder=False):
         """
         Manages a home chat session.
 
         Args:
-            message (dict): The message from the user.
-            app_version (str): The version of the app.
             platform (str): The platform the user is on.
 
         Returns:
@@ -300,24 +300,31 @@ class Session:
             Exception: If there is an error during management.
         """
         try:
-            home_chat_manager = HomeChatManager(session_id=self.id, user=self._get_user(), user_messages_are_audio=platform=='mobile', app_version=app_version,
-                                                mojo_token_callback=self._mojo_message_stream_callback, draft_token_stream_callback=self._produced_text_stream_callback)
-            response_message, response_language = home_chat_manager.launch_mojo_message_generation(user_message=message)
+            tag_proper_nouns = platform == "mobile"
+            general_chat_response_generator = GeneralChatResponseGenerator(mojo_message_token_stream_callback=self._mojo_message_stream_callback,
+                                                                              draft_token_stream_callback=self._produced_text_stream_callback,
+                                                                              use_message_placeholder=use_message_placeholder,
+                                                                               use_draft_placeholder=use_draft_placeholder,
+                                                                               tag_proper_nouns=tag_proper_nouns,
+                                                                               user=self._get_user(),
+                                                                               session_id=self.id,
+                                                                               user_messages_are_audio= platform=="mobile",
+                                                                               running_user_task_execution_pk=user_task_execution_pk)
+            response_message = general_chat_response_generator.generate_message()
+            print(f"👉 mojo_message: {response_message}")
+            response_language = general_chat_response_generator.context.state.current_language
+            print(f"👉 response_language: {response_language}")
             return response_message, response_language
         except Exception as e:
             raise Exception(f"__manage_home_chat_session :: {e}")
 
-    def __manage_task_session(self, app_version, platform, user_task_execution_pk, user_message=None, use_message_placeholder=False, use_draft_placeholder=False):
+    def __manage_task_session(self, platform, user_task_execution_pk, use_message_placeholder=False, use_draft_placeholder=False):
         """
         Manages a task session.
 
         Args:
-            app_version (str): The version of the app.
             platform (str): The platform the user is on.
             user_task_execution_pk (str): The primary key of the user task execution.
-            user_message (dict, optional): The message from the user. Defaults to None.
-            use_message_placeholder (bool, optional): Whether to use a message placeholder. Defaults to False.
-            use_draft_placeholder (bool, optional): Whether to use a draft placeholder. Defaults to False.
 
         Returns:
             tuple: The response event name, response message, and response language.
@@ -339,7 +346,7 @@ class Session:
 
             response_message = task_assistant_response_generator.generate_message()
             print(f"👉 mojo_message: {response_message}")
-            response_language = task_assistant_response_generator.chat_context.state.current_language
+            response_language = task_assistant_response_generator.context.state.current_language
             print(f"👉 response_language: {response_language}")
             return response_message, response_language
         except Exception as e:

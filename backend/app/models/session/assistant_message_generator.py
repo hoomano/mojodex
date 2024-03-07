@@ -1,12 +1,31 @@
 from abc import ABC, abstractmethod
 from jinja2 import Template
 
+
+class AssistantMessageContext:
+
+    def __init__(self, user):
+        self.user = user
+        
+
+    @property
+    def user_id(self):
+        return self.user.user_id
+    
+    @property
+    def username(self):
+        return self.user.name
+    
 class AssistantMessageGenerator(ABC):
 
-    def __init__(self, prompt_template_path, message_generator, tag_proper_nouns):
-        self.prompt_template_path = prompt_template_path
-        self.message_generator = message_generator
-        self.tag_proper_nouns = tag_proper_nouns
+    def __init__(self, prompt_template_path, message_generator, tag_proper_nouns, assistant_message_context):
+        try:
+            self.prompt_template_path = prompt_template_path
+            self.message_generator = message_generator
+            self.tag_proper_nouns = tag_proper_nouns
+            self.context = assistant_message_context
+        except Exception as e:
+            raise Exception(f"AssistantMessageGenerator :: __init__ :: {e}")
 
     def remove_tags_from_text(text, start_tag, end_tag):
         try:
@@ -44,10 +63,9 @@ class AssistantMessageGenerator(ABC):
         if placeholder:
             return placeholder
         prompt = self._render_prompt_from_template()
-        # write prompt to /data/prompt.txt
-        with open("/data/prompt.txt", "w") as f:
-            f.write(prompt)
         llm_output = self._generate_message_from_prompt(prompt)
-        return self._handle_llm_output(llm_output)
+        if llm_output:
+            return self._handle_llm_output(llm_output)
+        return None
 
     

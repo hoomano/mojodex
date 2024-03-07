@@ -30,15 +30,13 @@ class AssistantMessageGenerator(ABC):
     user_answerer = MojodexOpenAI(AzureOpenAIConf.azure_gpt4_turbo_conf, "CHAT",
                                   AzureOpenAIConf.azure_gpt4_32_conf)
 
-    def __init__(self, user, session_id, platform, voice_generator, mojo_messages_audio_storage, logger_prefix, mojo_token_callback, app_version, origin):
+    def __init__(self, user, session_id, user_messages_are_audio, logger_prefix, mojo_token_callback, draft_token_stream_callback, app_version, origin):
         self.origin = origin
         self.user_id = user.user_id
         self.username = user.name
         self.session_id = session_id
-        self.platform = platform
-        self.voice_generator = voice_generator
-        self.mojo_messages_audio_storage = mojo_messages_audio_storage
-        self.mojo_token_callback = mojo_token_callback
+        self.user_messages_are_audio = user_messages_are_audio
+        self.mojo_token_callback, self.draft_token_stream_callback = mojo_token_callback, draft_token_stream_callback
         self.app_version = app_version
         self.language = None
         self._running_task = None
@@ -48,7 +46,7 @@ class AssistantMessageGenerator(ABC):
         self.running_task_set=False
         self.task_input_manager = TaskInputsManager(session_id, self.remove_tags_from_text)
         self.task_tool_manager = TaskToolManager(session_id, self.remove_tags_from_text)
-        self.task_executor = TaskExecutor(session_id, self.user_id, self._mojo_message_to_db, self._message_will_have_audio, self._generate_voice)
+        self.task_executor = TaskExecutor(session_id, self.user_id, self.remove_tags_from_text)
         self.logger = MojodexBackendLogger(f"{logger_prefix} -- session {session_id}")
 
     
@@ -63,17 +61,33 @@ class AssistantMessageGenerator(ABC):
     def _get_message_placeholder(self):
         raise NotImplementedError
     
-    @abstractmethod
     def _get_execution_placeholder(self):
-        raise NotImplementedError
+        return f"{TaskExecutor.execution_start_tag}" \
+                        f"{ProducedTextManager.title_start_tag}{placeholder_generator.mojo_draft_title}{ProducedTextManager.title_end_tag}" \
+                        f"{ProducedTextManager.draft_start_tag}{placeholder_generator.mojo_draft_body}{ProducedTextManager.title_end_tag}" \
+                        f"{TaskExecutor.execution_end_tag}"
     
-
+    def _get_user_tasks(self):
+        try:
+            user_tasks = db.session.query(MdTask).\
+                join(MdUserTask, MdTask.task_pk == MdUserTask.task_fk).\
+                filter(MdUserTask.user_id == self.user_id).\
+                filter(MdUserTask.enabled==True).all()
+            return [{
+                'task_pk': task.task_pk,
+                'icon': task.icon,
+                'name_for_system': task.name_for_system,
+                'description': task.definition_for_system
+            } for task in user_tasks]
+        except Exception as e:
+            raise Exception(f"_get_user_tasks :: {e}")
+        
     def _generate_assistant_response(self, tag_proper_nouns=False):
         try:
             mojo_knowledge = KnowledgeManager.get_mojo_knowledge()
             global_context = KnowledgeManager.get_global_context_knowledge()
-            user_company_knowledge = KnowledgeManager.get_user_company_knowledge(self.running_user_task.user_id)
-            user_tasks = self.__get_user_tasks()
+            user_company_knowledge = KnowledgeManager.get_user_company_knowledge(self.user_id)
+            user_tasks = self._get_user_tasks()
             task_specific_instructions = self.__get_specific_task_instructions(self.running_task) if self.running_task else None
             produced_text_done = self._get_produced_text_done()
             conversation_list = self._get_conversation_as_list()
@@ -129,20 +143,19 @@ class AssistantMessageGenerator(ABC):
             return user_task_inputs
         except Exception as e:
             raise Exception(f"__get_running_user_task_execution_inputs :: {e}")
-    
-    def __get_user_tasks(self):
+
+    def _get_running_user_task(self):
         try:
-            user_tasks = db.session.query(MdTask).\
-                join(MdUserTask, MdTask.task_pk == MdUserTask.task_fk).\
-                filter(MdUserTask.user_id == self.user_id).all()
-            return [{
-                'task_pk': task.task_pk,
-                'icon': task.icon,
-                'name_for_system': task.name_for_system,
-                'description': task.definition_for_system
-            } for task in user_tasks]
+            user_task = db.session.query(MdUserTask).filter(MdUserTask.user_id == self.user_id,
+                                                            MdUserTask.task_fk == self.running_task.task_pk).first()
+            if user_task is None:
+                # For the moment, every task is available to every user. When it comes time to restrict tasks, user_task should be created before that (even before classification)
+                user_task = MdUserTask(user_id=self.user_id, task_fk=self.running_task.task_pk)
+                db.session.add(user_task)
+                db.session.commit()
+            return user_task
         except Exception as e:
-            raise Exception(f"__get_user_tasks :: {e}")
+            raise Exception(f"__get_user_task :: {e}")
 
     def __get_prompt(self, mojo_knowledge, global_context, user_company_knowledge, tag_proper_nouns, produced_text_done, tasks, task_specific_instructions):
         try:
@@ -158,68 +171,14 @@ class AssistantMessageGenerator(ABC):
                                                 running_task=self.running_task,
                                                 task_specific_instructions=task_specific_instructions,
                                                 produced_text_done=produced_text_done,
-                                                audio_message=self.platform == "mobile",
+                                                audio_message=self.user_messages_are_audio,
                                                 tag_proper_nouns=tag_proper_nouns
                                                 )
                 return mega_prompt
         except Exception as e:
             raise Exception(f"_get_prompt :: {e}")
-    
-    def _draft_token_stream_callback(self, partial_text):
-        title = self.remove_tags_from_text(partial_text.strip(), ProducedTextManager.title_start_tag,
-                                                  ProducedTextManager.title_end_tag)
-        production = self.remove_tags_from_text(partial_text.strip(), ProducedTextManager.draft_start_tag,
-                                                       ProducedTextManager.draft_end_tag)
-        server_socket.emit('draft_token', {"produced_text_title": title,
-                                           "produced_text": production,
-                                           "session_id": self.session_id,
-                                           "text": ProducedTextManager.remove_tags(partial_text)}, to=self.session_id)
 
-    def __create_user_task_execution(self):
-        try:
-            empty_json_input_values = self._get_empty_json_input_values()
-           
-            task_execution = MdUserTaskExecution(user_task_fk=self.running_user_task.user_task_pk, start_date=datetime.now(),
-                                                 json_input_values=empty_json_input_values, session_id=self.session_id)
-            db.session.add(task_execution)
-            db.session.commit()
-            self.running_user_task_execution = task_execution
-        except Exception as e:
-            raise Exception(f"__create_user_task_execution :: {e}")
 
-    def __associate_previous_user_message(self):
-        try:
-            self.logger.debug(f"__associate_previous_user_message")
-            from models.session import Session as SessionModel
-            previous_user_message = db.session.query(MdMessage).filter(MdMessage.session_id == self.session_id).filter(
-                MdMessage.sender == SessionModel.user_message_key).order_by(MdMessage.message_date.desc()).first()
-            if previous_user_message:
-                new_message = previous_user_message.message
-
-                new_message['user_task_execution_pk'] = self.running_user_task_execution.user_task_execution_pk
-                previous_user_message.message = new_message
-                flag_modified(previous_user_message, "message")
-                db.session.commit() 
-        except Exception as e:
-            raise Exception(f"__associate_previous_user_message :: {e}")
-        
-    def __set_running_task(self, task_pk):
-        try:
-            self.running_task_set = True
-            if task_pk is not None:
-                self.running_task, self.running_task_displayed_data, self.running_user_task = db.session.query(MdTask, MdTaskDisplayedData, MdUserTask)\
-                    .join(MdTaskDisplayedData, MdTask.task_pk == MdTaskDisplayedData.task_fk)\
-                    .join(MdUserTask, MdTask.task_pk == MdUserTask.task_fk)\
-                    .filter(MdTask.task_pk == task_pk).first()
-                # create user_task_execution
-                self.__create_user_task_execution()
-                self.__associate_previous_user_message()
-            else:
-                self.running_task, self.running_task_displayed_data, self.running_user_task, self.running_user_task_execution = None, None, None, None
-        except Exception as e:
-            raise Exception(f"__set_running_task :: {e}")
-
-    def __spot_task_pk(self, response):
         try:
             if self.task_pk_end_tag in response:
                 task_pk = response.split(self.task_pk_start_tag)[1].split(self.task_pk_end_tag)[0]
@@ -233,7 +192,7 @@ class AssistantMessageGenerator(ABC):
         except Exception as e:
             raise Exception(f"__spot_task_pk :: {e}")
 
-    def _token_callback(self, partial_text):
+  
         partial_text = partial_text.strip()
         if not partial_text.lower().startswith("<"):
             # s'il y a pas de tags => go
@@ -268,7 +227,7 @@ class AssistantMessageGenerator(ABC):
                 # take the text between <execution> and </execution>
                 text = self.remove_tags_from_text(partial_text, TaskExecutor.execution_start_tag,
                                                          TaskExecutor.execution_end_tag)
-                self._draft_token_stream_callback(text)
+                self.draft_token_stream_callback(text)
     
     def launch_mojo_message_generation(self, user_message=None, use_message_placeholder=False, use_draft_placeholder=False, tag_proper_nouns=False):
         try:
@@ -279,9 +238,9 @@ class AssistantMessageGenerator(ABC):
                                              use_draft_placeholder=use_draft_placeholder, tag_proper_nouns=tag_proper_nouns)
             if mojo_message and self.running_user_task_execution:
                 mojo_message['user_task_execution_pk'] = self.running_user_task_execution.user_task_execution_pk
-            return 'mojo_message', mojo_message, self.language
+            return mojo_message, self.language
         except Exception as e:
-            raise Exception(f"response_to_user_message :: {e}")
+            raise Exception(f"launch_mojo_message_generation :: {e}")
     
     def _give_title_and_summary_task_execution(self, user_task_execution_pk):
         try:
@@ -296,15 +255,7 @@ class AssistantMessageGenerator(ABC):
         except Exception as e:
             print(f"🔴 _give_title_and_summary_task_execution :: {e}")
 
-    def _get_empty_json_input_values(self):
-        try:
-            empty_json_input_values = []
-            for input in self.running_task_displayed_data.json_input:
-                input["value"] = None
-                empty_json_input_values.append(input)
-            return empty_json_input_values
-        except Exception as e:
-            raise Exception(f"_get_empty_json_input_values :: {e}")
+
 
     def _manage_placeholders(self, use_message_placeholder, use_draft_placeholder):
         try:
@@ -328,7 +279,7 @@ class AssistantMessageGenerator(ABC):
         return use_message_placeholder, use_draft_placeholder
     
     def _generate_mojo_message(self, user_message=None, use_message_placeholder=False, use_draft_placeholder=False, tag_proper_nouns=False):
-        self.logger.debug(f"_answer_user")
+        self.logger.debug(f"_generate_mojo_message")
         
         try:
             if user_message is not None:
@@ -345,7 +296,7 @@ class AssistantMessageGenerator(ABC):
             return response
 
         except Exception as e:
-            raise Exception(f"_answer_user :: {e}")
+            raise Exception(f"_generate_mojo_message :: {e}")
     
     def _get_produced_text_done(self):
         try:
@@ -400,36 +351,6 @@ class AssistantMessageGenerator(ABC):
         except Exception as e:
             raise Exception("Error during _get_conversation: " + str(e))
  
-    def _mojo_message_to_db(self, mojo_message, event_name):
-        try:
-            user_task_execution_pk = self.running_user_task_execution.user_task_execution_pk if self.running_user_task_execution else None
-            if user_task_execution_pk:
-                mojo_message["user_task_execution_pk"] = user_task_execution_pk
-            db_message = MdMessage(session_id=self.session_id, sender='mojo', event_name=event_name,
-                                message=mojo_message,
-                                creation_date=datetime.now(), message_date=datetime.now())
-            db.session.add(db_message)
-            db.session.commit()
-            db.session.refresh(db_message)
-            return db_message
-        except Exception as e:
-            raise Exception(f"__mojo_message_to_db :: {e}")
-        
-    def _message_will_have_audio(self, mojo_message):
-        return "text" in mojo_message and self.platform == "mobile" and self.voice_generator is not None
-    
-    def _generate_voice(self, db_message):
-        output_filename = os.path.join(self.mojo_messages_audio_storage, f"{db_message.message_pk}.mp3")
-        try:
-            self.voice_generator.text_to_speech(db_message.message["text"], self.language, self.user_id,
-                                                output_filename,
-                                                user_task_execution_pk=self.running_user_task_execution.user_task_execution_pk if self.running_user_task_execution else None,
-                                                task_name_for_system=self.running_task.name_for_system if self.running_task else None,)
-
-        except Exception as e:
-            db_message.in_error_state = datetime.now()
-            log_error(str(e), session_id=self.session_id, notify_admin=True)
-
     def _manage_response_language_tag(self, response):
         try:
             if self.language is None and AssistantMessageGenerator.user_language_start_tag in response:
@@ -464,7 +385,6 @@ class AssistantMessageGenerator(ABC):
                 return self.task_executor.manage_execution_text(execution_text=response, task=self.running_task, task_displayed_data=self.running_task_displayed_data,
                                                                 user_task_execution_pk=self.running_user_task_execution.user_task_execution_pk,
                                                                 user_message=user_message,
-                                                                app_version = self.app_version,
                                                                 use_draft_placeholder=use_draft_placeholder)
             return {"text": response}
         except Exception as e:

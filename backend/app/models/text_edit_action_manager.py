@@ -4,7 +4,7 @@ from datetime import datetime
 from mojodex_core.entities import *
 from app import db, log_error, server_socket, main_logger, socketio_message_sender
 
-from models.session import Session
+from models.session.session import Session
 from models.voice_generator import VoiceGenerator
 from models.tasks.task_manager import TaskManager
 from models.tasks.task_executor import TaskExecutor

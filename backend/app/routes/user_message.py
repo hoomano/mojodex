@@ -4,7 +4,7 @@ from flask import request
 from flask_restful import Resource
 from app import db, authenticate, log_error, server_socket, time_manager, main_logger
 from mojodex_core.entities import *
-from models.session import Session
+from models.session.session import Session
 from models.user_audio_file_manager import UserAudioFileManager
 from packaging import version
 from sqlalchemy.orm.attributes import flag_modified
@@ -32,6 +32,7 @@ class UserMessage(Resource):
             message_pk = request.form['message_pk'] if 'message_pk' in request.form else None
             message_date = request.form['message_date']
             app_version = version.parse(request.form['version'])
+            platform = request.form['platform'] if 'platform' in request.form else "webapp"
             use_message_placeholder = request.form['use_message_placeholder'] == "true" if 'use_message_placeholder' in request.form else False
             use_draft_placeholder = request.form['use_draft_placeholder'] == "true" if 'use_draft_placeholder' in request.form else False
             origin = request.form['origin'] if 'origin' in request.form else "task"
@@ -192,13 +193,14 @@ class UserMessage(Resource):
                     log_error(f"Session {session_id} not found in db", session_id=session_id)
                     return
 
-                from models.session import Session as SessionModel
+                from models.session.session import Session as SessionModel
                 session = SessionModel(session_id)
 
                 session_message = {"text": message.message["text"], "message_pk": message.message_pk,
                                    "audio": not "text" in request.form, "user_task_execution_pk":user_task_execution_pk, "origin": origin,
                                    "home_chat_pk": home_chat.home_chat_pk if home_chat else None,
                                      "message_date": message_date.isoformat(),
+                                     "platform": platform,
                                    "use_message_placeholder": use_message_placeholder, "use_draft_placeholder": use_draft_placeholder}
 
                 server_socket.start_background_task(session.process_chat_message, session_message)

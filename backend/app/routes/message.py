@@ -6,7 +6,7 @@ from flask_restful import Resource
 from app import db, authenticate, log_error, executor
 from mojodex_core.entities import *
 
-from models.session import Session
+from models.session.session import Session
 from sqlalchemy import or_
 
 

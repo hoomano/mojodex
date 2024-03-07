@@ -42,7 +42,7 @@ class ProducedTextManager:
         self.task_name_for_system = task_name_for_system
         self.use_draft_placeholder = use_draft_placeholder
 
-    def extract_and_save_produced_text(self, mojo_text, text_type_pk=None, user_message=None):
+    def extract_and_save_produced_text(self, mojo_text, text_type_pk=None):
         try:
             self.logger.debug(f"extract_and_save_produced_text")
             text_type = db.session.query(MdTextType.name).filter(
@@ -68,16 +68,15 @@ class ProducedTextManager:
             else:
                 text = mojo_text.replace(ProducedTextManager.draft_start_tag, "").replace(ProducedTextManager.draft_end_tag, "").replace(ProducedTextManager.title_start_tag, "").replace(
                     ProducedTextManager.title_end_tag, "").strip()
-            return self._save_produced_text(text, title, text_type, user_message)
+            return self._save_produced_text(text, title, text_type)
         except Exception as e:
             raise Exception(
                 f"{ProducedTextManager.logger_prefix}:: extract_and_save_produced_text:: {e}")
 
-    def _save_produced_text(self, text, title, text_type, user_message=None):
+    def _save_produced_text(self, text, title, text_type):
         try:
-            text_to_edit_pk = self._is_edition() if user_message is not None else None
-            self.logger.debug(
-                f'_save_produced_text:: text_to_edit_pk {text_to_edit_pk}')
+            text_to_edit_pk = self._is_edition()
+            self.logger.debug(f'_save_produced_text:: text_to_edit_pk {text_to_edit_pk}')
             if text_to_edit_pk is not None:
                 produced_text = db.session.query(MdProducedText).filter(
                     MdProducedText.produced_text_pk == text_to_edit_pk).first()

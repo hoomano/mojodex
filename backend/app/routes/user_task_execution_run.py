@@ -68,7 +68,7 @@ class UserTaskExecutionRun(Resource):
             user_task_execution.start_date = datetime.now()
             db.session.commit()
 
-            from models.session import Session as SessionModel
+            from models.session.session import Session as SessionModel
             session = SessionModel(user_task_execution.session_id)
 
             def launch_process(session, app_version, platform, user_task_execution_pk, use_message_placeholder, use_draft_placeholder):

@@ -124,8 +124,7 @@ class TaskEnabledAssistantResponseGenerator(AssistantResponseGenerator, ABC):
         try:
             # call background for title and summary
             if self.running_user_task_execution:
-                server_socket.start_background_task(self.__give_task_execution_title_and_summary,
-                                                    self.running_user_task_execution.user_task_execution_pk)
+                server_socket.start_background_task(self.__give_task_execution_title_and_summary)
             message = super().generate_message()
             if message and self.running_user_task_execution:
                 message['user_task_execution_pk'] = self.running_user_task_execution.user_task_execution_pk

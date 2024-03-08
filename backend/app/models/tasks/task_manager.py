@@ -19,8 +19,6 @@ from app import socketio_message_sender
 from app import llm, llm_conf, llm_backup_conf
 
 from models.produced_text_manager import ProducedTextManager
-from llm_api.mojodex_backend_openai import OpenAIConf
-from packaging import version
 
 
 class TaskManager:

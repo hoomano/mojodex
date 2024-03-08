@@ -88,7 +88,7 @@ class TaskEnabledAssistantResponseGenerator(AssistantResponseGenerator, ABC):
                                                                         self._get_task_tools_json(self.running_task))
             elif TaskExecutor.execution_start_tag in response:
                 # take the text between <execution> and </execution>
-                return self.task_executor.manage_execution_text(execution_text=response, task=self.running_task, task_displayed_data=self.running_task_displayed_data.name_for_user,
+                return self.task_executor.manage_execution_text(execution_text=response, task=self.running_task, task_name=self.running_task_displayed_data.name_for_user,
                                                                 user_task_execution_pk=self.running_user_task_execution.user_task_execution_pk,
                                                                 use_draft_placeholder=self.use_draft_placeholder)
             return {"text": response}

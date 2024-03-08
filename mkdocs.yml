@@ -59,6 +59,7 @@ extra_css:
 
 nav:
   - Home: index.md
+  - Why Mojodex?: motivations.md
   - Docs:
     - Getting Started: getting-started.md
     - Design Principles:

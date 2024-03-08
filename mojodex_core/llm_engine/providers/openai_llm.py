@@ -105,6 +105,7 @@ class OpenAILLM(LLM):
                         except Exception as e:
                            mojo_openai_logger.error(f"🔴 Error in streamCallback: {e}")
 
+            response = complete_text
         else:
             response = completion.choices[0].message.content
             finish_reason = completion.choices[0].finish_reason

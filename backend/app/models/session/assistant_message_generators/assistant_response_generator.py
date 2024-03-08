@@ -1,8 +1,5 @@
-
 from models.session.assistant_message_generators.assistant_message_generator import AssistantMessageGenerator
 from abc import ABC, abstractmethod
-from app import db
-from db_models import * 
 
 class AssistantResponseGenerator(AssistantMessageGenerator, ABC):
     """

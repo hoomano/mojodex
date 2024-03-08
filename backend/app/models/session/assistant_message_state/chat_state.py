@@ -1,5 +1,5 @@
 from app import db
-from db_models import MdMessage
+from mojodex_core.entities import MdMessage
 
 class ChatState:
     logger_prefix = "ChatState :: "

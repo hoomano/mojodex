@@ -1,19 +1,15 @@
-from azure_openai_conf import AzureOpenAIConf
 from models.session.assistant_message_context.assistant_message_context import AssistantMessageContext
-from models.llm_calls.mojodex_openai import MojodexOpenAI
 from models.session.assistant_message_generators.assistant_message_generator import AssistantMessageGenerator
 from models.knowledge.knowledge_manager import KnowledgeManager
 from datetime import datetime, timedelta
-from db_models import MdSession, MdHomeChat, MdUserTaskExecution, MdUserTask, MdTask
-from app import db, placeholder_generator
-from db_models import *
+from app import db, placeholder_generator, llm, llm_conf, llm_backup_conf
+from mojodex_core.entities import *
 from sqlalchemy import and_
 
 class WelcomeMessageGenerator(AssistantMessageGenerator):
     logger_prefix = "WelcomeMessageGenerator :: "
     prompt_template_path = "/data/prompts/home_chat/welcome_message.txt"
-    welcome_message_generator = MojodexOpenAI(AzureOpenAIConf.azure_gpt4_turbo_conf, "HOME_CHAT_FIRST_MESSAGE",
-                                             AzureOpenAIConf.azure_gpt4_32_conf)
+    welcome_message_generator = llm(llm_conf, label="HOME_CHAT_FIRST_MESSAGE", llm_backup_conf=llm_backup_conf)
     message_header_start_tag, message_header_end_tag = "<message_header>", "</message_header>"
     message_body_start_tag, message_body_end_tag = "<message_body>", "</message_body>"
 

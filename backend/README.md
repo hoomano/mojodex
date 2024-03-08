@@ -42,13 +42,13 @@ db = SQLAlchemy(app)
 [...]
 ```
 
-The database models generated with SQLAcodegen can be found in `backend/app/db_models/`. Those are used by the Backend to interact with the database though sqlalchemy.
+The database models generated with SQLAcodegen can be found in `mojodex_core/entities.py`. Those are used by the Backend to interact with the database though sqlalchemy.
 
 > Important Note: Flask-Sqlalchemy manages sessions and closes sessions on its own when a request is done. It is not necessary to manage sessions manually. However, when accessing the database in a thread that is not the main one, it is necessary to close the session manually to avoid any locks on the database.
 > For example, it is the case in `backend/app/models/tasks/task_manager.py` where the `TaskManager.start_task_from_form()` method is called in a parallel thread from `backend/app/routes/user_task_execution_run.py` and closes access to the database at the end of the method:
 > ```python
 > [...]
-> from app.db_models import db
+> from mojodex_core import *
 > [...]
 > def start_task_from_form(self, app_version, use_message_placeholder=False, use_draft_placeholder=False, tag_proper_nouns=False):
 >        try:

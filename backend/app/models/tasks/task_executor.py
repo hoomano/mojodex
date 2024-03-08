@@ -1,22 +1,14 @@
-import time
-
 from app import db
-from mojodex_core.entities import MdTextType
 from models.session.assistant_message_generators.assistant_message_generator import AssistantMessageGenerator
-from db_models import MdTextType
+from mojodex_core.entities import MdTextType
 from models.produced_text_manager import ProducedTextManager
 from mojodex_backend_logger import MojodexBackendLogger
-from app import socketio_message_sender
 
-from app import timing_logger
-from packaging import version
 
 class TaskExecutor:
     logger_prefix = "TaskExecutor::"
     execution_start_tag = "<execution>"
     execution_end_tag = "</execution>"
-
-
 
     def __init__(self, session_id, user_id):
         self.logger = MojodexBackendLogger(f"{TaskExecutor.logger_prefix} - session_id {session_id}")

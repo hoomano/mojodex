@@ -1,6 +1,6 @@
 from models.session.assistant_message_state.chat_state import ChatState
 from app import db
-from db_models import MdTask, MdUserTask, MdUserTaskExecution, MdTaskDisplayedData, MdProducedText, MdUser
+from mojodex_core.entities import MdTask, MdUserTask, MdUserTaskExecution, MdTaskDisplayedData, MdProducedText, MdUser
 from sqlalchemy import or_, func
 
 

@@ -1,11 +1,9 @@
-from azure_openai_conf import AzureOpenAIConf
 from models.session.assistant_message_generators.assistant_message_generator import AssistantMessageGenerator
-from models.llm_calls.mojodex_openai import MojodexOpenAI
 from models.produced_text_manager import ProducedTextManager
 from models.session.assistant_message_generators.assistant_response_generator import AssistantResponseGenerator
 from abc import ABC, abstractmethod
-from app import placeholder_generator, db
-from db_models import *
+from app import placeholder_generator, db, llm, llm_conf, llm_backup_conf
+from mojodex_core.entities import *
 from models.knowledge.knowledge_manager import KnowledgeManager
 from models.tasks.task_executor import TaskExecutor
 from models.tasks.task_inputs_manager import TaskInputsManager
@@ -17,7 +15,7 @@ class TaskEnabledAssistantResponseGenerator(AssistantResponseGenerator, ABC):
     logger_prefix = "TaskEnabledAssistantResponseGenerator :: "
 
     task_specific_instructions_prompt = "/data/prompts/tasks/task_specific_instructions.txt"
-    message_generator = MojodexOpenAI(AzureOpenAIConf.azure_gpt4_turbo_conf, "CHAT", AzureOpenAIConf.azure_gpt4_32_conf)
+    message_generator = llm(llm_conf,label="CHAT", llm_backup_conf = llm_backup_conf)
 
     def __init__(self, prompt_template_path, mojo_message_token_stream_callback, draft_token_stream_callback, use_message_placeholder, use_draft_placeholder, tag_proper_nouns, chat_context, llm_call_temperature):
         try:

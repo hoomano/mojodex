@@ -1,6 +1,6 @@
 from models.session.assistant_message_state.task_enabled_chat_state import TaskEnabledChatState
 from app import db
-from db_models import MdTask, MdTaskDisplayedData, MdUserTask, MdUserTaskExecution, MdMessage
+from mojodex_core.entities import MdTask, MdTaskDisplayedData, MdUserTask, MdUserTaskExecution, MdMessage
 from sqlalchemy.orm.attributes import flag_modified
 from datetime import datetime
 

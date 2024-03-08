@@ -1,9 +1,14 @@
+import os
+from datetime import datetime
+
+import requests
 from models.session.assistant_message_generators.assistant_message_generator import AssistantMessageGenerator
 from models.produced_text_manager import ProducedTextManager
 from models.session.assistant_message_generators.assistant_response_generator import AssistantResponseGenerator
 from abc import ABC, abstractmethod
-from app import placeholder_generator, db, llm, llm_conf, llm_backup_conf
+from app import placeholder_generator, db, llm, llm_conf, llm_backup_conf, server_socket
 from mojodex_core.entities import *
+from mojodex_core.logging_handler import log_error
 from models.knowledge.knowledge_manager import KnowledgeManager
 from models.tasks.task_executor import TaskExecutor
 from models.tasks.task_inputs_manager import TaskInputsManager
@@ -102,8 +107,25 @@ class TaskEnabledAssistantResponseGenerator(AssistantResponseGenerator, ABC):
     def _get_message_placeholder(self):
         raise NotImplementedError
 
+    def __give_task_execution_title_and_summary(self):
+        try:
+            # call background backend /end_user_task_execution to update user task execution title and summary
+            uri = f"{os.environ['BACKGROUND_BACKEND_URI']}/user_task_execution_title_and_summary"
+            pload = {'datetime': datetime.now().isoformat(),
+                     'user_task_execution_pk': self.running_user_task_execution.user_task_execution_pk}
+            internal_request = requests.post(uri, json=pload)
+            if internal_request.status_code != 200:
+                log_error(
+                    f"Error while calling background user_task_execution_title_and_summary : {internal_request.json()}")
+        except Exception as e:
+            print(f"🔴 __give_title_and_summary_task_execution :: {e}")
+
     def generate_message(self):
         try:
+            # call background for title and summary
+            if self.running_user_task_execution:
+                server_socket.start_background_task(self.__give_task_execution_title_and_summary,
+                                                    self.running_user_task_execution.user_task_execution_pk)
             message = super().generate_message()
             if message and self.running_user_task_execution:
                 message['user_task_execution_pk'] = self.running_user_task_execution.user_task_execution_pk

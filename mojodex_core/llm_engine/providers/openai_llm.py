@@ -101,7 +101,9 @@ class OpenAILLM(LLM):
                     complete_text += partial_token.content
                     if stream_callback is not None:
                         try:
-                            stream_callback(complete_text)
+                            flag_to_stop_streaming = stream_callback(complete_text)
+                            if flag_to_stop_streaming:
+                                return None
                         except Exception as e:
                            mojo_openai_logger.error(f"🔴 Error in streamCallback: {e}")
 

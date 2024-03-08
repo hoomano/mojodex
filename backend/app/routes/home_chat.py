@@ -1,8 +1,9 @@
 
 import os
+from models.session.assistant_message_generators.welcome_message_generator import WelcomeMessageGenerator
 from flask import request
 from flask_restful import Resource
-from models.session import Session as SessionModel
+from models.session.session import Session as SessionModel
 from app import authenticate, db, log_error, server_socket
 from datetime import datetime, timedelta
 from mojodex_core.entities import *
@@ -10,9 +11,6 @@ from packaging import version
 
 from models.session_creator import SessionCreator
 
-from models.voice_generator import VoiceGenerator
-
-from models.home_chat.home_chat_manager import HomeChatManager
 from sqlalchemy import extract, text, func, and_
 
 
@@ -33,11 +31,10 @@ class HomeChat(Resource):
             db.session.add(home_chat)
             db.session.commit()
             user = db.session.query(MdUser).filter(MdUser.user_id == user_id).first()
-            language = user.language_code if user.language_code else "en"
 
             # first message
-            home_chat_manager = HomeChatManager(session_id, user)
-            message = home_chat_manager.generate_first_message(app_version, use_message_placeholder=use_message_placeholder)
+            home_chat_manager = WelcomeMessageGenerator(user=user, use_message_placeholder=use_message_placeholder)
+            message = home_chat_manager.generate_message()
             db_message = MdMessage(session_id=session_id, message=message, sender=SessionModel.agent_message_key,
                                 event_name='home_chat_message', creation_date=datetime.now(), message_date=datetime.now())
             db.session.add(db_message)

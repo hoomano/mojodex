@@ -3,7 +3,7 @@ import os
 
 from flask import request
 from flask_restful import Resource
-from models.session import Session as SessionModel
+from models.session.session import Session as SessionModel
 from app import db, log_error, authenticate, main_logger
 from mojodex_core.entities import *
 

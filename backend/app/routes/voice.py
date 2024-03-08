@@ -4,13 +4,11 @@ import time
 
 from flask import request
 from flask_restful import Resource
-from models.session import Session as SessionModel
+from models.session.session import Session as SessionModel
 from app import db, authenticate, log_error
 from mojodex_core.entities import *
 from flask import send_file
 from packaging import version
-
-from models.tasks.task_manager import TaskManager
 
 
 class Voice(Resource):

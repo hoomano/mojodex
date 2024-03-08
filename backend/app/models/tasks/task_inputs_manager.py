@@ -1,3 +1,4 @@
+from models.session.assistant_message_generators.assistant_message_generator import AssistantMessageGenerator
 from mojodex_backend_logger import MojodexBackendLogger
 
 
@@ -6,13 +7,12 @@ class TaskInputsManager:
     ask_user_input_start_tag = "<ask_user_primary_info>"
     ask_user_input_end_tag = "</ask_user_primary_info>"
 
-    def __init__(self, session_id, remove_tags_function):
+    def __init__(self, session_id):
         self.logger = MojodexBackendLogger(f"{TaskInputsManager.logger_prefix} -- session_id {session_id}")
-        self.remove_tags_function = remove_tags_function
 
     def manage_ask_input_text(self, ask_input_text):
         try:
-            mojo_text = self.remove_tags_function(ask_input_text, self.ask_user_input_start_tag, self.ask_user_input_end_tag)
+            mojo_text = AssistantMessageGenerator.remove_tags_from_text(ask_input_text, self.ask_user_input_start_tag, self.ask_user_input_end_tag)
             return {"text": mojo_text,
                     "text_with_tags": ask_input_text}
         except Exception as e:

@@ -119,6 +119,8 @@ class MojodexBackendOpenAI(BackendLLM, OpenAILLM, OpenAIEmbeddingProvider):
                                                          stream_callback=stream_callback)
                 else:
                     raise Exception("Rate limit exceeded and no backup engine available")
+            if responses is None:
+                return None
             n_tokens_response = 0
             for response in responses:
                 n_tokens_response += self.num_tokens_from_messages([{'role': 'assistant', 'content': response}])

@@ -10,30 +10,12 @@ USER NAME
 {%if user_company_knowledge%}USER'S COMPANY KNOWLEDGE
 {{user_company_knowledge}}{%endif%}
 
-TASK TO ACCOMPLISH
-{{task.name_for_system}}: {{task.definition_for_system}}
-
-{%if user_task_inputs%}USER INPUTS
-{{ user_task_inputs | tojson(indent=4) }}{%endif%}
-
-PRIMARY INFO NEEDED TO COMPLETE THE TASK
-{{ task.infos_to_extract | tojson(indent=4) }}
-
-TASK OUTPUT FORMAT
-{{ title_start_tag }}{{task.output_format_instruction_title}}{{ title_end_tag }}
-{{ draft_start_tag }}{{task.output_format_instruction_draft}}{{ draft_end_tag }}
-
-TASK INSTRUCTION
-{{task.final_instruction}}
-
-{%if task_tool_associations%}TOOLS TO USE
-{%for task_tool_association in task_tool_associations %}{{task_tool_association.tool_name}}: {{task_tool_association.usage_description}}
-{%endfor%}{%endif%}
+{{task_specific_instructions}}
 {%if audio_message%}The user's messages are transcriptions of audio messages.{%endif%}
 
 {%if not produced_text_done%}Answer in following format:
 {%if language is none%}<user_language><2 letters language code></user_language>{%endif%}
-{%for info in task.infos_to_extract%}<missing_{{info.info_name}}><yes/no></missing_{{info.info_name}}>
+{%for info in running_task.infos_to_extract%}<missing_{{info.info_name}}><yes/no></missing_{{info.info_name}}>
 {%endfor%}<missing_primary_info><yes/no></missing_primary_info>
 {if <missing_primary_info> == yes}
 <ask_user_primary_info><question to ask the user to collect missing info you need to complete the task></ask_user_primary_info>{endif}
@@ -41,10 +23,10 @@ TASK INSTRUCTION
 {if <need_tool> == yes}
 <tool_to_use><tool name></tool_to_use>
 <tool_usage><Brief explanation of how you intend to use the tool for the user and ask if they agree.></tool_usage>{else}{%endif%}
-<execution><Task delivery in TASK OUTPUT FORMAT within those tags.
-{%if tag_proper_nouns%}Tag EVERY delivery's proper noun with '*': *PROPER NOUN*. Also tag EVERY delivery's word that may have been misunderstood by the transcription system and could be a proper noun with the same '*' tag.{%endif%}No talk, only delivery.></execution>{%if task_tool_associations%}{%endif%}{endif}{endif}
+<execution><Task delivery in TASK OUTPUT FORMAT within those tags. No talk, only delivery.></execution>{%if task_tool_associations%}{%endif%}{endif}{endif}
 {%else%}Always use <execution> and </execution> tags when you write a task delivery or edition of a task delivery.{%endif%}
 
+{%if tag_proper_nouns%}Tag EVERY proper noun with '*': *PROPER NOUN*. Also tag EVERY word that may have been misunderstood by the transcription system and could be a proper noun with the same '*' tag.{%endif%}
 {%if language is none%}Speak same language as the user.{%else%}Use language {{language}}.{%endif%}
 Ensure you include all tags required by answer format.
 No talk, just follow answer format. Remember to use required tags.

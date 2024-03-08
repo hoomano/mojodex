@@ -217,7 +217,7 @@ from http_routes import *
 
 HttpRouteManager(api)
 
-from models.session import Session as SessionModel
+from models.session.session import Session as SessionModel
 
 from user_task_execution_purchase_updater import UserTaskExecutionPurchaseUpdater
 
@@ -304,7 +304,7 @@ def socketio_event_callback(event_name, data):
             message = {"error": "No session_id provided", "session_id": data.get("session_id")}
             emit('error', message)
             return
-        session.receive_human_message(event_name, data)
+        session.process_chat_message(data)
     except Exception as e:
         message = {"error": str(e), "session_id": data.get("session_id")}
         emit('error', message)

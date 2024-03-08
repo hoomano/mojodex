@@ -62,7 +62,6 @@ class VoiceGenerator:
                 # Note: this is a patch: language code should not be None, we need to find in which case this happens
                 language_code = self._get_language(text, user_id, user_task_execution_pk=user_task_execution_pk, task_name_for_system=task_name_for_system)
                 log_error(f"VoiceGenerator :: text_to_speech :: language_code is None - user_id: {user_id}")
-
             self.speech_config.speech_synthesis_language = language_code
             # For en and fr we selected the voice we wanted, for other language, let's take the first male voice available
             if language_code in VoiceGenerator.selected_voices:

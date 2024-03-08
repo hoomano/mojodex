@@ -6,7 +6,7 @@ from flask_restful import Resource
 from app import db, authenticate, log_error, executor
 from mojodex_core.entities import *
 
-from models.session import Session
+from models.session.session import Session
 from sqlalchemy import or_
 
 
@@ -31,6 +31,7 @@ class Message(Resource):
             timestamp = request.args["datetime"]
             session_id = request.args["session_id"]
             offset_direction = request.args["offset_direction"] if "offset_direction" in request.args else "older"
+            user_task_execution_pk = request.args["user_task_execution_pk"] if "user_task_execution_pk" in request.args else None
         except KeyError as e:
             log_error(f"Error getting messages : Missing field {e}")
             return {"error": f"Missing field {e}"}, 400
@@ -48,6 +49,9 @@ class Message(Resource):
             messages = db.session.query(MdMessage).filter(MdMessage.session_id == session_id) \
                 .filter(or_(MdMessage.message.op('->>')('text').isnot(None),
                             MdMessage.sender == "user"))
+            
+            if user_task_execution_pk is not None:
+                messages = messages.filter(MdMessage.message.op('->>')('user_task_execution_pk') == user_task_execution_pk)
 
             if offset_direction == "older":
                 messages = messages.order_by(MdMessage.message_date.desc())

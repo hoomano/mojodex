@@ -1,4 +1,5 @@
 from app import db
+from models.session.assistant_message_generators.assistant_message_generator import AssistantMessageGenerator
 from mojodex_core.entities import MdTaskToolExecution
 from mojodex_backend_logger import MojodexBackendLogger
 
@@ -8,9 +9,8 @@ class TaskToolManager:
     tool_name_start_tag, tool_name_end_tag = "<tool_to_use>", "</tool_to_use>"
     tool_usage_start_tag, tool_usage_end_tag = "<tool_usage>", "</tool_usage>"
 
-    def __init__(self, session_id, remove_tags_function):
+    def __init__(self, session_id):
         self.logger = MojodexBackendLogger(f"{TaskToolManager.logger_prefix} -- session_id {session_id}")
-        self.remove_tags_function = remove_tags_function
 
     def _find_task_tool_association(self, tool_name, task_tool_associations):
         # first task_tool_associations where task_tool_association.tool.name == tool_name, if not, answer null
@@ -22,8 +22,8 @@ class TaskToolManager:
 
     def manage_tool_usage_text(self, text, user_task_execution_pk, task_tool_associations_json):
         try:
-            mojo_text = self.remove_tags_function(text, self.tool_usage_start_tag, self.tool_usage_end_tag)
-            tool_name = self.remove_tags_function(text, self.tool_name_start_tag, self.tool_name_end_tag)
+            mojo_text = AssistantMessageGenerator.remove_tags_from_text(text, self.tool_usage_start_tag, self.tool_usage_end_tag)
+            tool_name = AssistantMessageGenerator.remove_tags_from_text(text, self.tool_name_start_tag, self.tool_name_end_tag)
             task_tool_execution = MdTaskToolExecution(
                 task_tool_association_fk=self._find_task_tool_association(tool_name, task_tool_associations_json)['task_tool_association_pk'],
                 user_task_execution_fk=user_task_execution_pk)

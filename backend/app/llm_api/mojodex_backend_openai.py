@@ -3,10 +3,11 @@ import logging
 import os
 import time
 
+from app import db
+
 import openai
 from pydub import AudioSegment
 from mojodex_core.logging_handler import  log_error
-from mojodex_core.db import db_session
 from mojodex_core.entities import MdUserVocabulary
 
 from llm_api.backend_llm import BackendLLM
@@ -163,7 +164,7 @@ class MojodexBackendOpenAI(BackendLLM, OpenAILLM, OpenAIEmbeddingProvider):
 
     def __get_user_vocabulary(self, user_id):
         try:
-            user_vocabulary = db_session.query(MdUserVocabulary).filter(MdUserVocabulary.user_id == user_id).order_by(
+            user_vocabulary = db.session.query(MdUserVocabulary).filter(MdUserVocabulary.user_id == user_id).order_by(
                 MdUserVocabulary.creation_date.desc()).limit(100).all()
             return ", ".join([v.word for v in user_vocabulary]) if user_vocabulary else ""
         except Exception as e:

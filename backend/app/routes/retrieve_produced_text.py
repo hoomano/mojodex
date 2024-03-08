@@ -4,16 +4,15 @@ from datetime import datetime
 from flask import request
 from flask_restful import Resource
 from app import db, log_error, document_manager
-from db_models import *
+from mojodex_core.entities import *
 
-from models.llm_calls.mojodex_openai import MojodexOpenAI
+from app import embedder, embedding_conf
 
-from azure_openai_conf import AzureOpenAIConf
 from sqlalchemy import func
 
 
 class RetrieveProducedText(Resource):
-    embedder = MojodexOpenAI(AzureOpenAIConf.azure_conf_embedding, "PRODUCED_TEXT_QUERY_EMBEDDER")
+    embedder = embedder(embedding_conf, label="PRODUCED_TEXT_QUERY_EMBEDDER")
 
     def get(self):
         log_message = "Error retrieving produced_texts"
@@ -23,7 +22,8 @@ class RetrieveProducedText(Resource):
                 log_error(f"{log_message} : Authentication error")
                 return {"error": "Authentication error : Wrong secret"}, 403
         except KeyError:
-            log_error(f"{log_message} : Missing Authorization secret in headers")
+            log_error(
+                f"{log_message} : Missing Authorization secret in headers")
             return {"error": f"Missing Authorization secret in headers"}, 403
 
         try:
@@ -39,8 +39,8 @@ class RetrieveProducedText(Resource):
 
         try:
             embedded_query = RetrieveProducedText.embedder.embed(query, user_id,
-                                                               user_task_execution_pk=user_task_execution_pk,
-                                                               task_name_for_system=task_name_for_system)
+                                                                 user_task_execution_pk=user_task_execution_pk,
+                                                                 task_name_for_system=task_name_for_system)
 
             # Subquery to get last produced text versions
             produced_text_subquery = db.session.query(
@@ -62,7 +62,8 @@ class RetrieveProducedText(Resource):
                 .filter(produced_text_subquery.c.row_number == 1) \
                 .subquery()
 
-            cosine_distance = nearest_neighbors_subquery.c.embedding.cosine_distance(embedded_query)
+            cosine_distance = nearest_neighbors_subquery.c.embedding.cosine_distance(
+                embedded_query)
 
             nearest_neighbors = db.session.query(nearest_neighbors_subquery, MdTask.name_for_system, MdTask.icon) \
                 .add_columns(cosine_distance.label("cosine_distance")) \
@@ -78,12 +79,12 @@ class RetrieveProducedText(Resource):
                 .all()
 
             return {"retrieved_produced_texts": [
-                        {'user_task_execution_pk': produced_text.user_task_execution_fk,
-                        'produced_text_title': produced_text.title,
-                        'produced_text': produced_text.production,
-                        'task_name': produced_text.name_for_system,
-                        'task_icon': produced_text.icon,
-                        }
+                {'user_task_execution_pk': produced_text.user_task_execution_fk,
+                 'produced_text_title': produced_text.title,
+                 'produced_text': produced_text.production,
+                 'task_name': produced_text.name_for_system,
+                 'task_icon': produced_text.icon,
+                 }
                 for produced_text in nearest_neighbors]}, 200
 
         except Exception as e:

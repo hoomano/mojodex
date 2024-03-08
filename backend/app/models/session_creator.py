@@ -1,5 +1,5 @@
 from app import db, log_error
-from db_models import *
+from mojodex_core.entities import *
 from datetime import datetime
 import hashlib
 import random

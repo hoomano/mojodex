@@ -2,7 +2,7 @@ import os
 from flask import request
 from flask_restful import Resource
 from app import db, log_error
-from db_models import *
+from mojodex_core.entities import *
 
 class TextType(Resource):
 

@@ -6,7 +6,7 @@ import requests
 from flask import request
 from flask_restful import Resource
 from app import db, log_error, server_socket
-from db_models import *
+from mojodex_core.entities import *
 from sqlalchemy import func, text, extract, case
 from sqlalchemy.sql.functions import coalesce
 

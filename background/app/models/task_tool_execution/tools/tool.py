@@ -6,17 +6,18 @@ from datetime import datetime
 
 import requests
 from jinja2 import Template
-from llm_calls.mojodex_openai import MojodexOpenAI
-from llm_calls.json_loader import json_decode_retry
+from mojodex_core.json_loader import json_decode_retry
 from app import on_json_error
-from azure_openai_conf import AzureOpenAIConf
+from llm_api.mojodex_background_openai import OpenAIConf
+
+from app import llm, llm_conf
 
 
 class Tool(ABC):
     task_tool_query_url = "task_tool_query"
 
     params_generator_prompt = "/data/prompts/background/task_tool_execution/generate_tool_params.txt"
-    json_params_generator = MojodexOpenAI(AzureOpenAIConf.azure_gpt4_turbo_conf, "TOOL_PARAMS_GENERATOR")
+    json_params_generator = llm(llm_conf, label="TOOL_PARAMS_GENERATOR")
 
     def __init__(self, name, tool_specifications, task_tool_execution_pk, logger, user_id, user_task_execution_pk,
                  task_name_for_system, n_total_usages):
@@ -27,11 +28,12 @@ class Tool(ABC):
         self.task_tool_execution_pk = task_tool_execution_pk
         self.task_name_for_system = task_name_for_system
         self.user_id = user_id
-        self.n_total_usages = n_total_usages # n_total_usages is the number of times the tool will be used (= query generated + result retrieved)
+        # n_total_usages is the number of times the tool will be used (= query generated + result retrieved)
+        self.n_total_usages = n_total_usages
 
     @json_decode_retry(retries=3, required_keys=None, on_json_error=on_json_error)
     def __generate_tool_query(self, mojo_knowledge, global_context, user_name, user_company_knowledge,
-                             tool_execution_context, usage_description, previous_results, n_total_usages, user_id):
+                              tool_execution_context, usage_description, previous_results, n_total_usages, user_id):
         """Return a json with the parameters for the tool."""
         try:
             with open(Tool.params_generator_prompt, "r") as f:
@@ -42,7 +44,8 @@ class Tool(ABC):
                                          user_company_knowledge=user_company_knowledge,
                                          tool_execution_context=tool_execution_context,
                                          n_total_usages=n_total_usages,
-                                         current_usage_index=len(previous_results) + 1,
+                                         current_usage_index=len(
+                                             previous_results) + 1,
                                          previous_results=previous_results,
                                          tool_specifications=self.specifications,
                                          tool_name=self.name,
@@ -76,13 +79,15 @@ class Tool(ABC):
                     tool_execution_context, usage_description, queries, self.n_total_usages, user_id)
 
                 task_tool_query_pk = self.__save_query_to_db(json_params)
-                result = self.run_tool(json_params, tool_execution_context, usage_description, knowledge_collector)
+                result = self.run_tool(
+                    json_params, tool_execution_context, usage_description, knowledge_collector)
                 self.logger.debug(f"activate :: result {result}")
                 self.__save_result_to_db(task_tool_query_pk, result)
                 json_params.update({"result": result})
-                queries.append(json_params)  # queries = [{'query': '', 'result': ''}, ...]
+                # queries = [{'query': '', 'result': ''}, ...]
+                queries.append(json_params)
                 if result:
-                    results.append(result) # results = [result1, result2, ...]
+                    results.append(result)  # results = [result1, result2, ...]
             # if results is empty, it means that the tool did not return any result
             return queries, results
         except Exception as e:
@@ -104,7 +109,8 @@ class Tool(ABC):
             # Save follow-ups in db => send to mojodex-backend
             pload = {'datetime': datetime.now().isoformat(), 'query': query,
                      'task_tool_execution_fk': self.task_tool_execution_pk}
-            headers = {'Authorization': os.environ['MOJODEX_BACKGROUND_SECRET'], 'Content-Type': 'application/json'}
+            headers = {
+                'Authorization': os.environ['MOJODEX_BACKGROUND_SECRET'], 'Content-Type': 'application/json'}
             internal_request = requests.put(uri, json=pload, headers=headers)
             if internal_request.status_code != 200:
                 raise Exception(str(internal_request.json()))
@@ -119,7 +125,8 @@ class Tool(ABC):
             # Save follow-ups in db => send to mojodex-backend
             pload = {'datetime': datetime.now().isoformat(), 'result': result,
                      'task_tool_query_pk': task_tool_query_pk}
-            headers = {'Authorization': os.environ['MOJODEX_BACKGROUND_SECRET'], 'Content-Type': 'application/json'}
+            headers = {
+                'Authorization': os.environ['MOJODEX_BACKGROUND_SECRET'], 'Content-Type': 'application/json'}
             internal_request = requests.post(uri, json=pload, headers=headers)
             if internal_request.status_code != 200:
                 raise Exception(str(internal_request.json()))

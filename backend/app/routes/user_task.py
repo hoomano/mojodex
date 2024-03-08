@@ -1,7 +1,7 @@
 from flask import request
 from flask_restful import Resource
 from app import db, authenticate, log_error
-from db_models import *
+from mojodex_core.entities import *
 from sqlalchemy import and_, or_, func
 from sqlalchemy.sql.functions import coalesce
 from packaging import version

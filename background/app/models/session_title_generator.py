@@ -4,20 +4,20 @@ from datetime import datetime
 import requests
 from background_logger import BackgroundLogger
 from jinja2 import Template
-from llm_calls.mojodex_openai import MojodexOpenAI
 
-from azure_openai_conf import AzureOpenAIConf
+from app import llm, llm_conf
 
 
 class SessionTitleGenerator:
     logger_prefix = "SessionTitleGenerator::"
 
     generate_title_prompt = "/data/prompts/background/session_started/generate_title_prompt.txt"
-    title_generator = MojodexOpenAI(AzureOpenAIConf.azure_gpt4_turbo_conf, "GENERATE_SESSION_TITLE")
+    title_generator = llm(llm_conf, label="GENERATE_SESSION_TITLE")
 
     def __init__(self, session_id, user_id, knwoledge_collector):
         try:
-            self.logger = BackgroundLogger(f"{SessionTitleGenerator.logger_prefix} -- session_id: {session_id}")
+            self.logger = BackgroundLogger(
+                f"{SessionTitleGenerator.logger_prefix} -- session_id: {session_id}")
             self.session_id = session_id
             self.user_id = user_id
             self.knowledge_collector = knwoledge_collector
@@ -51,7 +51,8 @@ class SessionTitleGenerator:
             pload = {'datetime': datetime.now().isoformat(),
                      'session_id': self.session_id,
                      'title': title}
-            headers = {'Authorization': os.environ['MOJODEX_BACKGROUND_SECRET'], 'Content-Type': 'application/json'}
+            headers = {
+                'Authorization': os.environ['MOJODEX_BACKGROUND_SECRET'], 'Content-Type': 'application/json'}
             internal_request = requests.post(uri, json=pload, headers=headers)
             if internal_request.status_code != 200:
                 raise Exception(

@@ -1,9 +1,12 @@
 from openai import OpenAI, AzureOpenAI
-import logging
+from mojodex_core.llm_engine.llm import LLM
+from mojodex_core.logging_handler import MojodexCoreLogger
 import tiktoken
 
+mojo_openai_logger = MojodexCoreLogger("mojo_openai_logger")
 
-class MojoOpenAI:
+
+class OpenAILLM(LLM):
     def __init__(self, api_key, api_base, api_version, model, api_type='azure', max_retries=3):
         """
         :param api_key: API key to call openAI
@@ -24,8 +27,6 @@ class MojoOpenAI:
                 max_retries=self.max_retries
             ) if api_type == 'azure' else OpenAI(api_key=api_key)
 
-            # DEBUG was too verbose and applied to openai
-            logging.basicConfig(level=logging.WARNING)
         except Exception as e:
             raise Exception(f"🔴 Error initializing MojoOpenAI __init__  : {e}")
 
@@ -59,7 +60,7 @@ class MojoOpenAI:
             raise Exception(f"🔴 Error in num_tokens_from_messages : {e}")
 
 
-    def openAIChatCompletion(self, messages, user_uuid, temperature, max_tokens, frequency_penalty=0,
+    def chatCompletion(self, messages, user_uuid, temperature, max_tokens, frequency_penalty=0,
                              presence_penalty=0, stream=False, stream_callback=None, json_format=False,
                              n_additional_calls_if_finish_reason_is_length=0, assistant_response="", n_calls=0):
         """
@@ -102,7 +103,7 @@ class MojoOpenAI:
                         try:
                             stream_callback(complete_text)
                         except Exception as e:
-                            logging.error(f"🔴 Error in streamCallback: {e}")
+                           mojo_openai_logger.error(f"🔴 Error in streamCallback: {e}")
 
             response = complete_text
         else:
@@ -113,21 +114,10 @@ class MojoOpenAI:
             # recall the function with assistant_message + user_message
             messages = messages + [{'role': 'assistant', 'content': response},
                                    {'role': 'user', 'content': 'Continue'}]
-            return self.openAIChatCompletion(messages, user_uuid, temperature, max_tokens,
+            return self.chatCompletion(messages, user_uuid, temperature, max_tokens,
                                              frequency_penalty=frequency_penalty, presence_penalty=presence_penalty,
                                              stream=stream, stream_callback=stream_callback, json_format=json_format,
                                              assistant_response=assistant_response + " " + response,
                                              n_additional_calls_if_finish_reason_is_length=n_additional_calls_if_finish_reason_is_length,
                                              n_calls=n_calls + 1)
         return [assistant_response + " " + response] # [] is a legacy from the previous version that could return several completions. Need complete refacto to remove.
-
-    def openAIEmbedding(self, text):
-        """
-        :param text: Text to embed
-        :return: Embedding
-        """
-        embedding = self.client.embeddings.create(
-            input=text,
-            model=self.model
-        )
-        return embedding.data[0].embedding

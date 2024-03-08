@@ -6,23 +6,22 @@ import requests
 from flask import request
 from flask_restful import Resource
 from app import db, authenticate, log_error, executor
-from db_models import *
+from mojodex_core.entities import *
 from jinja2 import Template
 
 from models.documents.website_parser import WebsiteParser
-from models.llm_calls.mojodex_openai import MojodexOpenAI
-
-from azure_openai_conf import AzureOpenAIConf
-from models.llm_calls.json_loader import json_decode_retry
+from mojodex_core.json_loader import json_decode_retry
 from app import on_json_error
+
+from app import llm, llm_conf, llm_backup_conf
 
 
 class Company(Resource):
     correct_company_info_prompt = "/data/prompts/company/correct_company_infos.txt"
-    company_info_corrector = MojodexOpenAI(AzureOpenAIConf.azure_gpt4_turbo_conf,
-                                           "CORRECT_COMPANY_INFO_FROM_FEEDBACK",
-                                           AzureOpenAIConf.azure_gpt4_32_conf
-                                           )
+    company_info_corrector = llm(llm_conf,
+                                 label="CORRECT_COMPANY_INFO_FROM_FEEDBACK",
+                                 llm_backup_conf=llm_backup_conf
+                                 )
 
     error_invalid_url = "The url is not valid"
     general_backend_error_message = "Oops, something weird has happened. We'll help you by email!"
@@ -46,7 +45,8 @@ class Company(Resource):
 
     def put(self, user_id):
         if not request.is_json:
-            log_error(f"Error creating Company : Request must be JSON", notify_admin=True)
+            log_error(f"Error creating Company : Request must be JSON",
+                      notify_admin=True)
             return {"error": Company.general_backend_error_message}, 400
 
         # data
@@ -59,14 +59,18 @@ class Company(Resource):
             return {"error": Company.general_backend_error_message}, 400
 
         try:
-            website_url = website_url[:-1] if website_url[-1] == "/" else website_url
+            website_url = website_url[:-
+                                      1] if website_url[-1] == "/" else website_url
             try:
-                website_url = self.website_parser.check_url_validity(website_url)
+                website_url = self.website_parser.check_url_validity(
+                    website_url)
             except Exception:
                 return {"error": Company.error_invalid_url}, 400
             # 1. maybe website already exists in DB
-            company = db.session.query(MdCompany).filter(MdCompany.website == website_url).first()
-            name, description, emoji = self.website_parser.get_company_name_and_description(user_id, website_url)
+            company = db.session.query(MdCompany).filter(
+                MdCompany.website == website_url).first()
+            name, description, emoji = self.website_parser.get_company_name_and_description(
+                user_id, website_url)
             if not company:
                 # 2. Else, let's parse website to create company
                 company = MdCompany(name=name, emoji=emoji, website=website_url,
@@ -75,7 +79,8 @@ class Company(Resource):
                 db.session.flush()
                 db.session.refresh(company)
 
-            user = db.session.query(MdUser).filter(MdUser.user_id == user_id).first()
+            user = db.session.query(MdUser).filter(
+                MdUser.user_id == user_id).first()
             user.company_fk = company.company_pk
             user.company_description = description
             db.session.commit()
@@ -87,9 +92,11 @@ class Company(Resource):
                          "company_pk": company_pk}
                 internal_request = requests.post(uri, json=pload)
                 if internal_request.status_code != 200:
-                    log_error(f"Error while calling background parse_website : {internal_request.json()}")
+                    log_error(
+                        f"Error while calling background parse_website : {internal_request.json()}")
 
-            executor.submit(website_to_document, website_url, user_id, company.company_pk)
+            executor.submit(website_to_document, website_url,
+                            user_id, company.company_pk)
 
             return {"company_pk": company.company_pk,
                     "company_emoji": company.emoji,
@@ -104,13 +111,15 @@ class Company(Resource):
 
     def post(self, user_id):
         if not request.is_json:
-            log_error(f"Error updating company : Request must be JSON", notify_admin=True)
+            log_error(f"Error updating company : Request must be JSON",
+                      notify_admin=True)
             return {"error": Company.general_backend_error_message}, 400
 
         # data
         try:
             timestamp = request.json["datetime"]
-            feedback = request.json["feedback"].strip() if "feedback" in request.json else None
+            feedback = request.json["feedback"].strip(
+            ) if "feedback" in request.json else None
             correct = request.json["correct"] if "correct" in request.json else None
         except KeyError as e:
             log_error(f"Error updating company for user {user_id} : Missing field {e} - request.json: {request.json}",
@@ -123,7 +132,8 @@ class Company(Resource):
                 .filter(MdUser.user_id == user_id) \
                 .first()
 
-            user = db.session.query(MdUser).filter(MdUser.user_id == user_id).first()
+            user = db.session.query(MdUser).filter(
+                MdUser.user_id == user_id).first()
 
             if feedback and feedback.strip() != "":
                 infos = self.update_user_company_description(user_id, company, user.company_description, correct,
@@ -138,6 +148,7 @@ class Company(Resource):
                     "company_name": company.name,
                     "company_description": user.company_description}, 200
         except Exception as e:
-            log_error(f"Error updating company for user {user_id} - request.json: {request.json}: {e}")
+            log_error(
+                f"Error updating company for user {user_id} - request.json: {request.json}: {e}")
             db.session.rollback()
             return {"error": Company.general_backend_error_message}, 500

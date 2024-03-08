@@ -1,7 +1,7 @@
 from flask import request
 from flask_restful import Resource
-from app import db, executor
-from db_models import *
+
+from mojodex_core.entities import *
 
 from models.cortex.user_task_execution_title_and_summary_cortex import UserTaskExecutionTitleAndSummaryCortex
 
@@ -23,6 +23,7 @@ class UserTaskExecutionTitleAndSummary(Resource):
             return {"error": "invalid inputs"}, 400
 
         try:
+            from app import db, executor
             self.logger.info(f"🟢 POST /user_task_execution_title_and_summary - user_task_execution_pk {user_task_execution_pk}")
             # check user_task_execution exists
             user_task_execution = db.session.query(MdUserTaskExecution).filter(MdUserTaskExecution.user_task_execution_pk == user_task_execution_pk).first()

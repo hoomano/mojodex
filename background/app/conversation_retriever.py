@@ -1,6 +1,6 @@
-from app import db
+
 from background_logger import BackgroundLogger
-from db_models import MdMessage
+from mojodex_core.entities import MdMessage
 
 
 class ConversationRetriever:
@@ -10,6 +10,7 @@ class ConversationRetriever:
         self.logger = BackgroundLogger(ConversationRetriever.logger_prefix)
 
     def _get_all_session_messages(self, session_id):
+        from app import db
         return db.session.query(MdMessage) \
             .filter(MdMessage.session_id == session_id) \
             .order_by(MdMessage.message_date) \

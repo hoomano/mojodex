@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from app import db, language_retriever, conversation_retriever
-from db_models import *
+from mojodex_core.entities import *
 
 from models.user_task_execution import UserTaskExecution
 from models.knowledge.knowledge_collector import KnowledgeCollector

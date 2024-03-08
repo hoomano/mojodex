@@ -6,7 +6,7 @@ import stripe
 from mojodex_backend_logger import MojodexBackendLogger
 
 from app import db, log_error
-from db_models import *
+from mojodex_core.entities import *
 
 from app import send_admin_email
 from sqlalchemy import and_, func, or_, text

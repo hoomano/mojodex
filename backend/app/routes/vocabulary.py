@@ -2,24 +2,21 @@
 from flask import request
 from flask_restful import Resource
 from app import db, authenticate, log_error
-from db_models import *
+from mojodex_core.entities import *
 
 from jinja2 import Template
 
-from models.llm_calls.mojodex_openai import MojodexOpenAI
-
-from azure_openai_conf import AzureOpenAIConf
+from app import llm, llm_conf, llm_backup_conf
 
 from models.knowledge.knowledge_manager import KnowledgeManager
 from sqlalchemy import func, or_
 from sqlalchemy.orm.attributes import flag_modified
 
 
-
 class Vocabulary(Resource):
     proper_nouns_tagger_prompt = "/data/prompts/resources/proper_nouns_tagger.txt"
-    proper_nouns_tagger = MojodexOpenAI(AzureOpenAIConf.azure_gpt4_turbo_conf, "SPELLING_CORRECTOR",
-                                        AzureOpenAIConf.azure_gpt4_32_conf)
+    proper_nouns_tagger = llm(llm_conf, label="SPELLING_CORRECTOR",
+                                        llm_backup_conf=llm_backup_conf)
 
     def __init__(self):
         Vocabulary.method_decorators = [authenticate()]
@@ -68,7 +65,8 @@ class Vocabulary(Resource):
                 .first()
 
             if md_message is None:
-                log_error(f"{error_message} : Message not found - message_pk: {message_pk}")
+                log_error(
+                    f"{error_message} : Message not found - message_pk: {message_pk}")
                 return {"error": "Message not found"}, 404
 
             result = db.session.query(MdUserTaskExecution.user_task_execution_pk,
@@ -94,7 +92,8 @@ class Vocabulary(Resource):
             message_text = md_message.message['text']
             mojo_knowledge = KnowledgeManager.get_mojo_knowledge()
             global_context = KnowledgeManager.get_global_context_knowledge()
-            user_company_knowledge = KnowledgeManager.get_user_company_knowledge(user_id)
+            user_company_knowledge = KnowledgeManager.get_user_company_knowledge(
+                user_id)
             username = KnowledgeManager.get_user_name(user_id)
             tagged_message = self.__tag_proper_nouns(message_text, mojo_knowledge, global_context, username,
                                                      user_company_knowledge,
@@ -110,8 +109,6 @@ class Vocabulary(Resource):
         except Exception as e:
             log_error(f"{error_message} : {e}")
             return {"error": f"{error_message} : {e}"}, 500
-
-
 
     def put(self, user_id):
 
@@ -141,11 +138,13 @@ class Vocabulary(Resource):
                 .all()
 
             if md_messages is None:
-                log_error(f"{error_message} : No message found for this session and this user")
+                log_error(
+                    f"{error_message} : No message found for this session and this user")
                 return {"error": "No message found for this session and this user"}, 404
 
             for md_message in md_messages:
-                md_message.message['text'] = md_message.message['text'].replace(initial_spelling, corrected_spelling)
+                md_message.message['text'] = md_message.message['text'].replace(
+                    initial_spelling, corrected_spelling)
                 flag_modified(md_message, "message")
                 db.session.flush()
 
@@ -163,7 +162,7 @@ class Vocabulary(Resource):
 
             # session title + user task execution title and summary + last produced_text_version title and production
             session, user_task_execution, produced_text_version = db.session.query(MdSession, MdUserTaskExecution,
-                                                                           MdProducedTextVersion) \
+                                                                                   MdProducedTextVersion) \
                 .outerjoin(MdUserTaskExecution, MdUserTaskExecution.session_id == MdSession.session_id) \
                 .outerjoin(produced_text_subquery,
                            produced_text_subquery.c.user_task_execution_fk == MdUserTaskExecution.user_task_execution_pk) \
@@ -174,19 +173,24 @@ class Vocabulary(Resource):
                 .first()
 
             if session.title:
-                session.title = session.title.replace(initial_spelling, corrected_spelling)
+                session.title = session.title.replace(
+                    initial_spelling, corrected_spelling)
                 db.session.flush()
             if user_task_execution.title:
-                user_task_execution.title = user_task_execution.title.replace(initial_spelling, corrected_spelling)
+                user_task_execution.title = user_task_execution.title.replace(
+                    initial_spelling, corrected_spelling)
                 db.session.flush()
             if user_task_execution.summary:
-                user_task_execution.summary = user_task_execution.summary.replace(initial_spelling, corrected_spelling)
+                user_task_execution.summary = user_task_execution.summary.replace(
+                    initial_spelling, corrected_spelling)
                 db.session.flush()
             if produced_text_version and produced_text_version.title:
-                produced_text_version.title = produced_text_version.title.replace(initial_spelling, corrected_spelling)
+                produced_text_version.title = produced_text_version.title.replace(
+                    initial_spelling, corrected_spelling)
                 db.session.flush()
             if produced_text_version and produced_text_version.production:
-                produced_text_version.production = produced_text_version.production.replace(initial_spelling, corrected_spelling)
+                produced_text_version.production = produced_text_version.production.replace(
+                    initial_spelling, corrected_spelling)
                 db.session.flush()
 
             # add vocab to user's vocab
@@ -197,10 +201,10 @@ class Vocabulary(Resource):
                     .filter(MdUserVocabulary.word == corrected_spelling).first()
                 if not user_vocab:
                     # add it
-                    user_vocab = MdUserVocabulary(user_id=user_id, word=corrected_spelling)
+                    user_vocab = MdUserVocabulary(
+                        user_id=user_id, word=corrected_spelling)
                     db.session.add(user_vocab)
                     db.session.flush()
-
 
             db.session.commit()
 
@@ -208,4 +212,3 @@ class Vocabulary(Resource):
         except Exception as e:
             log_error(f"{error_message} : {e}")
             return {"error": f"{error_message} : {e}"}, 500
-

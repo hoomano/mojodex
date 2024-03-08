@@ -1,7 +1,7 @@
 from flask import request
 from flask_restful import Resource
 from app import db, authenticate, log_error, executor
-from db_models import *
+from mojodex_core.entities import *
 
 
 class Timezone(Resource):

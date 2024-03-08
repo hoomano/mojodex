@@ -2,14 +2,15 @@ import json
 import os
 from IPython.utils import io
 from jinja2 import Template
-from llm_calls.mojodex_openai import MojodexOpenAI
 from serpapi import GoogleSearch
 import requests
 from bs4 import BeautifulSoup
-from azure_openai_conf import AzureOpenAIConf
+from llm_api.mojodex_background_openai import OpenAIConf
 from background_logger import BackgroundLogger
 from models.task_tool_execution.tools.tool import Tool
 from app import serp_api_costs_manager
+
+from app import llm, llm_conf
 
 
 class GoogleSearchTool(Tool):
@@ -24,7 +25,7 @@ class GoogleSearchTool(Tool):
     n_total_usages = 3
 
     scrapper_prompt = "/data/prompts/background/task_tool_execution/google_search/scrapper_prompt.txt"
-    scrapper = MojodexOpenAI(AzureOpenAIConf.azure_gpt4_turbo_conf, "WEB_SCRAPPER")
+    scrapper = llm(llm_conf, label="WEB_SCRAPPER")
 
     def __init__(self, user_id, task_tool_execution_pk, user_task_execution_pk, task_name_for_system, **kwargs):
         try:
@@ -74,7 +75,8 @@ class GoogleSearchTool(Tool):
                         if scrap_result:
                             result = {"source": url, "extracted": scrap_result}
                         elif scrapped:
-                            result = {"source": url, "extracted": "No good search result found"}
+                            result = {"source": url,
+                                      "extracted": "No good search result found"}
                         results.append(result)
                     index += 1
             return results
@@ -143,7 +145,8 @@ class GoogleSearchTool(Tool):
             # call gpt4
             with open(GoogleSearchTool.scrapper_prompt, "r") as f:
                 template = Template(f.read())
-                prompt = template.render(url=url, text_content=text_content, search=query)
+                prompt = template.render(
+                    url=url, text_content=text_content, search=query)
 
             messages = [{"role": "user", "content": prompt}]
 

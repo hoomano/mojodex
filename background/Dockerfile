@@ -14,11 +14,19 @@ RUN apt-get update && apt-get install -y git
 # dangerous but mojo-monitoring package is the only git project imported and not really at risk
 ENV GIT_SSL_NO_VERIFY=true
 
-COPY requirements.txt ./
+COPY background/requirements.txt ./
 RUN pip install -r requirements.txt
 
+
+# Install Mojodex core
+COPY ./mojodex_core /app/mojodex_core
+WORKDIR /app/mojodex_core
+RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install .
+
+
 # Add app directory
-COPY ./app /app
+COPY ./background/app /app
 WORKDIR /app
 
 # Creates a non-root user with an explicit UID and adds permission to access the /app folder

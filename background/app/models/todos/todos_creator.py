@@ -3,13 +3,14 @@ from datetime import datetime
 
 import requests
 from jinja2 import Template
-from llm_calls.mojodex_openai import MojodexOpenAI
-from llm_calls.json_loader import json_decode_retry
+from mojodex_core.json_loader import json_decode_retry
 from background_logger import BackgroundLogger
 from app import on_json_error
-from azure_openai_conf import AzureOpenAIConf
+from llm_api.mojodex_background_openai import OpenAIConf
 
 from app import send_admin_error_email
+
+from app import llm, llm_conf
 
 
 class TodosCreator:
@@ -17,7 +18,7 @@ class TodosCreator:
     todos_url = "/todos"
 
     todos_extractor_prompt = "/data/prompts/background/todos/extract_todos.txt"
-    todos_extractor = MojodexOpenAI(AzureOpenAIConf.azure_gpt4_turbo_conf, "TODOS_EXTRACTOR")
+    todos_extractor = llm(llm_conf, label="TODOS_EXTRACTOR")
 
     def __init__(self, user_task_execution, knowledge_collector, language, conversation,
                  linked_user_task_executions_todos):
@@ -51,7 +52,8 @@ class TodosCreator:
                         f"Error extracting todos : Invalid reminder_date {todo['due_date']} - Not saving to db")
                     save_to_db = False
                 if save_to_db:
-                    self.__save_to_db(todo['todo_definition'], todo['due_date'])
+                    self.__save_to_db(
+                        todo['todo_definition'], todo['due_date'])
                     self.logger.debug(f"Saved to db")
         except Exception as e:
             raise Exception(f"{self.logger_prefix} : extract_and_save: {e}")
@@ -96,7 +98,8 @@ class TodosCreator:
             # Save follow-ups in db => send to mojodex-backend
             pload = {'datetime': datetime.now().isoformat(), 'description': description, 'due_date': due_date,
                      'user_task_execution_fk': self.user_task_execution.user_task_execution_pk}
-            headers = {'Authorization': os.environ['MOJODEX_BACKGROUND_SECRET'], 'Content-Type': 'application/json'}
+            headers = {
+                'Authorization': os.environ['MOJODEX_BACKGROUND_SECRET'], 'Content-Type': 'application/json'}
             internal_request = requests.put(uri, json=pload, headers=headers)
             if internal_request.status_code != 200:
                 raise Exception(str(internal_request.json()))

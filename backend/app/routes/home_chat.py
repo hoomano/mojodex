@@ -1,6 +1,6 @@
 
 import os
-from models.session.welcome_message_generator import WelcomeMessageGenerator
+from models.session.assistant_message_generators.welcome_message_generator import WelcomeMessageGenerator
 from flask import request
 from flask_restful import Resource
 from models.session.session import Session as SessionModel
@@ -11,7 +11,6 @@ from packaging import version
 
 from models.session_creator import SessionCreator
 
-from models.voice_generator import VoiceGenerator
 from sqlalchemy import extract, text, func, and_
 
 

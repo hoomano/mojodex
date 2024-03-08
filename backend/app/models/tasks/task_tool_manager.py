@@ -1,7 +1,6 @@
 from app import db
+from models.session.assistant_message_generators.assistant_message_generator import AssistantMessageGenerator
 from mojodex_core.entities import MdTaskToolExecution
-from models.session.assistant_message_generator import AssistantMessageGenerator
-from db_models import MdTaskToolExecution
 from mojodex_backend_logger import MojodexBackendLogger
 
 

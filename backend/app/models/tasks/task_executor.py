@@ -2,7 +2,7 @@ import time
 
 from app import db
 from mojodex_core.entities import MdTextType
-from models.session.assistant_message_generator import AssistantMessageGenerator
+from models.session.assistant_message_generators.assistant_message_generator import AssistantMessageGenerator
 from db_models import MdTextType
 from models.produced_text_manager import ProducedTextManager
 from mojodex_backend_logger import MojodexBackendLogger
@@ -24,7 +24,7 @@ class TaskExecutor:
         self.user_id = user_id
 
     def manage_execution_text(
-        self, execution_text, task, task_displayed_data, user_task_execution_pk, use_draft_placeholder=False):
+        self, execution_text, task, task_name, user_task_execution_pk, use_draft_placeholder=False):
         try:
             self.logger.debug(f"manage_execution_text")
             if self.execution_start_tag and self.execution_end_tag in execution_text:
@@ -45,7 +45,7 @@ class TaskExecutor:
                     "produced_text_pk": produced_text.produced_text_pk,
                     "produced_text_version_pk": produced_text_version.produced_text_version_pk,
                     "user_task_execution_pk": user_task_execution_pk,
-                    "task_name": task_displayed_data.name_for_user if task_displayed_data else None,
+                    "task_name": task_name if task_name else None,
                     "task_pk": task.task_pk if task else None,
                     "task_icon": task.icon if task else None,
                     "text_type": text_type,

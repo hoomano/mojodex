@@ -1,6 +1,6 @@
 import os
 from datetime import datetime
-from models.session.assistant_message_generator import AssistantMessageGenerator
+from models.session.assistant_message_generators.assistant_message_generator import AssistantMessageGenerator
 
 from mojodex_core.entities import *
 from app import db, log_error, server_socket, main_logger, socketio_message_sender

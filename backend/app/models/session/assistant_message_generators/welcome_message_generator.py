@@ -1,6 +1,7 @@
 from azure_openai_conf import AzureOpenAIConf
+from models.session.assistant_message_context.assistant_message_context import AssistantMessageContext
 from models.llm_calls.mojodex_openai import MojodexOpenAI
-from models.session.assistant_message_generator import AssistantMessageContext, AssistantMessageGenerator
+from models.session.assistant_message_generators.assistant_message_generator import AssistantMessageGenerator
 from models.knowledge.knowledge_manager import KnowledgeManager
 from datetime import datetime, timedelta
 from db_models import MdSession, MdHomeChat, MdUserTaskExecution, MdUserTask, MdTask
@@ -9,6 +10,7 @@ from db_models import *
 from sqlalchemy import and_
 
 class WelcomeMessageGenerator(AssistantMessageGenerator):
+    logger_prefix = "WelcomeMessageGenerator :: "
     prompt_template_path = "/data/prompts/home_chat/welcome_message.txt"
     welcome_message_generator = MojodexOpenAI(AzureOpenAIConf.azure_gpt4_turbo_conf, "HOME_CHAT_FIRST_MESSAGE",
                                              AzureOpenAIConf.azure_gpt4_32_conf)
@@ -17,17 +19,23 @@ class WelcomeMessageGenerator(AssistantMessageGenerator):
 
 
     def __init__(self, user, use_message_placeholder, tag_proper_nouns=False):
-        context = AssistantMessageContext(user)
-        self.use_message_placeholder = use_message_placeholder
-        super().__init__(WelcomeMessageGenerator.prompt_template_path, WelcomeMessageGenerator.welcome_message_generator, tag_proper_nouns, context)
-
+        try:
+            context = AssistantMessageContext(user)
+            self.use_message_placeholder = use_message_placeholder
+            super().__init__(WelcomeMessageGenerator.prompt_template_path, WelcomeMessageGenerator.welcome_message_generator, tag_proper_nouns, context)
+        except Exception as e:
+            raise Exception(f"{WelcomeMessageGenerator.logger_prefix} __init__ :: {e}")
+        
     def _handle_placeholder(self):
-        if self.use_message_placeholder:
-            header = placeholder_generator.welcome_message_header_placeholder
-            body = placeholder_generator.welcome_message_body_placeholder
-            return {"header": header,
-                "body": body,
-                "text": f"{header}\n{body}"}
+        try:
+            if self.use_message_placeholder:
+                header = placeholder_generator.welcome_message_header_placeholder
+                body = placeholder_generator.welcome_message_body_placeholder
+                return {"header": header,
+                    "body": body,
+                    "text": f"{header}\n{body}"}
+        except Exception as e:
+            raise Exception(f"{WelcomeMessageGenerator.logger_prefix} _handle_placeholder :: {e}")
 
     def __get_available_user_tasks(self):
         try:
@@ -45,32 +53,38 @@ class WelcomeMessageGenerator(AssistantMessageGenerator):
             raise Exception(f"__get_available_user_tasks :: {e}")
 
     def _render_prompt_from_template(self):
-        previous_conversations = self.__get_this_week_home_conversations()
-        return self.prompt_template.render(mojo_knowledge=KnowledgeManager.get_mojo_knowledge(),
-                                global_context=KnowledgeManager.get_global_context_knowledge(),
-                                username=self.context.username,
-                                tasks=self.__get_available_user_tasks(),
-                                first_time_this_week=len(previous_conversations) == 0,
-                                user_task_executions = self.__get_this_week_task_executions(),
-                                previous_conversations = previous_conversations,
-                                language=self.context.user.language_code)
+        try:
+            previous_conversations = self.__get_this_week_home_conversations()
+            return self.prompt_template.render(mojo_knowledge=KnowledgeManager.get_mojo_knowledge(),
+                                    global_context=KnowledgeManager.get_global_context_knowledge(),
+                                    username=self.context.username,
+                                    tasks=self.__get_available_user_tasks(),
+                                    first_time_this_week=len(previous_conversations) == 0,
+                                    user_task_executions = self.__get_this_week_task_executions(),
+                                    previous_conversations = previous_conversations,
+                                    language=self.context.user.language_code)
+        except Exception as e:
+            raise Exception(f"{WelcomeMessageGenerator.logger_prefix} _render_prompt_from_template :: {e}")
 
     def _generate_message_from_prompt(self, prompt):
-        messages = [{"role": "system", "content": prompt}]
-        responses = self.message_generator.chat(messages, self.context.user_id, temperature=1, max_tokens=1000)
-        return responses[0].strip()
+        try:
+            messages = [{"role": "system", "content": prompt}]
+            responses = self.message_generator.chat(messages, self.context.user_id, temperature=1, max_tokens=1000)
+            return responses[0].strip()
+        except Exception as e:
+            raise Exception(f"{WelcomeMessageGenerator.logger_prefix} _generate_message_from_prompt :: {e}")
 
     def _handle_llm_output(self, llm_output):
-        header = WelcomeMessageGenerator.remove_tags_from_text(llm_output, WelcomeMessageGenerator.message_header_start_tag,
-                                                             WelcomeMessageGenerator.message_header_end_tag)
-        body = WelcomeMessageGenerator.remove_tags_from_text(llm_output, WelcomeMessageGenerator.message_body_start_tag,
-                                                            WelcomeMessageGenerator.message_body_end_tag)
-        return {"header": header,
-                "body": body,
-                "text": f"{header}\n{body}"}
-
-    def generate_message(self):
-        return super().generate_message()
+        try:
+            header = WelcomeMessageGenerator.remove_tags_from_text(llm_output, WelcomeMessageGenerator.message_header_start_tag,
+                                                                WelcomeMessageGenerator.message_header_end_tag)
+            body = WelcomeMessageGenerator.remove_tags_from_text(llm_output, WelcomeMessageGenerator.message_body_start_tag,
+                                                                WelcomeMessageGenerator.message_body_end_tag)
+            return {"header": header,
+                    "body": body,
+                    "text": f"{header}\n{body}"}
+        except Exception as e:
+            raise Exception(f"{WelcomeMessageGenerator.logger_prefix} _handle_llm_output :: {e}")
 
     ### SPECIFIC METHODS ###
     def __get_this_week_home_conversations(self):

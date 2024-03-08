@@ -1,4 +1,4 @@
-from models.session.assistant_message_generator import AssistantMessageGenerator
+from models.session.assistant_message_generators.assistant_message_generator import AssistantMessageGenerator
 from mojodex_backend_logger import MojodexBackendLogger
 
 

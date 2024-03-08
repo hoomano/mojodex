@@ -1,8 +1,8 @@
 import os
 from app import db, log_error, server_socket, time_manager, socketio_message_sender, main_logger
-from models.session.general_chat_response_generator import GeneralChatResponseGenerator
-from models.session.task_assistant_response_generator import TaskAssistantResponseGenerator
-from models.session.assistant_message_generator import AssistantMessageGenerator
+from models.session.assistant_message_generators.general_chat_response_generator import GeneralChatResponseGenerator
+from models.session.assistant_message_generators.task_assistant_response_generator import TaskAssistantResponseGenerator
+from models.session.assistant_message_generators.assistant_message_generator import AssistantMessageGenerator
 from mojodex_core.entities import *
 from datetime import datetime
 from models.voice_generator import VoiceGenerator
@@ -222,13 +222,16 @@ class Session:
 
         # Home chat session here ??
         # with response_message = ...
+        use_message_placeholder = "use_message_placeholder" in message and message["use_message_placeholder"]
+        use_draft_placeholder = "use_draft_placeholder" in message and message["use_draft_placeholder"]
+
         if "origin" in message and message["origin"] == "home_chat":
             user_task_execution_pk = message['user_task_execution_pk'] if 'user_task_execution_pk' in message else None
-            return self.__manage_home_chat_session(self.platform, user_task_execution_pk)
+            return self.__manage_home_chat_session(self.platform, user_task_execution_pk, use_message_placeholder, use_draft_placeholder)
         elif 'user_task_execution_pk' in message:
             # For now only task sessions
             user_task_execution_pk = message['user_task_execution_pk']
-            return self.__manage_task_session(self.platform, user_task_execution_pk)
+            return self.__manage_task_session(self.platform, user_task_execution_pk, use_message_placeholder, use_draft_placeholder)
         else:
             raise Exception("Unknown message origin")
 
@@ -248,7 +251,7 @@ class Session:
             function: The function that manages the task session.
         """
         self.platform = platform
-        return self.__manage_task_session(app_version, self.platform, user_task_execution_pk, use_message_placeholder=use_message_placeholder, use_draft_placeholder=use_draft_placeholder)
+        return self.__manage_task_session(self.platform, user_task_execution_pk, use_message_placeholder=use_message_placeholder, use_draft_placeholder=use_draft_placeholder)
 
     def process_mojo_message(self, response_message, response_language):
         """
@@ -292,9 +295,12 @@ class Session:
 
         Args:
             platform (str): The platform the user is on.
+            user_task_execution_pk (str): The primary key of the running user task execution if any
+            use_message_placeholder (bool, optional): Whether to use a message placeholder. Defaults to False.
+            use_draft_placeholder (bool, optional): Whether to use a draft placeholder. Defaults to False.
 
         Returns:
-            tuple: The response event name, response message, and response language.
+            tuple: The response message and response language.
 
         Raises:
             Exception: If there is an error during management.
@@ -324,10 +330,12 @@ class Session:
 
         Args:
             platform (str): The platform the user is on.
-            user_task_execution_pk (str): The primary key of the user task execution.
+            user_task_execution_pk (str): The primary key of the running user task execution if any
+            use_message_placeholder (bool, optional): Whether to use a message placeholder. Defaults to False.
+            use_draft_placeholder (bool, optional): Whether to use a draft placeholder. Defaults to False.
 
         Returns:
-            tuple: The response event name, response message, and response language.
+            tuple: The response message and response language.
 
         Raises:
             Exception: If there is an error during management.
@@ -345,9 +353,7 @@ class Session:
                                                                                running_user_task_execution_pk=user_task_execution_pk)
 
             response_message = task_assistant_response_generator.generate_message()
-            print(f"👉 mojo_message: {response_message}")
             response_language = task_assistant_response_generator.context.state.current_language
-            print(f"👉 response_language: {response_language}")
             return response_message, response_language
         except Exception as e:
             raise Exception(f"__manage_task_session :: {e}")

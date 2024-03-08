@@ -1,85 +1,22 @@
 from azure_openai_conf import AzureOpenAIConf
-from models.session.assistant_message_generator import AssistantMessageGenerator
+from models.session.assistant_message_generators.assistant_message_generator import AssistantMessageGenerator
 from models.llm_calls.mojodex_openai import MojodexOpenAI
 from models.produced_text_manager import ProducedTextManager
-from models.session.assistant_response_generator import AssistantResponseGenerator, ChatContext, ChatState
+from models.session.assistant_message_generators.assistant_response_generator import AssistantResponseGenerator
 from abc import ABC, abstractmethod
 from app import placeholder_generator, db
 from db_models import *
-from sqlalchemy import or_, func
 from models.knowledge.knowledge_manager import KnowledgeManager
 from models.tasks.task_executor import TaskExecutor
 from models.tasks.task_inputs_manager import TaskInputsManager
 from models.tasks.task_tool_manager import TaskToolManager
 from jinja2 import Template
 
-class TaskEnabledChatState(ChatState):
 
-    def __init__(self, running_user_task_execution_pk):
-        super().__init__()
-        if running_user_task_execution_pk:
-            self._set_task_and_execution(running_user_task_execution_pk)
-        else:
-            self.running_task = None
-            self.running_user_task_execution = None
-            self.running_task_displayed_data = None
-            self.running_user_task = None
-
-    def get_produced_text_done(self):
-        try:
-            if self.running_user_task_execution is None:
-                return False
-            return db.session.query(MdProducedText).filter(
-                MdProducedText.user_task_execution_fk == self.running_user_task_execution.user_task_execution_pk).count() > 1
-        except Exception as e:
-            raise Exception(f"get_produced_text_done :: {e}")
-        
-    def _set_task_and_execution(self, user_task_execution_pk):
-        self.running_task, self.running_user_task, self.running_user_task_execution = db.session.query(MdTask, MdUserTask, MdUserTaskExecution) \
-            .join(MdUserTask, MdUserTask.task_fk == MdTask.task_pk) \
-            .join(MdUserTaskExecution, MdUserTaskExecution.user_task_fk == MdUserTask.user_task_pk) \
-            .filter(MdUserTaskExecution.user_task_execution_pk == user_task_execution_pk) \
-            .first()
-        
-        self.running_task_displayed_data = (
-            db.session
-            .query(
-                MdTaskDisplayedData,
-            )
-            .join(MdTask,
-                  MdTask.task_pk == MdTaskDisplayedData.task_fk)
-            .join(
-                MdUserTask, 
-                MdUserTask.task_fk == MdTask.task_pk
-            )
-            .join(
-                MdUser, 
-                MdUser.user_id == MdUserTask.user_id
-            )
-            .filter(
-                MdTaskDisplayedData.task_fk == self.running_task.task_pk
-            )
-            .filter(
-                or_(
-                    MdTaskDisplayedData.language_code == MdUser.language_code,
-                    MdTaskDisplayedData.language_code == 'en'
-                )
-            )
-            .order_by(
-                # Sort by user's language first otherwise by english
-                func.nullif(MdTaskDisplayedData.language_code, 'en').asc()
-            )
-            .first())
-
-
-class TaskEnabledChatContext(ChatContext):
-
-    def __init__(self, user, session_id, user_messages_are_audio, chat_state):
-        super().__init__(user, session_id, user_messages_are_audio, chat_state)
-    
 class TaskEnabledAssistantResponseGenerator(AssistantResponseGenerator, ABC):
+    logger_prefix = "TaskEnabledAssistantResponseGenerator :: "
+
     task_specific_instructions_prompt = "/data/prompts/tasks/task_specific_instructions.txt"
-    #prompt_template_path = "/data/prompts/mega_mega_prompt.txt"
     message_generator = MojodexOpenAI(AzureOpenAIConf.azure_gpt4_turbo_conf, "CHAT", AzureOpenAIConf.azure_gpt4_32_conf)
 
     def __init__(self, prompt_template_path, mojo_message_token_stream_callback, draft_token_stream_callback, use_message_placeholder, use_draft_placeholder, tag_proper_nouns, chat_context, llm_call_temperature):
@@ -91,7 +28,7 @@ class TaskEnabledAssistantResponseGenerator(AssistantResponseGenerator, ABC):
             self.task_tool_manager = TaskToolManager(chat_context.session_id)
             self.task_executor = TaskExecutor(chat_context.session_id, chat_context.user_id)
         except Exception as e:
-            raise Exception(f"TaskEnabledAssistantResponseGenerator :: __init__ :: {e}")
+            raise Exception(f"{TaskEnabledAssistantResponseGenerator.logger_prefix} __init__ :: {e}")
 
     # getter for running_task
     @property
@@ -117,7 +54,7 @@ class TaskEnabledAssistantResponseGenerator(AssistantResponseGenerator, ABC):
                 placeholder_generator.stream(placeholder, self._token_stream_callback)
                 return placeholder
         except Exception as e:
-            raise Exception(f"_handle_placeholder :: {e}")
+            raise Exception(f"{TaskEnabledAssistantResponseGenerator.logger_prefix} _handle_placeholder :: {e}")
         
 
     def _render_prompt_from_template(self):
@@ -141,7 +78,7 @@ class TaskEnabledAssistantResponseGenerator(AssistantResponseGenerator, ABC):
                                                     tag_proper_nouns=self.tag_proper_nouns
                                                     )
         except Exception as e:
-            raise Exception(f"_render_prompt_from_template :: {e}")
+            raise Exception(f"{TaskEnabledAssistantResponseGenerator.logger_prefix} _render_prompt_from_template :: {e}")
 
     def _manage_response_task_tags(self, response):
         try:
@@ -153,8 +90,7 @@ class TaskEnabledAssistantResponseGenerator(AssistantResponseGenerator, ABC):
                                                                         self._get_task_tools_json(self.running_task))
             elif TaskExecutor.execution_start_tag in response:
                 # take the text between <execution> and </execution>
-                print(f"TaskExecutor.execution_start_tag in response")
-                return self.task_executor.manage_execution_text(execution_text=response, task=self.running_task, task_displayed_data=self.running_task_displayed_data,
+                return self.task_executor.manage_execution_text(execution_text=response, task=self.running_task, task_displayed_data=self.running_task_displayed_data.name_for_user,
                                                                 user_task_execution_pk=self.running_user_task_execution.user_task_execution_pk,
                                                                 use_draft_placeholder=self.use_draft_placeholder)
             return {"text": response}
@@ -166,13 +102,16 @@ class TaskEnabledAssistantResponseGenerator(AssistantResponseGenerator, ABC):
 
     @abstractmethod
     def _get_message_placeholder(self):
-        pass
+        raise NotImplementedError
 
     def generate_message(self):
-        message = super().generate_message()
-        if message and self.running_user_task_execution:
-            message['user_task_execution_pk'] = self.running_user_task_execution.user_task_execution_pk
-        return message
+        try:
+            message = super().generate_message()
+            if message and self.running_user_task_execution:
+                message['user_task_execution_pk'] = self.running_user_task_execution.user_task_execution_pk
+            return message
+        except Exception as e:
+            raise Exception(f"{TaskEnabledAssistantResponseGenerator.logger_prefix} generate_message :: {e}")
 
     ### SPECIFIC METHODS FOR TASKS ###
     def _get_task_execution_placeholder(self):
@@ -226,7 +165,7 @@ class TaskEnabledAssistantResponseGenerator(AssistantResponseGenerator, ABC):
                      "tool_name": tool.name}
                     for task_tool_association, tool in task_tool_associations]
         except Exception as e:
-            raise Exception(f"_get_task_tools_json :: {e}")
+            raise Exception(f"__get_task_tools_json :: {e}")
 
     def __get_running_user_task_execution_inputs(self):
         try:

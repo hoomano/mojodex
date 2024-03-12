@@ -204,6 +204,7 @@ class MdUser(Base):
     user_id = Column(String(255), primary_key=True)
     email = Column(String(255), nullable=False)
     creation_date = Column(DateTime(True), nullable=False)
+    todo_email_reception = Column(Boolean, nullable=False, server_default=text('true'))
     name = Column(String(255))
     terms_and_conditions_accepted = Column(DateTime(True))
     language_code = Column(String(5))

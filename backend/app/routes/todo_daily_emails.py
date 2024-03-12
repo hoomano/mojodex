@@ -85,6 +85,7 @@ class TodoDailyEmails(Resource):
                            and_(
                                produced_text_subquery.c.user_task_execution_fk == MdUserTaskExecution.user_task_execution_pk,
                                produced_text_subquery.c.row_number == 1)) \
+                .filter(MdUser.todo_email_reception == True) \
                 .filter(MdTodo.deleted_by_mojo.is_(None)) \
                 .filter(MdTodo.deleted_by_user.is_(None)) \
                 .filter(MdTodo.completed.is_(None)) \
@@ -116,6 +117,7 @@ class TodoDailyEmails(Resource):
                     extract("year", MdTodoScheduling.creation_date) == extract("year", today),
                 )
             ) \
+                .filter(MdUser.todo_email_reception == True) \
                 .filter(MdTodoScheduling.reschedule_justification.isnot(None)) \
                 .all()
 
@@ -150,6 +152,7 @@ class TodoDailyEmails(Resource):
                            and_(
                                produced_text_subquery.c.user_task_execution_fk == MdUserTaskExecution.user_task_execution_pk,
                                produced_text_subquery.c.row_number == 1)) \
+                .filter(MdUser.todo_email_reception == True) \
                 .all()
 
             deleted_todos_today = [deleted_todo_today._asdict() for deleted_todo_today in deleted_todos_today]
@@ -161,6 +164,7 @@ class TodoDailyEmails(Resource):
                 .filter(extract("hour", text('NOW() - md_user.timezone_offset * interval \'1 minute\'')) < int(os.environ.get('DAILY_TODO_EMAIL_TIME', 8))+1) \
                 .filter(extract("dow", text('NOW() - md_user.timezone_offset * interval \'1 minute\'')) != int(0)) \
                 .filter(extract("dow", text('NOW() - md_user.timezone_offset * interval \'1 minute\'')) != int(6)) \
+                .filter(MdUser.todo_email_reception == True) \
                 .order_by(MdUser.user_id) \
                 .offset(offset).limit(n_emails) \
                 .all()

@@ -131,6 +131,12 @@ You should see the following tables:
  public | md_user_vocabulary                        | table | <your_user>
 ```
 
+## Entities
+Each table is represented as a python class in `mojodex_code/entities.py`. This file is generated using `sqlacodegen`tool:
+```bash
+sqlacodegen postgresql+psycopg2://$DBUSER:$DBPASS@localhost:5432/$DBNAME --outfile mojodex_core/entities.py
+```
+
 ## Go further
 
 You can use the Mojodex API to create new users, products, tasks, etc.

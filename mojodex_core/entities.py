@@ -51,6 +51,19 @@ class MdProductCategory(Base):
     md_user = relationship('MdUser', back_populates='md_product_category')
 
 
+class MdTag(Base):
+    __tablename__ = 'md_tag'
+    __table_args__ = (
+        PrimaryKeyConstraint('tag_pk', name='md_tag_pkey'),
+    )
+
+    tag_pk = Column(Integer, Sequence('tag_pk_seq'), primary_key=True)
+    label = Column(String(255), nullable=False)
+
+    md_task_tag_association = relationship('MdTaskTagAssociation', back_populates='md_tag')
+    md_user_preference = relationship('MdUserPreference', back_populates='md_tag')
+
+
 class MdTextEditAction(Base):
     __tablename__ = 'md_text_edit_action'
     __table_args__ = (
@@ -156,6 +169,7 @@ class MdTask(Base):
     md_task_platform_association = relationship('MdTaskPlatformAssociation', back_populates='md_task')
     md_task_predefined_action_association = relationship('MdTaskPredefinedActionAssociation', foreign_keys='[MdTaskPredefinedActionAssociation.predefined_action_fk]', back_populates='md_task')
     md_task_predefined_action_association_ = relationship('MdTaskPredefinedActionAssociation', foreign_keys='[MdTaskPredefinedActionAssociation.task_fk]', back_populates='md_task_')
+    md_task_tag_association = relationship('MdTaskTagAssociation', back_populates='md_task')
     md_task_tool_association = relationship('MdTaskToolAssociation', back_populates='md_task')
     md_user_task = relationship('MdUserTask', back_populates='md_task')
     md_calendar_suggestion = relationship('MdCalendarSuggestion', back_populates='md_task')
@@ -204,6 +218,7 @@ class MdUser(Base):
     user_id = Column(String(255), primary_key=True)
     email = Column(String(255), nullable=False)
     creation_date = Column(DateTime(True), nullable=False)
+    todo_email_reception = Column(Boolean, nullable=False, server_default=text('true'))
     name = Column(String(255))
     terms_and_conditions_accepted = Column(DateTime(True))
     language_code = Column(String(5))
@@ -228,6 +243,7 @@ class MdUser(Base):
     md_event = relationship('MdEvent', back_populates='user')
     md_purchase = relationship('MdPurchase', back_populates='user')
     md_session = relationship('MdSession', back_populates='user')
+    md_user_preference = relationship('MdUserPreference', back_populates='user')
     md_user_task = relationship('MdUserTask', back_populates='user')
     md_user_vocabulary = relationship('MdUserVocabulary', back_populates='user')
     md_home_chat = relationship('MdHomeChat', back_populates='user')
@@ -418,6 +434,22 @@ class MdTaskPredefinedActionAssociation(Base):
     md_predefined_action_displayed_data = relationship('MdPredefinedActionDisplayedData', back_populates='md_task_predefined_action_association')
 
 
+class MdTaskTagAssociation(Base):
+    __tablename__ = 'md_task_tag_association'
+    __table_args__ = (
+        ForeignKeyConstraint(['tag_fk'], ['md_tag.tag_pk'], name='md_tag_fkey'),
+        ForeignKeyConstraint(['task_fk'], ['md_task.task_pk'], name='md_task_fkey'),
+        PrimaryKeyConstraint('md_task_tag_association_pk', name='md_task_tag_association_pkey')
+    )
+
+    md_task_tag_association_pk = Column(Integer, Sequence('md_tag_task_pk_seq'), primary_key=True)
+    task_fk = Column(Integer, nullable=False)
+    tag_fk = Column(Integer, nullable=False)
+
+    md_tag = relationship('MdTag', back_populates='md_task_tag_association')
+    md_task = relationship('MdTask', back_populates='md_task_tag_association')
+
+
 class MdTaskToolAssociation(Base):
     __tablename__ = 'md_task_tool_association'
     __table_args__ = (
@@ -434,6 +466,25 @@ class MdTaskToolAssociation(Base):
     md_task = relationship('MdTask', back_populates='md_task_tool_association')
     md_tool = relationship('MdTool', back_populates='md_task_tool_association')
     md_task_tool_execution = relationship('MdTaskToolExecution', back_populates='md_task_tool_association')
+
+
+class MdUserPreference(Base):
+    __tablename__ = 'md_user_preference'
+    __table_args__ = (
+        ForeignKeyConstraint(['tag_fk'], ['md_tag.tag_pk'], name='md_user_preference_tag_fk_fkey'),
+        ForeignKeyConstraint(['user_id'], ['md_user.user_id'], name='md_user_preference_user_id_fkey'),
+        PrimaryKeyConstraint('user_preference_pk', name='md_user_preference_pkey')
+    )
+
+    user_preference_pk = Column(Integer, Sequence('md_user_preference_pk_seq'), primary_key=True)
+    user_id = Column(String(255), nullable=False)
+    tag_fk = Column(Integer, nullable=False)
+    description = Column(Text, nullable=False)
+    creation_date = Column(DateTime, nullable=False, server_default=text('now()'))
+    last_update_date = Column(DateTime, nullable=False, server_default=text('now()'))
+
+    md_tag = relationship('MdTag', back_populates='md_user_preference')
+    user = relationship('MdUser', back_populates='md_user_preference')
 
 
 class MdUserTask(Base):

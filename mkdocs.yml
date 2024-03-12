@@ -44,7 +44,11 @@ markdown_extensions:
       pygments_lang_class: true
   - pymdownx.inlinehilite
   - pymdownx.snippets
-  - pymdownx.superfences
+  - pymdownx.superfences:
+        custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
   - admonition
   - pymdownx.details
   - attr_list
@@ -85,6 +89,7 @@ nav:
         - OpenAI: technical-architecture/llm-features/openai.md
         - Azure OpenAI Services: technical-architecture/llm-features/azure.md
         - Mistral AI: technical-architecture/llm-features/mistral.md
+        - Mojodex Prompt Template: technical-architecture/llm-features/mpt.md
       - Tools:
         - Google Search: technical-architecture/existing_tools/google_search.md
         - Internal Memory: technical-architecture/existing_tools/internal_memory.md

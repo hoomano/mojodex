@@ -26,11 +26,7 @@ As our reliance on LLMs increases, the complexity and variety of prompts we need
 The `.mpt` file begins with a dash bang style header that includes essential metadata:
 
 ``` bash
-#! model-name: mistral-large
-#! version: 
-#! date: 2024-03-09 
-#! author: Jane Doe 
-#! documentation: https://example.com/mpt-docs
+#! openai/azure/gpt-4-turbo
 ```
 
 ### Body

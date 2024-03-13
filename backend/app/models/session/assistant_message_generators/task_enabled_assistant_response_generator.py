@@ -78,7 +78,8 @@ class TaskEnabledAssistantResponseGenerator(AssistantResponseGenerator, ABC):
                                                     task_specific_instructions=task_specific_instructions,
                                                     produced_text_done=produced_text_done,
                                                     audio_message=self.context.user_messages_are_audio,
-                                                    tag_proper_nouns=self.tag_proper_nouns
+                                                    tag_proper_nouns=self.tag_proper_nouns,
+                                                    language=None
                                                     )
         except Exception as e:
             raise Exception(f"{TaskEnabledAssistantResponseGenerator.logger_prefix} _render_prompt_from_template :: {e}")
@@ -107,12 +108,12 @@ class TaskEnabledAssistantResponseGenerator(AssistantResponseGenerator, ABC):
     def _get_message_placeholder(self):
         raise NotImplementedError
 
-    def __give_task_execution_title_and_summary(self):
+    def __give_task_execution_title_and_summary(self, user_task_execution_pk):
         try:
             # call background backend /end_user_task_execution to update user task execution title and summary
             uri = f"{os.environ['BACKGROUND_BACKEND_URI']}/user_task_execution_title_and_summary"
             pload = {'datetime': datetime.now().isoformat(),
-                     'user_task_execution_pk': self.running_user_task_execution.user_task_execution_pk}
+                     'user_task_execution_pk': user_task_execution_pk}
             internal_request = requests.post(uri, json=pload)
             if internal_request.status_code != 200:
                 log_error(
@@ -124,7 +125,7 @@ class TaskEnabledAssistantResponseGenerator(AssistantResponseGenerator, ABC):
         try:
             # call background for title and summary
             if self.running_user_task_execution:
-                server_socket.start_background_task(self.__give_task_execution_title_and_summary)
+                server_socket.start_background_task(self.__give_task_execution_title_and_summary, self.running_user_task_execution.user_task_execution_pk)
             message = super().generate_message()
             if message and self.running_user_task_execution:
                 message['user_task_execution_pk'] = self.running_user_task_execution.user_task_execution_pk

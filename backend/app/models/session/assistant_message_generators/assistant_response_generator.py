@@ -42,6 +42,7 @@ class AssistantResponseGenerator(AssistantMessageGenerator, ABC):
                                                         temperature=0,
                                                         max_tokens=4000,
                                                         stream=True, stream_callback=self._token_callback)
+
             return responses[0].strip() if responses else None
         except Exception as e:
             raise Exception(f"_generate_message_from_prompt:: {e}")

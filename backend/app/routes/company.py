@@ -38,7 +38,7 @@ class Company(Resource):
                                  feedback=feedback)
         messages = [{"role": "user", "content": prompt}]
 
-        responses = Company.company_info_corrector.chat(messages, user_id, temperature=0, max_tokens=500,
+        responses = Company.company_info_corrector.invoke(messages, user_id, temperature=0, max_tokens=500,
                                                         json_format=True)[0]
 
         return responses

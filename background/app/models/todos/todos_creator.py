@@ -79,7 +79,7 @@ class TodosCreator:
                 )
 
             messages = [{"role": "user", "content": todos_extractor_prompt}]
-            results = TodosCreator.todos_extractor.chat(messages, self.user_task_execution.user_id,
+            results = TodosCreator.todos_extractor.invoke(messages, self.user_task_execution.user_id,
                                                         temperature=0, max_tokens=500,
                                                         json_format=True,
                                                         user_task_execution_pk=self.user_task_execution.user_task_execution_pk,

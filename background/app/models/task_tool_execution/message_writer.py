@@ -60,7 +60,7 @@ class MessageWriter:
                                          )
 
             messages = [{"role": "system", "content": prompt}]
-            responses = MessageWriter.writer.chat(messages, user_id,
+            responses = MessageWriter.writer.invoke(messages, user_id,
                                                   temperature=0,
                                                   max_tokens=3000,
                                                   user_task_execution_pk=user_task_execution_pk,

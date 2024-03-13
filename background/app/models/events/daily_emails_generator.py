@@ -104,7 +104,7 @@ class DailyEmailsGenerator(EventsGenerator):
 
             # call openai to generate text
             messages = [{"role": "system", "content": prompt}]
-            email_message = DailyEmailsGenerator.daily_email_text_generator.chat(messages, user_id,
+            email_message = DailyEmailsGenerator.daily_email_text_generator.invoke(messages, user_id,
                                                                                  temperature=1, max_tokens=500,
                                                                                  json_format=True)[0]
             return email_message

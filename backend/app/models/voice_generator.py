@@ -47,7 +47,7 @@ class VoiceGenerator:
                 translate_prompt = translate_prompt_template.render(text=text)
             messages = [{"role": "user", "content": translate_prompt}]
 
-            responses = VoiceGenerator.language_catcher.chat(messages, user_id, temperature=0, max_tokens=10,
+            responses = VoiceGenerator.language_catcher.invoke(messages, user_id, temperature=0, max_tokens=10,
                                                              user_task_execution_pk=user_task_execution_pk,
                                                              task_name_for_system=task_name_for_system)
             return responses[0].strip().lower()

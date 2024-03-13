@@ -85,7 +85,7 @@ class TodoDailyEmailsGenerator(EventsGenerator):
 
             # call openai to generate text
             messages = [{"role": "system", "content": prompt}]
-            email_message_json = TodoDailyEmailsGenerator.todo_daily_email_text_generator.chat(messages, user_id,
+            email_message_json = TodoDailyEmailsGenerator.todo_daily_email_text_generator.invoke(messages, user_id,
                                                                                                temperature=0,
                                                                                                max_tokens=4000,
                                                                                                json_format=True)[0]

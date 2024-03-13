@@ -262,7 +262,7 @@ The LLM call is provided with various parameters and a stream callback function 
 
 ```python
 [...]
-responses = TaskManager.user_answerer.chat(messages, self.user_task.user_id,
+responses = TaskManager.user_answerer.invoke(messages, self.user_task.user_id,
                                                            temperature=0, max_tokens=2000,
                                                            user_task_execution_pk=self.task_execution.user_task_execution_pk,
                                                            task_name_for_system=self.task.name_for_system,

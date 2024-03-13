@@ -54,7 +54,7 @@ class Tool(ABC):
 
                 messages = [{"role": "system", "content": prompt}]
 
-                results = Tool.json_params_generator.chat(messages, user_id,
+                results = Tool.json_params_generator.invoke(messages, user_id,
                                                           temperature=0,
                                                           max_tokens=2000,
                                                           json_format=True,

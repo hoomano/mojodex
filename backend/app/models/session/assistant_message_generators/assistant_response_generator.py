@@ -38,7 +38,7 @@ class AssistantResponseGenerator(AssistantMessageGenerator, ABC):
             conversation_list = self.context.state.get_conversation_as_list(self.context.session_id)
             messages = [{"role": "system", "content": prompt}] + conversation_list
 
-            responses = self.message_generator.chat(messages, self.context.user_id,
+            responses = self.message_generator.invoke(messages, self.context.user_id,
                                                         temperature=0,
                                                         max_tokens=4000,
                                                         stream=True, stream_callback=self._token_callback)

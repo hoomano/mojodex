@@ -1,4 +1,4 @@
-from llm_api.background_llm import BackgroundLLM
+
 from mojodex_core.llm_engine.providers.mistralai_llm import MistralAILLM
 from mojodex_core.llm_engine.providers.openai_embedding import OpenAIEmbeddingProvider
 import os
@@ -24,7 +24,7 @@ class MistralAIConf:
 
 
 
-class MojodexMistralAI(BackgroundLLM, MistralAILLM, OpenAIEmbeddingProvider):
+class MojodexMistralAI(MistralAILLM, OpenAIEmbeddingProvider):
     dataset_dir = "/data/prompts_dataset"
 
     def __init__(self, mistral_conf, label='unknown', max_retries=0):
@@ -45,13 +45,11 @@ class MojodexMistralAI(BackgroundLLM, MistralAILLM, OpenAIEmbeddingProvider):
         if not os.path.exists(os.path.join(self.dataset_dir, "chat", self.label)):
             os.mkdir(os.path.join(self.dataset_dir, "chat", self.label))
         
-        BackgroundLLM.__init__(
-            self, mistral_conf, label=label, max_retries=max_retries)
         MistralAILLM.__init__(self, api_key, endpoint, self.model,
                               api_type=api_type, max_retries=max_retries)
 
     
-    def chat(self, messages, user_id, temperature, max_tokens, n_responses=1,
+    def invoke(self, messages, user_id, temperature, max_tokens, n_responses=1,
                        frequency_penalty=0, presence_penalty=0, stream=False, stream_callback=None, json_format=False,
                        user_task_execution_pk=None, task_name_for_system=None):
         try:

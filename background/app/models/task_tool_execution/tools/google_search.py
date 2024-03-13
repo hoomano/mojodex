@@ -150,7 +150,7 @@ class GoogleSearchTool(Tool):
 
             messages = [{"role": "user", "content": prompt}]
 
-            responses = GoogleSearchTool.scrapper.chat(messages, self.user_id,
+            responses = GoogleSearchTool.scrapper.invoke(messages, self.user_id,
                                                        temperature=0, max_tokens=1000,
                                                        user_task_execution_pk=self.user_task_execution_pk,
                                                        task_name_for_system=self.task_name_for_system,

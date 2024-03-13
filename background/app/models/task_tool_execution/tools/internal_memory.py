@@ -104,7 +104,7 @@ class InternalMemoryTool(Tool):
 
             messages = [{"role": "system", "content": prompt}]
 
-            responses = InternalMemoryTool.information_extractor.chat(messages, self.user_id,
+            responses = InternalMemoryTool.information_extractor.invoke(messages, self.user_id,
                                                                       temperature=0, max_tokens=4000,
                                                                       json_format=True,
                                                                       user_task_execution_pk=self.user_task_execution_pk,

@@ -10,7 +10,7 @@ from pydub import AudioSegment
 from mojodex_core.logging_handler import  log_error
 from mojodex_core.entities import MdUserVocabulary
 
-from llm_api.backend_llm import BackendLLM
+
 from mojodex_core.llm_engine.providers.openai_llm import OpenAILLM
 
 from mojodex_core.costs_manager.tokens_costs_manager import TokensCostsManager
@@ -56,7 +56,7 @@ class OpenAIConf:
 
 
 
-class MojodexBackendOpenAI(BackendLLM, OpenAILLM, OpenAIEmbeddingProvider):
+class MojodexBackendOpenAI(OpenAILLM, OpenAIEmbeddingProvider):
     dataset_dir = "/data/prompts_dataset"
 
     def __init__(self, azure_conf, label='unknown', llm_backup_conf=None, max_retries=0):
@@ -73,7 +73,6 @@ class MojodexBackendOpenAI(BackendLLM, OpenAILLM, OpenAIEmbeddingProvider):
             os.mkdir(os.path.join(self.dataset_dir, "chat"))
         if not os.path.exists(os.path.join(self.dataset_dir, "chat", self.label)):
             os.mkdir(os.path.join(self.dataset_dir, "chat", self.label))
-        BackendLLM.__init__(self, azure_conf, llm_backup_conf=llm_backup_conf, label=label, max_retries=max_retries)
         OpenAILLM.__init__(self, api_key, api_base, api_version, model, api_type=api_type, max_retries=max_retries)
 
         if llm_backup_conf:
@@ -86,7 +85,7 @@ class MojodexBackendOpenAI(BackendLLM, OpenAILLM, OpenAIEmbeddingProvider):
             self.backup_engine = None
 
 
-    def chat(self, messages, user_id, temperature, max_tokens,
+    def invoke(self, messages, user_id, temperature, max_tokens,
                 frequency_penalty=0, presence_penalty=0, stream=False, stream_callback=None, json_format=False,
                 user_task_execution_pk=None, task_name_for_system=None):
         return self.recursive_chat(messages, user_id, temperature, max_tokens,

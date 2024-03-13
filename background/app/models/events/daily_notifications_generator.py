@@ -72,7 +72,7 @@ class DailyNotificationsGenerator(EventsGenerator):
 
             # call openai to generate text
             messages = [{"role": "system", "content": prompt}]
-            notification_message = DailyNotificationsGenerator.daily_notification_text_generator.chat(messages, user_id,
+            notification_message = DailyNotificationsGenerator.daily_notification_text_generator.invoke(messages, user_id,
                                                                                                       temperature=0,
                                                                                                       json_format=True,
                                                                                                       max_tokens=50)[0]

@@ -72,7 +72,7 @@ class TodosRescheduler:
                     n_scheduled=self.n_scheduled
                 )
             messages = [{"role": "user", "content": todos_reschedulor_prompt}]
-            results = TodosRescheduler.todos_rescheduler.chat(messages, self.user_task_execution.user_id,
+            results = TodosRescheduler.todos_rescheduler.invoke(messages, self.user_task_execution.user_id,
                                                               temperature=0, max_tokens=500, json_format=True,
                                                               user_task_execution_pk=self.user_task_execution.user_task_execution_pk,
                                                               task_name_for_system=self.user_task_execution.task_name)

@@ -11,7 +11,7 @@ logging.basicConfig(level=logging.ERROR)
 
 
 class MistralAILLM(LLM):
-    def __init__(self, api_key, endpoint, model, api_type='azure', max_retries=3):
+    def __init__(self, api_key, endpoint, model, api_type='azure', max_retries=3, mistral_conf=None, llm_backup_conf=None, label='unknown'):
         """
         :param api_key: API key
         :param endpoint: Endpoint to call Mistral model API
@@ -26,7 +26,8 @@ class MistralAILLM(LLM):
                 api_key=api_key,
                 endpoint=endpoint if api_type == 'azure' else "https://api.mistral.ai",
             )
-
+            LLM.__init__(
+            self, mistral_conf, llm_backup_conf=llm_backup_conf, label=label, max_retries=max_retries)
         except Exception as e:
             raise Exception(
                 f"🔴 Error initializing MistralAILLM __init__  : {e}")
@@ -85,4 +86,7 @@ class MistralAILLM(LLM):
         except Exception as e:
             log_error(f"💨❌: Error in Mojodex Mistral chat: {e}")
              
-
+    
+    def invoke(self, *args, **kwargs):
+        # Method implemented in subclass
+        pass

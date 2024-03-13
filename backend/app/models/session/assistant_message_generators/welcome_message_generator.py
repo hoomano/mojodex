@@ -65,7 +65,7 @@ class WelcomeMessageGenerator(AssistantMessageGenerator):
     def _generate_message_from_prompt(self, prompt):
         try:
             messages = [{"role": "system", "content": prompt}]
-            responses = self.message_generator.chat(messages, self.context.user_id, temperature=1, max_tokens=1000)
+            responses = self.message_generator.invoke(messages, self.context.user_id, temperature=1, max_tokens=1000)
             return responses[0].strip()
         except Exception as e:
             raise Exception(f"{WelcomeMessageGenerator.logger_prefix} _generate_message_from_prompt :: {e}")

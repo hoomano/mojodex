@@ -74,7 +74,7 @@ class TaskToolExecutionNotificationsGenerator(EventsGenerator):
             messages = [{"role": "system", "content": prompt}]
 
             notification_json = \
-                TaskToolExecutionNotificationsGenerator.notification_text_generator.chat(messages, user_id,
+                TaskToolExecutionNotificationsGenerator.notification_text_generator.invoke(messages, user_id,
                                                                                          temperature=1, max_tokens=50,
                                                                                          json_format=True,
                                                                                          user_task_execution_pk=user_task_execution_pk,

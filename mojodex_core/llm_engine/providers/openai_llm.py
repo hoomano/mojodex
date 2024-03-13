@@ -7,7 +7,7 @@ mojo_openai_logger = MojodexCoreLogger("mojo_openai_logger")
 
 
 class OpenAILLM(LLM):
-    def __init__(self, api_key, api_base, api_version, model, api_type='azure', max_retries=3):
+    def __init__(self, api_key, api_base, api_version, model, api_type='azure', max_retries=3, azure_conf=None, llm_backup_conf=None, label='undefined'):
         """
         :param api_key: API key to call openAI
         :param api_base: Endpoint to call openAI
@@ -26,7 +26,7 @@ class OpenAILLM(LLM):
                 api_key=api_key,
                 max_retries=self.max_retries
             ) if api_type == 'azure' else OpenAI(api_key=api_key)
-
+            LLM.__init__(self, azure_conf, llm_backup_conf=llm_backup_conf, label=label, max_retries=max_retries)
         except Exception as e:
             raise Exception(f"🔴 Error initializing MojoOpenAI __init__  : {e}")
 
@@ -123,3 +123,7 @@ class OpenAILLM(LLM):
                                              n_additional_calls_if_finish_reason_is_length=n_additional_calls_if_finish_reason_is_length,
                                              n_calls=n_calls + 1)
         return [assistant_response + " " + response] # [] is a legacy from the previous version that could return several completions. Need complete refacto to remove.
+    
+    def invoke(self, *args, **kwargs):
+        # Method implemented in subclass
+        pass

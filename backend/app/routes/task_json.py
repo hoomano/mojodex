@@ -36,7 +36,7 @@ class TaskJson(Resource):
 
             messages = [{"role": "system", "content": prompt}]
 
-            responses = self.task_json_generator.chat(
+            responses = self.task_json_generator.invoke(
                 messages, "backoffice", temperature=0, max_tokens=4000, json_format=True)
 
             response = responses[0]

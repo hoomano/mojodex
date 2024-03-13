@@ -3,7 +3,7 @@ import os
 import time
 
 
-from llm_api.background_llm import BackgroundLLM
+
 from mojodex_core.llm_engine.providers.openai_llm import OpenAILLM
 import openai
 
@@ -34,7 +34,7 @@ class OpenAIConf:
     }
 
 
-class MojodexBackgroundOpenAI(BackgroundLLM, OpenAILLM, OpenAIEmbeddingProvider):
+class MojodexBackgroundOpenAI(OpenAILLM, OpenAIEmbeddingProvider):
     logger_prefix = "MojodexBackgroundOpenAI"
     dataset_dir = "/data/prompts_dataset"
 
@@ -52,12 +52,11 @@ class MojodexBackgroundOpenAI(BackgroundLLM, OpenAILLM, OpenAIEmbeddingProvider)
             os.mkdir(os.path.join(self.dataset_dir, "chat"))
         if not os.path.exists(os.path.join(self.dataset_dir, "chat", self.label)):
             os.mkdir(os.path.join(self.dataset_dir, "chat", self.label))
-        BackgroundLLM.__init__(self, openai_conf, label=label, max_retries=max_retries)
         OpenAILLM.__init__(self, api_key, api_base, api_version, self.model,
                          api_type=api_type, max_retries=max_retries)
         
 
-    def chat(self, messages, user_id, temperature, max_tokens,
+    def invoke(self, messages, user_id, temperature, max_tokens,
              frequency_penalty=0, presence_penalty=0, stream=False, stream_callback=None, json_format=False,
              user_task_execution_pk=None, task_name_for_system=None, retries=12):
         return self.recursive_chat(messages, user_id, temperature, max_tokens,

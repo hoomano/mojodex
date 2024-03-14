@@ -48,7 +48,7 @@ class UserTaskExecutionSummarizer:
                                          user_messages_conversation=self.user_messages_conversation)
 
             messages = [{"role": "user", "content": prompt}]
-            responses = UserTaskExecutionSummarizer.task_execution_summarizer.chat(messages,
+            responses = UserTaskExecutionSummarizer.task_execution_summarizer.invoke(messages,
                                                                                    self.user_task_execution.user_id,
                                                                                    temperature=0, max_tokens=500,
                                                                                    user_task_execution_pk=self.user_task_execution.user_task_execution_pk,

@@ -36,7 +36,7 @@ class SessionTitleGenerator:
                                          user_company_knowledge=self.knowledge_collector.user_company_knowledge,
                                          sender=sender, message=message, session_date=session_date, language=language)
                 messages = [{"role": "system", "content": prompt}]
-            responses = SessionTitleGenerator.title_generator.chat(messages, self.user_id, temperature=0.5,
+            responses = SessionTitleGenerator.title_generator.invoke(messages, self.user_id, temperature=0.5,
                                                                    max_tokens=50)
             title = responses[0]
             self._save_to_db(title)

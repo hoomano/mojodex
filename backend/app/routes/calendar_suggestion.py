@@ -125,7 +125,7 @@ class CalendarSuggestion(Resource):
                         )
 
                     messages = [{"role": "system", "content": prompt}]
-                    responses = CalendarSuggestion.calendar_suggestion_generator_from_calendar.chat(messages, user_id,
+                    responses = CalendarSuggestion.calendar_suggestion_generator_from_calendar.invoke(messages, user_id,
                                                                                                     temperature=1,
                                                                                                     max_tokens=1000,
                                                                                                     json_format=True)
@@ -216,7 +216,7 @@ class CalendarSuggestion(Resource):
                     language=user.language_code
                 )
             messages = [{"role": "system", "content": prompt}]
-            responses = CalendarSuggestion.calendar_suggestion_waiting_generator.chat(messages, user_id, temperature=1,
+            responses = CalendarSuggestion.calendar_suggestion_waiting_generator.invoke(messages, user_id, temperature=1,
                                                                                       max_tokens=1000)
             return responses[0]
         except Exception as e:

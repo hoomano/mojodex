@@ -138,7 +138,7 @@ class ProducedTextManager:
                         conversation=self._get_conversation_as_string())
 
                 messages = [{"role": "system", "content": is_edition_prompt}]
-                responses = ProducedTextManager.is_edition_generator.chat(messages, self.user_id,
+                responses = ProducedTextManager.is_edition_generator.invoke(messages, self.user_id,
                                                                           temperature=0, max_tokens=20,
                                                                           user_task_execution_pk=self.user_task_execution_pk,
                                                                           task_name_for_system=self.task_name_for_system,
@@ -161,7 +161,7 @@ class ProducedTextManager:
             get_text_type_prompt = template.render(
                 text=text, types_enum=types_enum)
         messages = [{"role": "system", "content": get_text_type_prompt}]
-        responses = ProducedTextManager.text_type_deducer.chat(messages, self.user_id,
+        responses = ProducedTextManager.text_type_deducer.invoke(messages, self.user_id,
                                                                temperature=0, max_tokens=20,
                                                                user_task_execution_pk=self.user_task_execution_pk,
                                                                task_name_for_system=self.task_name_for_system,

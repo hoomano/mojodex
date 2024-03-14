@@ -1,8 +1,6 @@
 from mistralai.models.chat_completion import ChatMessage
 from mistralai.client import MistralClient
-from mojodex_core.llm_engine.providers.openai_embedding import OpenAIEmbeddingProvider
 from mojodex_core.logging_handler import log_error
-import json
 import logging
 import os
 from mojodex_core.llm_engine.llm import LLM
@@ -11,21 +9,34 @@ logging.basicConfig(level=logging.ERROR)
 
 
 class MistralAILLM(LLM):
-    def __init__(self, api_key, endpoint, model, api_type='azure', max_retries=3):
-        """
-        :param api_key: API key
-        :param endpoint: Endpoint to call Mistral model API
-        :param model: Model to use (deployment_id for azure)
-        :param api_type: 'azure' or 'la_plateforme'
-        :param max_retries: max_retries calls on rateLimit errors, unavailable... (default 3)
-        """
+
+    def __init__(self, mistral_conf, label='unknown', llm_backup_conf=None, max_retries=0):
+
         try:
-            self.model = model
+            api_key = mistral_conf["api_key"]
+            self.model = mistral_conf["api_model"]
+
+            endpoint = mistral_conf.get("endpoint") if mistral_conf.get(
+                "endpoint") else None
+            api_type = "azure" if mistral_conf.get(
+                "endpoint") else "la_plateforme"
+
+            self.label = label
+
+            # if dataset_dir does not exist, create it
+            if not os.path.exists(self.dataset_dir):
+                os.mkdir(self.dataset_dir)
+            if not os.path.exists(os.path.join(self.dataset_dir, "chat")):
+                os.mkdir(os.path.join(self.dataset_dir, "chat"))
+            if not os.path.exists(os.path.join(self.dataset_dir, "chat", self.label)):
+                os.mkdir(os.path.join(self.dataset_dir, "chat", self.label))
+
             self.max_retries = max_retries
             self.client = MistralClient(
                 api_key=api_key,
                 endpoint=endpoint if api_type == 'azure' else "https://api.mistral.ai",
             )
+            # TODO: manage llm_backup_conf to manage rate limits > see OpenAILLM implementation
 
         except Exception as e:
             raise Exception(
@@ -84,5 +95,25 @@ class MistralAILLM(LLM):
 
         except Exception as e:
             log_error(f"💨❌: Error in Mojodex Mistral chat: {e}")
-             
 
+
+    def invoke(self, messages, user_id, temperature, max_tokens, n_responses=1,
+               frequency_penalty=0, presence_penalty=0, stream=False, stream_callback=None, json_format=False,
+               user_task_execution_pk=None, task_name_for_system=None):
+        try:
+            responses = self.chatCompletion(messages, temperature, max_tokens, n_responses=n_responses,
+                                            frequency_penalty=frequency_penalty, presence_penalty=presence_penalty, stream=stream, stream_callback=stream_callback, json_format=json_format)
+            try:
+                self._write_in_dataset({"temperature": temperature, "max_tokens": max_tokens, "n_responses": n_responses,
+                                        "frequency_penalty": frequency_penalty, "presence_penalty": presence_penalty,
+                                        "messages": [{'role': message.get('role') if message.get('role') else 'unknown', 'content': message.get('content') if message.get('content') else "no_content"} for message in messages], "responses": responses, "model_config": self.model}, task_name_for_system, "chat")
+            except Exception as e:
+                log_error(
+                    f"Error while writing in dataset for user_id: {user_id} - user_task_execution_pk: {user_task_execution_pk} - task_name_for_system: {task_name_for_system}: {e}", notify_admin=False)
+                log_error(messages, notify_admin=False)
+            return responses
+        except Exception as e:
+            log_error(
+                f"Error in Mojodex Mistral AI chat for user_id: {user_id} - user_task_execution_pk: {user_task_execution_pk} - task_name_for_system: {task_name_for_system}: {e}", notify_admin=False)
+            raise Exception(
+                f"🔴 Error in Mojodex Mistral AI chat: {e} - model: {self.model}")

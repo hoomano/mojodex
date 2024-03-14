@@ -52,7 +52,7 @@ class TextEditActionManager:
     def edit_text(self, input_prompt, app_version):
         # Edit text
         try:
-            edited_text = TextEditActionManager.text_edit_executor.chat(
+            edited_text = TextEditActionManager.text_edit_executor.invoke(
                 messages=[{"role": "system", "content": input_prompt}],
                 user_id=self.user_id,
                 temperature=0.3,

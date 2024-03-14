@@ -2,6 +2,8 @@ from gevent import monkey
 
 monkey.patch_all()
 
+from mojodex_core.llm_engine.llm import LLM
+from mojodex_core.llm_engine.embedding_provider import EmbeddingProvider
 
 from datetime import datetime
 
@@ -37,38 +39,10 @@ engine_container = db.get_engine(app)
 from background_logger import BackgroundLogger
 
 # Setup the LLM Engine
-# Read the .env file to check which LLM engine to use
-llm_engine = os.environ.get("LLM_ENGINE", "openai")
-
-if llm_engine == "openai":
-    from llm_api.mojodex_background_openai import MojodexBackgroundOpenAI, OpenAIConf
-    # check the .env file to see which LLM_API_PROVIDER is set
-    if os.environ.get("LLM_API_PROVIDER") == "azure":
-        llm_conf = OpenAIConf.gpt4_turbo_conf
-    else:
-        llm_conf = OpenAIConf.gpt4_turbo_conf
-
-    llm = MojodexBackgroundOpenAI
-elif llm_engine == "mistral":
-    from llm_api.mojodex_background_mistralai import MojodexMistralAI, MistralAIConf
-    # check the .env file to see which LLM_API_PROVIDER is set
-    if os.environ.get("LLM_API_PROVIDER") == "azure":
-        llm_conf = MistralAIConf.azure_mistral_large_conf
-    else:
-        llm_conf = MistralAIConf.mistral_large_conf
-    llm = MojodexMistralAI
-else:
-    raise Exception(f"Unknown LLM engine: {llm_engine}")
+llm, llm_conf, llm_backup_conf = LLM.get_llm_provider()
 
 # Setup the embedder
-embedding_engine = os.environ.get("EMBEDDING_ENGINE", "openai")
-if embedding_engine == "openai":
-    from llm_api.mojodex_background_openai import MojodexBackgroundOpenAI, OpenAIConf
-    embedder = MojodexBackgroundOpenAI
-    embedding_conf = OpenAIConf.embedding_conf
-else:
-    raise Exception(f"Unknown embedding engine: {embedding_engine}")
-
+embedder, embedding_conf = EmbeddingProvider.get_embedding_provider()
 
 main_logger = BackgroundLogger("main_logger")
 
@@ -94,12 +68,6 @@ def send_admin_error_email(error_message):
     except Exception as e:
         main_logger.error(f"Error while sending admin email : {e}")
 
-from mojodex_core.costs_manager.tokens_costs_manager import TokensCostsManager
-from mojodex_core.costs_manager.serp_api_costs_manager import SerpAPICostsManager
-from mojodex_core.costs_manager.news_api_costs_manager import NewsAPICostsManager
-tokens_costs_manager = TokensCostsManager()
-serp_api_costs_manager = SerpAPICostsManager()
-news_api_costs_manager = NewsAPICostsManager()
 
 
 from models.documents.document_manager import DocumentManager

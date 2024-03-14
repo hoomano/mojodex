@@ -4,7 +4,7 @@ from jinja2 import Template
 
 from background_logger import BackgroundLogger
 from mojodex_core.json_loader import json_decode_retry
-from llm_api.mojodex_background_openai import OpenAIConf
+
 
 from app import send_admin_error_email, on_json_error
 
@@ -104,7 +104,7 @@ class DailyEmailsGenerator(EventsGenerator):
 
             # call openai to generate text
             messages = [{"role": "system", "content": prompt}]
-            email_message = DailyEmailsGenerator.daily_email_text_generator.chat(messages, user_id,
+            email_message = DailyEmailsGenerator.daily_email_text_generator.invoke(messages, user_id,
                                                                                  temperature=1, max_tokens=500,
                                                                                  json_format=True)[0]
             return email_message

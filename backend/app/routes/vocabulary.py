@@ -34,7 +34,7 @@ class Vocabulary(Resource):
                                                                            task_definition_for_system=task_definition_for_system,
                                                                            transcription=message_text)
             messages = [{"role": "system", "content": tag_proper_nouns_prompt}]
-            responses = Vocabulary.proper_nouns_tagger.chat(messages, user_id, temperature=0, max_tokens=2000,
+            responses = Vocabulary.proper_nouns_tagger.invoke(messages, user_id, temperature=0, max_tokens=2000,
                                                             user_task_execution_pk=user_task_execution_pk,
                                                             task_name_for_system=task_name_for_system)
             return responses[0]

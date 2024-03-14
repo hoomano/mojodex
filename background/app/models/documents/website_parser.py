@@ -8,7 +8,7 @@ from app import document_manager
 from background_logger import BackgroundLogger
 from jinja2 import Template
 
-from llm_api.mojodex_background_openai import OpenAIConf
+
 
 from app import llm, llm_conf
 
@@ -102,7 +102,7 @@ class WebsiteParser:
                     company_name=self.company_name, chunk_text=chunk_text)
             messages = [{"role": "user", "content": prompt}]
 
-            responses = WebsiteParser.website_chunk_validator.chat(
+            responses = WebsiteParser.website_chunk_validator.invoke(
                 messages, user_id, temperature=0, max_tokens=5)
             return responses[0].lower().strip() == "yes"
         except Exception as e:

@@ -4,7 +4,7 @@ from datetime import datetime
 import requests
 from jinja2 import Template
 
-from llm_api.mojodex_background_openai import OpenAIConf
+
 from background_logger import BackgroundLogger
 
 from app import llm, llm_conf
@@ -60,7 +60,7 @@ class MessageWriter:
                                          )
 
             messages = [{"role": "system", "content": prompt}]
-            responses = MessageWriter.writer.chat(messages, user_id,
+            responses = MessageWriter.writer.invoke(messages, user_id,
                                                   temperature=0,
                                                   max_tokens=3000,
                                                   user_task_execution_pk=user_task_execution_pk,

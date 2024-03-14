@@ -4,7 +4,7 @@ from datetime import datetime
 
 from jinja2 import Template
 import requests
-from llm_api.mojodex_background_openai import OpenAIConf
+
 from background_logger import BackgroundLogger
 from models.task_tool_execution.tools.tool import Tool
 from mojodex_core.json_loader import json_decode_retry
@@ -104,7 +104,7 @@ class InternalMemoryTool(Tool):
 
             messages = [{"role": "system", "content": prompt}]
 
-            responses = InternalMemoryTool.information_extractor.chat(messages, self.user_id,
+            responses = InternalMemoryTool.information_extractor.invoke(messages, self.user_id,
                                                                       temperature=0, max_tokens=4000,
                                                                       json_format=True,
                                                                       user_task_execution_pk=self.user_task_execution_pk,

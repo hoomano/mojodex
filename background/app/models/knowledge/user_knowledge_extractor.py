@@ -6,7 +6,7 @@ from datetime import datetime
 
 from background_logger import BackgroundLogger
 
-from llm_api.mojodex_background_openai import OpenAIConf
+
 
 from app import llm, llm_conf
 
@@ -33,7 +33,7 @@ class UserKnowledgeExtractor:
                     conversation=self.conversation, existing_summary=current_summary)
             messages = [{"role": "user", "content": prompt}]
 
-            response = UserKnowledgeExtractor.user_knowledge_extractor.chat(messages, self.user_id,
+            response = UserKnowledgeExtractor.user_knowledge_extractor.invoke(messages, self.user_id,
                                                                             temperature=0, max_tokens=200)
             new_summary = response[0].strip()
 

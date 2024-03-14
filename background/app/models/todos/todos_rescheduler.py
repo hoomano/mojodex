@@ -6,7 +6,7 @@ from jinja2 import Template
 from mojodex_core.json_loader import json_decode_retry
 from background_logger import BackgroundLogger
 from app import on_json_error
-from llm_api.mojodex_background_openai import OpenAIConf
+
 
 from app import send_admin_error_email
 
@@ -72,7 +72,7 @@ class TodosRescheduler:
                     n_scheduled=self.n_scheduled
                 )
             messages = [{"role": "user", "content": todos_reschedulor_prompt}]
-            results = TodosRescheduler.todos_rescheduler.chat(messages, self.user_task_execution.user_id,
+            results = TodosRescheduler.todos_rescheduler.invoke(messages, self.user_task_execution.user_id,
                                                               temperature=0, max_tokens=500, json_format=True,
                                                               user_task_execution_pk=self.user_task_execution.user_task_execution_pk,
                                                               task_name_for_system=self.user_task_execution.task_name)

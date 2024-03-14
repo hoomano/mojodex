@@ -15,7 +15,7 @@ class Translator:
                 translate_prompt = translate_prompt_template.render(text=text, language=language)
             messages = [{"role": "user", "content": translate_prompt}]
 
-            responses = Translator.translator.chat(messages, user_id, temperature=0, max_tokens=4000)
+            responses = Translator.translator.invoke(messages, user_id, temperature=0, max_tokens=4000)
             return responses[0]
         except Exception as e:
             raise Exception(f"Translator :: translate :: {e}")

@@ -4,7 +4,7 @@ from jinja2 import Template
 
 from background_logger import BackgroundLogger
 from mojodex_core.json_loader import json_decode_retry
-from llm_api.mojodex_background_openai import OpenAIConf
+
 
 from app import send_admin_error_email, on_json_error
 
@@ -77,7 +77,7 @@ class CalendarSuggestionNotificationsGenerator(EventsGenerator):
             # call openai to generate text
             messages = [{"role": "system", "content": prompt}]
             notification_message = \
-                CalendarSuggestionNotificationsGenerator.calendar_suggestion_notification_text_generator.chat(messages, user_id,
+                CalendarSuggestionNotificationsGenerator.calendar_suggestion_notification_text_generator.invoke(messages, user_id,
                                                                                                               temperature=1,
                                                                                                               max_tokens=50,
                                                                                                               json_format=True,

@@ -6,7 +6,7 @@ from jinja2 import Template
 from mojodex_core.json_loader import json_decode_retry
 from background_logger import BackgroundLogger
 from app import on_json_error
-from llm_api.mojodex_background_openai import OpenAIConf
+
 
 from app import send_admin_error_email
 
@@ -79,7 +79,7 @@ class TodosCreator:
                 )
 
             messages = [{"role": "user", "content": todos_extractor_prompt}]
-            results = TodosCreator.todos_extractor.chat(messages, self.user_task_execution.user_id,
+            results = TodosCreator.todos_extractor.invoke(messages, self.user_task_execution.user_id,
                                                         temperature=0, max_tokens=500,
                                                         json_format=True,
                                                         user_task_execution_pk=self.user_task_execution.user_task_execution_pk,

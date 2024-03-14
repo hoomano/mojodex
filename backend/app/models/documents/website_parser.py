@@ -1,6 +1,3 @@
-import json
-import os
-
 import requests
 from bs4 import BeautifulSoup
 from jinja2 import Template
@@ -72,7 +69,7 @@ class WebsiteParser:
                 url=website_url, text_content=webpage_text)
             messages = [{"role": "user", "content": prompt}]
 
-            responses = WebsiteParser.website_info_extractor.chat(messages, user_id,
+            responses = WebsiteParser.website_info_extractor.invoke(messages, user_id,
                                                                   temperature=0, max_tokens=1000,
                                                                   json_format=True)[0]
 

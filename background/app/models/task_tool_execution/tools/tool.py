@@ -8,7 +8,7 @@ import requests
 from jinja2 import Template
 from mojodex_core.json_loader import json_decode_retry
 from app import on_json_error
-from llm_api.mojodex_background_openai import OpenAIConf
+
 
 from app import llm, llm_conf
 
@@ -54,7 +54,7 @@ class Tool(ABC):
 
                 messages = [{"role": "system", "content": prompt}]
 
-                results = Tool.json_params_generator.chat(messages, user_id,
+                results = Tool.json_params_generator.invoke(messages, user_id,
                                                           temperature=0,
                                                           max_tokens=2000,
                                                           json_format=True,

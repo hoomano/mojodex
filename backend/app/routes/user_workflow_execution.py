@@ -38,6 +38,8 @@ class UserWorkflowExecution(Resource):
     def put(self, user_id):
         """Create new user_workflow_execution"""
         error_message = "Error while creating workflow execution"
+        if not request.json:
+            return {"error": "Missing JSON body"}, 400
         try:
             timestamp = request.json['datetime']
             user_workflow_pk = request.json['user_workflow_pk']
@@ -63,4 +65,37 @@ class UserWorkflowExecution(Resource):
             return {"error": f"{error_message}: {e}"}, 500
         
     
-    # todo: post for starting a workflow execution
+    def post(self, user_id):
+        """Run workflow execution"""
+        error_message = "Error while running workflow execution"
+        if not request.json:
+            return {"error": "Missing JSON body"}, 400
+        
+        try:
+            timestamp = request.json['datetime']
+            user_workflow_execution_pk = request.json['user_workflow_execution_pk']
+            initial_parameters = request.json['initial_parameters']
+        except KeyError as e:
+            return {"error": f"Missing parameter : {e}"}, 400
+        
+        try:
+            user_workflow_execution = db.session.query(MdUserWorkflowExecution)\
+                .join(MdUserWorkflow, MdUserWorkflow.user_workflow_pk == MdUserWorkflowExecution.user_workflow_fk)\
+                .filter(MdUserWorkflowExecution.user_workflow_execution_pk == user_workflow_execution_pk)\
+                .filter(MdUserWorkflow.user_id == user_id)\
+                .first()
+            if not user_workflow_execution:
+                return {"error": "Workflow execution not found for this user"}, 404
+            
+            workflow_execution = WorkflowExecution(user_workflow_execution_pk)
+
+            # ensure initial_parameters is a json
+            if not isinstance(initial_parameters, dict):
+                return {"error": "initial_parameters must be a json"}, 400
+            workflow_execution.initial_parameters = initial_parameters
+            workflow_execution.run() # TODO: run must be done asynchronously in a dedicated thread
+            return {"user_workflow_execution_pk": user_workflow_execution_pk}, 200
+        except Exception as e:
+            log_error(e)
+            return {"error": f"{error_message}: {e}"}, 500
+        

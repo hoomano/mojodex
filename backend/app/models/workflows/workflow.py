@@ -1,8 +1,10 @@
 from abc import ABC, abstractmethod
 from app import db
+from models.workflows.translation.section_divier_step import TranslateWorkflowUserInputSpec
 from models.workflows.step import WorkflowStep, WorkflowStepExecution
 from mojodex_core.entities import MdUserWorkflowExecution, MdUserWorkflow, MdWorkflowStep, MdWorkflow
 from models.workflows.steps_library import steps_class
+from sqlalchemy.orm.attributes import flag_modified
 # DB schema:
 # MdUser: user_id
 # MdWorkflow: workflow_pk, name
@@ -16,12 +18,14 @@ from models.workflows.steps_library import steps_class
 
 class WorkflowExecution:
     logger_prefix = "WorkflowExecution :: "
+
     def __init__(self, workflow_execution_pk):
         try:
             self.db_object = self._get_db_object(workflow_execution_pk)
             self.steps_executions = [WorkflowStepExecution(steps_class[db_workflow_step.name](db_workflow_step), workflow_execution_pk) for db_workflow_step in self._db_workflow_steps]
         except Exception as e:
             raise Exception(f"{self.logger_prefix} :: __init__ :: {e}")
+
 
     def _get_db_object(self, workflow_execution_pk):
         try:
@@ -45,48 +49,64 @@ class WorkflowExecution:
 
     @property
     def initial_parameters(self):
-        return self.db_object.initial_parameters
+        #return self.db_object.json_input
+        value = self.db_object.json_input
+        return TranslateWorkflowUserInputSpec(value['text'], value['target_language']) # TODO: remove and set in workflow implementation
+    
+    @initial_parameters.setter
+    def initial_parameters(self, value):
+        try:
+            self.db_object.json_input = value
+            flag_modified(self.db_object, "json_input")
+            db.session.commit()
+        except Exception as e:
+            raise Exception(f"initial_parameters :: {e}")
 
     def run(self):
-        step_execution_to_run = self._current_step_execution
-        print(f"🟢 Running step: {step_execution_to_run.name} - parameters: {self.intermediate_results[-1] if self.intermediate_results else [self.initial_parameters]} ")
-        step_execution_to_run.initialize_runs(self.intermediate_results[-1] if self.intermediate_results else [self.initial_parameters])
-        result = step_execution_to_run.run(self.initial_parameters, self.intermediate_results)
-        self._ask_for_validation(result)
+        try:
+            step_execution_to_run = self._current_step_execution
+            print(f"🟢 Running step: {step_execution_to_run.name} - parameters: {self._intermediate_results[-1] if self._intermediate_results else [self.initial_parameters]} ")
+            step_execution_to_run.initialize_runs(self._intermediate_results[-1] if self._intermediate_results else [self.initial_parameters])
+            result = step_execution_to_run.run(self.initial_parameters, self._intermediate_results)
+            self._ask_for_validation(result)
+        except Exception as e:
+            raise Exception(f"run :: {e}")
         
 
     @property
     def _current_step_execution(self):
-        # step to run is:
-        # last one initialized which runs are not all validated
-        # or first step not initialized
-        # browse steps backwards
-        for step_execution in reversed(self.steps_executions):
-            if step_execution.initialized and not step_execution.validated:
-                return step_execution
-        # else, next step to run is the first one not initialized
-        for step_execution in self.steps_executions:
-            if not step_execution.initialized:
-                return step_execution
-        return None
+        try:
+            # step to run is:
+            # last one initialized which runs are not all validated
+            # or first step not initialized
+            # browse steps backwards
+            for step_execution in reversed(self.steps_executions):
+                if step_execution.initialized and not step_execution.validated:
+                    return step_execution
+            # else, next step to run is the first one not initialized
+            for step_execution in self.steps_executions:
+                if not step_execution.initialized:
+                    return step_execution
+            return None
+        except Exception as e:
+            raise Exception(f"_current_step_execution :: {e}")
 
 
     @property
-    def intermediate_results(self):
-        return [step.result for step in self.steps[:-1] if step.initialized]
+    def _intermediate_results(self):
+        try:
+            return [step.result for step in self.steps_executions[:-1] if step.initialized]
+        except Exception as e:
+            raise Exception(f"_intermediate_results :: {e}")
 
     def _ask_for_validation(self, result):
         print(f"---- ASK FOR VALIDATION ----\n{result}\n ------ END -----")
-        
-    def handle_user_feedback(self, user_feedback=True):
-        if user_feedback:
-            self._validate()
-        else:
-            self._invalidate()
-        self.run()
 
-    def _validate(self):
-        self._current_step_execution.current_run.validate()
+    def validate_current_run(self):
+        try:
+            self._current_step_execution.current_run.validate()
+        except Exception as e:
+            raise Exception(f"validate_current_run :: {e}")
 
     def _find_checkpoint_step(self):
         for step in reversed(self.steps):
@@ -126,7 +146,7 @@ class WorkflowExecution:
                 "steps": [step_execution.to_json() for step_execution in self.steps_executions]
             }
         except Exception as e:
-            raise Exception(f"{logger_prefix} to_json :: {e}")
+            raise Exception(f"{self.logger_prefix} to_json :: {e}")
 
 
 

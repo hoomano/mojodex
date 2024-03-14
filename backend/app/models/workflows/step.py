@@ -1,7 +1,9 @@
 from abc import ABC, abstractmethod
+import json
 from app import db
 from models.workflows.run import WorkflowStepExecutionRun
 from mojodex_core.entities import MdUserWorkflowStepExecution, MdUserWorkflowStepExecutionRun
+
 
 class WorkflowStep(ABC):
     logger_prefix = "WorkflowStep :: "
@@ -15,14 +17,22 @@ class WorkflowStep(ABC):
     @property
     def workflow_step_pk(self):
         return self.db_object.workflow_step_pk
-
+    
     @abstractmethod
-    def execute(self, parameter, initial_parameters, history):
-        pass
+    def _execute(self, parameter: dict, initial_parameters: dict, history: list[dict]):
+       pass
 
-    @abstractmethod
-    def concatenate_runs_results(self):
-        pass
+    
+    def execute(self, parameter: dict, initial_parameter: dict, history: list[dict]):
+        """
+        Returns a list of parameters (dict)
+        """
+        try:
+            output = self._execute(parameter, initial_parameter, history)
+            return output
+        except Exception as e:
+            raise Exception(f"_execute :: {e}")
+
 
 class WorkflowStepExecution:
 
@@ -69,41 +79,63 @@ class WorkflowStepExecution:
             .order_by(MdUserWorkflowStepExecutionRun.creation_date.asc()).all()
 
 
-    def initialize_runs(self, parameters):
-        if not self.initialized:
-            for parameter in parameters:
-                # create run in db
-                db_run = MdUserWorkflowStepExecutionRun(
-                    md_user_workflow_step_execution_fk=self.db_object.md_user_workflow_step_execution_pk,
-                    parameter=parameter
-                )
-                db.session.add(db_run)
-                db.session.commit()
-                self.runs.append(WorkflowStepExecutionRun(db_run))
+    def initialize_runs(self, parameters: list[dict]):
+        try:
+            if not self.initialized:
+                for parameter in parameters:
+                    # if parameter is a dict, encode json to string
+                    if isinstance(parameter, dict) or isinstance(parameter, list):
+                        parameter = json.dumps(parameter)
+                    else:
+                        parameter = str(parameter)
+                    # create run in db
+                    db_run = MdUserWorkflowStepExecutionRun(
+                        user_workflow_step_execution_fk=self.db_object.user_workflow_step_execution_pk,
+                        parameter=parameter
+                    )
+                    db.session.add(db_run)
+                    db.session.commit()
+                    self.runs.append(WorkflowStepExecutionRun(db_run))
+        except Exception as e:
+            raise Exception(f"{self.logger_prefix} :: initialize_runs :: {e}")
 
             
     @property
     def validated(self):
-        return all(run.validated for run in self.runs)
+        return self.initialized and all(run.validated for run in self.runs)
 
-    def run(self, initial_parameters, history):
-        # run from non-validated actions
-        for run in self.runs:
-            print(f"👉 Step run {run.parameter}")
-            if not run.validated:
-                return self.execute(run, initial_parameters, history)
+    def run(self, initial_parameter: dict, history: list[dict]):
+        try:
+            # run from non-validated actions
+            for run in self.runs:
+                print(f"👉 Step run {run.parameter}")
+                if not run.validated:
+                    return self.execute(run, initial_parameter, history)
+            return None
+        except Exception as e:
+            raise Exception(f"{self.logger_prefix} :: run :: {e}")
             
 
-    def execute(self, run, initial_parameters, history):
-        result = self.workflow_step.execute(run.parameter, initial_parameters, history)
+    def execute(self, run: WorkflowStepExecutionRun, initial_parameter: dict, history: list[dict]):
+        result = self.workflow_step.execute(run.parameter, initial_parameter, history)
+        print(f"🟢 Step result: {result}")
         run.result = result
         return run.result
 
     @property
     def result(self):
-        return self.workflow_step.concatenate_runs_results([run.result for run in self.runs if run.validated])
+        if not self.initialized:
+            return None
+        result = []
+        for run in self.runs:
+            if run.validated:
+                result += run.result
+        return result
+                
     
-    
+    @property
+    def name(self):
+        return self.workflow_step.db_object.name
     
     @property
     def current_run(self):
@@ -117,6 +149,7 @@ class WorkflowStepExecution:
             return {
                 "user_workflow_step_execution_pk": self.db_object.user_workflow_step_execution_pk,
                 "workflow_step_pk": self.db_object.workflow_step_fk,
+                "step_name": self.name,
                 "initialized": self.initialized,
                 "validated": self.validated,
                 "runs": [run.to_json() for run in self.runs],

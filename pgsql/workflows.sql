@@ -118,6 +118,7 @@ CREATE TABLE public.md_user_workflow_execution (
     user_workflow_execution_pk integer DEFAULT nextval('public.md_user_workflow_execution_seq'::regclass) NOT NULL,
     user_workflow_fk integer NOT NULL,
     creation_date timestamp without time zone NOT NULL DEFAULT now(),
+    json_input json
 );
 
 --
@@ -195,7 +196,10 @@ CREATE SEQUENCE public.md_user_workflow_step_execution_run_seq
 CREATE TABLE public.md_user_workflow_step_execution_run (
     user_workflow_step_execution_run_pk integer DEFAULT nextval('public.md_user_workflow_step_execution_run_seq'::regclass) NOT NULL,
     user_workflow_step_execution_fk integer NOT NULL,
-    creation_date timestamp without time zone NOT NULL DEFAULT now()
+    creation_date timestamp without time zone NOT NULL DEFAULT now(),
+    parameter text,
+    validated boolean not null default false,
+    result text
 );
 
 --

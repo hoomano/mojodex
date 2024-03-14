@@ -647,6 +647,7 @@ class MdUserWorkflowExecution(Base):
     user_workflow_execution_pk = Column(Integer, Sequence('md_user_workflow_execution_seq'), primary_key=True)
     user_workflow_fk = Column(Integer, nullable=False)
     creation_date = Column(DateTime, nullable=False, server_default=text('now()'))
+    json_input = Column(JSON)
 
     md_user_workflow = relationship('MdUserWorkflow', back_populates='md_user_workflow_execution')
     md_user_workflow_step_execution = relationship('MdUserWorkflowStepExecution', back_populates='md_user_workflow_execution')
@@ -825,6 +826,9 @@ class MdUserWorkflowStepExecutionRun(Base):
     user_workflow_step_execution_run_pk = Column(Integer, Sequence('md_user_workflow_step_execution_run_seq'), primary_key=True)
     user_workflow_step_execution_fk = Column(Integer, nullable=False)
     creation_date = Column(DateTime, nullable=False, server_default=text('now()'))
+    validated = Column(Boolean, nullable=False, server_default=text('false'))
+    parameter = Column(Text)
+    result = Column(Text)
 
     md_user_workflow_step_execution = relationship('MdUserWorkflowStepExecution', back_populates='md_user_workflow_step_execution_run')
     user_workflow_step_execution_run_result = relationship('UserWorkflowStepExecutionRunResult', back_populates='md_user_workflow_step_execution_run')

@@ -48,7 +48,7 @@ class LLM(ABC):
     @abstractmethod
     def __init__(self, llm_conf, llm_backup_conf=None, label='undefined', max_retries=0):
         """
-        Initializes the BackgroundLLM object.
+        Initializes the LLM object.
 
         Args:
             llm_conf (dict): The configuration for the LLM.

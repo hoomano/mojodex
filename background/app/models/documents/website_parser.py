@@ -8,7 +8,7 @@ from app import document_manager
 from background_logger import BackgroundLogger
 from jinja2 import Template
 
-from llm_api.mojodex_background_openai import OpenAIConf
+
 
 from app import llm, llm_conf
 

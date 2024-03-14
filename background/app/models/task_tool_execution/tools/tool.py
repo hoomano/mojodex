@@ -8,7 +8,7 @@ import requests
 from jinja2 import Template
 from mojodex_core.json_loader import json_decode_retry
 from app import on_json_error
-from llm_api.mojodex_background_openai import OpenAIConf
+
 
 from app import llm, llm_conf
 

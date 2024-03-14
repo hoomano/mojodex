@@ -1,13 +1,18 @@
-from openai import OpenAI, AzureOpenAI
+from openai import OpenAI, AzureOpenAI, RateLimitError
 from mojodex_core.llm_engine.llm import LLM
-from mojodex_core.logging_handler import MojodexCoreLogger
+from mojodex_core.logging_handler import MojodexCoreLogger, log_error
 import tiktoken
+
+from mojodex_core.costs_manager.tokens_costs_manager import TokensCostsManager
+
+import os
 
 mojo_openai_logger = MojodexCoreLogger("mojo_openai_logger")
 
 
 class OpenAILLM(LLM):
-    def __init__(self, api_key, api_base, api_version, model, api_type='azure', max_retries=3, azure_conf=None, llm_backup_conf=None, label='undefined'):
+
+    def __init__(self, llm_conf, label='undefined', llm_backup_conf=None, max_retries=3):
         """
         :param api_key: API key to call openAI
         :param api_base: Endpoint to call openAI
@@ -17,6 +22,20 @@ class OpenAILLM(LLM):
         :param max_retries: max_retries for openAI calls on rateLimit errors, unavailable... (default 3)
         """
         try:
+            api_key = llm_conf["api_key"]
+            api_base = llm_conf["api_base"]
+            api_version = llm_conf["api_version"]
+            api_type = llm_conf["api_type"]
+            model = llm_conf["deployment_id"]
+            self.label = label
+            # if dataset_dir does not exist, create it
+            if not os.path.exists(self.dataset_dir):
+                os.mkdir(self.dataset_dir)
+            if not os.path.exists(os.path.join(self.dataset_dir, "chat")):
+                os.mkdir(os.path.join(self.dataset_dir, "chat"))
+            if not os.path.exists(os.path.join(self.dataset_dir, "chat", self.label)):
+                os.mkdir(os.path.join(self.dataset_dir, "chat", self.label))
+
             self.model = model
             self.max_retries = max_retries
             self.client = AzureOpenAI(
@@ -26,18 +45,21 @@ class OpenAILLM(LLM):
                 api_key=api_key,
                 max_retries=self.max_retries
             ) if api_type == 'azure' else OpenAI(api_key=api_key)
-            LLM.__init__(self, azure_conf, llm_backup_conf=llm_backup_conf, label=label, max_retries=max_retries)
+
+            if llm_backup_conf:
+                self.client_backup = AzureOpenAI(
+                    api_version=llm_backup_conf["api_version"],
+                    azure_endpoint=llm_backup_conf["api_base"],
+                    azure_deployment=llm_backup_conf["deployment_id"],
+                    api_key=llm_backup_conf["api_key"],
+                    max_retries=self.max_retries
+                ) if api_type == 'azure' else OpenAI(api_key=llm_backup_conf["api_key"])
+
+            self.tokens_costs_manager = TokensCostsManager()
+            LLM.__init__(self, llm_conf, llm_backup_conf=llm_backup_conf,
+                         label=label, max_retries=self.max_retries)
         except Exception as e:
-            raise Exception(f"🔴 Error initializing MojoOpenAI __init__  : {e}")
-
-
-    # calculate the number of tokens in a given string
-    def num_tokens_from_string(self, string):
-        # https://github.com/openai/openai-cookbook/blob/main/examples/How_to_count_tokens_with_tiktoken.ipynb
-        """Returns the number of tokens in a text string."""
-        encoding = tiktoken.get_encoding("p50k_base")
-        num_tokens = len(encoding.encode(string))
-        return num_tokens
+            raise Exception(f"🔴 Error initializing OpenAILLM __init__  : {e}")
 
 
     def num_tokens_from_messages(self, messages):
@@ -49,7 +71,8 @@ class OpenAILLM(LLM):
             encoding = tiktoken.get_encoding("cl100k_base")
             num_tokens = 0
             for message in messages:
-                num_tokens += 4  # every message follows <im_start>{role/name}\n{content}<im_end>\n
+                # every message follows <im_start>{role/name}\n{content}<im_end>\n
+                num_tokens += 4
                 for key, value in message.items():
                     num_tokens += len(encoding.encode(value))
                     if key == "name":  # if there's a name, the role is omitted
@@ -59,10 +82,9 @@ class OpenAILLM(LLM):
         except Exception as e:
             raise Exception(f"🔴 Error in num_tokens_from_messages : {e}")
 
-
     def chatCompletion(self, messages, user_uuid, temperature, max_tokens, frequency_penalty=0,
-                             presence_penalty=0, stream=False, stream_callback=None, json_format=False,
-                             n_additional_calls_if_finish_reason_is_length=0, assistant_response="", n_calls=0):
+                       presence_penalty=0, stream=False, stream_callback=None, json_format=False,
+                       n_additional_calls_if_finish_reason_is_length=0, assistant_response="", n_calls=0, use_backup_client=False):
         """
         OpenAI chat completion
         :param messages: List of messages composing the conversation, each message is a dict with keys "role" and "content"
@@ -79,7 +101,9 @@ class OpenAILLM(LLM):
         :param n_calls: Number of calls to the function
         :return: List of n generated messages
         """
-        completion = self.client.chat.completions.create(
+        openai_client = self.client_backup if use_backup_client else self.client
+
+        completion = openai_client.chat.completions.create(
             messages=messages,
             model=self.model,
             temperature=temperature,
@@ -101,11 +125,13 @@ class OpenAILLM(LLM):
                     complete_text += partial_token.content
                     if stream_callback is not None:
                         try:
-                            flag_to_stop_streaming = stream_callback(complete_text)
+                            flag_to_stop_streaming = stream_callback(
+                                complete_text)
                             if flag_to_stop_streaming:
                                 return None
                         except Exception as e:
-                           mojo_openai_logger.error(f"🔴 Error in streamCallback: {e}")
+                            mojo_openai_logger.error(
+                                f"🔴 Error in streamCallback: {e}")
 
             response = complete_text
         else:
@@ -117,13 +143,64 @@ class OpenAILLM(LLM):
             messages = messages + [{'role': 'assistant', 'content': response},
                                    {'role': 'user', 'content': 'Continue'}]
             return self.chatCompletion(messages, user_uuid, temperature, max_tokens,
-                                             frequency_penalty=frequency_penalty, presence_penalty=presence_penalty,
-                                             stream=stream, stream_callback=stream_callback, json_format=json_format,
-                                             assistant_response=assistant_response + " " + response,
-                                             n_additional_calls_if_finish_reason_is_length=n_additional_calls_if_finish_reason_is_length,
-                                             n_calls=n_calls + 1)
-        return [assistant_response + " " + response] # [] is a legacy from the previous version that could return several completions. Need complete refacto to remove.
-    
-    def invoke(self, *args, **kwargs):
-        # Method implemented in subclass
-        pass
+                                       frequency_penalty=frequency_penalty, presence_penalty=presence_penalty,
+                                       stream=stream, stream_callback=stream_callback, json_format=json_format,
+                                       assistant_response=assistant_response + " " + response,
+                                       n_additional_calls_if_finish_reason_is_length=n_additional_calls_if_finish_reason_is_length,
+                                       n_calls=n_calls + 1)
+        # [] is a legacy from the previous version that could return several completions. Need complete refacto to remove.
+        return [assistant_response + " " + response]
+
+    def invoke(self, messages, user_id, temperature, max_tokens,
+               frequency_penalty=0, presence_penalty=0, stream=False, stream_callback=None, json_format=False,
+               user_task_execution_pk=None, task_name_for_system=None):
+        return self.recursive_chat(messages, user_id, temperature, max_tokens,
+                                   frequency_penalty=frequency_penalty, presence_penalty=presence_penalty,
+                                   stream=stream, stream_callback=stream_callback, json_format=json_format,
+                                   user_task_execution_pk=user_task_execution_pk,
+                                   task_name_for_system=task_name_for_system,
+                                   n_additional_calls_if_finish_reason_is_length=0)
+
+    def recursive_chat(self, messages, user_id, temperature, max_tokens,
+                       frequency_penalty=0, presence_penalty=0, stream=False, stream_callback=None, json_format=False,
+                       user_task_execution_pk=None, task_name_for_system=None, n_additional_calls_if_finish_reason_is_length=0):
+        try:
+
+            # check complete number of tokens in prompt
+            n_tokens_prompt = self.num_tokens_from_messages(messages[:1])
+            n_tokens_conversation = self.num_tokens_from_messages(messages[1:])
+
+            try:
+                responses = self.chatCompletion(messages, user_id, temperature, max_tokens,
+                                                frequency_penalty=frequency_penalty, presence_penalty=presence_penalty,
+                                                json_format=json_format, stream=stream,
+                                                stream_callback=stream_callback, n_additional_calls_if_finish_reason_is_length=n_additional_calls_if_finish_reason_is_length)
+            except RateLimitError:
+                # try to use backup engine
+                if self.client_backup:
+                    responses = self.chatCompletion(messages, user_id, temperature, max_tokens,
+                                                    frequency_penalty=frequency_penalty, presence_penalty=presence_penalty,
+                                                    stream=stream,
+                                                    stream_callback=stream_callback,
+                                                    use_backup_client=True)
+                else:
+                    raise Exception(
+                        "Rate limit exceeded and no backup engine available")
+            if responses is None:
+                return None
+            n_tokens_response = 0
+            for response in responses:
+                n_tokens_response += self.num_tokens_from_messages(
+                    [{'role': 'assistant', 'content': response}])
+
+            self.tokens_costs_manager.on_tokens_counted(user_id, n_tokens_prompt, n_tokens_conversation, n_tokens_response,
+                                                        self.model, self.label, user_task_execution_pk, task_name_for_system)
+            self._write_in_dataset({"temperature": temperature, "max_tokens": max_tokens, "n_responses": 1,
+                                    "frequency_penalty": frequency_penalty, "presence_penalty": presence_penalty,
+                                    "messages": messages, "responses": responses}, task_name_for_system, "chat")
+            return responses
+        except Exception as e:
+            log_error(
+                f"Error in Mojodex OpenAI chat for user_id: {user_id} - user_task_execution_pk: {user_task_execution_pk} - task_name_for_system: {task_name_for_system}: {e}", notify_admin=True)
+            raise Exception(
+                f"🔴 Error in Mojodex OpenAI chat: {e} - model: {self.model}")

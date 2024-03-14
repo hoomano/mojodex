@@ -8,7 +8,7 @@ from models.documents.document_chunk_manager import DocumentChunkManager
 
 from background_logger import BackgroundLogger
 
-from llm_api.mojodex_background_openai import OpenAIConf
+
 
 
 class DocumentManager:

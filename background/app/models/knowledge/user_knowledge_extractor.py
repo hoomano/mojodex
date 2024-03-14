@@ -6,7 +6,7 @@ from datetime import datetime
 
 from background_logger import BackgroundLogger
 
-from llm_api.mojodex_background_openai import OpenAIConf
+
 
 from app import llm, llm_conf
 

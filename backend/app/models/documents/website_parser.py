@@ -1,6 +1,3 @@
-import json
-import os
-
 import requests
 from bs4 import BeautifulSoup
 from jinja2 import Template

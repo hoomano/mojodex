@@ -4,7 +4,7 @@ from datetime import datetime
 import requests
 from jinja2 import Template
 
-from llm_api.mojodex_background_openai import OpenAIConf
+
 from background_logger import BackgroundLogger
 
 from app import llm, llm_conf

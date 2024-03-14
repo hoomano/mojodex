@@ -5,12 +5,13 @@ from jinja2 import Template
 from serpapi import GoogleSearch
 import requests
 from bs4 import BeautifulSoup
-from llm_api.mojodex_background_openai import OpenAIConf
+
 from background_logger import BackgroundLogger
 from models.task_tool_execution.tools.tool import Tool
-from app import serp_api_costs_manager
+from mojodex_core.costs_manager.serp_api_costs_manager import SerpAPICostsManager
 
 from app import llm, llm_conf
+
 
 
 class GoogleSearchTool(Tool):
@@ -26,6 +27,8 @@ class GoogleSearchTool(Tool):
 
     scrapper_prompt = "/data/prompts/background/task_tool_execution/google_search/scrapper_prompt.txt"
     scrapper = llm(llm_conf, label="WEB_SCRAPPER")
+    
+    serp_api_costs_manager = SerpAPICostsManager()
 
     def __init__(self, user_id, task_tool_execution_pk, user_task_execution_pk, task_name_for_system, **kwargs):
         try:
@@ -97,7 +100,7 @@ class GoogleSearchTool(Tool):
             with io.capture_output() as captured:  # disables prints from GoogleSearch
                 search = GoogleSearch(params)
                 res = search.get_dict()
-            serp_api_costs_manager.on_search(user_id=self.user_id, num_of_results_asked=num,
+            self.serp_api_costs_manager.on_search(user_id=self.user_id, num_of_results_asked=num,
                                              user_task_execution_pk=self.user_task_execution_pk,
                                              task_name_for_system=self.task_name_for_system)
             if "error" in res.keys():

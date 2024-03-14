@@ -1,7 +1,8 @@
 from abc import ABC, abstractmethod
 from app import db
 from models.workflows.step import WorkflowStep, WorkflowStepExecution
-
+from mojodex_core.entities import MdUserWorkflowExecution, MdUserWorkflow, MdWorkflowStep, MdWorkflow
+from models.workflows.steps_library import steps_class
 # DB schema:
 # MdUser: user_id
 # MdWorkflow: workflow_pk, name
@@ -12,28 +13,35 @@ from models.workflows.step import WorkflowStep, WorkflowStepExecution
 # MdUserWorkflowStepExecutionRun: md_user_workflow_step_execution_run_pk, md_user_workflow_step_execution_fk, validated, result
 
 
-class Workflow(ABC):
-    def __init__(self, steps):
-        self.steps = steps # todo: steps à initialiser depuis les noms en db
-
 
 class WorkflowExecution:
+    logger_prefix = "WorkflowExecution :: "
     def __init__(self, workflow_execution_pk):
-        self.db_object = self._get_db_object(workflow_execution_pk)
-        self.steps_executions = [WorkflowStepExecution(WorkflowStep(db_workflow_step), workflow_execution_pk) for db_workflow_step in self._db_workflow_steps]
+        try:
+            self.db_object = self._get_db_object(workflow_execution_pk)
+            self.steps_executions = [WorkflowStepExecution(steps_class[db_workflow_step.name](db_workflow_step), workflow_execution_pk) for db_workflow_step in self._db_workflow_steps]
+        except Exception as e:
+            raise Exception(f"{self.logger_prefix} :: __init__ :: {e}")
 
     def _get_db_object(self, workflow_execution_pk):
-        db_workflow_execution = db.session.query(MdUserWorkflowExecution)\
-            .filter(MdUserWorkflowExecution.workflow_execution_pk == workflow_execution_pk)\
-            .first()
-        return db_workflow_execution
+        try:
+            db_workflow_execution = db.session.query(MdUserWorkflowExecution)\
+                .filter(MdUserWorkflowExecution.user_workflow_execution_pk == workflow_execution_pk)\
+                .first()
+            return db_workflow_execution
+        except Exception as e:
+            raise Exception(f"_get_db_object :: {e}")
+    
 
     @property
     def _db_workflow_steps(self):
-        return db.session.query(MdWorkflowStep)\
-            .join(MdUserWorkflow, MdUserWorkflow.workflow_fk == MdWorkflowStep.workflow_fk)\
-            .filter(MdUserWorkflow.user_workflow_pk == self.db_object.user_workflow_fk)\
-            .order_by(MdWorkflowStep.order.asc()).all()
+        try:
+            return db.session.query(MdWorkflowStep)\
+                .join(MdUserWorkflow, MdUserWorkflow.workflow_fk == MdWorkflowStep.workflow_fk)\
+                .filter(MdUserWorkflow.user_workflow_pk == self.db_object.user_workflow_fk)\
+                .order_by(MdWorkflowStep.workflow_step_pk.asc()).all()
+        except Exception as e:
+            raise Exception(f"_db_workflow_steps :: {e}")
 
     @property
     def initial_parameters(self):
@@ -98,7 +106,27 @@ class WorkflowExecution:
             checkpoint_step_index = self.steps.index(checkpoint_step)
             for step in self.steps[checkpoint_step_index+1:]:
                 step.reset()
-        
+
+    @property
+    def _db_workflow(self):
+        try:
+            return db.session.query(MdWorkflow)\
+                .join(MdUserWorkflow, MdUserWorkflow.workflow_fk == MdWorkflow.workflow_pk)\
+                .filter(MdUserWorkflow.user_workflow_pk == self.db_object.user_workflow_fk)\
+                .first()
+        except Exception as e:
+            raise Exception(f"_db_workflow :: {e}")
+
+    def to_json(self):
+        try:
+            return {
+                "workflow_name": self._db_workflow.name,
+                "user_workflow_execution_pk": self.db_object.user_workflow_execution_pk,
+                "user_workflow_fk": self.db_object.user_workflow_fk,
+                "steps": [step_execution.to_json() for step_execution in self.steps_executions]
+            }
+        except Exception as e:
+            raise Exception(f"{logger_prefix} to_json :: {e}")
 
 
 

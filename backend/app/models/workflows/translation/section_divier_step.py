@@ -1,4 +1,8 @@
-class SectionsDividerStep:
+from models.workflows.step import WorkflowStep
+
+
+class SectionsDividerStep(WorkflowStep):
+
     
     def execute(self, parameter, initial_parameters, history):
         return parameter.split("\n")

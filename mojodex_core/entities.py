@@ -92,6 +92,19 @@ class MdTool(Base):
     md_task_tool_association = relationship('MdTaskToolAssociation', back_populates='md_tool')
 
 
+class MdWorkflow(Base):
+    __tablename__ = 'md_workflow'
+    __table_args__ = (
+        PrimaryKeyConstraint('workflow_pk', name='md_workflow_pkey'),
+    )
+
+    workflow_pk = Column(Integer, Sequence('md_workflow_seq'), primary_key=True)
+    name = Column(String(255), nullable=False)
+
+    md_workflow_step = relationship('MdWorkflowStep', back_populates='md_workflow')
+    md_user_workflow = relationship('MdUserWorkflow', back_populates='md_workflow')
+
+
 class MdProduct(Base):
     __tablename__ = 'md_product'
     __table_args__ = (
@@ -231,9 +244,25 @@ class MdUser(Base):
     md_session = relationship('MdSession', back_populates='user')
     md_user_task = relationship('MdUserTask', back_populates='user')
     md_user_vocabulary = relationship('MdUserVocabulary', back_populates='user')
+    md_user_workflow = relationship('MdUserWorkflow', back_populates='user')
     md_home_chat = relationship('MdHomeChat', back_populates='user')
     md_calendar_suggestion = relationship('MdCalendarSuggestion', back_populates='user')
     md_produced_text = relationship('MdProducedText', back_populates='user')
+
+
+class MdWorkflowStep(Base):
+    __tablename__ = 'md_workflow_step'
+    __table_args__ = (
+        ForeignKeyConstraint(['workflow_fk'], ['md_workflow.workflow_pk'], name='md_workflow_step_workflow_fk_fkey'),
+        PrimaryKeyConstraint('workflow_step_pk', name='md_workflow_step_pkey')
+    )
+
+    workflow_step_pk = Column(Integer, Sequence('md_workflow_step_seq'), primary_key=True)
+    workflow_fk = Column(Integer, nullable=False)
+    name = Column(String(255), nullable=False)
+
+    md_workflow = relationship('MdWorkflow', back_populates='md_workflow_step')
+    md_user_workflow_step_execution = relationship('MdUserWorkflowStepExecution', back_populates='md_workflow_step')
 
 
 class MdDevice(Base):
@@ -470,6 +499,23 @@ class MdUserVocabulary(Base):
     user = relationship('MdUser', back_populates='md_user_vocabulary')
 
 
+class MdUserWorkflow(Base):
+    __tablename__ = 'md_user_workflow'
+    __table_args__ = (
+        ForeignKeyConstraint(['user_id'], ['md_user.user_id'], name='md_user_workflow_user_id_fkey'),
+        ForeignKeyConstraint(['workflow_fk'], ['md_workflow.workflow_pk'], name='md_user_workflow_workflow_fk_fkey'),
+        PrimaryKeyConstraint('user_workflow_pk', name='md_user_workflow_pkey')
+    )
+
+    user_workflow_pk = Column(Integer, Sequence('md_user_workflow_seq'), primary_key=True)
+    user_id = Column(String(255), nullable=False)
+    workflow_fk = Column(Integer, nullable=False)
+
+    user = relationship('MdUser', back_populates='md_user_workflow')
+    md_workflow = relationship('MdWorkflow', back_populates='md_user_workflow')
+    md_user_workflow_execution = relationship('MdUserWorkflowExecution', back_populates='md_user_workflow')
+
+
 class MdDocumentChunk(Base):
     __tablename__ = 'md_document_chunk'
     __table_args__ = (
@@ -591,6 +637,21 @@ class MdUserTaskExecution(Base):
     md_todo = relationship('MdTodo', back_populates='md_user_task_execution')
 
 
+class MdUserWorkflowExecution(Base):
+    __tablename__ = 'md_user_workflow_execution'
+    __table_args__ = (
+        ForeignKeyConstraint(['user_workflow_fk'], ['md_user_workflow.user_workflow_pk'], name='md_user_workflow_execution_user_workflow_fk_fkey'),
+        PrimaryKeyConstraint('user_workflow_execution_pk', name='md_user_workflow_execution_pkey')
+    )
+
+    user_workflow_execution_pk = Column(Integer, Sequence('md_user_workflow_execution_seq'), primary_key=True)
+    user_workflow_fk = Column(Integer, nullable=False)
+    creation_date = Column(DateTime, nullable=False, server_default=text('now()'))
+
+    md_user_workflow = relationship('MdUserWorkflow', back_populates='md_user_workflow_execution')
+    md_user_workflow_step_execution = relationship('MdUserWorkflowStepExecution', back_populates='md_user_workflow_execution')
+
+
 class MdCalendarSuggestion(Base):
     __tablename__ = 'md_calendar_suggestion'
     __table_args__ = (
@@ -682,6 +743,24 @@ class MdTodo(Base):
     md_todo_scheduling = relationship('MdTodoScheduling', back_populates='md_todo')
 
 
+class MdUserWorkflowStepExecution(Base):
+    __tablename__ = 'md_user_workflow_step_execution'
+    __table_args__ = (
+        ForeignKeyConstraint(['user_workflow_execution_fk'], ['md_user_workflow_execution.user_workflow_execution_pk'], name='md_user_workflow_step_execution_user_workflow_execution_fk_fkey'),
+        ForeignKeyConstraint(['workflow_step_fk'], ['md_workflow_step.workflow_step_pk'], name='md_user_workflow_step_execution_workflow_step_fk_fkey'),
+        PrimaryKeyConstraint('user_workflow_step_execution_pk', name='md_user_workflow_step_execution_pkey')
+    )
+
+    user_workflow_step_execution_pk = Column(Integer, Sequence('md_user_workflow_step_execution_seq'), primary_key=True)
+    user_workflow_execution_fk = Column(Integer, nullable=False)
+    workflow_step_fk = Column(Integer, nullable=False)
+    creation_date = Column(DateTime, nullable=False, server_default=text('now()'))
+
+    md_user_workflow_execution = relationship('MdUserWorkflowExecution', back_populates='md_user_workflow_step_execution')
+    md_workflow_step = relationship('MdWorkflowStep', back_populates='md_user_workflow_step_execution')
+    md_user_workflow_step_execution_run = relationship('MdUserWorkflowStepExecutionRun', back_populates='md_user_workflow_step_execution')
+
+
 class MdProducedTextVersion(Base):
     __tablename__ = 'md_produced_text_version'
     __table_args__ = (
@@ -734,3 +813,32 @@ class MdTodoScheduling(Base):
     reschedule_justification = Column(Text)
 
     md_todo = relationship('MdTodo', back_populates='md_todo_scheduling')
+
+
+class MdUserWorkflowStepExecutionRun(Base):
+    __tablename__ = 'md_user_workflow_step_execution_run'
+    __table_args__ = (
+        ForeignKeyConstraint(['user_workflow_step_execution_fk'], ['md_user_workflow_step_execution.user_workflow_step_execution_pk'], name='user_wf_step_exec_run_user_wf_step_exec_fk_fkey'),
+        PrimaryKeyConstraint('user_workflow_step_execution_run_pk', name='md_user_workflow_step_execution_run_pkey')
+    )
+
+    user_workflow_step_execution_run_pk = Column(Integer, Sequence('md_user_workflow_step_execution_run_seq'), primary_key=True)
+    user_workflow_step_execution_fk = Column(Integer, nullable=False)
+    creation_date = Column(DateTime, nullable=False, server_default=text('now()'))
+
+    md_user_workflow_step_execution = relationship('MdUserWorkflowStepExecution', back_populates='md_user_workflow_step_execution_run')
+    user_workflow_step_execution_run_result = relationship('UserWorkflowStepExecutionRunResult', back_populates='md_user_workflow_step_execution_run')
+
+
+class UserWorkflowStepExecutionRunResult(Base):
+    __tablename__ = 'user_workflow_step_execution_run_result'
+    __table_args__ = (
+        ForeignKeyConstraint(['user_workflow_step_execution_run_fk'], ['md_user_workflow_step_execution_run.user_workflow_step_execution_run_pk'], name='user_wf_step_exec_run_result_user_wf_step_exec_run_fk_fkey'),
+        PrimaryKeyConstraint('user_workflow_step_execution_run_result_pk', name='user_workflow_step_execution_run_result_pkey')
+    )
+
+    user_workflow_step_execution_run_result_pk = Column(Integer, Sequence('user_workflow_step_execution_run_result_seq'), primary_key=True)
+    user_workflow_step_execution_run_fk = Column(Integer, nullable=False)
+    result = Column(Text, nullable=False)
+
+    md_user_workflow_step_execution_run = relationship('MdUserWorkflowStepExecutionRun', back_populates='user_workflow_step_execution_run_result')

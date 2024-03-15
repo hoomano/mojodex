@@ -18,15 +18,20 @@ class WorkflowStepExecutionRun:
     def validated(self, value):
         self.db_object_run.validated = value
         db.session.commit()
+
+    def validate(self):
+        self.validated = True
     
     @property
     def parameter(self):
-        return self.db_object_run.parameter
+        value = self.db_object_run.parameter
+        return json.loads(value) if value else None
     
     
     @property
     def result(self):
-        return self.db_object_run.result
+        string_value = self.db_object_run.result
+        return json.loads(string_value) if string_value else None
     
     @result.setter
     def result(self, value):
@@ -39,10 +44,13 @@ class WorkflowStepExecutionRun:
         db.session.commit()
 
     def to_json(self):
-        return {
-            "user_workflow_step_execution_run_pk": self.db_object_run.user_workflow_step_execution_run_pk,
-            "parameter": self.db_object_run.parameter,
-            "validated": self.db_object_run.validated,
-            "result": self.db_object_run.result
-        }
+        try: 
+            return {
+                "user_workflow_step_execution_run_pk": self.db_object_run.user_workflow_step_execution_run_pk,
+                "parameter": self.db_object_run.parameter,
+                "validated": self.db_object_run.validated,
+                "result": self.db_object_run.result
+            }
+        except Exception as e:
+            raise Exception(f"{self.logger_prefix} :: to_json :: {e}")
         

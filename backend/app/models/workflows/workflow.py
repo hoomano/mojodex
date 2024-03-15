@@ -1,7 +1,5 @@
-from abc import ABC, abstractmethod
 from app import db
-from models.workflows.translation.section_divier_step import TranslateWorkflowUserInputSpec
-from models.workflows.step import WorkflowStep, WorkflowStepExecution
+from models.workflows.step import WorkflowStepExecution
 from mojodex_core.entities import MdUserWorkflowExecution, MdUserWorkflow, MdWorkflowStep, MdWorkflow
 from models.workflows.steps_library import steps_class
 from sqlalchemy.orm.attributes import flag_modified
@@ -13,7 +11,6 @@ from sqlalchemy.orm.attributes import flag_modified
 # MdUserWorkflowExecution: user_workflow_execution_pk, user_workflow_fk
 # MdUserWorkflowStepExecution: user_workflow_step_execution_pk, user_workflow_execution_fk, user_workflow_step_fk
 # MdUserWorkflowStepExecutionRun: md_user_workflow_step_execution_run_pk, md_user_workflow_step_execution_fk, validated, result
-
 
 
 class WorkflowExecution:
@@ -50,9 +47,8 @@ class WorkflowExecution:
     @property
     def initial_parameters(self):
         #return self.db_object.json_input
-        value = self.db_object.json_input
-        return TranslateWorkflowUserInputSpec(value['text'], value['target_language']) # TODO: remove and set in workflow implementation
-    
+        return self.db_object.json_input
+
     @initial_parameters.setter
     def initial_parameters(self, value):
         try:
@@ -65,6 +61,8 @@ class WorkflowExecution:
     def run(self):
         try:
             step_execution_to_run = self._current_step_execution
+            if not step_execution_to_run:
+                return
             print(f"🟢 Running step: {step_execution_to_run.name} - parameters: {self._intermediate_results[-1] if self._intermediate_results else [self.initial_parameters]} ")
             step_execution_to_run.initialize_runs(self._intermediate_results[-1] if self._intermediate_results else [self.initial_parameters])
             result = step_execution_to_run.run(self.initial_parameters, self._intermediate_results)

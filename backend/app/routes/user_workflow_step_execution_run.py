@@ -26,8 +26,8 @@ class UserWorkflowStepExecutionRun(Resource):
             user_workflow_execution = db.session.query(MdUserWorkflowExecution)\
                 .join(MdUserWorkflow, MdUserWorkflow.user_workflow_pk == MdUserWorkflowExecution.user_workflow_fk)\
                 .join(MdUserWorkflowStepExecution, MdUserWorkflowStepExecution.user_workflow_execution_fk == MdUserWorkflowExecution.user_workflow_execution_pk)\
-                .join(MdUserWorkflowStepExecutionRun, MdUserWorkflowStepExecutionRun.md_user_workflow_step_execution_fk == MdUserWorkflowStepExecution.user_workflow_step_execution_pk)\
-                .filter(MdUserWorkflowStepExecutionRun.md_user_workflow_step_execution_run_pk == user_workflow_step_execution_run_pk)\
+                .join(MdUserWorkflowStepExecutionRun, MdUserWorkflowStepExecutionRun.user_workflow_step_execution_fk == MdUserWorkflowStepExecution.user_workflow_step_execution_pk)\
+                .filter(MdUserWorkflowStepExecutionRun.user_workflow_step_execution_run_pk == user_workflow_step_execution_run_pk)\
                 .filter(MdUserWorkflow.user_id == user_id)\
                 .first()
             if not user_workflow_execution:

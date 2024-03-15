@@ -3,13 +3,16 @@ import json
 from app import db
 from models.workflows.run import WorkflowStepExecutionRun
 from mojodex_core.entities import MdUserWorkflowStepExecution, MdUserWorkflowStepExecutionRun
+from typing import List
 
 
 class WorkflowStep(ABC):
     logger_prefix = "WorkflowStep :: "
 
-    def __init__(self, workflow_step):
+    def __init__(self, workflow_step, input_keys: List[str], output_keys: List[str]):
         try:
+            self.input_keys = input_keys
+            self.output_keys = output_keys
             self.db_object = workflow_step
         except Exception as e:
             raise Exception(f"{self.logger_prefix} :: __init__ :: {e}")
@@ -19,19 +22,34 @@ class WorkflowStep(ABC):
         return self.db_object.workflow_step_pk
     
     @abstractmethod
-    def _execute(self, parameter: dict, initial_parameters: dict, history: list[dict]):
+    def _execute(self, parameter: dict, initial_parameters: dict, history: List[dict]):
        pass
 
     
-    def execute(self, parameter: dict, initial_parameter: dict, history: list[dict]):
+    def execute(self, parameter: dict, initial_parameter: dict, history: List[dict]):
         """
         Returns a list of parameters (dict)
         """
         try:
-            output = self._execute(parameter, initial_parameter, history)
+            
+            # ensure that input keys are present in parameter
+            for key in self.input_keys:
+                if key not in parameter:
+                    raise Exception(f"execute :: key {key} not in parameter")
+            output = self._execute(parameter, initial_parameter, history) # list of dict
+            # ensure output is a list
+            if not isinstance(output, List):
+                raise Exception(f"execute :: output is not a list")
+            # ensure that output keys are present in output
+            for item in output:
+                if not isinstance(item, dict):
+                    raise Exception(f"execute :: output item {item} is not a dict")
+                for key in self.output_keys:
+                    if key not in item:
+                        raise Exception(f"execute :: key {key} not in output")
             return output
         except Exception as e:
-            raise Exception(f"_execute :: {e}")
+            raise Exception(f"{WorkflowStep.logger_prefix} execute :: {e}")
 
 
 class WorkflowStepExecution:
@@ -79,12 +97,14 @@ class WorkflowStepExecution:
             .order_by(MdUserWorkflowStepExecutionRun.creation_date.asc()).all()
 
 
-    def initialize_runs(self, parameters: list[dict]):
+    def initialize_runs(self, parameters: List[dict]):
         try:
+            print(f"🟢 initialize_runs parameters_type: {type(parameters)} parameters: {parameters}")
             if not self.initialized:
                 for parameter in parameters:
+                    print(f"🟢 initialize_runs parameter_type: {type(parameter)} parameter: {parameter}")
                     # if parameter is a dict, encode json to string
-                    if isinstance(parameter, dict) or isinstance(parameter, list):
+                    if isinstance(parameter, dict) or isinstance(parameter, List):
                         parameter = json.dumps(parameter)
                     else:
                         parameter = str(parameter)
@@ -104,11 +124,11 @@ class WorkflowStepExecution:
     def validated(self):
         return self.initialized and all(run.validated for run in self.runs)
 
-    def run(self, initial_parameter: dict, history: list[dict]):
+    def run(self, initial_parameter: dict, history: List[dict]):
         try:
             # run from non-validated actions
             for run in self.runs:
-                print(f"👉 Step run {run.parameter}")
+                print(f"👉 Step run parameter_type {type(run.parameter)} - parameter {run.parameter}")
                 if not run.validated:
                     return self.execute(run, initial_parameter, history)
             return None
@@ -116,7 +136,7 @@ class WorkflowStepExecution:
             raise Exception(f"{self.logger_prefix} :: run :: {e}")
             
 
-    def execute(self, run: WorkflowStepExecutionRun, initial_parameter: dict, history: list[dict]):
+    def execute(self, run: WorkflowStepExecutionRun, initial_parameter: dict, history: List[dict]):
         result = self.workflow_step.execute(run.parameter, initial_parameter, history)
         print(f"🟢 Step result: {result}")
         run.result = result

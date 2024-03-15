@@ -1,11 +1,16 @@
+import logging
 from openai import OpenAI, AzureOpenAI, RateLimitError
 from mojodex_core.llm_engine.llm import LLM
 from mojodex_core.logging_handler import MojodexCoreLogger, log_error
 import tiktoken
 
+from typing import List
+
 from mojodex_core.costs_manager.tokens_costs_manager import TokensCostsManager
 
 import os
+
+from mojodex_core.prompting.mpt import MPT
 
 mojo_openai_logger = MojodexCoreLogger("mojo_openai_logger")
 
@@ -151,7 +156,30 @@ class OpenAILLM(LLM):
         # [] is a legacy from the previous version that could return several completions. Need complete refacto to remove.
         return [assistant_response + " " + response]
 
-    def invoke(self, messages, user_id, temperature, max_tokens,
+
+    def invoke_from_mpt(self, mpt: MPT, user_id, temperature, max_tokens, frequency_penalty=0, presence_penalty=0,
+                        stream=False, stream_callback=None, json_format=False, user_task_execution_pk=None,
+                        task_name_for_system=None):
+        try:
+            if self.model not in mpt.models:
+                logging.warning(
+                    f"{mpt} does not contain model: {self.model} in its dashbangs")
+            messages = [{"role": "user", "content": mpt.prompt}]
+            responses = self.recursive_invoke(messages, user_id, temperature, max_tokens,
+                                           frequency_penalty=frequency_penalty, presence_penalty=presence_penalty,
+                                           stream=stream, stream_callback=stream_callback, json_format=json_format,
+                                           user_task_execution_pk=user_task_execution_pk,
+                                           task_name_for_system=task_name_for_system,
+                                           n_additional_calls_if_finish_reason_is_length=0)
+            return responses
+        except Exception as e:
+            log_error(
+                f"Error in Mojodex OpenAI invoke for user_id: {user_id} - user_task_execution_pk: {user_task_execution_pk} - task_name_for_system: {task_name_for_system}: {e}", notify_admin=True)
+            raise Exception(
+                f"🔴 Error in Mojodex OpenAI invoke: {e} - model: {self.model}"
+                )
+
+    def invoke(self, messages: List, user_id, temperature, max_tokens,
                frequency_penalty=0, presence_penalty=0, stream=False, stream_callback=None, json_format=False,
                user_task_execution_pk=None, task_name_for_system=None):
         return self.recursive_invoke(messages, user_id, temperature, max_tokens,

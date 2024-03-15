@@ -4,6 +4,7 @@ from mojodex_core.logging_handler import log_error
 import logging
 import os
 from mojodex_core.llm_engine.llm import LLM
+from mojodex_core.prompting.mpt import MPT
 
 logging.basicConfig(level=logging.ERROR)
 
@@ -96,7 +97,6 @@ class MistralAILLM(LLM):
         except Exception as e:
             log_error(f"💨❌: Error in Mojodex Mistral chat: {e}")
 
-
     def invoke(self, messages, user_id, temperature, max_tokens, n_responses=1,
                frequency_penalty=0, presence_penalty=0, stream=False, stream_callback=None, json_format=False,
                user_task_execution_pk=None, task_name_for_system=None):
@@ -111,6 +111,23 @@ class MistralAILLM(LLM):
                 log_error(
                     f"Error while writing in dataset for user_id: {user_id} - user_task_execution_pk: {user_task_execution_pk} - task_name_for_system: {task_name_for_system}: {e}", notify_admin=False)
                 log_error(messages, notify_admin=False)
+            return responses
+        except Exception as e:
+            log_error(
+                f"Error in Mojodex Mistral AI chat for user_id: {user_id} - user_task_execution_pk: {user_task_execution_pk} - task_name_for_system: {task_name_for_system}: {e}", notify_admin=False)
+            raise Exception(
+                f"🔴 Error in Mojodex Mistral AI chat: {e} - model: {self.model}")
+
+    def invoke_from_mpt(self, mpt: MPT, user_id, temperature, max_tokens, n_responses=1,
+                        frequency_penalty=0, presence_penalty=0, stream=False, stream_callback=None, json_format=False,
+                        user_task_execution_pk=None, task_name_for_system=None):
+        try:
+            if self.model not in mpt.models:
+                logging.warning(
+                    f"{mpt} does not contain model: {self.model} in its dashbangs")
+            messages = [{"role": "user", "content": mpt.prompt}]
+            responses = self.invoke(messages, user_id, temperature, max_tokens, n_responses=n_responses,
+                                    frequency_penalty=frequency_penalty, presence_penalty=presence_penalty, stream=stream, stream_callback=stream_callback, json_format=json_format, user_task_execution_pk=user_task_execution_pk, task_name_for_system=task_name_for_system)
             return responses
         except Exception as e:
             log_error(

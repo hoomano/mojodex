@@ -82,7 +82,24 @@ class LLM(ABC):
             None
         """
         pass
+    
+    @abstractmethod
+    def invoke_from_mpt(self, mpt, user_id, temperature, max_tokens, user_task_execution_pk, task_name_for_system):
+        """
+        Perform a LLM chat completion using the provided MPT.
 
+        Args:
+            mpt (MPT): The MPT object.
+            user_id (str): ID of the current user.
+            temperature (float): Temperature parameter for generating responses.
+            max_tokens (int): Maximum number of tokens in the generated response.
+            user_task_execution_pk (int): Primary key of the user task execution.
+            task_name_for_system (str): Name of the task for the system.
+
+        Returns:
+            None
+        """
+        pass
 
     @abstractmethod
     def chatCompletion(self, *args, **kwargs):

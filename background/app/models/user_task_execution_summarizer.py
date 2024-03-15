@@ -7,12 +7,13 @@ from background_logger import BackgroundLogger
 
 from app import llm, llm_conf
 from app import send_admin_error_email
+from mojodex_core.prompting.mpt import MPT
 
 
 class UserTaskExecutionSummarizer:
     logger_prefix = "UserTaskExecutionSummarizer::"
 
-    task_execution_summary_prompt = "/data/prompts/background/user_task_execution_end/user_task_execution_summarizer/task_execution_summary_prompt.txt"
+    task_execution_summary_mpt = "instructions/task_execution_summary.mpt"
     task_execution_summarizer = llm(
         llm_conf, label="TASK_EXECUTION_SUMMARIZER")
 
@@ -36,9 +37,7 @@ class UserTaskExecutionSummarizer:
             self.logger.info("_task_execution_summary")
             response = None
 
-            with open(UserTaskExecutionSummarizer.task_execution_summary_prompt, "r") as f:
-                template = Template(f.read())
-                prompt = template.render(mojo_knowledge=self.knowledge_collector.mojo_knowledge,
+            mpt = MPT(UserTaskExecutionSummarizer.task_execution_summary_mpt, mojo_knowledge=self.knowledge_collector.mojo_knowledge,
                                          global_context=self.knowledge_collector.global_context,
                                          username=self.knowledge_collector.user_name,
                                          user_company_knowledge=self.knowledge_collector.user_company_knowledge,
@@ -47,8 +46,7 @@ class UserTaskExecutionSummarizer:
                                          user_task_inputs=self.user_task_execution.json_input_values,
                                          user_messages_conversation=self.user_messages_conversation)
 
-            messages = [{"role": "user", "content": prompt}]
-            responses = UserTaskExecutionSummarizer.task_execution_summarizer.invoke(messages,
+            responses = UserTaskExecutionSummarizer.task_execution_summarizer.invoke_from_mpt(mpt,
                                                                                    self.user_task_execution.user_id,
                                                                                    temperature=0, max_tokens=500,
                                                                                    user_task_execution_pk=self.user_task_execution.user_task_execution_pk,

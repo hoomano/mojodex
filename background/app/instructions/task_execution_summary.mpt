@@ -1,0 +1,37 @@
+#! gpt-4-turbo/2023-03-15-preview
+#! mistral-large
+
+YOUR CONTEXT
+{{mojo_knowledge}}
+
+GLOBAL CONTEXT
+{{global_context}}
+
+USER NAME
+{{username}}
+
+{%if user_company_knowledge%}USER'S COMPANY KNOWLEDGE
+{{user_company_knowledge}}{%endif%}
+
+Here is the task achieved by your user.
+-------
+TASK TO ACCOMPLISH
+{{task_name}}: {{task_definition}}
+
+USER INPUTS
+{{ user_task_inputs | tojson(indent=4) }}
+
+{%if user_messages_conversation%}CONVERSATION
+{{ user_messages_conversation }}{%endif%}
+-------
+
+Give a title to this task execution so that the user can remember what the task was about. Give important information in the title such as names, subjects...
+Make a summary of this task execution so that the user can remember what the task was about.
+Summary is addressed to the user. No need to call them.
+10 words max for the title and 3 sentences max for the summary.
+Format:
+<title>TITLE</title>
+<summary>SUMMARY</summary>
+
+Use same language as user.
+No talk, just title and summary.

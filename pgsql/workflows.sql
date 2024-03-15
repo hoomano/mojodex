@@ -118,6 +118,7 @@ CREATE TABLE public.md_user_workflow_execution (
     user_workflow_execution_pk integer DEFAULT nextval('public.md_user_workflow_execution_seq'::regclass) NOT NULL,
     user_workflow_fk integer NOT NULL,
     creation_date timestamp without time zone NOT NULL DEFAULT now(),
+    start_date timestamp without time zone,
     json_input json
 );
 

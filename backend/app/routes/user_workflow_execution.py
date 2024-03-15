@@ -1,3 +1,4 @@
+from datetime import datetime
 from models.workflows.workflow import WorkflowExecution
 from flask import request
 from flask_restful import Resource
@@ -54,13 +55,23 @@ class UserWorkflowExecution(Resource):
             if not user_workflow:
                 return {"error": "Workflow not found for this user"}, 404
             
+            # TODO: create session
+            # session_creation = self.session_creator.create_session(user_id, platform, "form")
+            # if "error" in session_creation[0]:
+            #    return session_creation
+            # session_id = session_creation[0]["session_id"]
+            
             db_workflow_execution = MdUserWorkflowExecution(
                 user_workflow_fk=user_workflow_pk
             )
             db.session.add(db_workflow_execution)
+            db.session.flush()
+
+            workflow_execution = WorkflowExecution(db_workflow_execution.user_workflow_execution_pk)
             db.session.commit()
-            return {"user_workflow_execution_pk": db_workflow_execution.user_workflow_execution_pk}, 200
+            return workflow_execution.to_json(), 200
         except Exception as e:
+            db.session.rollback()
             log_error(e)
             return {"error": f"{error_message}: {e}"}, 500
         
@@ -93,6 +104,7 @@ class UserWorkflowExecution(Resource):
             if not isinstance(initial_parameters, dict):
                 return {"error": "initial_parameters must be a json"}, 400
             workflow_execution.initial_parameters = initial_parameters
+            workflow_execution.start_date = datetime.now()
             workflow_execution.run() # TODO: run must be done asynchronously in a dedicated thread
             return {"user_workflow_execution_pk": user_workflow_execution_pk}, 200
         except Exception as e:

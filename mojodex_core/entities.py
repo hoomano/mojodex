@@ -648,6 +648,7 @@ class MdUserWorkflowExecution(Base):
     user_workflow_fk = Column(Integer, nullable=False)
     creation_date = Column(DateTime, nullable=False, server_default=text('now()'))
     json_input = Column(JSON)
+    start_date = Column(DateTime)
 
     md_user_workflow = relationship('MdUserWorkflow', back_populates='md_user_workflow_execution')
     md_user_workflow_step_execution = relationship('MdUserWorkflowStepExecution', back_populates='md_user_workflow_execution')

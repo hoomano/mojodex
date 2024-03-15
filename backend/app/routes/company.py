@@ -14,10 +14,11 @@ from mojodex_core.json_loader import json_decode_retry
 from app import on_json_error
 
 from app import llm, llm_conf, llm_backup_conf
+from mojodex_core.prompting.mpt import MPT
 
 
 class Company(Resource):
-    correct_company_info_prompt = "/data/prompts/company/correct_company_infos.txt"
+    correct_company_info_mpt_filename = "instructions/correct_company_infos.mpt"
     company_info_corrector = llm(llm_conf,
                                  label="CORRECT_COMPANY_INFO_FROM_FEEDBACK",
                                  llm_backup_conf=llm_backup_conf
@@ -32,13 +33,12 @@ class Company(Resource):
 
     @json_decode_retry(retries=3, required_keys=['name', 'description', 'emoji'], on_json_error=on_json_error)
     def update_user_company_description(self, user_id, company, company_description, correct, feedback):
-        with open(Company.correct_company_info_prompt, 'r') as f:
-            template = Template(f.read())
-        prompt = template.render(company=company, company_description=company_description, correct=correct,
-                                 feedback=feedback)
-        messages = [{"role": "user", "content": prompt}]
 
-        responses = Company.company_info_corrector.invoke(messages, user_id, temperature=0, max_tokens=500,
+        correct_company_info_mpt = MPT(Company.correct_company_info_mpt_filename,
+                                       company=company, company_description=company_description, correct=correct,
+                                 feedback=feedback)
+
+        responses = Company.company_info_corrector.invoke_from_mpt(correct_company_info_mpt, user_id, temperature=0, max_tokens=500,
                                                         json_format=True)[0]
 
         return responses

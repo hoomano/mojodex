@@ -9,6 +9,7 @@ from mojodex_core.entities import MdProducedText, MdMessage, MdProducedTextVersi
 from mojodex_backend_logger import MojodexBackendLogger
 
 from app import llm, llm_conf, llm_backup_conf, embedder, embedding_conf
+from mojodex_core.prompting.mpt import MPT
 
 
 class ProducedTextManager:
@@ -16,12 +17,12 @@ class ProducedTextManager:
 
     embedder = embedder(embedding_conf, label="PRODUCED_TEXT_EMBEDDER")
 
-    is_edition_prompt = "/data/prompts/produced_text_manager/is_edition_prompt.txt"
+    is_edition_mpt_filename = "instructions/is_edition.mpt"
 
     is_edition_generator = llm(
         llm_conf, label="IS_EDITION_WRITING", llm_backup_conf=llm_backup_conf)
 
-    get_text_type_prompt = "/data/prompts/produced_text_manager/get_text_type_prompt.txt"
+    get_text_type_mpt_filename = "instructions/get_text_type.mpt"
     text_type_deducer = llm(
         llm_conf, label="TEXT_TYPE_DEDUCER", llm_backup_conf=llm_backup_conf)
 
@@ -132,13 +133,9 @@ class ProducedTextManager:
             if self.use_draft_placeholder:
                 text = "edition"
             else:
-                with open(ProducedTextManager.is_edition_prompt, "r") as f:
-                    template = Template(f.read())
-                    is_edition_prompt = template.render(
-                        conversation=self._get_conversation_as_string())
-
-                messages = [{"role": "system", "content": is_edition_prompt}]
-                responses = ProducedTextManager.is_edition_generator.invoke(messages, self.user_id,
+                is_edition_mpt = MPT(ProducedTextManager.is_edition_mpt_filename, conversation=self._get_conversation_as_string() )
+                
+                responses = ProducedTextManager.is_edition_generator.invoke_from_mpt(is_edition_mpt, self.user_id,
                                                                           temperature=0, max_tokens=20,
                                                                           user_task_execution_pk=self.user_task_execution_pk,
                                                                           task_name_for_system=self.task_name_for_system,
@@ -156,12 +153,10 @@ class ProducedTextManager:
         """Return the type of the produced text among the available enum, based on the text itself"""
         start_time = time.time()
         types_enum = db.session.query(MdTextType).all()
-        with open(ProducedTextManager.get_text_type_prompt, "r") as f:
-            template = Template(f.read())
-            get_text_type_prompt = template.render(
-                text=text, types_enum=types_enum)
-        messages = [{"role": "system", "content": get_text_type_prompt}]
-        responses = ProducedTextManager.text_type_deducer.invoke(messages, self.user_id,
+        
+        get_text_type_mpt = MPT(ProducedTextManager.get_text_type_mpt_filename, text=text, types_enum=types_enum)
+
+        responses = ProducedTextManager.text_type_deducer.invoke_from_mpt(get_text_type_mpt, self.user_id,
                                                                temperature=0, max_tokens=20,
                                                                user_task_execution_pk=self.user_task_execution_pk,
                                                                task_name_for_system=self.task_name_for_system,

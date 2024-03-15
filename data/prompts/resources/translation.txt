@@ -1,7 +1,0 @@
-Translate this text to {{language}}:
-<text_start>
-{{text}}
-<text_end>
-If text is already in {{language}}, return it as is.
-No talk, just translation.
-Do not include tags in response.

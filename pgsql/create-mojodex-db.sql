@@ -1203,7 +1203,7 @@ CREATE TABLE public.md_user (
     timezone_offset integer,
     onboarding_presented timestamp with time zone,
     product_category_fk integer,
-    todo_email_reception boolean DEFAULT true NOT NULL,
+    todo_email_reception boolean DEFAULT true NOT NULL
 );
 
 

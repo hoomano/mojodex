@@ -9,7 +9,7 @@ from jinja2 import Template
 from app import log_error
 
 from app import llm, llm_conf, llm_backup_conf
-from mojodex_core.prompting.mpt import MPT
+from mojodex_core.llm_engine.mpt import MPT
 
 class VoiceGenerator:
     get_language_mpt_filename = "instructions/get_language.mpt"

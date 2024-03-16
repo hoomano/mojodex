@@ -6,7 +6,7 @@ from flask_restful import Resource
 from app import db, log_error
 from mojodex_core.entities import MdTextType
 
-from mojodex_core.prompting.mpt import MPT
+from mojodex_core.llm_engine.mpt import MPT
 from mojodex_core.json_loader import json_decode_retry
 from app import on_json_error
 

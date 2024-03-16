@@ -4,7 +4,7 @@ from mojodex_core.logging_handler import log_error
 import logging
 import os
 from mojodex_core.llm_engine.llm import LLM
-from mojodex_core.prompting.mpt import MPT
+from mojodex_core.llm_engine.mpt import MPT
 
 logging.basicConfig(level=logging.ERROR)
 

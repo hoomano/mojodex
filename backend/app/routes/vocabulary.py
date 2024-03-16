@@ -12,7 +12,7 @@ from models.knowledge.knowledge_manager import KnowledgeManager
 from sqlalchemy import func, or_
 from sqlalchemy.orm.attributes import flag_modified
 
-from mojodex_core.prompting.mpt import MPT
+from mojodex_core.llm_engine.mpt import MPT
 
 
 class Vocabulary(Resource):

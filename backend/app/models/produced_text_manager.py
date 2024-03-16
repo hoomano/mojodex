@@ -9,7 +9,7 @@ from mojodex_core.entities import MdProducedText, MdMessage, MdProducedTextVersi
 from mojodex_backend_logger import MojodexBackendLogger
 
 from app import llm, llm_conf, llm_backup_conf, embedder, embedding_conf
-from mojodex_core.prompting.mpt import MPT
+from mojodex_core.llm_engine.mpt import MPT
 
 
 class ProducedTextManager:

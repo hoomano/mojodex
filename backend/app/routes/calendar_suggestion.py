@@ -9,7 +9,7 @@ from jinja2 import Template
 from mojodex_core.entities import *
 
 from app import llm, llm_conf, llm_backup_conf
-from mojodex_core.prompting.mpt import MPT
+from mojodex_core.llm_engine.mpt import MPT
 
 from placeholder_generator import PlaceholderGenerator
 from mojodex_core.json_loader import json_decode_retry

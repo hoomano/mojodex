@@ -10,7 +10,7 @@ from mojodex_core.costs_manager.tokens_costs_manager import TokensCostsManager
 
 import os
 
-from mojodex_core.prompting.mpt import MPT
+from mojodex_core.llm_engine.mpt import MPT
 
 mojo_openai_logger = MojodexCoreLogger("mojo_openai_logger")
 

@@ -7,7 +7,7 @@ from background_logger import BackgroundLogger
 
 from app import llm, llm_conf
 from app import send_admin_error_email
-from mojodex_core.prompting.mpt import MPT
+from mojodex_core.llm_engine.mpt import MPT
 
 
 class UserTaskExecutionSummarizer:

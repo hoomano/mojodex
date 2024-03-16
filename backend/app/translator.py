@@ -1,6 +1,6 @@
 
 from app import llm, llm_conf, llm_backup_conf
-from mojodex_core.prompting.mpt import MPT
+from mojodex_core.llm_engine.mpt import MPT
 
 
 class Translator:

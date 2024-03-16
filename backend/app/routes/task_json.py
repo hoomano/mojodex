@@ -6,7 +6,7 @@ from flask_restful import Resource
 from app import db, log_error
 from mojodex_core.entities import MdTextType
 
-from jinja2 import Template
+from mojodex_core.prompting.mpt import MPT
 from mojodex_core.json_loader import json_decode_retry
 from app import on_json_error
 
@@ -15,7 +15,7 @@ from app import llm, llm_conf, llm_backup_conf
 
 class TaskJson(Resource):
 
-    task_json_prompt = "/data/prompts/tasks/generate_json.txt"
+    task_json_mpt_filename = "instructions/generate_task_json.mpt"
     task_json_generator = llm(
         llm_conf, label="GENERATE_TASK_JSON", llm_backup_conf=llm_backup_conf)
 
@@ -29,15 +29,10 @@ class TaskJson(Resource):
     @json_decode_retry(retries=3, required_keys=[], on_json_error=on_json_error)
     def __generate_task_json(self, task_requirements, existing_text_types):
         try:
-            with open(self.task_json_prompt, "r") as f:
-                template = Template(f.read())
-                prompt = template.render(
-                    task_requirements=task_requirements, existing_text_types=existing_text_types)
+            generate_task_mpt = MPT(self.task_json_mpt_filename,task_requirements=task_requirements, existing_text_types=existing_text_types)
 
-            messages = [{"role": "system", "content": prompt}]
-
-            responses = self.task_json_generator.invoke(
-                messages, "backoffice", temperature=0, max_tokens=4000, json_format=True)
+            responses = self.task_json_generator.invoke_from_mpt(
+                generate_task_mpt, "backoffice", temperature=0, max_tokens=4000, json_format=True)
 
             response = responses[0]
             return response

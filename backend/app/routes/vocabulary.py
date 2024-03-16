@@ -12,9 +12,11 @@ from models.knowledge.knowledge_manager import KnowledgeManager
 from sqlalchemy import func, or_
 from sqlalchemy.orm.attributes import flag_modified
 
+from mojodex_core.prompting.mpt import MPT
+
 
 class Vocabulary(Resource):
-    proper_nouns_tagger_prompt = "/data/prompts/resources/proper_nouns_tagger.txt"
+    proper_nouns_tagger_mpt_filename = "instructions/proper_nouns_tagger.mpt"
     proper_nouns_tagger = llm(llm_conf, label="SPELLING_CORRECTOR",
                                         llm_backup_conf=llm_backup_conf)
 
@@ -24,17 +26,16 @@ class Vocabulary(Resource):
     def __tag_proper_nouns(self, message_text, mojo_knowledge, global_context, username, user_company_knowledge,
                            task_definition_for_system, user_id, user_task_execution_pk, task_name_for_system):
         try:
-            with open(Vocabulary.proper_nouns_tagger_prompt) as f:
-                tag_proper_nouns_template = Template(f.read())
-                tag_proper_nouns_prompt = tag_proper_nouns_template.render(mojo_knowledge=mojo_knowledge,
+            with open(Vocabulary.proper_nouns_tagger_mpt_filename) as f:
+                proper_nouns_tagger_mpt = MPT(Vocabulary.proper_nouns_tagger_mpt_filename, mojo_knowledge=mojo_knowledge,
                                                                            global_context=global_context,
                                                                            username=username,
                                                                            user_company_knowledge=user_company_knowledge,
                                                                            task_name_for_system=task_name_for_system,
                                                                            task_definition_for_system=task_definition_for_system,
                                                                            transcription=message_text)
-            messages = [{"role": "system", "content": tag_proper_nouns_prompt}]
-            responses = Vocabulary.proper_nouns_tagger.invoke(messages, user_id, temperature=0, max_tokens=2000,
+
+            responses = Vocabulary.proper_nouns_tagger.invoke_from_mpt(proper_nouns_tagger_mpt, user_id, temperature=0, max_tokens=2000,
                                                             user_task_execution_pk=user_task_execution_pk,
                                                             task_name_for_system=task_name_for_system)
             return responses[0]

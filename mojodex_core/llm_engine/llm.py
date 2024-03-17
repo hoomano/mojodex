@@ -44,6 +44,51 @@ class LLM(ABC):
 
         return llm, llm_conf, llm_backup_conf
 
+    @staticmethod
+    def get_providers():
+        """
+        Returns the list of available LLM providers in the configuration
+
+        Returns:
+            list: A list of available LLM providers.
+        """
+        # Read the .env file to check which LLM are configured
+        from mojodex_core.openai_conf import OpenAIConf
+        from mojodex_core.llm_engine.providers.openai_llm import OpenAILLM
+ 
+        gpt4_turbo_provider = OpenAILLM(OpenAIConf.gpt4_turbo_conf)
+        gpt4_32k_provider = OpenAILLM(OpenAIConf.gpt4_32_conf)
+        
+        from mojodex_core.mistralai_conf import MistralAIConf
+        from mojodex_core.llm_engine.providers.mistralai_llm import MistralAILLM
+        azure_mistral_large_provider = MistralAILLM(MistralAIConf.azure_mistral_large_conf)
+        # TODO: check how to switch between azure and la_plateforme for mistral
+        mistral_large_provider = MistralAILLM(MistralAIConf.mistral_large_conf)
+        mistral_medium_provider = MistralAILLM(MistralAIConf.mistral_medium_conf)
+
+        # return the list of providers
+        return [
+            {
+                "model_name": "gpt4-turbo",
+                "provider": gpt4_turbo_provider
+            },
+            {
+                "model_name": "gpt4-32k",
+                "provider": gpt4_32k_provider
+            },
+            {
+                "model_name": "mistral-large",
+                "provider": azure_mistral_large_provider
+            },
+            {
+                "model_name": "mistral-medium",
+                "provider": mistral_medium_provider
+            }
+        ]
+
+
+         
+
 
     @abstractmethod
     def __init__(self, llm_conf, llm_backup_conf=None, label='undefined', max_retries=0):

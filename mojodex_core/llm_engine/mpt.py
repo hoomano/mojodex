@@ -2,6 +2,8 @@ import jinja2
 import re
 import logging
 
+from mojodex_core.llm_engine.llm import LLM
+
 class MPT:
     """
     The MPT class represents a Mojodex Prompt Template.
@@ -30,6 +32,8 @@ class MPT:
         self.template = None
         self.raw_template = None
         self._parse_file()
+
+        self.available_models = LLM.get_providers()
 
     @property
     def models(self):
@@ -133,19 +137,27 @@ class MPT:
         """
         return f"MPT: {self.filepath}"
     
+    def run(self, **kwargs):
+        """
+        Run the prompt to the appropriate model.
 
+        Returns:
+            str: The result of the LLM call.
+        """
 
+        # for each model in the shebangs, in order, check if there is a provider for it
+        # if there is, call it with the prompt
 
-def main():
-    try:
-        mpt = MPT('translation.mpt', text="Hello", toto="heu")
-        print(mpt.kwargs)
-        print(mpt.prompt)
+        selected_model : LLM = None
+        for model in self.models:
+            # TODO: how to use version in provider selection / configuration?
+            #version = dashbang['version']
+            for provider in self.available_models:
+                if provider['model_name'] == model:
+                    selected_model = provider['provider']
+                    break
 
-        print(mpt.template_values)
-
-    except Exception as e:
-        print(e)
-    
-if __name__ == '__main__':
-    main()
+            if selected_model is None:
+                raise Exception(f"No provider found for model: {model}")
+        
+        return selected_model.invoke_from_mpt(self, **kwargs)

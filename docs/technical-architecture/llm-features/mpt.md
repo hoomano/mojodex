@@ -26,7 +26,7 @@ As our reliance on LLMs increases, the complexity and variety of prompts we need
 The `.mpt` file begins with a dash bang style header that includes essential metadata:
 
 ``` bash
-#! gpt-4-turbo/2023-03-15-preview
+#! gpt4-turbo/2023-03-15-preview
 ```
 
 ### Body
@@ -65,7 +65,7 @@ graph LR
 
 !!! info "file translation.mpt"
     ```
-    #! gpt-4-turbo/2023-03-15-preview
+    #! gpt4-turbo/2023-03-15-preview
     #! mistral-large
 
     Translate this text to {{language}}:

@@ -63,7 +63,7 @@ class OpenAISTT:
 
     def __get_user_vocabulary(self, user_id):
         try:
-            user_vocabulary = db_session.session.query(MdUserVocabulary).filter(MdUserVocabulary.user_id == user_id).order_by(
+            user_vocabulary = db_session.query(MdUserVocabulary).filter(MdUserVocabulary.user_id == user_id).order_by(
                 MdUserVocabulary.creation_date.desc()).limit(100).all()
             return ", ".join([v.word for v in user_vocabulary]) if user_vocabulary else ""
         except Exception as e:

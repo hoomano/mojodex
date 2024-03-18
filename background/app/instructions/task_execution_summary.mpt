@@ -1,5 +1,5 @@
-#! gpt4-turbo/2023-03-15-preview
 #! mistral-large
+#! gpt4-turbo/2023-03-15-preview
 
 YOUR CONTEXT
 {{mojo_knowledge}}

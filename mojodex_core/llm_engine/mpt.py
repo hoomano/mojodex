@@ -1,8 +1,9 @@
 import jinja2
 import re
-import logging
 
 from mojodex_core.llm_engine.llm import LLM
+
+from mojodex_core.logging_handler import MojodexCoreLogger
 
 class MPT:
     """
@@ -12,23 +13,25 @@ class MPT:
 
     Attributes:
         filepath (str): The filepath of the MPT file.
-        dashbangs (list): A list of dashbangs found in the MPT file.
+        shebangs (list): A list of shebangs found in the MPT file.
         template (jinja2.Template): The Jinja2 template object representing the MPT file.
-        models (list): Returns a list of model names extracted from the dashbangs.
+        models (list): Returns a list of model names extracted from the shebangs.
         tags (list): Returns a list of tags extracted from the template.
         template_values (list): Returns a list of jinja2 values extracted from the template.
         prompt (str): Returns the rendered prompt using the provided keyword arguments.
 
     Methods:
-        _parse_file(): Parses the MPT file and extracts dashbangs and template.
+        _parse_file(): Parses the MPT file and extracts shebangs and template.
         _perform_templating(**kwargs): Performs templating using the provided keyword arguments.
     """
 
     def __init__(self, filepath, **kwargs):
+        self.logger = MojodexCoreLogger(
+                f"MPT - {filepath}")
         self.filepath = filepath
         # store the other arguments for later use
         self.kwargs = kwargs
-        self.dashbangs = []
+        self.shebangs = []
         self.template = None
         self.raw_template = None
         self._parse_file()
@@ -37,7 +40,7 @@ class MPT:
 
     @property
     def models(self):
-        return [d['model_name'] for d in self.dashbangs]
+        return [d['model_name'] for d in self.shebangs]
     
     @property
     def tags(self):
@@ -76,32 +79,32 @@ class MPT:
         if not all(k in self.kwargs for k in self.template_values):
             # find the missing values
             missing_values = [v for v in self.template_values if v not in self.kwargs]
-            logging.warning(f"{self}\nError generating prompt, expecting values: {self.template_values}\nMissing: {missing_values}")
+            self.logger.warning(f"{self} prompt, expected values: {self.template_values}\nMissing: {missing_values}")
         return self._perform_templating(**self.kwargs)
 
 
     def _parse_file(self):
         """
-        Parses the MPT file and extracts dashbangs and template.
+        Parses the MPT file and extracts shebangs and template.
         """
         try:
             with open(self.filepath, 'r') as file:
                 lines = file.readlines()
                 i = 0
-                # find all the dashbangs and get their values
+                # find all the shebangs and get their values
                 while lines[i].startswith("#!"):
-                    dashbang = lines[i].strip()
-                    match = re.search(r'#!\s*([^/]*)/?([^/]*)?', dashbang)
+                    shebang = lines[i].strip()
+                    match = re.search(r'#!\s*([^/]*)/?([^/]*)?', shebang)
                     if match is not None:
                         model_name, version = match.groups()
-                        self.dashbangs.append({
+                        self.shebangs.append({
                             'model_name': model_name,
                             'version': version if version else 'latest'
                         })
                     else:
-                        raise ValueError(f"Invalid dashbang: {dashbang}\nFormat: #! model_name(/version)")
+                        raise ValueError(f"Invalid shebang: {shebang}\nFormat: #! model_name(/version)")
                     i += 1
-                # find the first non empty line after dashbangs
+                # find the first non empty line after shebangs
                 while not lines[i].strip():
                     i += 1
                 # remove all the empty lines at the end of the file
@@ -151,13 +154,19 @@ class MPT:
         selected_model : LLM = None
         for model in self.models:
             # TODO: how to use version in provider selection / configuration?
-            #version = dashbang['version']
+            #version = shebang['version']
             for provider in self.available_models:
                 if provider['model_name'] == model:
                     selected_model = provider['provider']
+                    self.logger.info(f"Selected model: {model}")
                     break
+            
+            if selected_model is not None:
+                break
 
-            if selected_model is None:
-                raise Exception(f"No provider found for model: {model}")
+        if selected_model is None:
+            raise Exception(f"No provider found for model: {model}")
+            
+        self.logger.info(f"Running prompt: {self.prompt}")
         
         return selected_model.invoke_from_mpt(self, **kwargs)

@@ -119,7 +119,8 @@ CREATE TABLE public.md_user_workflow_execution (
     user_workflow_fk integer NOT NULL,
     creation_date timestamp without time zone NOT NULL DEFAULT now(),
     start_date timestamp without time zone,
-    json_input json
+    json_input json,
+    session_id character varying(255) NOT NULL
 );
 
 --

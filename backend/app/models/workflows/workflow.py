@@ -16,8 +16,9 @@ from sqlalchemy.orm.attributes import flag_modified
 class WorkflowExecution:
     logger_prefix = "WorkflowExecution :: "
 
-    def __init__(self, workflow_execution_pk):
+    def __init__(self, workflow_execution_pk, session_id):
         try:
+            self.session_id = session_id
             self.db_object = self._get_db_object(workflow_execution_pk)
             self.steps_executions = [WorkflowStepExecution(steps_class[db_workflow_step.name](db_workflow_step), workflow_execution_pk) for db_workflow_step in self._db_workflow_steps]
         except Exception as e:

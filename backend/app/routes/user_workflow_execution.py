@@ -44,6 +44,7 @@ class UserWorkflowExecution(Resource):
         try:
             timestamp = request.json['datetime']
             user_workflow_pk = request.json['user_workflow_pk']
+            platform = request.json['platform']
         except KeyError as e:
             return {"error": f"Missing parameter : {e}"}, 400
         
@@ -55,19 +56,20 @@ class UserWorkflowExecution(Resource):
             if not user_workflow:
                 return {"error": "Workflow not found for this user"}, 404
             
-            # TODO: create session
-            # session_creation = self.session_creator.create_session(user_id, platform, "form")
-            # if "error" in session_creation[0]:
-            #    return session_creation
-            # session_id = session_creation[0]["session_id"]
+            # create session
+            session_creation = self.session_creator.create_session(user_id, platform, "form")
+            if "error" in session_creation[0]:
+               return session_creation
+            session_id = session_creation[0]["session_id"]
             
             db_workflow_execution = MdUserWorkflowExecution(
-                user_workflow_fk=user_workflow_pk
+                user_workflow_fk=user_workflow_pk,
+                session_id=session_id
             )
             db.session.add(db_workflow_execution)
             db.session.flush()
 
-            workflow_execution = WorkflowExecution(db_workflow_execution.user_workflow_execution_pk)
+            workflow_execution = WorkflowExecution(db_workflow_execution.user_workflow_execution_pk, session_id)
             db.session.commit()
             return workflow_execution.to_json(), 200
         except Exception as e:

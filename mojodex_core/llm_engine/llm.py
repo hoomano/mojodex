@@ -5,6 +5,8 @@ import os
 
 
 
+
+
 class LLM(ABC):
     """
     Abstract base class for LLM (Language Model) implementations.
@@ -65,6 +67,9 @@ class LLM(ABC):
         # TODO: check how to switch between azure and la_plateforme for mistral
         mistral_large_provider = MistralAILLM(MistralAIConf.mistral_large_conf)
         mistral_medium_provider = MistralAILLM(MistralAIConf.mistral_medium_conf)
+        
+        from mojodex_core.llm_engine.providers.ollama_llm import OllamaLLM
+        mistral_7b_provider = OllamaLLM(model="mistral:instruct", endpoint="http://mojodex_llm_mistral7b:11434")
 
         # return the list of providers
         return [
@@ -83,6 +88,10 @@ class LLM(ABC):
             {
                 "model_name": "mistral-medium",
                 "provider": mistral_medium_provider
+            },
+            {
+                "model_name": "mistral-7b",
+                "provider": mistral_7b_provider
             }
         ]
 

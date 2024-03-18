@@ -138,6 +138,13 @@ ALTER TABLE ONLY public.md_user_workflow_execution
     ADD CONSTRAINT md_user_workflow_execution_user_workflow_fk_fkey FOREIGN KEY (user_workflow_fk) REFERENCES public.md_user_workflow(user_workflow_pk);
 
 --
+-- Name: md_user_workflow_execution md_user_workflow_execution_session_id_fkey; Type: FK CONSTRAINT; Schema: public;
+--
+
+ALTER TABLE ONLY public.md_user_workflow_execution
+    ADD CONSTRAINT md_user_workflow_execution_session_id_fkey FOREIGN KEY (session_id) REFERENCES public.md_session(session_id);
+
+--
 -- Name: md_user_workflow_step_execution_seq; Type: SEQUENCE; Schema: public;
 --
 

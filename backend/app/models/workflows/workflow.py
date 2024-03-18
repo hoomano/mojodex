@@ -1,4 +1,4 @@
-from app import db
+from app import db, server_socket
 from models.workflows.step import WorkflowStepExecution
 from mojodex_core.entities import MdUserWorkflowExecution, MdUserWorkflow, MdWorkflowStep, MdWorkflow
 from models.workflows.steps_library import steps_class
@@ -16,9 +16,8 @@ from sqlalchemy.orm.attributes import flag_modified
 class WorkflowExecution:
     logger_prefix = "WorkflowExecution :: "
 
-    def __init__(self, workflow_execution_pk, session_id):
+    def __init__(self, workflow_execution_pk):
         try:
-            self.session_id = session_id
             self.db_object = self._get_db_object(workflow_execution_pk)
             self.steps_executions = [WorkflowStepExecution(steps_class[db_workflow_step.name](db_workflow_step), workflow_execution_pk) for db_workflow_step in self._db_workflow_steps]
         except Exception as e:
@@ -65,10 +64,12 @@ class WorkflowExecution:
             if not step_execution_to_run:
                 return
             print(f"🟢 Running step: {step_execution_to_run.name} - parameters: {self._intermediate_results[-1] if self._intermediate_results else [self.initial_parameters]} ")
-            step_execution_to_run.initialize_runs(self._intermediate_results[-1] if self._intermediate_results else [self.initial_parameters])
-            result = step_execution_to_run.run(self.initial_parameters, self._intermediate_results)
-            self._ask_for_validation(result)
+            step_execution_to_run.initialize_runs(self._intermediate_results[-1] if self._intermediate_results else [self.initial_parameters], self.db_object.session_id)
+            
+            step_execution_to_run.run(self.initial_parameters, self._intermediate_results, self.db_object.session_id)
+            self._ask_for_validation()
         except Exception as e:
+            print(f"🔴 {self.logger_prefix} - run :: {e}")
             raise Exception(f"run :: {e}")
         
 
@@ -98,8 +99,14 @@ class WorkflowExecution:
         except Exception as e:
             raise Exception(f"_intermediate_results :: {e}")
 
-    def _ask_for_validation(self, result):
-        print(f"---- ASK FOR VALIDATION ----\n{result}\n ------ END -----")
+    def _ask_for_validation(self):
+        try:
+            run_json = self._current_step_execution.current_run.to_json()
+            run_json["session_id"] = self.db_object.session_id
+            run_json["step_execution_fk"] = self._current_step_execution.db_object.user_workflow_step_execution_pk
+            server_socket.emit('workflow_run_ended', run_json, to=self.db_object.session_id)
+        except Exception as e:
+            raise Exception(f"_ask_for_validation :: {e}")
 
     def validate_current_run(self):
         try:
@@ -142,7 +149,8 @@ class WorkflowExecution:
                 "workflow_name": self._db_workflow.name,
                 "user_workflow_execution_pk": self.db_object.user_workflow_execution_pk,
                 "user_workflow_fk": self.db_object.user_workflow_fk,
-                "steps": [step_execution.to_json() for step_execution in self.steps_executions]
+                "steps": [step_execution.to_json() for step_execution in self.steps_executions],
+                "session_id": self.db_object.session_id
             }
         except Exception as e:
             raise Exception(f"{self.logger_prefix} to_json :: {e}")

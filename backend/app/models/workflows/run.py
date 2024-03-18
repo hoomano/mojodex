@@ -4,9 +4,10 @@ from app import db
 class WorkflowStepExecutionRun:
     logger_prefix = "WorkflowStepExecutionRun :: "
 
-    def __init__(self, db_object_run=None):
+    def __init__(self, db_object_run):
         try:
             self.db_object_run=db_object_run
+            print("🟢 WorkflowStepExecutionRun :: __init__ :: db_object_run: parameter : ", self.db_object_run.parameter)
         except Exception as e:
             raise Exception(f"{self.logger_prefix} :: __init__ :: {e}")
 
@@ -24,8 +25,12 @@ class WorkflowStepExecutionRun:
     
     @property
     def parameter(self):
-        value = self.db_object_run.parameter
-        return json.loads(value) if value else None
+        try:
+            value = self.db_object_run.parameter
+            print("❤️ parameter - value: ", value)
+            return json.loads(value) if value else None
+        except Exception as e:
+            raise Exception(f"{self.logger_prefix} :: parameter :: {e}")
     
     
     @property
@@ -47,9 +52,9 @@ class WorkflowStepExecutionRun:
         try: 
             return {
                 "user_workflow_step_execution_run_pk": self.db_object_run.user_workflow_step_execution_run_pk,
-                "parameter": self.db_object_run.parameter,
+                "parameter": self.parameter,
                 "validated": self.db_object_run.validated,
-                "result": self.db_object_run.result
+                "result": self.result
             }
         except Exception as e:
             raise Exception(f"{self.logger_prefix} :: to_json :: {e}")

@@ -1,7 +1,7 @@
 from models.workflows.workflow import WorkflowExecution
 from flask import request
 from flask_restful import Resource
-from app import db, authenticate, log_error
+from app import db, authenticate, log_error, server_socket
 from mojodex_core.entities import *
 
 
@@ -35,7 +35,8 @@ class UserWorkflowStepExecutionRun(Resource):
             
             workflow_execution = WorkflowExecution(user_workflow_execution.user_workflow_execution_pk)
             workflow_execution.validate_current_run()
-            workflow_execution.run() # TODO: in a dedicated thread
+            #server_socket.start_background_task(workflow_execution.run)
+            workflow_execution.run()
             return {"message": "Step validated"}, 200
         except Exception as e:
             log_error(e)

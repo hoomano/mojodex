@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 import json
-from app import db
+from app import db, server_socket
 from models.workflows.run import WorkflowStepExecutionRun
 from mojodex_core.entities import MdUserWorkflowStepExecution, MdUserWorkflowStepExecutionRun
 from typing import List
@@ -87,7 +87,10 @@ class WorkflowStepExecution:
     # getter initialized
     @property
     def initialized(self):
-        return len(self.runs) > 0
+        try:
+            return len(self.runs) > 0
+        except Exception as e:
+            raise Exception(f"{self.logger_prefix} :: initialized :: {e}")
     
 
     @property
@@ -97,7 +100,7 @@ class WorkflowStepExecution:
             .order_by(MdUserWorkflowStepExecutionRun.creation_date.asc()).all()
 
 
-    def initialize_runs(self, parameters: List[dict]):
+    def initialize_runs(self, parameters: List[dict], session_id: str):
         try:
             print(f"🟢 initialize_runs parameters_type: {type(parameters)} parameters: {parameters}")
             if not self.initialized:
@@ -116,6 +119,11 @@ class WorkflowStepExecution:
                     db.session.add(db_run)
                     db.session.commit()
                     self.runs.append(WorkflowStepExecutionRun(db_run))
+                step_json = self.to_json()
+                # add session_id to step_json
+                step_json["session_id"] = session_id
+                server_socket.emit('workflow_step_execution_initialized', step_json, to=session_id)
+                
         except Exception as e:
             raise Exception(f"{self.logger_prefix} :: initialize_runs :: {e}")
 
@@ -124,12 +132,16 @@ class WorkflowStepExecution:
     def validated(self):
         return self.initialized and all(run.validated for run in self.runs)
 
-    def run(self, initial_parameter: dict, history: List[dict]):
+    def run(self, initial_parameter: dict, history: List[dict], session_id: str):
         try:
             # run from non-validated actions
             for run in self.runs:
                 print(f"👉 Step run parameter_type {type(run.parameter)} - parameter {run.parameter}")
                 if not run.validated:
+                    run_json = run.to_json()
+                    run_json["session_id"] = session_id
+                    run_json["step_execution_fk"] = self.db_object.user_workflow_step_execution_pk
+                    server_socket.emit('workflow_run_started', run_json, to=session_id)
                     return self.execute(run, initial_parameter, history)
             return None
         except Exception as e:

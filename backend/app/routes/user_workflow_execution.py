@@ -1,4 +1,5 @@
 from datetime import datetime
+from models.session_creator import SessionCreator
 from models.workflows.workflow import WorkflowExecution
 from flask import request
 from flask_restful import Resource
@@ -9,6 +10,7 @@ from mojodex_core.entities import *
 class UserWorkflowExecution(Resource):
     def __init__(self):
         UserWorkflowExecution.method_decorators = [authenticate()]
+        self.session_creator = SessionCreator()
 
     def get(self, user_id):
         """Get the json describing workflow's state"""
@@ -69,7 +71,7 @@ class UserWorkflowExecution(Resource):
             db.session.add(db_workflow_execution)
             db.session.flush()
 
-            workflow_execution = WorkflowExecution(db_workflow_execution.user_workflow_execution_pk, session_id)
+            workflow_execution = WorkflowExecution(db_workflow_execution.user_workflow_execution_pk)
             db.session.commit()
             return workflow_execution.to_json(), 200
         except Exception as e:

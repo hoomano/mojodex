@@ -395,6 +395,7 @@ class MdSession(Base):
     md_home_chat = relationship('MdHomeChat', back_populates='session')
     md_message = relationship('MdMessage', back_populates='session')
     md_user_task_execution = relationship('MdUserTaskExecution', back_populates='session')
+    md_user_workflow_execution = relationship('MdUserWorkflowExecution', back_populates='session')
     md_produced_text = relationship('MdProducedText', back_populates='session')
 
 
@@ -640,6 +641,7 @@ class MdUserTaskExecution(Base):
 class MdUserWorkflowExecution(Base):
     __tablename__ = 'md_user_workflow_execution'
     __table_args__ = (
+        ForeignKeyConstraint(['session_id'], ['md_session.session_id'], name='md_user_workflow_execution_session_id_fkey'),
         ForeignKeyConstraint(['user_workflow_fk'], ['md_user_workflow.user_workflow_pk'], name='md_user_workflow_execution_user_workflow_fk_fkey'),
         PrimaryKeyConstraint('user_workflow_execution_pk', name='md_user_workflow_execution_pkey')
     )
@@ -647,9 +649,11 @@ class MdUserWorkflowExecution(Base):
     user_workflow_execution_pk = Column(Integer, Sequence('md_user_workflow_execution_seq'), primary_key=True)
     user_workflow_fk = Column(Integer, nullable=False)
     creation_date = Column(DateTime, nullable=False, server_default=text('now()'))
-    json_input = Column(JSON)
+    session_id = Column(String(255), nullable=False)
     start_date = Column(DateTime)
+    json_input = Column(JSON)
 
+    session = relationship('MdSession', back_populates='md_user_workflow_execution')
     md_user_workflow = relationship('MdUserWorkflow', back_populates='md_user_workflow_execution')
     md_user_workflow_step_execution = relationship('MdUserWorkflowStepExecution', back_populates='md_user_workflow_execution')
 

@@ -1,6 +1,6 @@
 import os
 
-
+# TODO: move to /llm.conf
 class MistralAIConf:
 
     mistral_medium_conf = {

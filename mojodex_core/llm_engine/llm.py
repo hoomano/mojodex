@@ -52,6 +52,8 @@ class LLM(ABC):
         Returns:
             list: A list of available LLM providers.
         """
+        # TODO: move .env llm config to /llm.conf file
+
         # Read the .env file to check which LLM are configured
         from mojodex_core.openai_conf import OpenAIConf
         from mojodex_core.llm_engine.providers.openai_llm import OpenAILLM

@@ -1,11 +1,10 @@
 from abc import ABC, abstractmethod
 import json
-from app import db, server_socket
+from app import server_socket
 from models.workflows.run import WorkflowStepExecutionRun
 from mojodex_core.entities import MdUserWorkflowStepExecution, MdUserWorkflowStepExecutionRun
 from typing import List
-
-
+import time
 class WorkflowStep(ABC):
     logger_prefix = "WorkflowStep :: "
 
@@ -36,6 +35,7 @@ class WorkflowStep(ABC):
             for key in self.input_keys:
                 if key not in parameter:
                     raise Exception(f"execute :: key {key} not in parameter")
+            time.sleep(2) # Todo: for tests only => To remove
             output = self._execute(parameter, initial_parameter, history) # list of dict
             # ensure output is a list
             if not isinstance(output, List):
@@ -55,34 +55,56 @@ class WorkflowStep(ABC):
 class WorkflowStepExecution:
 
     logger_prefix = "WorkflowStepExecution :: "
-    def __init__(self, workflow_step, workflow_execution_pk):
+    def __init__(self, db_session, workflow_step, workflow_execution_pk):
         try:
+            self.db_session = db_session
             self.workflow_step = workflow_step
             self.db_object = self._get_or_create_db_object(self.workflow_step.workflow_step_pk, workflow_execution_pk)
-            self.runs = [WorkflowStepExecutionRun(run) for run in self._db_runs]
+            self.runs = [WorkflowStepExecutionRun(self.db_session, run) for run in self._db_runs]
         except Exception as e:
             raise Exception(f"{self.logger_prefix} :: __init__ :: {e}")
 
-  
+    def _get_db_object(self, workflow_step_pk, workflow_execution_pk):
+        try:
+            db_workflow_step_execution = self.db_session.query(MdUserWorkflowStepExecution)\
+                .filter(MdUserWorkflowStepExecution.user_workflow_execution_fk == workflow_execution_pk)\
+                .filter(MdUserWorkflowStepExecution.workflow_step_fk == workflow_step_pk)\
+                .order_by(MdUserWorkflowStepExecution.creation_date.desc()).first()
+            return db_workflow_step_execution
+        except Exception as e:
+            raise Exception(f"_get_db_object :: {e}")
+        
+    def _create_db_object(self, workflow_step_pk, workflow_execution_pk):
+        try:
+            db_workflow_step_execution = MdUserWorkflowStepExecution(
+                user_workflow_execution_fk=workflow_execution_pk,
+                workflow_step_fk=workflow_step_pk
+            )
+            self.db_session.add(db_workflow_step_execution)
+            self.db_session.commit()
+            return db_workflow_step_execution
+        except Exception as e:
+            raise Exception(f"_create_db_object :: {e}")
     
     def _get_or_create_db_object(self, workflow_step_pk, workflow_execution_pk):
         try:
             # try to find it in db:
-            db_workflow_step_execution = db.session.query(MdUserWorkflowStepExecution)\
-                .filter(MdUserWorkflowStepExecution.user_workflow_execution_fk == workflow_execution_pk)\
-                .filter(MdUserWorkflowStepExecution.workflow_step_fk == workflow_step_pk)\
-                .order_by(MdUserWorkflowStepExecution.creation_date.desc()).first()
+            db_workflow_step_execution = self._get_db_object(workflow_step_pk, workflow_execution_pk)
             if not db_workflow_step_execution:
-                db_workflow_step_execution = MdUserWorkflowStepExecution(
-                    user_workflow_execution_fk=workflow_execution_pk,
-                    workflow_step_fk=workflow_step_pk
-                )
-                db.session.add(db_workflow_step_execution)
-                db.session.commit()
+                db_workflow_step_execution = self._create_db_object(workflow_step_pk, workflow_execution_pk)
             return db_workflow_step_execution
         except Exception as e:
             raise Exception(f"_get_or_create_db_object :: {e}")
         
+    def reset(self):
+        try:
+            db_workflow_step_execution = self._create_db_object(self.workflow_step.workflow_step_pk, self.db_object.user_workflow_execution_fk)
+            self.db_object = db_workflow_step_execution
+            self.runs = []
+        except Exception as e:
+            raise Exception(f"{self.logger_prefix} :: reset :: {e}")
+
+
 
     # getter initialized
     @property
@@ -95,17 +117,15 @@ class WorkflowStepExecution:
 
     @property
     def _db_runs(self):
-        return db.session.query(MdUserWorkflowStepExecutionRun)\
+        return self.db_session.query(MdUserWorkflowStepExecutionRun)\
             .filter(MdUserWorkflowStepExecutionRun.user_workflow_step_execution_fk == self.db_object.user_workflow_step_execution_pk)\
             .order_by(MdUserWorkflowStepExecutionRun.creation_date.asc()).all()
 
 
     def initialize_runs(self, parameters: List[dict], session_id: str):
         try:
-            print(f"🟢 initialize_runs parameters_type: {type(parameters)} parameters: {parameters}")
             if not self.initialized:
                 for parameter in parameters:
-                    print(f"🟢 initialize_runs parameter_type: {type(parameter)} parameter: {parameter}")
                     # if parameter is a dict, encode json to string
                     if isinstance(parameter, dict) or isinstance(parameter, List):
                         parameter = json.dumps(parameter)
@@ -116,9 +136,9 @@ class WorkflowStepExecution:
                         user_workflow_step_execution_fk=self.db_object.user_workflow_step_execution_pk,
                         parameter=parameter
                     )
-                    db.session.add(db_run)
-                    db.session.commit()
-                    self.runs.append(WorkflowStepExecutionRun(db_run))
+                    self.db_session.add(db_run)
+                    self.db_session.commit()
+                    self.runs.append(WorkflowStepExecutionRun(self.db_session, db_run))
                 step_json = self.to_json()
                 # add session_id to step_json
                 step_json["session_id"] = session_id
@@ -136,7 +156,6 @@ class WorkflowStepExecution:
         try:
             # run from non-validated actions
             for run in self.runs:
-                print(f"👉 Step run parameter_type {type(run.parameter)} - parameter {run.parameter}")
                 if not run.validated:
                     run_json = run.to_json()
                     run_json["session_id"] = session_id
@@ -150,7 +169,6 @@ class WorkflowStepExecution:
 
     def execute(self, run: WorkflowStepExecutionRun, initial_parameter: dict, history: List[dict]):
         result = self.workflow_step.execute(run.parameter, initial_parameter, history)
-        print(f"🟢 Step result: {result}")
         run.result = result
         return run.result
 

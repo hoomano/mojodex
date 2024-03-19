@@ -3,7 +3,7 @@ from models.session_creator import SessionCreator
 from models.workflows.workflow import WorkflowExecution
 from flask import request
 from flask_restful import Resource
-from app import db, authenticate, log_error
+from app import db, authenticate, log_error, server_socket
 from mojodex_core.entities import *
 
 
@@ -69,10 +69,9 @@ class UserWorkflowExecution(Resource):
                 session_id=session_id
             )
             db.session.add(db_workflow_execution)
-            db.session.flush()
-
-            workflow_execution = WorkflowExecution(db_workflow_execution.user_workflow_execution_pk)
             db.session.commit()
+            workflow_execution = WorkflowExecution(db_workflow_execution.user_workflow_execution_pk)
+            
             return workflow_execution.to_json(), 200
         except Exception as e:
             db.session.rollback()
@@ -109,7 +108,8 @@ class UserWorkflowExecution(Resource):
                 return {"error": "initial_parameters must be a json"}, 400
             workflow_execution.initial_parameters = initial_parameters
             workflow_execution.start_date = datetime.now()
-            workflow_execution.run() # TODO: run must be done asynchronously in a dedicated thread
+            #workflow_execution.run() # TODO: run must be done asynchronously in a dedicated thread
+            server_socket.start_background_task(workflow_execution.run)
             return {"user_workflow_execution_pk": user_workflow_execution_pk}, 200
         except Exception as e:
             log_error(e)

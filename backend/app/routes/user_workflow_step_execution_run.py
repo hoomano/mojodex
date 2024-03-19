@@ -34,9 +34,12 @@ class UserWorkflowStepExecutionRun(Resource):
                 return {"error": "Workflow execution not found for this user"}, 404
             
             workflow_execution = WorkflowExecution(user_workflow_execution.user_workflow_execution_pk)
-            workflow_execution.validate_current_run()
-            #server_socket.start_background_task(workflow_execution.run)
-            workflow_execution.run()
+            if validated:
+                workflow_execution.validate_current_run()
+            else:
+                workflow_execution.invalidate_current_run()
+            server_socket.start_background_task(workflow_execution.run)
+            #workflow_execution.run()
             return {"message": "Step validated"}, 200
         except Exception as e:
             log_error(e)

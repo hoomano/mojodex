@@ -1,13 +1,12 @@
 import json
-from app import db
 
 class WorkflowStepExecutionRun:
     logger_prefix = "WorkflowStepExecutionRun :: "
 
-    def __init__(self, db_object_run):
+    def __init__(self, db_session, db_object_run):
         try:
+            self.db_session = db_session
             self.db_object_run=db_object_run
-            print("🟢 WorkflowStepExecutionRun :: __init__ :: db_object_run: parameter : ", self.db_object_run.parameter)
         except Exception as e:
             raise Exception(f"{self.logger_prefix} :: __init__ :: {e}")
 
@@ -18,7 +17,7 @@ class WorkflowStepExecutionRun:
     @validated.setter
     def validated(self, value):
         self.db_object_run.validated = value
-        db.session.commit()
+        self.db_session.commit()
 
     def validate(self):
         self.validated = True
@@ -27,7 +26,6 @@ class WorkflowStepExecutionRun:
     def parameter(self):
         try:
             value = self.db_object_run.parameter
-            print("❤️ parameter - value: ", value)
             return json.loads(value) if value else None
         except Exception as e:
             raise Exception(f"{self.logger_prefix} :: parameter :: {e}")
@@ -40,13 +38,12 @@ class WorkflowStepExecutionRun:
     
     @result.setter
     def result(self, value):
-        print(f"🟢 RUN result: {value}")
         if isinstance(value, dict) or isinstance(value, list):
             value = json.dumps(value)
         else:
             value = str(value)
         self.db_object_run.result = value
-        db.session.commit()
+        self.db_session.commit()
 
     def to_json(self):
         try: 

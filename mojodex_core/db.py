@@ -14,3 +14,12 @@ Base.metadata.create_all(engine)
 db_session = Session(engine)
 
 # print(db_session.query(MdError).first())
+
+
+
+class MySession(Session):
+    # override init and destructor to print when session is created and destroyed
+    def __init__(self):
+        super().__init__(engine)
+
+        

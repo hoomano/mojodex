@@ -2,7 +2,6 @@
 import os
 from datetime import datetime
 
-from jinja2 import Template
 import requests
 
 from background_logger import BackgroundLogger
@@ -10,7 +9,7 @@ from models.task_tool_execution.tools.tool import Tool
 from mojodex_core.json_loader import json_decode_retry
 from app import on_json_error
 
-from app import llm, llm_conf
+from mojodex_core.llm_engine.mpt import MPT
 
 
 class InternalMemoryTool(Tool):
@@ -23,9 +22,7 @@ class InternalMemoryTool(Tool):
     n_total_usages = 1
 
     produced_text_retrieval_url = "retrieve_produced_text"
-    information_extractor_prompt = "/data/prompts/background/task_tool_execution/internal_memory/information_extractor.txt"
-    information_extractor = llm(
-        llm_conf, label="INTERNAL_MEMORY_INFORMATION_EXTRACTOR")
+    information_extractor_mpt_filename = "background/app/instructions/internal_memory_information_extractor.mpt"
 
     def __init__(self, user_id, task_tool_execution_pk, user_task_execution_pk, task_name_for_system, **kwargs):
         self.logger = BackgroundLogger(f"{InternalMemoryTool.logger_prefix}")
@@ -90,26 +87,23 @@ class InternalMemoryTool(Tool):
     @json_decode_retry(retries=3, required_keys=['relevant_results'], on_json_error=on_json_error)
     def __extract_key_points(self, query, results, tool_execution_context, usage_description, knowledge_collector):
         try:
-            with open(InternalMemoryTool.information_extractor_prompt, "r") as f:
-                template = Template(f.read())
-                prompt = template.render(mojo_knowledge=knowledge_collector.mojo_knowledge,
-                                         global_context=knowledge_collector.global_context,
-                                         username=knowledge_collector.user_name,
-                                         user_company_knowledge=knowledge_collector.user_company_knowledge,
-                                         tool_execution_context=tool_execution_context,
-                                         tool_name=self.name,
-                                         usage_description=usage_description,
-                                         query=query,
-                                         results=results)
+            internal_memory_information_extractor = MPT(InternalMemoryTool.information_extractor_mpt_filename,
+                                                        mojo_knowledge=knowledge_collector.mojo_knowledge,
+                                                        global_context=knowledge_collector.global_context,
+                                                        username=knowledge_collector.user_name,
+                                                        user_company_knowledge=knowledge_collector.user_company_knowledge,
+                                                        tool_execution_context=tool_execution_context,
+                                                        tool_name=self.name,
+                                                        usage_description=usage_description,
+                                                        query=query,
+                                                        results=results)
 
-            messages = [{"role": "system", "content": prompt}]
-
-            responses = InternalMemoryTool.information_extractor.invoke(messages, self.user_id,
-                                                                      temperature=0, max_tokens=4000,
-                                                                      json_format=True,
-                                                                      user_task_execution_pk=self.user_task_execution_pk,
-                                                                      task_name_for_system=self.task_name_for_system,
-                                                                      )
+            responses = internal_memory_information_extractor(self.user_id,
+                                                              temperature=0, max_tokens=4000,
+                                                              json_format=True,
+                                                              user_task_execution_pk=self.user_task_execution_pk,
+                                                              task_name_for_system=self.task_name_for_system,
+                                                              )
 
             response = responses[0]
             self.gantry_logger.add_llm_step(messages, response,

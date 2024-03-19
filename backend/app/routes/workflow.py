@@ -11,6 +11,8 @@ class Workflow(Resource):
         try:
             timestamp = request.json['datetime']
             name = request.json['name']
+            icon = request.json['icon']
+            description = request.json['description']
             steps = request.json['steps']
             json_inputs_spec = request.json['json_inputs_spec']
         except KeyError as e:
@@ -27,6 +29,8 @@ class Workflow(Resource):
 
             db_workflow = MdWorkflow(
                 name=name,
+                icon=icon,
+                description=description,
                 json_inputs_spec=json_inputs_spec
             )
             db.session.add(db_workflow)

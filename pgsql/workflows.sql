@@ -16,6 +16,8 @@ CREATE SEQUENCE public.md_workflow_seq
 CREATE TABLE public.md_workflow (
     workflow_pk integer DEFAULT nextval('public.md_workflow_seq'::regclass) NOT NULL,
     name character varying(255) NOT NULL,
+    icon character varying(255) NOT NULL,
+    description text NOT NULL,
     json_inputs_spec json NOT NULL
 );
 

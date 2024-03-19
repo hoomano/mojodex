@@ -101,6 +101,8 @@ class MdWorkflow(Base):
     workflow_pk = Column(Integer, Sequence('md_workflow_seq'), primary_key=True)
     name = Column(String(255), nullable=False)
     json_inputs_spec = Column(JSON, nullable=False)
+    icon = Column(String(255), nullable=False)
+    description = Column(Text, nullable=False)
 
     md_workflow_step = relationship('MdWorkflowStep', back_populates='md_workflow')
     md_user_workflow = relationship('MdUserWorkflow', back_populates='md_workflow')

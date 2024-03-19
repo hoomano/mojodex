@@ -2,7 +2,6 @@ import os
 from datetime import datetime
 
 import requests
-from jinja2 import Template
 from mojodex_core.json_loader import json_decode_retry
 from background_logger import BackgroundLogger
 from app import on_json_error
@@ -10,15 +9,14 @@ from app import on_json_error
 
 from app import send_admin_error_email
 
-from app import llm, llm_conf
+from mojodex_core.llm_engine.mpt import MPT
 
 
 class TodosCreator:
     logger_prefix = "TodosCreator"
     todos_url = "/todos"
 
-    todos_extractor_prompt = "/data/prompts/background/todos/extract_todos.txt"
-    todos_extractor = llm(llm_conf, label="TODOS_EXTRACTOR")
+    todos_extractor_mpt_filename = "background/app/instructions/extract_todos.mpt"
 
     def __init__(self, user_task_execution, knowledge_collector, language, conversation,
                  linked_user_task_executions_todos):
@@ -62,28 +60,25 @@ class TodosCreator:
     def __extract(self):
         self.logger.debug(f"_extract")
         try:
-            with open(TodosCreator.todos_extractor_prompt, "r") as f:
-                template = Template(f.read())
-                todos_extractor_prompt = template.render(
-                    mojo_knowledge=self.knowledge_collector.mojo_knowledge,
-                    global_context=self.knowledge_collector.global_context,
-                    username=self.knowledge_collector.user_name,
-                    user_business_goal=self.knowledge_collector.user_business_goal,
-                    user_company_knowledge=self.knowledge_collector.user_company_knowledge,
-                    task_name=self.user_task_execution.task_name,
-                    task_definition=self.user_task_execution.task_definition,
-                    task_conversation=self.conversation,
-                    task_result=self.user_task_execution.task_result,
-                    linked_user_task_executions_todos=self.linked_user_task_executions_todos,
-                    language=self.language
-                )
+            todos_extractor = MPT(TodosCreator.todos_extractor_mpt_filename,
+                                  mojo_knowledge=self.knowledge_collector.mojo_knowledge,
+                                  global_context=self.knowledge_collector.global_context,
+                                  username=self.knowledge_collector.user_name,
+                                  user_business_goal=self.knowledge_collector.user_business_goal,
+                                  user_company_knowledge=self.knowledge_collector.user_company_knowledge,
+                                  task_name=self.user_task_execution.task_name,
+                                  task_definition=self.user_task_execution.task_definition,
+                                  task_conversation=self.conversation,
+                                  task_result=self.user_task_execution.task_result,
+                                  linked_user_task_executions_todos=self.linked_user_task_executions_todos,
+                                  language=self.language
+                                  )
 
-            messages = [{"role": "user", "content": todos_extractor_prompt}]
-            results = TodosCreator.todos_extractor.invoke(messages, self.user_task_execution.user_id,
-                                                        temperature=0, max_tokens=500,
-                                                        json_format=True,
-                                                        user_task_execution_pk=self.user_task_execution.user_task_execution_pk,
-                                                        task_name_for_system=self.user_task_execution.task_name)
+            results = todos_extractor.run(self.user_task_execution.user_id,
+                                          temperature=0, max_tokens=500,
+                                          json_format=True,
+                                          user_task_execution_pk=self.user_task_execution.user_task_execution_pk,
+                                          task_name_for_system=self.user_task_execution.task_name)
 
             result = results[0]
             return result

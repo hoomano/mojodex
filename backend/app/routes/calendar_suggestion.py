@@ -26,10 +26,12 @@ class CalendarSuggestion(Resource):
         CalendarSuggestion.method_decorators = [authenticate()]
 
     def __get_mojo_knwoledge(self):
+        # TODO: with @kelly check how to mpt-ize this
         with open("/data/knowledge/mojo_knowledge.txt", 'r') as f:
             return f.read()
 
     def __get_global_context(self, timezoneOffsetMinutes):
+        # TODO: with @kelly check how to mpt-ize this
         with open("/data/knowledge/global_context.txt", 'r') as f:
             template = Template(f.read())
             timestamp = datetime.utcnow(

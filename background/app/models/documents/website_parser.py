@@ -6,11 +6,8 @@ from urllib.parse import urljoin
 from app import document_manager
 
 from background_logger import BackgroundLogger
-from jinja2 import Template
 
-
-
-from app import llm, llm_conf
+from mojodex_core.llm_engine.mpt import MPT
 
 
 class WebsiteParser:
@@ -18,8 +15,7 @@ class WebsiteParser:
 
     MAX_WEBSITE_PAGES = 100
 
-    website_chunk_validation_prompt = "/data/prompts/background/website_parser/is_website_chunk_relevant.txt"
-    website_chunk_validator = llm(llm_conf, label="WEBSITE_CHUNK_VALIDATOR")
+    website_chunk_validation_mpt_filename = "background/app/instructions/is_website_chunk_relevant.mpt"
 
     def __init__(self):
         self.logger = BackgroundLogger(f"{WebsiteParser.logger_prefix}")
@@ -96,14 +92,11 @@ class WebsiteParser:
 
     def __validate_website_chunk(self, chunk_text, user_id):
         try:
-            with open(WebsiteParser.website_chunk_validation_prompt, "r") as f:
-                template = Template(f.read())
-                prompt = template.render(
-                    company_name=self.company_name, chunk_text=chunk_text)
-            messages = [{"role": "user", "content": prompt}]
+            website_chunk_validation = MPT(
+                WebsiteParser.website_chunk_validation_mpt_filename, company_name=self.company_name, chunk_text=chunk_text)
 
-            responses = WebsiteParser.website_chunk_validator.invoke(
-                messages, user_id, temperature=0, max_tokens=5)
+            responses = website_chunk_validation.run(
+                user_id, temperature=0, max_tokens=5)
             return responses[0].lower().strip() == "yes"
         except Exception as e:
             raise Exception(f"__validate_website_chunk: {e}")

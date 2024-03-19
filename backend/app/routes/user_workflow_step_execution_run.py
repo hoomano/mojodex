@@ -36,10 +36,9 @@ class UserWorkflowStepExecutionRun(Resource):
             workflow_execution = WorkflowExecution(user_workflow_execution.user_workflow_execution_pk)
             if validated:
                 workflow_execution.validate_current_run()
-                server_socket.start_background_task(workflow_execution.run)
             else:
                 workflow_execution.invalidate_current_run()
-            #server_socket.start_background_task(workflow_execution.run)
+            server_socket.start_background_task(workflow_execution.run)
             #workflow_execution.run()
             return {"message": "Step validated"}, 200
         except Exception as e:

@@ -15,7 +15,8 @@ CREATE SEQUENCE public.md_workflow_seq
 --
 CREATE TABLE public.md_workflow (
     workflow_pk integer DEFAULT nextval('public.md_workflow_seq'::regclass) NOT NULL,
-    name character varying(255) NOT NULL
+    name character varying(255) NOT NULL,
+    json_inputs_spec json NOT NULL
 );
 
 --
@@ -120,7 +121,7 @@ CREATE TABLE public.md_user_workflow_execution (
     user_workflow_fk integer NOT NULL,
     creation_date timestamp without time zone NOT NULL DEFAULT now(),
     start_date timestamp without time zone,
-    json_input json,
+    json_inputs json NOT NULL,
     session_id character varying(255) NOT NULL
 );
 
@@ -208,8 +209,7 @@ CREATE TABLE public.md_user_workflow_step_execution_run (
     user_workflow_step_execution_fk integer NOT NULL,
     creation_date timestamp without time zone NOT NULL DEFAULT now(),
     parameter text,
-    validated boolean not null default false,
-    result text
+    validated boolean not null default false
 );
 
 --
@@ -226,11 +226,12 @@ ALTER TABLE ONLY public.md_user_workflow_step_execution_run
 ALTER TABLE ONLY public.md_user_workflow_step_execution_run
     ADD CONSTRAINT user_wf_step_exec_run_user_wf_step_exec_fk_fkey FOREIGN KEY (user_workflow_step_execution_fk) REFERENCES public.md_user_workflow_step_execution(user_workflow_step_execution_pk);
 
+
 --
--- Name: user_workflow_step_execution_run_result_seq; Type: SEQUENCE; Schema: public;
+-- Name: md_user_workflow_step_execution_run_execution_seq; Type: SEQUENCE; Schema: public;
 --
 
-CREATE SEQUENCE public.user_workflow_step_execution_run_result_seq
+CREATE SEQUENCE public.md_user_workflow_step_execution_run_execution_seq
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
@@ -238,26 +239,26 @@ CREATE SEQUENCE public.user_workflow_step_execution_run_result_seq
     CACHE 1;
 
 --
--- Name: user_workflow_step_execution_run_result; Type: TABLE; Schema: public;
+-- Name: md_user_workflow_step_execution_run_execution; Type: TABLE; Schema: public;
 --
 
-CREATE TABLE public.user_workflow_step_execution_run_result (
-    user_workflow_step_execution_run_result_pk integer DEFAULT nextval('public.user_workflow_step_execution_run_result_seq'::regclass) NOT NULL,
+CREATE TABLE public.md_user_workflow_step_execution_run_execution (
+    user_workflow_step_execution_run_execution_pk integer DEFAULT nextval('public.md_user_workflow_step_execution_run_execution_seq'::regclass) NOT NULL,
     user_workflow_step_execution_run_fk integer NOT NULL,
-    result text NOT NULL
+    creation_date timestamp without time zone NOT NULL DEFAULT now(),
+    result text
 );
 
 --
--- Name: user_workflow_step_execution_run_result user_workflow_step_execution_run_result_pkey; Type: CONSTRAINT; Schema: public;
+-- Name: md_user_workflow_step_execution_run_execution md_user_workflow_step_execution_run_execution_pkey; Type: CONSTRAINT; Schema: public;
 --
 
-ALTER TABLE ONLY public.user_workflow_step_execution_run_result
-    ADD CONSTRAINT user_workflow_step_execution_run_result_pkey PRIMARY KEY (user_workflow_step_execution_run_result_pk);
+ALTER TABLE ONLY public.md_user_workflow_step_execution_run_execution
+    ADD CONSTRAINT md_user_workflow_step_execution_run_execution_pkey PRIMARY KEY (user_workflow_step_execution_run_execution_pk);
 
 --
--- Name: user_workflow_step_execution_run_result user_workflow_step_execution_run_result_user_workflow_step_execution_run_fk_fkey; Type: FK CONSTRAINT; Schema: public;
+-- Name: md_user_workflow_step_execution_run_execution md_user_workflow_step_execution_run_execution_user_workflow_step_execution_run_fk_fkey; Type: FK CONSTRAINT; Schema: public;
 --
 
-ALTER TABLE ONLY public.user_workflow_step_execution_run_result
-    ADD CONSTRAINT user_wf_step_exec_run_result_user_wf_step_exec_run_fk_fkey FOREIGN KEY (user_workflow_step_execution_run_fk) REFERENCES public.md_user_workflow_step_execution_run(user_workflow_step_execution_run_pk);
-
+ALTER TABLE ONLY public.md_user_workflow_step_execution_run_execution
+    ADD CONSTRAINT md_user_wf_step_exec_run_exec_user_wf_step_exec_run_fk_fkey FOREIGN KEY (user_workflow_step_execution_run_fk) REFERENCES public.md_user_workflow_step_execution_run(user_workflow_step_execution_run_pk);

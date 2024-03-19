@@ -51,12 +51,15 @@ class UserWorkflowExecution(Resource):
             return {"error": f"Missing parameter : {e}"}, 400
         
         try:
-            user_workflow = db.session.query(MdUserWorkflow)\
+            result = db.session.query(MdUserWorkflow, MdWorkflow)\
+                .join(MdWorkflow, MdWorkflow.workflow_pk == MdUserWorkflow.workflow_fk)\
                 .filter(MdUserWorkflow.user_workflow_pk == user_workflow_pk)\
                 .filter(MdUserWorkflow.user_id == user_id)\
                 .first()
-            if not user_workflow:
+            if not result:
                 return {"error": "Workflow not found for this user"}, 404
+            
+            user_workflow, workflow = result
             
             # create session
             session_creation = self.session_creator.create_session(user_id, platform, "form")
@@ -66,7 +69,8 @@ class UserWorkflowExecution(Resource):
             
             db_workflow_execution = MdUserWorkflowExecution(
                 user_workflow_fk=user_workflow_pk,
-                session_id=session_id
+                session_id=session_id,
+                json_inputs=workflow.json_inputs_spec
             )
             db.session.add(db_workflow_execution)
             db.session.commit()
@@ -106,8 +110,10 @@ class UserWorkflowExecution(Resource):
             # ensure initial_parameters is a json
             if not isinstance(initial_parameters, dict):
                 return {"error": "initial_parameters must be a json"}, 400
-            workflow_execution.initial_parameters = initial_parameters
-            workflow_execution.start_date = datetime.now()
+            user_workflow_execution.json_input = initial_parameters
+            user_workflow_execution.start_date = datetime.now()
+            db.session.commit()
+            
             #workflow_execution.run() # TODO: run must be done asynchronously in a dedicated thread
             server_socket.start_background_task(workflow_execution.run)
             return {"user_workflow_execution_pk": user_workflow_execution_pk}, 200

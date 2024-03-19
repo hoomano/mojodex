@@ -100,11 +100,17 @@ class WorkflowStepExecution:
         except Exception as e:
             raise Exception(f"_get_or_create_db_object :: {e}")
         
-    def reset(self):
+    def reset(self, session_id: str):
         try:
+            previous_step_execution_pk = self.db_object.user_workflow_step_execution_pk
             db_workflow_step_execution = self._create_db_object(self.workflow_step.workflow_step_pk, self.db_object.user_workflow_execution_fk)
             self.db_object = db_workflow_step_execution
             self.runs = []
+            step_json = self.to_json()
+            # add session_id to step_json
+            step_json["session_id"] = session_id
+            step_json["previous_step_execution_pk"] = previous_step_execution_pk
+            server_socket.emit('workflow_step_execution_reset', step_json, to=session_id)
         except Exception as e:
             raise Exception(f"{self.logger_prefix} :: reset :: {e}")
 
@@ -164,6 +170,8 @@ class WorkflowStepExecution:
             # run from non-validated actions
             for run in self.runs:
                 if not run.validated:
+                    # create an execution for the run
+                    run.prepare_execution() # This creates a run_execution in db
                     run_json = run.to_json()
                     run_json["session_id"] = session_id
                     run_json["step_execution_fk"] = self.db_object.user_workflow_step_execution_pk
@@ -200,6 +208,12 @@ class WorkflowStepExecution:
             if not run.validated:
                 return run
             
+    def invalidate_last_run(self):
+        try:
+            if self.initialized:
+                self.runs[-1].invalidate()
+        except Exception as e:
+            raise Exception(f"{self.logger_prefix} :: invalidate_last_run :: {e}")
 
     def to_json(self):
         try:

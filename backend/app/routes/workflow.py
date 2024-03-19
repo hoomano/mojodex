@@ -12,12 +12,22 @@ class Workflow(Resource):
             timestamp = request.json['datetime']
             name = request.json['name']
             steps = request.json['steps']
+            json_inputs_spec = request.json['json_inputs_spec']
         except KeyError as e:
             return {"error": f"Missing parameter : {e}"}, 400
         
         try:
+            # ensure json_inputs_spec is a list and each elements are dict
+            if not isinstance(json_inputs_spec, list):
+                return {"error": "json_inputs_spec should be a list of dict"}, 400
+            for item in json_inputs_spec:
+                if not isinstance(item, dict):
+                    return {"error": "json_inputs_spec should be a list of dict"}, 400
+                    
+
             db_workflow = MdWorkflow(
-                name=name
+                name=name,
+                json_inputs_spec=json_inputs_spec
             )
             db.session.add(db_workflow)
             db.session.flush()

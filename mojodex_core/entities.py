@@ -100,6 +100,7 @@ class MdWorkflow(Base):
 
     workflow_pk = Column(Integer, Sequence('md_workflow_seq'), primary_key=True)
     name = Column(String(255), nullable=False)
+    json_inputs_spec = Column(JSON, nullable=False)
 
     md_workflow_step = relationship('MdWorkflowStep', back_populates='md_workflow')
     md_user_workflow = relationship('MdUserWorkflow', back_populates='md_workflow')
@@ -650,9 +651,9 @@ class MdUserWorkflowExecution(Base):
     user_workflow_execution_pk = Column(Integer, Sequence('md_user_workflow_execution_seq'), primary_key=True)
     user_workflow_fk = Column(Integer, nullable=False)
     creation_date = Column(DateTime, nullable=False, server_default=text('now()'))
+    json_inputs = Column(JSON, nullable=False)
     session_id = Column(String(255), nullable=False)
     start_date = Column(DateTime)
-    json_input = Column(JSON)
 
     session = relationship('MdSession', back_populates='md_user_workflow_execution')
     md_user_workflow = relationship('MdUserWorkflow', back_populates='md_user_workflow_execution')
@@ -834,21 +835,21 @@ class MdUserWorkflowStepExecutionRun(Base):
     creation_date = Column(DateTime, nullable=False, server_default=text('now()'))
     validated = Column(Boolean, nullable=False, server_default=text('false'))
     parameter = Column(Text)
-    result = Column(Text)
 
     md_user_workflow_step_execution = relationship('MdUserWorkflowStepExecution', back_populates='md_user_workflow_step_execution_run')
-    user_workflow_step_execution_run_result = relationship('UserWorkflowStepExecutionRunResult', back_populates='md_user_workflow_step_execution_run')
+    md_user_workflow_step_execution_run_execution = relationship('MdUserWorkflowStepExecutionRunExecution', back_populates='md_user_workflow_step_execution_run')
 
 
-class UserWorkflowStepExecutionRunResult(Base):
-    __tablename__ = 'user_workflow_step_execution_run_result'
+class MdUserWorkflowStepExecutionRunExecution(Base):
+    __tablename__ = 'md_user_workflow_step_execution_run_execution'
     __table_args__ = (
-        ForeignKeyConstraint(['user_workflow_step_execution_run_fk'], ['md_user_workflow_step_execution_run.user_workflow_step_execution_run_pk'], name='user_wf_step_exec_run_result_user_wf_step_exec_run_fk_fkey'),
-        PrimaryKeyConstraint('user_workflow_step_execution_run_result_pk', name='user_workflow_step_execution_run_result_pkey')
+        ForeignKeyConstraint(['user_workflow_step_execution_run_fk'], ['md_user_workflow_step_execution_run.user_workflow_step_execution_run_pk'], name='md_user_wf_step_exec_run_exec_user_wf_step_exec_run_fk_fkey'),
+        PrimaryKeyConstraint('user_workflow_step_execution_run_execution_pk', name='md_user_workflow_step_execution_run_execution_pkey')
     )
 
-    user_workflow_step_execution_run_result_pk = Column(Integer, Sequence('user_workflow_step_execution_run_result_seq'), primary_key=True)
+    user_workflow_step_execution_run_execution_pk = Column(Integer, Sequence('md_user_workflow_step_execution_run_execution_seq'), primary_key=True)
     user_workflow_step_execution_run_fk = Column(Integer, nullable=False)
-    result = Column(Text, nullable=False)
+    creation_date = Column(DateTime, nullable=False, server_default=text('now()'))
+    result = Column(Text)
 
-    md_user_workflow_step_execution_run = relationship('MdUserWorkflowStepExecutionRun', back_populates='user_workflow_step_execution_run_result')
+    md_user_workflow_step_execution_run = relationship('MdUserWorkflowStepExecutionRun', back_populates='md_user_workflow_step_execution_run_execution')

@@ -9,7 +9,6 @@ class SectionsTranslatorStep(WorkflowStep):
     def _execute(self, parameter: dict, initial_parameter: dict, history: List[dict]):
         # input keys: 'section'
         
-        print(f"🟢 SectionsTranslatorStep :: _execute :: parameter_type: {type(parameter)} parameter: {parameter}")
         return [{'translation': parameter['section'] + ' in ' + initial_parameter['target_language']}]
     
         # output keys: 'translation'

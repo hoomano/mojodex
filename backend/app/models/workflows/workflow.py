@@ -50,17 +50,16 @@ class WorkflowExecution:
 
     @property
     def initial_parameters(self):
-        #return self.db_object.json_input
-        return self.db_object.json_input
-
-    @initial_parameters.setter
-    def initial_parameters(self, value):
+        # self.json_inputs is [{"input_name": "<input_name>", "default_value": "<value>"}]'
+        # initial_parameters is {"<input_name>": "<value>", ...}
         try:
-            self.db_object.json_input = value
-            flag_modified(self.db_object, "json_input")
-            self.db_session.commit()
+            return {input["input_name"]: input["default_value"] for input in self.json_inputs}
         except Exception as e:
             raise Exception(f"initial_parameters :: {e}")
+
+    @property
+    def json_inputs(self):
+        return self.db_object.json_inputs
 
     def run(self):
         try:
@@ -130,7 +129,7 @@ class WorkflowExecution:
         if not checkpoint_step:
             print("🔴 no checkpoint found")
             for step in self.steps_executions:
-                step.reset()
+                step.reset(self.db_object.session_id)
         else:
             print(f"🟢 checkpoint step is: {checkpoint_step.name}")
             # reset steps after checkpoint
@@ -139,7 +138,8 @@ class WorkflowExecution:
             for step in self.steps_executions[checkpoint_step_index+1:]:
                 if step.initialized:
                     print(f"🟢 Resetting step: {step.name}")
-                    step.reset()
+                    step.reset(self.db_object.session_id)
+            checkpoint_step.invalidate_last_run()
 
     @property
     def _db_workflow(self):
@@ -158,7 +158,8 @@ class WorkflowExecution:
                 "user_workflow_execution_pk": self.db_object.user_workflow_execution_pk,
                 "user_workflow_fk": self.db_object.user_workflow_fk,
                 "steps": [step_execution.to_json() for step_execution in self.steps_executions],
-                "session_id": self.db_object.session_id
+                "session_id": self.db_object.session_id,
+                "inputs": self.json_inputs
             }
         except Exception as e:
             raise Exception(f"{self.logger_prefix} to_json :: {e}")

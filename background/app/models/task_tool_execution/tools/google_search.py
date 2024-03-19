@@ -1,7 +1,5 @@
-import json
 import os
 from IPython.utils import io
-from jinja2 import Template
 from serpapi import GoogleSearch
 import requests
 from bs4 import BeautifulSoup
@@ -10,8 +8,7 @@ from background_logger import BackgroundLogger
 from models.task_tool_execution.tools.tool import Tool
 from mojodex_core.costs_manager.serp_api_costs_manager import SerpAPICostsManager
 
-from app import llm, llm_conf
-
+from mojodex_core.llm_engine.mpt import MPT
 
 
 class GoogleSearchTool(Tool):
@@ -25,9 +22,8 @@ class GoogleSearchTool(Tool):
         }"""
     n_total_usages = 3
 
-    scrapper_prompt = "/data/prompts/background/task_tool_execution/google_search/scrapper_prompt.txt"
-    scrapper = llm(llm_conf, label="WEB_SCRAPPER")
-    
+    scrapper_mpt_filename = "background/app/instructions/web_scrapper.mpt"
+
     serp_api_costs_manager = SerpAPICostsManager()
 
     def __init__(self, user_id, task_tool_execution_pk, user_task_execution_pk, task_name_for_system, **kwargs):
@@ -101,8 +97,8 @@ class GoogleSearchTool(Tool):
                 search = GoogleSearch(params)
                 res = search.get_dict()
             self.serp_api_costs_manager.on_search(user_id=self.user_id, num_of_results_asked=num,
-                                             user_task_execution_pk=self.user_task_execution_pk,
-                                             task_name_for_system=self.task_name_for_system)
+                                                  user_task_execution_pk=self.user_task_execution_pk,
+                                                  task_name_for_system=self.task_name_for_system)
             if "error" in res.keys():
                 raise ValueError(f"Got error from SerpAPI: {res['error']}")
             if "answer_box" in res.keys() and "answer" in res["answer_box"].keys():
@@ -146,18 +142,16 @@ class GoogleSearchTool(Tool):
             text_content = main_content.text if main_content else soup.text
 
             # call gpt4
-            with open(GoogleSearchTool.scrapper_prompt, "r") as f:
-                template = Template(f.read())
-                prompt = template.render(
-                    url=url, text_content=text_content, search=query)
+            web_scrapper = MPT(GoogleSearchTool.scrapper_mpt_filename,
+                               url=url,
+                               text_content=text_content,
+                               search=query)
 
-            messages = [{"role": "user", "content": prompt}]
-
-            responses = GoogleSearchTool.scrapper.invoke(messages, self.user_id,
-                                                       temperature=0, max_tokens=1000,
-                                                       user_task_execution_pk=self.user_task_execution_pk,
-                                                       task_name_for_system=self.task_name_for_system,
-                                                       )
+            responses = web_scrapper.run(self.user_id,
+                                         temperature=0, max_tokens=1000,
+                                         user_task_execution_pk=self.user_task_execution_pk,
+                                         task_name_for_system=self.task_name_for_system,
+                                         )
 
             response = responses[0].strip()
             if response.lower().strip() == "none":

@@ -1,4 +1,3 @@
-from jinja2 import Template
 from background_logger import BackgroundLogger
 from mojodex_core.json_loader import json_decode_retry
 
@@ -6,14 +5,12 @@ from app import send_admin_error_email, on_json_error
 from models.events.events_generator import EventsGenerator
 from models.knowledge.knowledge_collector import KnowledgeCollector
 
-from app import llm, llm_conf
+from mojodex_core.llm_engine.mpt import MPT
 
 
 class DailyNotificationsGenerator(EventsGenerator):
     logger_prefix = "DailyNotificationsGenerator::"
-    daily_notification_text_prompt = "/data/prompts/engagement/notifications/daily_notification_text_prompt.txt"
-    daily_notification_text_generator = llm(
-        llm_conf, label="DAILY_NOTIFICATION")
+    daily_notification_text_mpt_filename = "/data/prompts/engagement/notifications/daily_notification_text_prompt.txt"
 
     def __init__(self):
         self.logger = BackgroundLogger(
@@ -53,29 +50,24 @@ class DailyNotificationsGenerator(EventsGenerator):
                               new_todos_today, language, retry=2):
         try:
             self.logger.info(f"generate_notif_text for user {user_id}")
-            with open(DailyNotificationsGenerator.daily_notification_text_prompt, "r") as f:
-                template = Template(f.read())
+            daily_notification_text = MPT(DailyNotificationsGenerator.daily_notification_text_mpt_filename,
+                                          mojo_knowledge=mojo_knowledge,
+                                          global_context=global_context,
+                                          username=username,
+                                          user_company_knowledge=user_company_knowledge,
+                                          user_business_goal=user_business_goal,
+                                          new_todos_today=new_todos_today,
+                                          language=language
+                                          )
 
-                prompt = template.render(
-                    mojo_knowledge=mojo_knowledge,
-                    global_context=global_context,
-                    username=username,
-                    user_company_knowledge=user_company_knowledge,
-                    user_business_goal=user_business_goal,
-                    new_todos_today=new_todos_today,
-                    language=language
-                )
-
-                # write the prompt in /data/daily_notif_prompt.txt
-                with open("/data/daily_notif_prompt.txt", "w") as f:
-                    f.write(prompt)
-
-            # call openai to generate text
-            messages = [{"role": "system", "content": prompt}]
-            notification_message = DailyNotificationsGenerator.daily_notification_text_generator.invoke(messages, user_id,
-                                                                                                      temperature=0,
-                                                                                                      json_format=True,
-                                                                                                      max_tokens=50)[0]
+            # TODO: @kelly why doing this?
+            # write the prompt in /data/daily_notif_prompt.txt
+            with open("/data/daily_notif_prompt.txt", "w") as f:
+                f.write(daily_notification_text.prompt)
+            notification_message = daily_notification_text.run(user_id,
+                                                               temperature=0,
+                                                               json_format=True,
+                                                               max_tokens=50)[0]
 
             return notification_message
         except Exception as e:

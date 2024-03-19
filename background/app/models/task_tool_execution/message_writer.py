@@ -1,21 +1,11 @@
-import os
-from datetime import datetime
-
-import requests
-from jinja2 import Template
-
-
 from background_logger import BackgroundLogger
-
-from app import llm, llm_conf
 
 
 class MessageWriter:
     logger_prefix = "MessageWriter ::"
     tool_result_start_tag, tool_result_end_tag = "<tool_results>", "</tool_results>"
 
-    message_prompt = "/data/prompts/background/task_tool_execution/message_writer/message_prompt.txt"
-    writer = llm(llm_conf, label="TASK_TOOL_EXECUTION_MESSAGE_WRITER")
+    task_tool_message_writer_mpt_filename = "background/app/instructions/task_tool_execution_message_writer.mpt"
 
     def __init__(self, title_start_tag, title_end_tag, draft_start_tag, draft_end_tag):
         self.logger = BackgroundLogger(f"{MessageWriter.logger_prefix}")
@@ -42,30 +32,28 @@ class MessageWriter:
                        user_id, user_task_execution_pk):
         try:
             self.logger.info(f"_write_message")
-            with open(MessageWriter.message_prompt, "r") as f:
-                template = Template(f.read())
-                prompt = template.render(mojo_knowledge=knowledge_collector.mojo_knowledge,
-                                         global_context=knowledge_collector.global_context,
-                                         username=knowledge_collector.user_name,
-                                         task=task,
-                                         title_start_tag=self.title_start_tag,
-                                         title_end_tag=self.title_end_tag,
-                                         draft_start_tag=self.draft_start_tag,
-                                         draft_end_tag=self.draft_end_tag,
-                                         tool=tool,
-                                         task_tool_association=task_tool_association,
-                                         conversation=conversation,
-                                         results=results,
-                                         language=language
-                                         )
+            task_tool_message_writer = MPT(MessageWriter.task_tool_message_writer_mpt_filename,
+                                           mojo_knowledge=knowledge_collector.mojo_knowledge,
+                                           global_context=knowledge_collector.global_context,
+                                           username=knowledge_collector.user_name,
+                                           task=task,
+                                           title_start_tag=self.title_start_tag,
+                                           title_end_tag=self.title_end_tag,
+                                           draft_start_tag=self.draft_start_tag,
+                                           draft_end_tag=self.draft_end_tag,
+                                           tool=tool,
+                                           task_tool_association=task_tool_association,
+                                           conversation=conversation,
+                                           results=results,
+                                           language=language
+                                           )
 
-            messages = [{"role": "system", "content": prompt}]
-            responses = MessageWriter.writer.invoke(messages, user_id,
-                                                  temperature=0,
-                                                  max_tokens=3000,
-                                                  user_task_execution_pk=user_task_execution_pk,
-                                                  task_name_for_system=task.name_for_system,
-                                                  )
+            responses = task_tool_message_writer.run(user_id,
+                                                     temperature=0,
+                                                     max_tokens=3000,
+                                                     user_task_execution_pk=user_task_execution_pk,
+                                                     task_name_for_system=task.name_for_system,
+                                                     )
 
             response = responses[0].strip()
             return response

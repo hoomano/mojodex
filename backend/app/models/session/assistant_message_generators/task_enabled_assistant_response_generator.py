@@ -55,7 +55,7 @@ class TaskEnabledAssistantResponseGenerator(AssistantResponseGenerator, ABC):
             elif self.use_draft_placeholder:
                 placeholder = self._get_task_execution_placeholder()
             if placeholder:
-                placeholder_generator.stream(placeholder, self._token_stream_callback)
+                placeholder_generator.stream(placeholder, self._token_callback)
                 return placeholder
         except Exception as e:
             raise Exception(f"{TaskEnabledAssistantResponseGenerator.logger_prefix} _handle_placeholder :: {e}")

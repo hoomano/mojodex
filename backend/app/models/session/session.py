@@ -1,5 +1,6 @@
 import os
 from app import db, log_error, server_socket, time_manager, socketio_message_sender, main_logger
+from models.session.assistant_message_generators.workflow_response_generator import WorkflowAssistantResponseGenerator
 from models.session.assistant_message_generators.general_chat_response_generator import GeneralChatResponseGenerator
 from models.session.assistant_message_generators.task_assistant_response_generator import TaskAssistantResponseGenerator
 from models.session.assistant_message_generators.assistant_message_generator import AssistantMessageGenerator
@@ -157,8 +158,6 @@ class Session:
             raise Exception(f"_produced_text_stream_callback :: {e}")
 
 
-
-
     ### STREAM ACKNOWLEDGEMENTS ###
     def set_produced_text_version_read_by_user(self, produced_text_version_pk):
         produced_text_version = db.session.query(MdProducedTextVersion).filter(
@@ -177,8 +176,6 @@ class Session:
             db.session.commit()
         except Exception as e:
             log_error("Error during set_mojo_message_read_by_user: " + str(e))
-
-
 
     ### PROCESS MESSAGE ###
     def user_inputs_processor(generate_mojo_message_func):
@@ -232,6 +229,9 @@ class Session:
             # For now only task sessions
             user_task_execution_pk = message['user_task_execution_pk']
             return self.__manage_task_session(self.platform, user_task_execution_pk, use_message_placeholder, use_draft_placeholder)
+        elif 'user_workflow_execution_pk' in message:
+            user_workflow_execution_pk = message['user_workflow_execution_pk']
+            return self.__manage_workflow_session(self.platform, user_workflow_execution_pk, use_message_placeholder, use_draft_placeholder)
         else:
             raise Exception("Unknown message origin")
 
@@ -357,6 +357,39 @@ class Session:
             return response_message, response_language
         except Exception as e:
             raise Exception(f"__manage_task_session :: {e}")
+
+
+    def __manage_workflow_session(self, platform, user_workflow_execution_pk, use_message_placeholder=False, use_draft_placeholder=False):
+        """
+        Manages a workflow session.
+
+        Args:
+            platform (str): The platform the user is on.
+            user_workflow_execution_pk (str): The primary key of the running user task execution if any
+            use_message_placeholder (bool, optional): Whether to use a message placeholder. Defaults to False.
+            use_draft_placeholder (bool, optional): Whether to use a draft placeholder. Defaults to False.
+
+        Returns:
+            tuple: The response message and response language.
+
+        Raises:
+            Exception: If there is an error during management.
+        """
+        try:
+            tag_proper_nouns = platform == "mobile"
+            workflow_assistant_response_generator = WorkflowAssistantResponseGenerator(mojo_message_token_stream_callback=self._mojo_message_stream_callback,
+                                                                              use_message_placeholder=use_message_placeholder,
+                                                                               tag_proper_nouns=tag_proper_nouns,
+                                                                               user=self._get_user(),
+                                                                               session_id=self.id,
+                                                                               user_messages_are_audio= platform=="mobile",
+                                                                               running_user_workflow_execution_pk=user_workflow_execution_pk)
+
+            response_message = workflow_assistant_response_generator.generate_message()
+            response_language = workflow_assistant_response_generator.context.state.current_language
+            return response_message, response_language
+        except Exception as e:
+            raise Exception(f"__manage_workflow_session :: {e}")
 
     def __process_error_during_message_generation(self, e):
         """

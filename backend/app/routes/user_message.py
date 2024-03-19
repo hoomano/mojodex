@@ -23,6 +23,33 @@ class UserMessage(Resource):
             main_logger.error(f"Can't initialize user_audio_file_manager: {e}")
         UserMessage.method_decorators = [authenticate()]
 
+    def _trigger_user_task_execution_start(self, user_task_execution_pk, user_id, session_id, timezone_offset):
+        try:
+            user_task_execution = db.session.query(MdUserTaskExecution) \
+                        .join(MdUserTask, MdUserTaskExecution.user_task_fk == MdUserTask.user_task_pk) \
+                        .filter(MdUserTaskExecution.user_task_execution_pk == user_task_execution_pk) \
+                        .filter(MdUserTask.user_id == user_id) \
+                        .first()
+            if user_task_execution is None:
+                log_error(
+                    f"Error with user_message : UserTaskExecution {user_task_execution_pk} not found for user {user_id}")
+                return {"error": f"UserTaskExecution  {user_task_execution_pk} not found for this user"}, 400
+
+            if user_task_execution.start_date is None:
+                user_task_execution.start_date = datetime.now()
+                db.session.commit()
+                try:
+                    iso_start_date = time_manager.backend_date_to_user_date(user_task_execution.start_date,
+                                                                            timezone_offset if timezone_offset else 0).isoformat()
+                    server_socket.emit("user_task_execution_start", {"start_date": iso_start_date,
+                                                                    "user_task_execution_pk": user_task_execution_pk,
+                                                                    "session_id": session_id},
+                                    to=session_id)
+                except Exception as e:
+                    log_error(f"Error acknowledging message : {e}")
+        except Exception as e:
+            raise Exception(f"_trigger_user_task_execution_start:: {e}")
+
     def put(self, user_id):
 
         try:
@@ -37,7 +64,7 @@ class UserMessage(Resource):
             use_draft_placeholder = request.form['use_draft_placeholder'] == "true" if 'use_draft_placeholder' in request.form else False
             origin = request.form['origin'] if 'origin' in request.form else "task"
             # check origin is "home_chat" or "task"
-            if origin not in ["home_chat", "task"]:
+            if origin not in ["home_chat", "task", "workflow"]:
                 return {"error": f"Invalid origin: {origin}"}, 400
 
         except KeyError as e:
@@ -96,69 +123,52 @@ class UserMessage(Resource):
 
             try:
                 # Current task of md_session if any
-                if origin == "task":
-                    result = db.session.query(MdUserTaskExecution, MdTask) \
+                user_workflow_execution_pk, user_task_execution_pk, task_name_for_system, home_chat = None, None, None, None
+                if origin == "task": # set user_task_execution_pk
+                    # if user_task_execution_pk provided, use it to get the task
+                    if "user_task_execution_pk" in request.form:
+                        user_task_execution_pk= request.form["user_task_execution_pk"]
+                        user_task_execution, task = db.session.query(MdUserTaskExecution, MdTask) \
                         .filter(MdUserTaskExecution.session_id == session_id) \
                         .join(MdUserTask, MdUserTaskExecution.user_task_fk == MdUserTask.user_task_pk) \
                         .join(MdTask, MdUserTask.task_fk == MdTask.task_pk) \
-                        .order_by(MdUserTaskExecution.user_task_execution_pk.desc()) \
+                        .filter(MdUserTaskExecution.user_task_execution_pk == user_task_execution_pk) \
                         .first()
-                else:
+                    else: # Not sure this is working => Should be removed and replaced by first condition
+                        user_task_execution, task = db.session.query(MdUserTaskExecution, MdTask) \
+                            .filter(MdUserTaskExecution.session_id == session_id) \
+                            .join(MdUserTask, MdUserTaskExecution.user_task_fk == MdUserTask.user_task_pk) \
+                            .join(MdTask, MdUserTask.task_fk == MdTask.task_pk) \
+                            .order_by(MdUserTaskExecution.user_task_execution_pk.desc()) \
+                            .first()
+                    user_task_execution_pk, task_name_for_system = user_task_execution.user_task_execution_pk, task.name_for_system
+                    self._trigger_user_task_execution_start(user_task_execution_pk, user_id, session_id, user.timezone_offset)
+                elif origin == "home_chat": # set user_task_execution_pk if any, else home_chat
                     # if previous message.message of session contained user_task_execution_pk, use it to get the task
                     previous_agent_message = db.session.query(MdMessage) \
                         .filter(MdMessage.session_id == session_id) \
                         .filter(MdMessage.sender == Session.agent_message_key) \
                         .order_by(MdMessage.creation_date.desc()) \
                         .first()
-                    if previous_agent_message:
-                        if previous_agent_message.message and "user_task_execution_pk" in previous_agent_message.message:
-
-                            user_task_execution_pk = previous_agent_message.message["user_task_execution_pk"]
-                            result = db.session.query(MdUserTaskExecution, MdTask) \
-                                .filter(MdUserTaskExecution.user_task_execution_pk == user_task_execution_pk) \
-                                .join(MdUserTask, MdUserTaskExecution.user_task_fk == MdUserTask.user_task_pk) \
-                                .join(MdTask, MdUserTask.task_fk == MdTask.task_pk) \
-                                .first()
-                        else:
-                            result = None
+                    if previous_agent_message and previous_agent_message.message and "user_task_execution_pk" in previous_agent_message.message:
+                        user_task_execution_pk = previous_agent_message.message["user_task_execution_pk"]
+                        user_task_execution, task = db.session.query(MdUserTaskExecution, MdTask) \
+                            .filter(MdUserTaskExecution.user_task_execution_pk == user_task_execution_pk) \
+                            .join(MdUserTask, MdUserTaskExecution.user_task_fk == MdUserTask.user_task_pk) \
+                            .join(MdTask, MdUserTask.task_fk == MdTask.task_pk) \
+                            .first()
+                        task_name_for_system = task.name_for_system
+                        self._trigger_user_task_execution_start(user_task_execution_pk, user_id, session_id, user.timezone_offset)
                     else:
-                        result = None
-
-
-                if result:
-                    user_task_execution, task = result
-                    user_task_execution_pk, task_name_for_system = user_task_execution.user_task_execution_pk, task.name_for_system
-                    home_chat = None
-
-                    user_task_execution = db.session.query(MdUserTaskExecution) \
-                        .join(MdUserTask, MdUserTaskExecution.user_task_fk == MdUserTask.user_task_pk) \
-                        .filter(MdUserTaskExecution.user_task_execution_pk == user_task_execution_pk) \
-                        .filter(MdUserTask.user_id == user_id) \
-                        .first()
-                    if user_task_execution is None:
-                        log_error(
-                            f"Error with user_message : UserTaskExecution {user_task_execution_pk} not found for user {user_id}")
-                        return {"error": f"UserTaskExecution  {user_task_execution_pk} not found for this user"}, 400
-
-                    if user_task_execution.start_date is None:
-                        user_task_execution.start_date = datetime.now()
-                        db.session.commit()
-                        try:
-                            iso_start_date = time_manager.backend_date_to_user_date(user_task_execution.start_date,
-                                                                                    user.timezone_offset if user.timezone_offset else 0).isoformat()
-                            server_socket.emit("user_task_execution_start", {"start_date": iso_start_date,
-                                                                            "user_task_execution_pk": user_task_execution_pk,
-                                                                            "session_id": session_id},
-                                            to=session_id)
-                        except Exception as e:
-                            log_error(f"Error acknowledging message : {e}")
-                else:
-                        user_task_execution_pk, task_name_for_system = None, None
-
                         # home chat related if any
                         home_chat = db.session.query(MdHomeChat) \
                             .filter(MdHomeChat.session_id == session_id) \
                             .first()
+                elif origin == "workflow":
+                    if "user_workflow_execution_pk" not in request.form:
+                        raise Exception("user_workflow_execution_pk not found in request.form")
+                    user_workflow_execution_pk= request.form["user_workflow_execution_pk"]
+                    
 
                 if "text" in request.form:
                     message.message = {"text": request.form["text"], "message_pk": message.message_pk,
@@ -186,6 +196,8 @@ class UserMessage(Resource):
                 
                 if user_task_execution_pk:
                         message.message["user_task_execution_pk"] = user_task_execution_pk
+                if user_workflow_execution_pk:
+                        message.message["user_workflow_execution_pk"] = user_workflow_execution_pk
                 db.session.flush()
 
                 session_db = db.session.query(MdSession).filter(MdSession.session_id == session_id).first()
@@ -197,11 +209,12 @@ class UserMessage(Resource):
                 session = SessionModel(session_id)
 
                 session_message = {"text": message.message["text"], "message_pk": message.message_pk,
-                                   "audio": not "text" in request.form, "user_task_execution_pk":user_task_execution_pk, "origin": origin,
-                                   "home_chat_pk": home_chat.home_chat_pk if home_chat else None,
-                                     "message_date": message_date.isoformat(),
-                                     "platform": platform,
-                                   "use_message_placeholder": use_message_placeholder, "use_draft_placeholder": use_draft_placeholder}
+                                    "audio": not "text" in request.form, "user_task_execution_pk":user_task_execution_pk, 
+                                    "user_workflow_execution_pk":user_workflow_execution_pk, "origin": origin,
+                                    "home_chat_pk": home_chat.home_chat_pk if home_chat else None,
+                                    "message_date": message_date.isoformat(),
+                                    "platform": platform,
+                                    "use_message_placeholder": use_message_placeholder, "use_draft_placeholder": use_draft_placeholder}
 
                 server_socket.start_background_task(session.process_chat_message, session_message)
 

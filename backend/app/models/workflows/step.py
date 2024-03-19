@@ -20,6 +20,10 @@ class WorkflowStep(ABC):
     def workflow_step_pk(self):
         return self.db_object.workflow_step_pk
     
+    @property
+    def is_checkpoint(self):
+        return self.db_object.is_checkpoint
+    
     @abstractmethod
     def _execute(self, parameter: dict, initial_parameters: dict, history: List[dict]):
        pass
@@ -114,6 +118,9 @@ class WorkflowStepExecution:
         except Exception as e:
             raise Exception(f"{self.logger_prefix} :: initialized :: {e}")
     
+    @property
+    def is_checkpoint(self):
+        return self.workflow_step.is_checkpoint
 
     @property
     def _db_runs(self):

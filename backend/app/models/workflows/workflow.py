@@ -118,8 +118,8 @@ class WorkflowExecution:
             raise Exception(f"validate_current_run :: {e}")
 
     def _find_checkpoint_step(self):
-        for step in reversed(self.steps):
-            if step.initialized and step.checkpoint:
+        for step in reversed(self.steps_executions):
+            if step.initialized and step.is_checkpoint:
                 return step
         return None
 
@@ -128,13 +128,18 @@ class WorkflowExecution:
         checkpoint_step = self._find_checkpoint_step()
         # if there are other steps after checkpoint, reset them
         if not checkpoint_step:
-            for step in self.steps:
+            print("🔴 no checkpoint found")
+            for step in self.steps_executions:
                 step.reset()
         else:
+            print(f"🟢 checkpoint step is: {checkpoint_step.name}")
             # reset steps after checkpoint
-            checkpoint_step_index = self.steps.index(checkpoint_step)
-            for step in self.steps[checkpoint_step_index+1:]:
-                step.reset()
+            checkpoint_step_index = self.steps_executions.index(checkpoint_step)
+            print(f"🟢 checkpoint step index is: {checkpoint_step_index}")
+            for step in self.steps_executions[checkpoint_step_index+1:]:
+                if step.initialized:
+                    print(f"🟢 Resetting step: {step.name}")
+                    step.reset()
 
     @property
     def _db_workflow(self):

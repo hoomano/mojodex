@@ -260,6 +260,7 @@ class MdWorkflowStep(Base):
     workflow_step_pk = Column(Integer, Sequence('md_workflow_step_seq'), primary_key=True)
     workflow_fk = Column(Integer, nullable=False)
     name = Column(String(255), nullable=False)
+    is_checkpoint = Column(Boolean, nullable=False, server_default=text('false'))
 
     md_workflow = relationship('MdWorkflow', back_populates='md_workflow_step')
     md_user_workflow_step_execution = relationship('MdUserWorkflowStepExecution', back_populates='md_workflow_step')

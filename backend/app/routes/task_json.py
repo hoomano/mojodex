@@ -10,14 +10,10 @@ from mojodex_core.llm_engine.mpt import MPT
 from mojodex_core.json_loader import json_decode_retry
 from app import on_json_error
 
-from app import llm, llm_conf, llm_backup_conf
-
 
 class TaskJson(Resource):
 
     task_json_mpt_filename = "instructions/generate_task_json.mpt"
-    task_json_generator = llm(
-        llm_conf, label="GENERATE_TASK_JSON", llm_backup_conf=llm_backup_conf)
 
     def __get_text_types(self):
         try:
@@ -29,10 +25,11 @@ class TaskJson(Resource):
     @json_decode_retry(retries=3, required_keys=[], on_json_error=on_json_error)
     def __generate_task_json(self, task_requirements, existing_text_types):
         try:
-            generate_task_mpt = MPT(self.task_json_mpt_filename,task_requirements=task_requirements, existing_text_types=existing_text_types)
+            generate_task_mpt = MPT(
+                self.task_json_mpt_filename, task_requirements=task_requirements, existing_text_types=existing_text_types)
 
-            responses = self.task_json_generator.invoke_from_mpt(
-                generate_task_mpt, "backoffice", temperature=0, max_tokens=4000, json_format=True)
+            responses = generate_task_mpt.run(
+                "backoffice", temperature=0, max_tokens=4000, json_format=True)
 
             response = responses[0]
             return response

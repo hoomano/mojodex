@@ -1,11 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
-from jinja2 import Template
-
 
 from mojodex_backend_logger import MojodexBackendLogger
-
-from app import llm, llm_conf, llm_backup_conf
 
 from mojodex_core.json_loader import json_decode_retry
 from app import on_json_error
@@ -16,9 +12,6 @@ class WebsiteParser:
     logger_prefix = "WebsiteParser"
 
     extract_website_info_mpt_filename = "instructions/extract_infos_from_webpage.mpt"
-
-    website_info_extractor = llm(llm_conf, label="EXTRACT_COMPANY_INFO_FROM_WEBSITE",
-                                 llm_backup_conf=llm_backup_conf)
 
     def __init__(self):
         self.logger = MojodexBackendLogger(f"{WebsiteParser.logger_prefix}")
@@ -63,11 +56,12 @@ class WebsiteParser:
     @json_decode_retry(retries=3, required_keys=["name", "description", "emoji"], on_json_error=on_json_error)
     def __scrap_webpage(self, user_id, website_url, webpage_text):
         try:
-            website_info_mpt = MPT(WebsiteParser.extract_website_info_mpt_filename, url=website_url, text_content=webpage_text)
+            website_info_mpt = MPT(
+                WebsiteParser.extract_website_info_mpt_filename, url=website_url, text_content=webpage_text)
 
-            responses = WebsiteParser.website_info_extractor.invoke_from_mpt(website_info_mpt, user_id,
-                                                                  temperature=0, max_tokens=1000,
-                                                                  json_format=True)[0]
+            responses = website_info_mpt.run(user_id,
+                                             temperature=0, max_tokens=1000,
+                                             json_format=True)[0]
 
             return responses
         except Exception as e:

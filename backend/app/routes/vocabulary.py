@@ -4,10 +4,6 @@ from flask_restful import Resource
 from app import db, authenticate, log_error
 from mojodex_core.entities import *
 
-from jinja2 import Template
-
-from app import llm, llm_conf, llm_backup_conf
-
 from models.knowledge.knowledge_manager import KnowledgeManager
 from sqlalchemy import func, or_
 from sqlalchemy.orm.attributes import flag_modified
@@ -17,8 +13,6 @@ from mojodex_core.llm_engine.mpt import MPT
 
 class Vocabulary(Resource):
     proper_nouns_tagger_mpt_filename = "instructions/proper_nouns_tagger.mpt"
-    proper_nouns_tagger = llm(llm_conf, label="SPELLING_CORRECTOR",
-                                        llm_backup_conf=llm_backup_conf)
 
     def __init__(self):
         Vocabulary.method_decorators = [authenticate()]
@@ -26,18 +20,17 @@ class Vocabulary(Resource):
     def __tag_proper_nouns(self, message_text, mojo_knowledge, global_context, username, user_company_knowledge,
                            task_definition_for_system, user_id, user_task_execution_pk, task_name_for_system):
         try:
-            with open(Vocabulary.proper_nouns_tagger_mpt_filename) as f:
-                proper_nouns_tagger_mpt = MPT(Vocabulary.proper_nouns_tagger_mpt_filename, mojo_knowledge=mojo_knowledge,
-                                                                           global_context=global_context,
-                                                                           username=username,
-                                                                           user_company_knowledge=user_company_knowledge,
-                                                                           task_name_for_system=task_name_for_system,
-                                                                           task_definition_for_system=task_definition_for_system,
-                                                                           transcription=message_text)
+            proper_nouns_tagger_mpt = MPT(Vocabulary.proper_nouns_tagger_mpt_filename, mojo_knowledge=mojo_knowledge,
+                                          global_context=global_context,
+                                          username=username,
+                                          user_company_knowledge=user_company_knowledge,
+                                          task_name_for_system=task_name_for_system,
+                                          task_definition_for_system=task_definition_for_system,
+                                          transcription=message_text)
 
-            responses = Vocabulary.proper_nouns_tagger.invoke_from_mpt(proper_nouns_tagger_mpt, user_id, temperature=0, max_tokens=2000,
-                                                            user_task_execution_pk=user_task_execution_pk,
-                                                            task_name_for_system=task_name_for_system)
+            responses = proper_nouns_tagger_mpt.run(user_id, temperature=0, max_tokens=2000,
+                                                    user_task_execution_pk=user_task_execution_pk,
+                                                    task_name_for_system=task_name_for_system)
             return responses[0]
         except Exception as e:
             raise Exception(f"Error in correcting __tag_proper_nouns: {e}")

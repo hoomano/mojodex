@@ -166,6 +166,9 @@ class MPT:
 
         if selected_model is None:
             raise Exception(f"No provider found for model: {model}")
+        
+        # put a reference to the execution with the filepath of the MPT instruction
+        selected_model.label = self.filepath
             
         self.logger.info(f"Running prompt: {self.prompt}")
         

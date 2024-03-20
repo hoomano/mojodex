@@ -1,4 +1,3 @@
-import logging
 from openai import OpenAI, AzureOpenAI, RateLimitError
 from mojodex_core.llm_engine.llm import LLM
 from mojodex_core.logging_handler import MojodexCoreLogger, log_error
@@ -162,7 +161,7 @@ class OpenAILLM(LLM):
                         task_name_for_system=None):
         try:
             if self.model not in mpt.models:
-                logging.warning(
+                mojo_openai_logger.warning(
                     f"{mpt} does not contain model: {self.model} in its dashbangs")
             messages = [{"role": "user", "content": mpt.prompt}]
             responses = self.recursive_invoke(messages, user_id, temperature, max_tokens,

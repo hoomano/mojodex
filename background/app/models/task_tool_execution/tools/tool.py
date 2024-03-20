@@ -67,8 +67,8 @@ class Tool(ABC):
             queries, results = [], []
             for usage in range(self.n_total_usages):
                 json_params = self.__generate_tool_query(
-                    knowledge_collector.mojo_knowledge,
-                    knowledge_collector.global_context,
+                    knowledge_collector.mojodex_knowledge,
+                    knowledge_collector.localized_context,
                     knowledge_collector.user_name,
                     knowledge_collector.user_company_knowledge,
                     tool_execution_context, usage_description, queries, self.n_total_usages, user_id)

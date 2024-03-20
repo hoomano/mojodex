@@ -12,14 +12,13 @@ from models.events.events_generator import EventsGenerator
 
 from models.knowledge.knowledge_collector import KnowledgeCollector
 
-from app import llm, llm_conf
+from mojodex_core.llm_engine.mpt import MPT
 
 
 class DailyEmailsGenerator(EventsGenerator):
     logger_prefix = "DailyEmailsGenerator::"
     message_from_mojodex_email = "/data/mails/message_from_mojodex.html"
-    daily_email_text_prompt = "/data/prompts/engagement/emails/daily_emails_text_prompt.txt"
-    daily_email_text_generator = llm(llm_conf, label="DAILY_EMAIL_GENERATOR")
+    daily_email_text_mpt_filename = "instructions/daily_emails_text_prompt.mpt"
 
     reminder_email_type = "reminder_email"
     summary_email_type = "summary_email"
@@ -89,24 +88,19 @@ class DailyEmailsGenerator(EventsGenerator):
                                received_reminder_email_yesterday, language, retry=2):
         try:
             self.logger.info(f"generate_emails_text for user {user_id}")
-            with open(DailyEmailsGenerator.daily_email_text_prompt, "r") as f:
-                template = Template(f.read())
+            daily_email_text = MPT(DailyEmailsGenerator.daily_email_text_mpt_filename,
+                                   mojo_knowledge=mojo_knowledge,
+                                   global_context=global_context,
+                                   username=username,
+                                   user_company_knowledge=user_company_knowledge,
+                                   user_business_goal=user_business_goal,
+                                   received_reminder_email_yesterday=received_reminder_email_yesterday,
+                                   language=language
+                                   )
 
-                prompt = template.render(
-                    mojo_knowledge=mojo_knowledge,
-                    global_context=global_context,
-                    username=username,
-                    user_company_knowledge=user_company_knowledge,
-                    user_business_goal=user_business_goal,
-                    received_reminder_email_yesterday=received_reminder_email_yesterday,
-                    language=language
-                )
-
-            # call openai to generate text
-            messages = [{"role": "system", "content": prompt}]
-            email_message = DailyEmailsGenerator.daily_email_text_generator.invoke(messages, user_id,
-                                                                                 temperature=1, max_tokens=500,
-                                                                                 json_format=True)[0]
+            email_message = daily_email_text.run(user_id,
+                                                 temperature=1, max_tokens=500,
+                                                 json_format=True)[0]
             return email_message
         except Exception as e:
             raise Exception(f"generate_notif_text: " + str(e))

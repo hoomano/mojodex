@@ -1,0 +1,10 @@
+#! gpt4-turbo/2023-03-15-preview
+#! mistral-large
+
+Return language code of this text:
+<text_start>
+{{text}}
+<text_end>
+
+No talk, just 2 letters language code.
+Do not include tags in response.

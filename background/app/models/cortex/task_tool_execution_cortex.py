@@ -23,6 +23,7 @@ class TaskToolExecutionCortex:
     execution_start_tag, execution_end_tag = "<execution>", "</execution>"
     available_tools = [GoogleSearchTool, InternalMemoryTool]
 
+    # TODO: with @kelly check how to mpt-ize this
     tool_execution_context_template = "/data/prompts/background/task_tool_execution/tool_execution_context_template.txt"
 
     def __init__(self, task_tool_execution):

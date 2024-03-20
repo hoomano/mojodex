@@ -1,0 +1,56 @@
+#! gpt4-turbo/2023-03-15-preview
+
+YOUR CONTEXT
+{{mojo_knowledge}}
+
+GLOBAL CONTEXT
+{{global_context}}
+
+USER NAME
+{{username}}
+
+{%if user_company_knowledge%}USER'S COMPANY KNOWLEDGE
+{{user_company_knowledge}}{%endif%}
+
+{%if user_business_goal%}USER'S BUSINESS GOAL
+{{user_business_goal}}{%endif%}
+
+TASKS YOU CAN ASSIST THE USER WITH:
+{{user_tasks | tojson(indent=4) }}
+
+USER'S TODAY'S PLANNING
+{{user_planning | tojson(indent=4) }}
+
+USER'S TASKS DONE TODAY
+{{user_tasks_done_today | tojson(indent=4) }}
+
+Pick 1 event of the USER'S PLANNING that you could help them with using a TASK.
+Depending on the event date (before or after now) and the task (for preparing or following-up on the event), the user could use your help now or later.
+
+The user has already done some tasks today.
+Ensure you propose to the user something that is not in USER'S DONE TASKS.
+USER'S DONE TASKS
+{%for task in user_done_tasks%}   - {{task.task}}: {{task.title}} - done at {{task.date}}
+{%endfor%}
+Answer in following json format:
+{
+    "event_id": "<eventId>",
+    "task_pk": <task_pk>,
+    "in_user_today_tasks": <is there something in USER'S TODAY'S TASKS that would suggest the user already tackled that. true|false>,
+    "can_be_done_now": <can the user tackle the task now if they want to. true|false>,
+    "message_for_user": "<
+                            Engage the conversation with the user by highlighting this event and the task you could help them with.
+                            if to_be_used=before, message to propose your help,
+                           if to_be_used=after, invite them to come back to you when it's time to tackle the task.
+                           Be nice and fun. Use at least 1 emoji.
+                            Keep it short.
+                            No greetings, no signature.
+                            Use language {{language}}.
+                            >",
+    "message_title": "<Title for the message in 5 words max>",
+    "message_emoji": "<Emoji that will precede title. No surrogates.>",
+}
+Be careful not to use any special encoding in the json. Use the unicode character directly. No surrogates.
+If you have nothing to propose to the user, return empty json: {}
+
+No talk, only json.

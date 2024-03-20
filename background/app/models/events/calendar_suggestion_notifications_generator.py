@@ -1,10 +1,5 @@
-import json
-
-from jinja2 import Template
-
 from background_logger import BackgroundLogger
 from mojodex_core.json_loader import json_decode_retry
-
 
 from app import send_admin_error_email, on_json_error
 
@@ -12,14 +7,12 @@ from models.events.events_generator import EventsGenerator
 
 from models.knowledge.knowledge_collector import KnowledgeCollector
 
-from app import llm, llm_conf
+from mojodex_core.llm_engine.mpt import MPT
 
 
 class CalendarSuggestionNotificationsGenerator(EventsGenerator):
     logger_prefix = "CalendarSuggestionNotificationsGenerator::"
-    calendar_suggestion_notification_text_prompt = "/data/prompts/engagement/notifications/calendar_suggestion_reminder_notification.txt"
-    calendar_suggestion_notification_text_generator = llm(llm_conf,
-                                                          label="CALENDAR_SUGGESTION_NOTIFICATION")
+    calendar_suggestion_notification_text_mpt_filename = "instructions/calendar_suggestion_reminder_notification.mpt"
 
     def __init__(self):
         self.logger = BackgroundLogger(
@@ -62,28 +55,22 @@ class CalendarSuggestionNotificationsGenerator(EventsGenerator):
                               user_business_goal, calendar_suggestion, task_name):
         try:
             self.logger.info(f"generate_notif_text for user {user_id}")
-            with open(CalendarSuggestionNotificationsGenerator.calendar_suggestion_notification_text_prompt, "r") as f:
-                template = Template(f.read())
+            calendar_suggestion_notification = MPT(CalendarSuggestionNotificationsGenerator.calendar_suggestion_notification_text_mpt_filename, 
+                                                   mojo_knowledge=mojo_knowledge,
+                                                   global_context=global_context,
+                                                   username=username,
+                                                   user_company_knowledge=user_company_knowledge,
+                                                   user_business_goal=user_business_goal,
+                                                   calendar_suggestion=calendar_suggestion
+                                                   )
 
-                prompt = template.render(
-                    mojo_knowledge=mojo_knowledge,
-                    global_context=global_context,
-                    username=username,
-                    user_company_knowledge=user_company_knowledge,
-                    user_business_goal=user_business_goal,
-                    calendar_suggestion=calendar_suggestion
-                )
-
-            # call openai to generate text
-            messages = [{"role": "system", "content": prompt}]
-            notification_message = \
-                CalendarSuggestionNotificationsGenerator.calendar_suggestion_notification_text_generator.invoke(messages, user_id,
-                                                                                                              temperature=1,
-                                                                                                              max_tokens=50,
-                                                                                                              json_format=True,
-                                                                                                              user_task_execution_pk=None,
-                                                                                                              task_name_for_system=task_name
-                                                                                                              )[0]
+            notification_message = calendar_suggestion_notification.run(user_id,
+                                                                        temperature=1,
+                                                                        max_tokens=50,
+                                                                        json_format=True,
+                                                                        user_task_execution_pk=None,
+                                                                        task_name_for_system=task_name
+                                                                        )[0]
             # try to load as json to extract title and body
             return notification_message
         except Exception as e:

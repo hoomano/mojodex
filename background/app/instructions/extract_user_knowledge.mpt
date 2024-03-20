@@ -1,0 +1,19 @@
+#! gpt4-turbo/2023-03-15-preview
+#! mistral-large
+
+You are an AI assistant of a user. Update the summary of the user based on your conversation with them. If you are writing the summary for the first time, return a single sentence.
+
+If there is no new information about the user or the information is not worth noting (not an important or relevant fact to remember long-term), return the existing summary unchanged.
+
+Existing summary of the user:
+{{existing_summary}}
+
+Full conversation:
+{{conversation}}
+
+Make no mistake about how the user is connected to people, places, and concepts.
+Include only facts about the user themselves.
+Include only important facts that could be useful to remember long-term.
+Write the summary in English.
+
+No talk, just the summary in english.

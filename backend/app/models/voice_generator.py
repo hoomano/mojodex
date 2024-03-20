@@ -4,16 +4,14 @@ import re
 
 from azure.cognitiveservices.speech import SpeechConfig, SpeechSynthesizer
 from azure.cognitiveservices.speech.audio import AudioOutputConfig
-from jinja2 import Template
 
 from app import log_error
 
-from app import llm, llm_conf, llm_backup_conf
+from mojodex_core.llm_engine.mpt import MPT
 
+# TODO: should be a mojodex_core service?
 class VoiceGenerator:
-    get_language_prompt = "/data/prompts/resources/get_language.txt"
-
-    language_catcher = llm(llm_conf, label="GET_LANGUAGE", llm_backup_conf=llm_backup_conf)
+    get_language_mpt_filename = "instructions/get_language.mpt"
 
     # masculine voices
     available_voices_file = "/data/speech_synthesizer_available_voices.json"
@@ -42,12 +40,9 @@ class VoiceGenerator:
 
     def _get_language(self, text, user_id, user_task_execution_pk, task_name_for_system):
         try:
-            with open(VoiceGenerator.get_language_prompt, "r") as f:
-                translate_prompt_template = Template(f.read())
-                translate_prompt = translate_prompt_template.render(text=text)
-            messages = [{"role": "user", "content": translate_prompt}]
+            get_language_mpt = MPT(VoiceGenerator.get_language_mpt_filename, text=text)
 
-            responses = VoiceGenerator.language_catcher.invoke(messages, user_id, temperature=0, max_tokens=10,
+            responses = get_language_mpt.run(user_id, temperature=0, max_tokens=10,
                                                              user_task_execution_pk=user_task_execution_pk,
                                                              task_name_for_system=task_name_for_system)
             return responses[0].strip().lower()

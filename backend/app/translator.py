@@ -1,21 +1,16 @@
-from jinja2 import Template
 
-from app import llm, llm_conf, llm_backup_conf
+from mojodex_core.llm_engine.mpt import MPT
+
 
 class Translator:
-    translation_prompt = "/data/prompts/resources/translation.txt"
-
-    translator = llm(llm_conf, label="GET_LANGUAGE",
-                               llm_backup_conf=llm_backup_conf)
+    translation_prompt = "instructions/translation.mpt"
 
     def translate(self, text, user_id, language="english"):
         try:
-            with open(Translator.translation_prompt, "r") as f:
-                translate_prompt_template = Template(f.read())
-                translate_prompt = translate_prompt_template.render(text=text, language=language)
-            messages = [{"role": "user", "content": translate_prompt}]
-
-            responses = Translator.translator.invoke(messages, user_id, temperature=0, max_tokens=4000)
+            translate_mpt = MPT(Translator.translation_prompt,
+                                text=text, language=language)
+            responses = translate_mpt.run(
+                user_id, temperature=0, max_tokens=4000)
             return responses[0]
         except Exception as e:
             raise Exception(f"Translator :: translate :: {e}")

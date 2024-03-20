@@ -2,7 +2,6 @@ import os
 from datetime import datetime
 
 import requests
-from jinja2 import Template
 from mojodex_core.json_loader import json_decode_retry
 from background_logger import BackgroundLogger
 from app import on_json_error
@@ -10,15 +9,14 @@ from app import on_json_error
 
 from app import send_admin_error_email
 
-from app import llm, llm_conf
+from mojodex_core.llm_engine.mpt import MPT
 
 
 class TodosRescheduler:
     logger_prefix = "TodosRescheduler"
     todos_scheduling_url = "/todos_scheduling"
 
-    todos_rescheduler_prompt = "/data/prompts/background/todos/reschedule_todo.txt"
-    todos_rescheduler = llm(llm_conf, label="TODOS_RESCHEDULER")
+    todos_rescheduler_mpt_filename = "instructions/reschedule_todo.mpt"
 
     def __init__(self, todo_pk, user_task_execution, knowledge_collector, todo_description, n_scheduled,
                  first_scheduled_date, todo_list):
@@ -56,26 +54,23 @@ class TodosRescheduler:
     def __reschedule(self):
         self.logger.debug(f"_reschedule")
         try:
-            with open(TodosRescheduler.todos_rescheduler_prompt, "r") as f:
-                template = Template(f.read())
-                todos_reschedulor_prompt = template.render(
-                    mojo_knowledge=self.knowledge_collector.mojo_knowledge,
-                    global_context=self.knowledge_collector.global_context,
-                    username=self.knowledge_collector.user_name,
-                    user_business_goal=self.knowledge_collector.user_business_goal,
-                    user_company_knowledge=self.knowledge_collector.user_company_knowledge,
-                    task_name=self.user_task_execution.task_name,
-                    task_definition=self.user_task_execution.task_definition,
-                    task_result=self.user_task_execution.task_result,
-                    todo_definition=self.todo_description,
-                    todo_list=self.todo_list,
-                    n_scheduled=self.n_scheduled
-                )
-            messages = [{"role": "user", "content": todos_reschedulor_prompt}]
-            results = TodosRescheduler.todos_rescheduler.invoke(messages, self.user_task_execution.user_id,
-                                                              temperature=0, max_tokens=500, json_format=True,
-                                                              user_task_execution_pk=self.user_task_execution.user_task_execution_pk,
-                                                              task_name_for_system=self.user_task_execution.task_name)
+            todos_rescheduler = MPT(TodosRescheduler.todos_rescheduler_mpt_filename,
+                                    mojo_knowledge=self.knowledge_collector.mojo_knowledge,
+                                    global_context=self.knowledge_collector.global_context,
+                                    username=self.knowledge_collector.user_name,
+                                    user_business_goal=self.knowledge_collector.user_business_goal,
+                                    user_company_knowledge=self.knowledge_collector.user_company_knowledge,
+                                    task_name=self.user_task_execution.task_name,
+                                    task_definition=self.user_task_execution.task_definition,
+                                    task_result=self.user_task_execution.task_result,
+                                    todo_definition=self.todo_description,
+                                    todo_list=self.todo_list,
+                                    n_scheduled=self.n_scheduled
+                                    )
+            results = todos_rescheduler.run(self.user_task_execution.user_id,
+                                            temperature=0, max_tokens=500, json_format=True,
+                                            user_task_execution_pk=self.user_task_execution.user_task_execution_pk,
+                                            task_name_for_system=self.user_task_execution.task_name)
 
             result = results[0]
             return result

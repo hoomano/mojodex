@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 from jinja2 import Template
 from mojodex_core.entities import *
 
-from app import llm, llm_conf, llm_backup_conf
+from mojodex_core.llm_engine.mpt import MPT
 
 from placeholder_generator import PlaceholderGenerator
 from mojodex_core.json_loader import json_decode_retry
@@ -17,25 +17,21 @@ from packaging import version
 
 
 class CalendarSuggestion(Resource):
-    calendar_suggestion_prompt_dir = "/data/prompts/calendar_suggestion"
 
-    calendar_suggestion_generator_from_calendar_prompt = "generate_suggestion.txt"
-    calendar_suggestion_generator_from_calendar = llm(llm_conf,
-                                                      label="CALENDAR_SUGGESTION_GENERATOR",
-                                                      llm_backup_conf=llm_backup_conf)
+    calendar_suggestion_generator_from_calendar_mpt_filename = "instructions/generate_suggestion_from_calendar.mpt"
 
-    calendar_suggestion_waiting_prompt = "waiting_message.txt"
-    calendar_suggestion_waiting_generator = llm(llm_conf, label="CALENDAR_SUGGESTION_WAITING_TEXT",
-                                                llm_backup_conf=llm_backup_conf)
+    calendar_suggestion_waiting_mpt_filename = "instructions/calendar_waiting_message.mpt"
 
     def __init__(self):
         CalendarSuggestion.method_decorators = [authenticate()]
 
     def __get_mojo_knwoledge(self):
+        # TODO: with @kelly check how to mpt-ize this
         with open("/data/knowledge/mojo_knowledge.txt", 'r') as f:
             return f.read()
 
     def __get_global_context(self, timezoneOffsetMinutes):
+        # TODO: with @kelly check how to mpt-ize this
         with open("/data/knowledge/global_context.txt", 'r') as f:
             template = Template(f.read())
             timestamp = datetime.utcnow(
@@ -106,31 +102,24 @@ class CalendarSuggestion(Resource):
                 @json_decode_retry(retries=3, required_keys=[], on_json_error=on_json_error)
                 def generate(planning):
                     # Answer using openai
-                    with open(os.path.join(CalendarSuggestion.calendar_suggestion_prompt_dir,
-                                           CalendarSuggestion.calendar_suggestion_generator_from_calendar_prompt),
-                              "r") as f:
-                        template = Template(f.read())
-                        prompt = template.render(
-                            mojo_knowledge=self.__get_mojo_knwoledge(),
-                            global_context=self.__get_global_context(
-                                user.timezone_offset),
-                            username=user.name,
-                            user_company_knowledge=user.company_description,
-                            user_business_goal=user.goal,
-                            language=user.language_code,
-                            user_tasks=get_user_tasks(user_id),
-                            user_planning=planning,
-                            user_tasks_done_today=get_user_tasks_done_today(
-                                user_id)
-                        )
+                    generate_suggestion_mpt = MPT(CalendarSuggestion.calendar_suggestion_generator_from_calendar_mpt_filename, mojo_knowledge=self.__get_mojo_knwoledge(),
+                                                  global_context=self.__get_global_context(
+                        user.timezone_offset),
+                        username=user.name,
+                        user_company_knowledge=user.company_description,
+                        user_business_goal=user.goal,
+                        language=user.language_code,
+                        user_tasks=get_user_tasks(user_id),
+                        user_planning=planning,
+                        user_tasks_done_today=get_user_tasks_done_today(
+                        user_id)
+                    )
 
-                    messages = [{"role": "system", "content": prompt}]
-                    responses = CalendarSuggestion.calendar_suggestion_generator_from_calendar.invoke(messages, user_id,
-                                                                                                    temperature=1,
-                                                                                                    max_tokens=1000,
-                                                                                                    json_format=True)
-                    response = responses[0]
-                    return response
+                    responses = generate_suggestion_mpt.run(user_id,
+                                                            temperature=1,
+                                                            max_tokens=1000,
+                                                            json_format=True)
+                    return responses[0]
 
                 data = generate(planning)
 
@@ -204,20 +193,16 @@ class CalendarSuggestion(Resource):
 
             user = db.session.query(MdUser).filter(
                 MdUser.user_id == user_id).first()
-            # Answer using openai
-            with open(os.path.join(CalendarSuggestion.calendar_suggestion_prompt_dir,
-                                   CalendarSuggestion.calendar_suggestion_waiting_prompt),
-                      "r") as f:
-                template = Template(f.read())
-                prompt = template.render(
-                    mojo_knowledge=self.__get_mojo_knwoledge(),
-                    # no global context so that it can be used any day / time
-                    username=user.name,
-                    language=user.language_code
-                )
-            messages = [{"role": "system", "content": prompt}]
-            responses = CalendarSuggestion.calendar_suggestion_waiting_generator.invoke(messages, user_id, temperature=1,
-                                                                                      max_tokens=1000)
+            
+            waiting_message_mpt = MPT(CalendarSuggestion.calendar_suggestion_waiting_mpt_filename,
+                                      mojo_knowledge=self.__get_mojo_knwoledge(),
+                                      # no global context so that it can be used any day / time
+                                      username=user.name,
+                                      language=user.language_code
+                                      )
+
+            responses = waiting_message_mpt.run(user_id, temperature=1,
+                                                max_tokens=1000)
             return responses[0]
         except Exception as e:
             raise Exception(f"get_waiting_message: {e}")

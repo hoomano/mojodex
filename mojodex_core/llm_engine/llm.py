@@ -44,6 +44,53 @@ class LLM(ABC):
 
         return llm, llm_conf, llm_backup_conf
 
+    @staticmethod
+    def get_providers():
+        """
+        Returns the list of available LLM providers in the configuration
+
+        Returns:
+            list: A list of available LLM providers.
+        """
+        # TODO: move .env llm config to /llm.conf file
+
+        # Read the .env file to check which LLM are configured
+        from mojodex_core.openai_conf import OpenAIConf
+        from mojodex_core.llm_engine.providers.openai_llm import OpenAILLM
+ 
+        gpt4_turbo_provider = OpenAILLM(OpenAIConf.gpt4_turbo_conf)
+        gpt4_32k_provider = OpenAILLM(OpenAIConf.gpt4_32_conf)
+        
+        from mojodex_core.mistralai_conf import MistralAIConf
+        from mojodex_core.llm_engine.providers.mistralai_llm import MistralAILLM
+        azure_mistral_large_provider = MistralAILLM(MistralAIConf.azure_mistral_large_conf)
+        # TODO: check how to switch between azure and la_plateforme for mistral
+        mistral_large_provider = MistralAILLM(MistralAIConf.mistral_large_conf)
+        mistral_medium_provider = MistralAILLM(MistralAIConf.mistral_medium_conf)
+
+        # return the list of providers
+        return [
+            {
+                "model_name": "gpt4-turbo",
+                "provider": gpt4_turbo_provider
+            },
+            {
+                "model_name": "gpt4-32k",
+                "provider": gpt4_32k_provider
+            },
+            {
+                "model_name": "mistral-large",
+                "provider": azure_mistral_large_provider
+            },
+            {
+                "model_name": "mistral-medium",
+                "provider": mistral_medium_provider
+            }
+        ]
+
+
+         
+
 
     @abstractmethod
     def __init__(self, llm_conf, llm_backup_conf=None, label='undefined', max_retries=0):
@@ -82,7 +129,24 @@ class LLM(ABC):
             None
         """
         pass
+    
+    @abstractmethod
+    def invoke_from_mpt(self, mpt, user_id, temperature, max_tokens, user_task_execution_pk, task_name_for_system):
+        """
+        Perform a LLM chat completion using the provided MPT.
 
+        Args:
+            mpt (MPT): The MPT object.
+            user_id (str): ID of the current user.
+            temperature (float): Temperature parameter for generating responses.
+            max_tokens (int): Maximum number of tokens in the generated response.
+            user_task_execution_pk (int): Primary key of the user task execution.
+            task_name_for_system (str): Name of the task for the system.
+
+        Returns:
+            None
+        """
+        pass
 
     @abstractmethod
     def chatCompletion(self, *args, **kwargs):
@@ -96,6 +160,8 @@ class LLM(ABC):
         try:
             # write data in MojodexMistralAI.dataset_dir/label/task_name_for_system.json
             directory = f"{self.dataset_dir}/{type}/{self.label}/{task_name_for_system}"
+            if not os.path.exists(os.path.join(self.dataset_dir, "chat", self.label)):
+                os.mkdir(os.path.join(self.dataset_dir, "chat", self.label))
             if not os.path.exists(directory):
                 os.mkdir(directory)
             filename = len(os.listdir(directory)) + 1

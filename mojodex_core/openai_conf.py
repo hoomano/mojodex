@@ -1,6 +1,7 @@
 import os
 
 
+# TODO: move to /llm.conf
 class OpenAIConf:
 
     gpt4_32_conf = {

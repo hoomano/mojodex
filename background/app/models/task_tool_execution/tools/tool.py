@@ -5,19 +5,17 @@ from abc import ABC, abstractmethod
 from datetime import datetime
 
 import requests
-from jinja2 import Template
 from mojodex_core.json_loader import json_decode_retry
 from app import on_json_error
 
 
-from app import llm, llm_conf
+from mojodex_core.llm_engine.mpt import MPT
 
 
 class Tool(ABC):
     task_tool_query_url = "task_tool_query"
 
-    params_generator_prompt = "/data/prompts/background/task_tool_execution/generate_tool_params.txt"
-    json_params_generator = llm(llm_conf, label="TOOL_PARAMS_GENERATOR")
+    params_generator_mpt_filename = "instructions/generate_tool_params.mpt"
 
     def __init__(self, name, tool_specifications, task_tool_execution_pk, logger, user_id, user_task_execution_pk,
                  task_name_for_system, n_total_usages):
@@ -36,33 +34,30 @@ class Tool(ABC):
                               tool_execution_context, usage_description, previous_results, n_total_usages, user_id):
         """Return a json with the parameters for the tool."""
         try:
-            with open(Tool.params_generator_prompt, "r") as f:
-                template = Template(f.read())
-                prompt = template.render(mojo_knowledge=mojo_knowledge,
-                                         global_context=global_context,
-                                         username=user_name,
-                                         user_company_knowledge=user_company_knowledge,
-                                         tool_execution_context=tool_execution_context,
-                                         n_total_usages=n_total_usages,
-                                         current_usage_index=len(
-                                             previous_results) + 1,
-                                         previous_results=previous_results,
-                                         tool_specifications=self.specifications,
-                                         tool_name=self.name,
-                                         usage_description=usage_description,
-                                         )
+            params_generator = MPT(Tool.params_generator_mpt_filename,
+                                   mojo_knowledge=mojo_knowledge,
+                                   global_context=global_context,
+                                   username=user_name,
+                                   user_company_knowledge=user_company_knowledge,
+                                   tool_execution_context=tool_execution_context,
+                                   n_total_usages=n_total_usages,
+                                   current_usage_index=len(
+                                       previous_results) + 1,
+                                   previous_results=previous_results,
+                                   tool_specifications=self.specifications,
+                                   tool_name=self.name,
+                                   usage_description=usage_description,
+                                   )
 
-                messages = [{"role": "system", "content": prompt}]
+            results = params_generator.run(user_id,
+                                           temperature=0,
+                                           max_tokens=2000,
+                                           json_format=True,
+                                           user_task_execution_pk=self.user_task_execution_pk,
+                                           task_name_for_system=self.task_name_for_system)
+            result = results[0]
 
-                results = Tool.json_params_generator.invoke(messages, user_id,
-                                                          temperature=0,
-                                                          max_tokens=2000,
-                                                          json_format=True,
-                                                          user_task_execution_pk=self.user_task_execution_pk,
-                                                          task_name_for_system=self.task_name_for_system)
-                result = results[0]
-
-                return result
+            return result
 
         except Exception as e:
             raise Exception(f"__generate_tool_query :: {e}")

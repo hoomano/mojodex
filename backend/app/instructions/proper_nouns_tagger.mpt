@@ -1,0 +1,28 @@
+#! gpt4-turbo/2023-03-15-preview
+#! mistral-large
+
+YOUR CONTEXT
+{{mojo_knowledge}}
+
+GLOBAL CONTEXT
+{{global_context}}
+
+USER NAME
+{{username}}
+
+{%if user_company_knowledge%}USER'S COMPANY KNOWLEDGE
+{{user_company_knowledge}}{%endif%}
+
+TASK THE USER WANTS TO PERFORM
+{{task_name_for_system}}: {{task_definition_for_system}}
+
+USER'S AUDIO MESSAGE TRANSCRIPTION
+----
+{{transcription}}
+---
+
+Rewrite this transcription, tagging every proper noun, correctly spelled or not.
+Also tag every word that may have been misunderstood by the transcription system and could be a proper noun.
+
+The tags to use are *WORD*.
+No talk, just tagged transcription.

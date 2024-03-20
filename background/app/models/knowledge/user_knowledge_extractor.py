@@ -1,21 +1,16 @@
 import os
-
 import requests
-from jinja2 import Template
 from datetime import datetime
 
 from background_logger import BackgroundLogger
 
-
-
-from app import llm, llm_conf
+from mojodex_core.llm_engine.mpt import MPT
 
 
 class UserKnowledgeExtractor:
     logger_prefix = "UserKnowledgeExtractor::"
 
-    extract_user_knowledge_prompt = "/data/prompts/background/knowledge/user_knowledge_extractor/extract_user_knowledge_prompt.txt"
-    user_knowledge_extractor = llm(llm_conf, label="EXTRACT_USER_KNOWLEDGE")
+    extract_user_knowledge_mpt_filename = "instructions/extract_user_knowledge.mpt"
 
     def __init__(self, session_id, user_id, conversation):
         self.logger = BackgroundLogger(
@@ -26,15 +21,12 @@ class UserKnowledgeExtractor:
 
     def update_user_summary(self, current_summary):
         try:
-            # update user summary
-            with open(UserKnowledgeExtractor.extract_user_knowledge_prompt, "r") as f:
-                template = Template(f.read())
-                prompt = template.render(
-                    conversation=self.conversation, existing_summary=current_summary)
-            messages = [{"role": "user", "content": prompt}]
 
-            response = UserKnowledgeExtractor.user_knowledge_extractor.invoke(messages, self.user_id,
-                                                                            temperature=0, max_tokens=200)
+            extract_user_knowledge = MPT(UserKnowledgeExtractor.extract_user_knowledge_mpt_filename,
+                                         conversation=self.conversation, existing_summary=current_summary)
+
+            response = extract_user_knowledge.run(self.user_id,
+                                                  temperature=0, max_tokens=200)
             new_summary = response[0].strip()
 
             self._save_user_summary(new_summary)

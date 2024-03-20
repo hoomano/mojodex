@@ -1,20 +1,15 @@
 import os
 from datetime import datetime
 import requests
-from jinja2 import Template
 
 from background_logger import BackgroundLogger
 
-from app import llm, llm_conf
 from app import send_admin_error_email
+from mojodex_core.llm_engine.mpt import MPT
 
 
 class UserTaskExecutionSummarizer:
     logger_prefix = "UserTaskExecutionSummarizer::"
-
-    task_execution_summary_prompt = "/data/prompts/background/user_task_execution_end/user_task_execution_summarizer/task_execution_summary_prompt.txt"
-    task_execution_summarizer = llm(
-        llm_conf, label="TASK_EXECUTION_SUMMARIZER")
 
     def __init__(self, knowledge_collector, user_task_execution, user_messages_conversation):
         try:
@@ -36,9 +31,7 @@ class UserTaskExecutionSummarizer:
             self.logger.info("_task_execution_summary")
             response = None
 
-            with open(UserTaskExecutionSummarizer.task_execution_summary_prompt, "r") as f:
-                template = Template(f.read())
-                prompt = template.render(mojo_knowledge=self.knowledge_collector.mojo_knowledge,
+            task_execution_summary = MPT("instructions/task_execution_summary.mpt", mojo_knowledge=self.knowledge_collector.mojo_knowledge,
                                          global_context=self.knowledge_collector.global_context,
                                          username=self.knowledge_collector.user_name,
                                          user_company_knowledge=self.knowledge_collector.user_company_knowledge,
@@ -47,14 +40,11 @@ class UserTaskExecutionSummarizer:
                                          user_task_inputs=self.user_task_execution.json_input_values,
                                          user_messages_conversation=self.user_messages_conversation)
 
-            messages = [{"role": "user", "content": prompt}]
-            responses = UserTaskExecutionSummarizer.task_execution_summarizer.invoke(messages,
-                                                                                   self.user_task_execution.user_id,
-                                                                                   temperature=0, max_tokens=500,
-                                                                                   user_task_execution_pk=self.user_task_execution.user_task_execution_pk,
-                                                                                   task_name_for_system=self.user_task_execution.task_name,
-
-                                                                                   )
+            responses = task_execution_summary.run(user_id=self.user_task_execution.user_id,
+                                                   temperature=0, max_tokens=500,
+                                                   user_task_execution_pk=self.user_task_execution.user_task_execution_pk,
+                                                   task_name_for_system=self.user_task_execution.task_name,
+                                                   )
             response = responses[0]
             title = response.split("<title>")[1].split("</title>")[0]
             summary = response.split("<summary>")[1].split("</summary>")[0]

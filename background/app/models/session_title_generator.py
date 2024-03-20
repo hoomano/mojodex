@@ -3,16 +3,14 @@ from datetime import datetime
 
 import requests
 from background_logger import BackgroundLogger
-from jinja2 import Template
 
-from app import llm, llm_conf
+from mojodex_core.llm_engine.mpt import MPT
 
 
 class SessionTitleGenerator:
     logger_prefix = "SessionTitleGenerator::"
 
-    generate_title_prompt = "/data/prompts/background/session_started/generate_title_prompt.txt"
-    title_generator = llm(llm_conf, label="GENERATE_SESSION_TITLE")
+    generate_title_mpt_filename = "instructions/generate_title_prompt.mpt"
 
     def __init__(self, session_id, user_id, knwoledge_collector):
         try:
@@ -28,15 +26,12 @@ class SessionTitleGenerator:
     def generate_session_title(self, sender, message, session_date, language):
         try:
             self.logger.debug("generate_session_title")
-            with open(SessionTitleGenerator.generate_title_prompt, "r") as f:
-                template = Template(f.read())
-                prompt = template.render(mojo_knowledge=self.knowledge_collector.mojo_knowledge,
+            generate_title = MPT(SessionTitleGenerator.generate_title_mpt_filename, mojo_knowledge=self.knowledge_collector.mojo_knowledge,
                                          global_context=self.knowledge_collector.global_context,
                                          username=self.knowledge_collector.user_name,
                                          user_company_knowledge=self.knowledge_collector.user_company_knowledge,
                                          sender=sender, message=message, session_date=session_date, language=language)
-                messages = [{"role": "system", "content": prompt}]
-            responses = SessionTitleGenerator.title_generator.invoke(messages, self.user_id, temperature=0.5,
+            responses = generate_title.run( self.user_id, temperature=0.5,
                                                                    max_tokens=50)
             title = responses[0]
             self._save_to_db(title)

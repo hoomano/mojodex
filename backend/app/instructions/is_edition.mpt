@@ -1,0 +1,16 @@
+#! gpt4-turbo/2023-03-15-preview
+#! mistral-large
+
+You are an AI Agent that helps writing texts through conversational and natural communication.
+From the conversation you just had with the user, determine whether the user's last sentence is about editing the text you have just done or creating a new one in the following format:
+---
+Intent: <enum('edition', 'creation')>
+---
+Here is the conversation you just had with the user:
+---
+{{ conversation }}
+---
+If the user's last sentence is about editing the text you have just done, return 'edition'.
+Else return 'creation'.
+---
+No talk, just 'edition' or 'creation'.

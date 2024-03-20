@@ -19,6 +19,7 @@ from jinja2 import Template
 class TaskEnabledAssistantResponseGenerator(AssistantResponseGenerator, ABC):
     logger_prefix = "TaskEnabledAssistantResponseGenerator :: "
 
+    # TODO: with @kelly check how to mpt-ize this
     task_specific_instructions_prompt = "/data/prompts/tasks/task_specific_instructions.txt"
     message_generator = llm(llm_conf,label="CHAT", llm_backup_conf = llm_backup_conf)
 

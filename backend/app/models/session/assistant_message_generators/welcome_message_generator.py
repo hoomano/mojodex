@@ -8,6 +8,7 @@ from sqlalchemy import and_
 
 class WelcomeMessageGenerator(AssistantMessageGenerator):
     logger_prefix = "WelcomeMessageGenerator :: "
+    # TODO: with @kelly check how to mpt-ize this
     prompt_template_path = "/data/prompts/home_chat/welcome_message.txt"
     welcome_message_generator = llm(llm_conf, label="HOME_CHAT_FIRST_MESSAGE", llm_backup_conf=llm_backup_conf)
     message_header_start_tag, message_header_end_tag = "<message_header>", "</message_header>"

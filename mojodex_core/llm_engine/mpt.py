@@ -170,7 +170,5 @@ class MPT:
         # put a reference to the execution with the filepath of the MPT instruction
         # label is the filename without the file extension
         selected_model.label = self.filepath.split('/')[-1].split('.')[0]
-        self.logger.info(f"🌟🌟🌟 Running prompt with label: {selected_model.label}")
-        self.logger.info(f"Running prompt: {self.prompt}")
         
         return selected_model.invoke_from_mpt(self, **kwargs)

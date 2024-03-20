@@ -1,23 +1,33 @@
 from models.workflows.step import WorkflowStep
 import json
 from typing import List
+
+from mojodex_core.llm_engine.mpt import MPT
         
 
 class StanzaWriterStep(WorkflowStep):
+
+    write_poem_stanza_filename = "instructions/write_poem_stanza.mpt"
 
     @property
     def description(self):
         return "Write a stanza."
 
     def __init__(self, workflow_step):
-        super().__init__(workflow_step, input_keys=['stanza_theme'], output_keys=['stanza'])
+        super().__init__(workflow_step, input_keys=['stanza_topic'], output_keys=['stanza'])
 
     
     def _execute(self, parameter: dict, initial_parameter: dict, history: List[dict]):
         try: 
-            # input keys: text
-            raise NotImplementedError
+            # input keys: stanza_topic
+            stanza_topic = parameter['stanza_topic']
+            poem_topic = initial_parameter['poem_topic']
+            write_poem_stanza_mpt = MPT(StanzaWriterStep.write_poem_stanza_filename, poem_topic=poem_topic, stanza_topic=stanza_topic)
+
+            responses = write_poem_stanza_mpt.run(user_id="fake", temperature=0, max_tokens=1000)
+            stanza = responses[0].strip().lower()
+            return [{'stanza': stanza}]
         
-            # output keys: 'section'
+            # output keys: 'stanza'
         except Exception as e:
             raise Exception(f"execute :: {e}")

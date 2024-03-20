@@ -52,11 +52,17 @@ class WorkflowAssistantResponseGenerator(AssistantResponseGenerator):
                 return {"text": AssistantMessageGenerator.remove_tags_from_text(response, WorkflowAssistantResponseGenerator.ask_for_clarification_start_tag,
                                                         WorkflowAssistantResponseGenerator.ask_for_clarification_end_tag)}
                                                         
-            elif WorkflowAssistantResponseGenerator.inform_user_start_tag in response:
+            elif WorkflowAssistantResponseGenerator.user_instruction_start_tag in response:
+                instruction = AssistantMessageGenerator.remove_tags_from_text(response, WorkflowAssistantResponseGenerator.user_instruction_start_tag,
+                                                        WorkflowAssistantResponseGenerator.user_instruction_end_tag)
                 self.context.state.running_user_workflow_execution.invalidate_current_run()
+                # TODO: self.context.state.running_user_workflow_execution.current_step_execution.current_run.set_new_instruction(instruction) # on last execution
                 server_socket.start_background_task(self.context.state.running_user_workflow_execution.run)
-                return {"text": AssistantMessageGenerator.remove_tags_from_text(response, WorkflowAssistantResponseGenerator.inform_user_start_tag,
+                if WorkflowAssistantResponseGenerator.inform_user_start_tag in response:
+                    return {"text": AssistantMessageGenerator.remove_tags_from_text(response, WorkflowAssistantResponseGenerator.inform_user_start_tag,
                                                         WorkflowAssistantResponseGenerator.inform_user_end_tag)}
+                else:
+                    return {"text": "Ok"}
             
             elif WorkflowAssistantResponseGenerator.no_go_explanation_start_tag in response:
                 return {"text": AssistantMessageGenerator.remove_tags_from_text(response, WorkflowAssistantResponseGenerator.no_go_explanation_start_tag,

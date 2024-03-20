@@ -16,7 +16,7 @@ mojo_openai_logger = MojodexCoreLogger("mojo_openai_logger")
 
 class OpenAILLM(LLM):
 
-    def __init__(self, llm_conf, label='undefined', llm_backup_conf=None, max_retries=3):
+    def __init__(self, llm_conf, label='undefined', llm_backup_conf=None, max_retries=0):
         """
         :param api_key: API key to call openAI
         :param api_base: Endpoint to call openAI
@@ -204,8 +204,10 @@ class OpenAILLM(LLM):
                                                 json_format=json_format, stream=stream,
                                                 stream_callback=stream_callback, n_additional_calls_if_finish_reason_is_length=n_additional_calls_if_finish_reason_is_length)
             except RateLimitError:
+                print("🔴 Rate limit exceeded")
                 # try to use backup engine
                 if self.client_backup:
+                    print("🟢 Using backup engine")
                     responses = self.chatCompletion(messages, user_id, temperature, max_tokens,
                                                     frequency_penalty=frequency_penalty, presence_penalty=presence_penalty,
                                                     stream=stream,

@@ -13,6 +13,20 @@ from mojodex_core.db import MySession
 # MdUserWorkflowStepExecution: user_workflow_step_execution_pk, user_workflow_execution_fk, user_workflow_step_fk
 # MdUserWorkflowStepExecutionRun: md_user_workflow_step_execution_run_pk, md_user_workflow_step_execution_fk, validated, result
 
+class Workflow:
+    def __init__(self, db_object):
+        self.db_object = db_object
+
+    @property
+    def name(self):
+        return self.db_object.name
+    
+    @property
+    def description(self):
+        return self.db_object.description
+
+    
+
 class WorkflowExecution:
     logger_prefix = "WorkflowExecution :: "
 
@@ -23,6 +37,7 @@ class WorkflowExecution:
         try:
             self.db_session = MySession()
             self.db_object = self._get_db_object(workflow_execution_pk)
+            self.workflow = Workflow(self._db_workflow)
             self.steps_executions = [WorkflowStepExecution(self.db_session, steps_class[db_workflow_step.name](db_workflow_step), workflow_execution_pk) for db_workflow_step in self._db_workflow_steps]
         except Exception as e:
             raise Exception(f"{self.logger_prefix} :: __init__ :: {e}")
@@ -63,7 +78,7 @@ class WorkflowExecution:
 
     def run(self):
         try:
-            step_execution_to_run = self._current_step_execution
+            step_execution_to_run = self.current_step_execution
             if not step_execution_to_run:
                 return
             step_execution_to_run.initialize_runs(self._intermediate_results[-1] if self._intermediate_results else [self.initial_parameters], self.db_object.session_id)
@@ -76,7 +91,7 @@ class WorkflowExecution:
         
 
     @property
-    def _current_step_execution(self):
+    def current_step_execution(self):
         try:
             # step to run is:
             # last one initialized which runs are not all validated
@@ -103,16 +118,16 @@ class WorkflowExecution:
 
     def _ask_for_validation(self):
         try:
-            run_json = self._current_step_execution.current_run.to_json()
+            run_json = self.current_step_execution.current_run.to_json()
             run_json["session_id"] = self.db_object.session_id
-            run_json["step_execution_fk"] = self._current_step_execution.db_object.user_workflow_step_execution_pk
+            run_json["step_execution_fk"] = self.current_step_execution.db_object.user_workflow_step_execution_pk
             server_socket.emit('workflow_run_ended', run_json, to=self.db_object.session_id)
         except Exception as e:
             raise Exception(f"_ask_for_validation :: {e}")
 
     def validate_current_run(self):
         try:
-            self._current_step_execution.current_run.validate()
+            self.current_step_execution.current_run.validate()
         except Exception as e:
             raise Exception(f"validate_current_run :: {e}")
 
@@ -151,10 +166,11 @@ class WorkflowExecution:
         except Exception as e:
             raise Exception(f"_db_workflow :: {e}")
 
+
     def to_json(self):
         try:
             return {
-                "workflow_name": self._db_workflow.name,
+                "workflow_name": self.workflow.name,
                 "user_workflow_execution_pk": self.db_object.user_workflow_execution_pk,
                 "user_workflow_fk": self.db_object.user_workflow_fk,
                 "steps": [step_execution.to_json() for step_execution in self.steps_executions],

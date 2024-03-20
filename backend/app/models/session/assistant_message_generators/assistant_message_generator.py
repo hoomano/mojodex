@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from models.session.assistant_message_context.assistant_message_context import AssistantMessageContext
 from jinja2 import Template
 
 class AssistantMessageGenerator(ABC):
@@ -7,7 +8,7 @@ class AssistantMessageGenerator(ABC):
     """
     logger_prefix = "AssistantMessageGenerator :: "
 
-    def __init__(self, prompt_template_path, message_generator, tag_proper_nouns, assistant_message_context):
+    def __init__(self, prompt_template_path, message_generator, tag_proper_nouns, assistant_message_context: AssistantMessageContext):
         """
         Constructor for AssistantMessageGenerator
         :param prompt_template_path: path to the prompt template
@@ -90,6 +91,9 @@ class AssistantMessageGenerator(ABC):
             if placeholder:
                 return placeholder
             prompt = self._render_prompt_from_template()
+            # write prompt in a file
+            with open('/data/prompt.txt', 'w') as f:
+                f.write(prompt)
             llm_output = self._generate_message_from_prompt(prompt)
             if llm_output:
                 return self._handle_llm_output(llm_output)

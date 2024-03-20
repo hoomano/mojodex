@@ -25,9 +25,11 @@ class TaskEnabledAssistantResponseGenerator(AssistantResponseGenerator, ABC):
 
     def __init__(self, prompt_template_path, mojo_message_token_stream_callback, draft_token_stream_callback, use_message_placeholder, use_draft_placeholder, tag_proper_nouns, chat_context, llm_call_temperature):
         try:
-            super().__init__(prompt_template_path, self.message_generator, chat_context, use_message_placeholder, use_draft_placeholder, tag_proper_nouns, llm_call_temperature)
+            super().__init__(prompt_template_path, self.message_generator, chat_context, tag_proper_nouns, llm_call_temperature)
             self.mojo_message_token_stream_callback = mojo_message_token_stream_callback
             self.draft_token_stream_callback = draft_token_stream_callback
+            self.use_message_placeholder = use_message_placeholder
+            self.use_draft_placeholder = use_draft_placeholder
             self.task_input_manager = TaskInputsManager(chat_context.session_id)
             self.task_tool_manager = TaskToolManager(chat_context.session_id)
             self.task_executor = TaskExecutor(chat_context.session_id, chat_context.user_id)

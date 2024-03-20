@@ -20,6 +20,8 @@ RUN pip install -r requirements.txt
 
 # Install Mojodex core
 COPY ./mojodex_core /app/mojodex_core
+COPY ./llm.conf /app/mojodex_core/llm_engine
+
 WORKDIR /app/mojodex_core
 RUN pip install --no-cache-dir -r requirements.txt
 RUN pip install .

@@ -75,7 +75,7 @@ class TodoDailyEmailsGenerator(EventsGenerator):
                                         language=language
                                         )
             
-            email_message_json = todo_daily_email_text.run(user_id,
+            email_message_json = todo_daily_email_text.run(user_id=user_id,
                                                            temperature=0,
                                                            max_tokens=4000,
                                                            json_format=True)[0]

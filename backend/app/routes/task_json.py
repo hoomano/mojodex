@@ -29,7 +29,7 @@ class TaskJson(Resource):
                 self.task_json_mpt_filename, task_requirements=task_requirements, existing_text_types=existing_text_types)
 
             responses = generate_task_mpt.run(
-                "backoffice", temperature=0, max_tokens=4000, json_format=True)
+                user_id="backoffice", temperature=0, max_tokens=4000, json_format=True)
 
             response = responses[0]
             return response

@@ -4,7 +4,6 @@ from app import db, language_retriever, conversation_retriever
 from mojodex_core.entities import *
 from background_logger import BackgroundLogger
 from gantry.logger.eval_logger import EvalLogger
-from jinja2 import Template
 from models.task_tool_execution.tools.google_search import GoogleSearchTool
 from models.task_tool_execution.tools.internal_memory import InternalMemoryTool
 from models.knowledge.knowledge_collector import KnowledgeCollector
@@ -16,6 +15,9 @@ from models.events.task_tool_execution_notifications_generator import TaskToolEx
 from datetime import datetime
 import requests
 
+from mojodex_core.llm_engine.mpt import MPT
+
+
 class TaskToolExecutionCortex:
     logger_prefix = "TaskToolExecutionCortex"
     title_start_tag, title_end_tag = "<title>", "</title>"
@@ -23,8 +25,7 @@ class TaskToolExecutionCortex:
     execution_start_tag, execution_end_tag = "<execution>", "</execution>"
     available_tools = [GoogleSearchTool, InternalMemoryTool]
 
-    # TODO: with @kelly check how to mpt-ize this
-    tool_execution_context_template = "/data/prompts/background/task_tool_execution/tool_execution_context_template.txt"
+    tool_execution_context_mpt_filename = "instructions/tool_execution_context.mpt"
 
     def __init__(self, task_tool_execution):
         try:
@@ -32,16 +33,20 @@ class TaskToolExecutionCortex:
                 f"{TaskToolExecutionCortex.logger_prefix} - task_tool_execution_pk {task_tool_execution.task_tool_execution_pk}")
             self.logger.debug(f"__init__")
             self.task_tool_execution_pk = task_tool_execution.task_tool_execution_pk
-            self.task_tool, self.tool, self.task, self.user_task_execution, self.session, self.user = self._get_task_tool(task_tool_execution)
+            self.task_tool, self.tool, self.task, self.user_task_execution, self.session, self.user = self._get_task_tool(
+                task_tool_execution)
             if self.session.language:
                 self.language = self.session.language
             elif self.user.language_code:
                 self.language = self.user.language_code
             else:
-                self.language = "en" # this is just a safety net but should never happen
-            self.conversation = conversation_retriever.get_conversation_as_string(self.user_task_execution.session_id, with_tags=False)
-            self.conversation_list = conversation_retriever.get_conversation_as_list(self.user_task_execution.session_id, with_tags=False)
-            self.knowledge_collector = KnowledgeCollector(self.user.name, self.user.timezone_offset, self.user.summary, self.user.company_description, self.user.goal)
+                self.language = "en"  # this is just a safety net but should never happen
+            self.conversation = conversation_retriever.get_conversation_as_string(
+                self.user_task_execution.session_id, with_tags=False)
+            self.conversation_list = conversation_retriever.get_conversation_as_list(
+                self.user_task_execution.session_id, with_tags=False)
+            self.knowledge_collector = KnowledgeCollector(
+                self.user.name, self.user.timezone_offset, self.user.summary, self.user.company_description, self.user.goal)
         except Exception as e:
             raise Exception(f"{self.logger_prefix} :: __init__ :: {e}")
 
@@ -53,11 +58,13 @@ class TaskToolExecutionCortex:
                 tool_queries, produced_text = self._run_tool(gantry_logger)
             except Exception as e:
                 self.logger.error(f"execute_task_tool :: {e}")
-                tool_queries, produced_text = None, None # go on supposing Mojo has not found anything
+                # go on supposing Mojo has not found anything
+                tool_queries, produced_text = None, None
 
             if produced_text:
                 title, production = produced_text['title'], produced_text['production']
-                produced_text_pk, produced_text_version_pk = self.__save_produced_text_to_db(title, production)
+                produced_text_pk, produced_text_version_pk = self.__save_produced_text_to_db(
+                    title, production)
             else:
                 message_writer = MessageWriter(self.title_start_tag, self.title_end_tag, self.draft_start_tag,
                                                self.draft_end_tag)
@@ -71,16 +78,19 @@ class TaskToolExecutionCortex:
                 mojo_message["user_task_execution_pk"] = self.user_task_execution.user_task_execution_pk
                 self.__save_message_to_db(mojo_message)
             try:
-                gantry_logger.end({"response": f"{title}\n{production}" if produced_text else mojo_message['text']})
+                gantry_logger.end(
+                    {"response": f"{title}\n{production}" if produced_text else mojo_message['text']})
                 gantry_logger.close()
             except Exception as e:
-                self.logger.error(f"execute_task_tool :: gantry_logger end:: {e}")
-            push_notification = 'FIREBASE_PROJECT_ID' in os.environ and os.environ['FIREBASE_PROJECT_ID']
+                self.logger.error(
+                    f"execute_task_tool :: gantry_logger end:: {e}")
+            push_notification = 'FIREBASE_PROJECT_ID' in os.environ and os.environ[
+                'FIREBASE_PROJECT_ID']
             if push_notification:
                 notification_generator = TaskToolExecutionNotificationsGenerator()
                 notification_generator.generate_events(self.user.user_id, self.knowledge_collector, self.task.name_for_system,
-                                                      self.task.definition_for_system, self.user_task_execution.title, self.user_task_execution.summary,
-                                                      self.tool.name, self.task_tool, result, self.language, self.user_task_execution.user_task_execution_pk)
+                                                       self.task.definition_for_system, self.user_task_execution.title, self.user_task_execution.summary,
+                                                       self.tool.name, self.task_tool, result, self.language, self.user_task_execution.user_task_execution_pk)
         except Exception as e:
             self.logger.error(f"execute_task_tool: {e}")
 
@@ -120,22 +130,20 @@ class TaskToolExecutionCortex:
     def _get_tool_execution_context(self):
 
         # Following is only useful for webapp form
-        self.user_task_inputs=[{k: input[k] for k in
-                                 ("input_name", "description_for_system", "type", "value")} for input in
-                                self.user_task_execution.json_input_values if input["value"]]
+        self.user_task_inputs = [{k: input[k] for k in
+                                  ("input_name", "description_for_system", "type", "value")} for input in
+                                 self.user_task_execution.json_input_values if input["value"]]
 
-        with open(TaskToolExecutionCortex.tool_execution_context_template, "r") as f:
-            template = Template(f.read())
-            tool_execution_context = template.render(task=self.task,
-                                                            tool=self.tool,
-                                                     task_tool_association=self.task_tool,
-                                                            conversation=self.conversation,
-                                                            user_task_inputs=self.user_task_inputs,
-                                                            title_start_tag=TaskToolExecutionCortex.title_start_tag,
-                                                            title_end_tag=TaskToolExecutionCortex.title_end_tag,
-                                                            draft_start_tag=TaskToolExecutionCortex.draft_start_tag,
-                                                            draft_end_tag=TaskToolExecutionCortex.draft_end_tag)
-        return tool_execution_context
+        return MPT(TaskToolExecutionCortex.tool_execution_context_mpt_filename,
+                   task=self.task,
+                   tool=self.tool,
+                   task_tool_association=self.task_tool,
+                   conversation=self.conversation,
+                   user_task_inputs=self.user_task_inputs,
+                   title_start_tag=TaskToolExecutionCortex.title_start_tag,
+                   title_end_tag=TaskToolExecutionCortex.title_end_tag,
+                   draft_start_tag=TaskToolExecutionCortex.draft_start_tag,
+                   draft_end_tag=TaskToolExecutionCortex.draft_end_tag)
 
     def __save_message_to_db(self, message):
         try:
@@ -143,7 +151,8 @@ class TaskToolExecutionCortex:
             uri = f"{os.environ['MOJODEX_BACKEND_URI']}/mojo_message"
             pload = {'datetime': datetime.now().isoformat(), "message": message,
                      "session_id": self.user_task_execution.session_id}
-            headers = {'Authorization': os.environ['MOJODEX_BACKGROUND_SECRET'], 'Content-Type': 'application/json'}
+            headers = {
+                'Authorization': os.environ['MOJODEX_BACKGROUND_SECRET'], 'Content-Type': 'application/json'}
             internal_request = requests.put(uri, json=pload, headers=headers)
             if internal_request.status_code != 200:
                 raise Exception(str(internal_request.json()))
@@ -157,7 +166,8 @@ class TaskToolExecutionCortex:
             pload = {'datetime': datetime.now().isoformat(), "production": production, "title": title,
                      "session_id": self.user_task_execution.session_id, "user_id": self.user.user_id,
                      "user_task_execution_pk": self.user_task_execution.user_task_execution_pk}
-            headers = {'Authorization': os.environ['MOJODEX_BACKGROUND_SECRET'], 'Content-Type': 'application/json'}
+            headers = {
+                'Authorization': os.environ['MOJODEX_BACKGROUND_SECRET'], 'Content-Type': 'application/json'}
             internal_request = requests.post(uri, json=pload, headers=headers)
             if internal_request.status_code != 200:
                 raise Exception(str(internal_request.json()))

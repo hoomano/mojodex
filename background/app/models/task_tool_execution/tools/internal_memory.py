@@ -88,8 +88,8 @@ class InternalMemoryTool(Tool):
     def __extract_key_points(self, query, results, tool_execution_context, usage_description, knowledge_collector):
         try:
             internal_memory_information_extractor = MPT(InternalMemoryTool.information_extractor_mpt_filename,
-                                                        mojo_knowledge=knowledge_collector.mojo_knowledge,
-                                                        global_context=knowledge_collector.global_context,
+                                                        mojo_knowledge=knowledge_collector.mojodex_knowledge,
+                                                        global_context=knowledge_collector.localized_context,
                                                         username=knowledge_collector.user_name,
                                                         user_company_knowledge=knowledge_collector.user_company_knowledge,
                                                         tool_execution_context=tool_execution_context,

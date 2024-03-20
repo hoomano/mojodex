@@ -5,6 +5,7 @@ from jinja2 import Template
 
 
 class KnowledgeManager:
+    # TODO: refacto with background knowledge collector into mojodex_core
     mojo_knowledge_file = "/data/knowledge/mojo_knowledge.txt"
     global_context_file = "/data/knowledge/global_context.txt"
     @staticmethod

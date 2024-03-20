@@ -130,7 +130,7 @@ class ProducedTextManager:
                 is_edition_mpt = MPT(ProducedTextManager.is_edition_mpt_filename,
                                      conversation=self._get_conversation_as_string())
 
-                responses = is_edition_mpt.run(self.user_id,
+                responses = is_edition_mpt.run(user_id=self.user_id,
                                                temperature=0, max_tokens=20,
                                                user_task_execution_pk=self.user_task_execution_pk,
                                                task_name_for_system=self.task_name_for_system,
@@ -152,7 +152,7 @@ class ProducedTextManager:
         get_text_type_mpt = MPT(
             ProducedTextManager.get_text_type_mpt_filename, text=text, types_enum=types_enum)
 
-        responses = get_text_type_mpt.run(self.user_id,
+        responses = get_text_type_mpt.run(user_id=self.user_id,
                                           temperature=0, max_tokens=20,
                                           user_task_execution_pk=self.user_task_execution_pk,
                                           task_name_for_system=self.task_name_for_system,

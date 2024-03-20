@@ -28,7 +28,7 @@ class Vocabulary(Resource):
                                           task_definition_for_system=task_definition_for_system,
                                           transcription=message_text)
 
-            responses = proper_nouns_tagger_mpt.run(user_id, temperature=0, max_tokens=2000,
+            responses = proper_nouns_tagger_mpt.run(user_id=user_id, temperature=0, max_tokens=2000,
                                                     user_task_execution_pk=user_task_execution_pk,
                                                     task_name_for_system=task_name_for_system)
             return responses[0]

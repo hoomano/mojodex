@@ -115,7 +115,7 @@ class CalendarSuggestion(Resource):
                         user_id)
                     )
 
-                    responses = generate_suggestion_mpt.run(user_id,
+                    responses = generate_suggestion_mpt.run(user_id=user_id,
                                                             temperature=1,
                                                             max_tokens=1000,
                                                             json_format=True)
@@ -201,7 +201,7 @@ class CalendarSuggestion(Resource):
                                       language=user.language_code
                                       )
 
-            responses = waiting_message_mpt.run(user_id, temperature=1,
+            responses = waiting_message_mpt.run(user_id=user_id, temperature=1,
                                                 max_tokens=1000)
             return responses[0]
         except Exception as e:

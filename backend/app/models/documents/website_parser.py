@@ -59,7 +59,7 @@ class WebsiteParser:
             website_info_mpt = MPT(
                 WebsiteParser.extract_website_info_mpt_filename, url=website_url, text_content=webpage_text)
 
-            responses = website_info_mpt.run(user_id,
+            responses = website_info_mpt.run(user_id=user_id,
                                              temperature=0, max_tokens=1000,
                                              json_format=True)[0]
 

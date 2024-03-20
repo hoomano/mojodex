@@ -37,10 +37,7 @@ class MPT:
         self._parse_file()
 
         self.available_models = LLM.get_providers()
-
-    @property
-    def models(self):
-        return [d['model_name'] for d in self.shebangs]
+        self.models = [d['model_name'] for d in self.shebangs]
     
     @property
     def tags(self):
@@ -75,11 +72,6 @@ class MPT:
         Returns:
             str: The rendered prompt.
         """
-        # check if all the required values are provided
-        if not all(k in self.kwargs for k in self.template_values):
-            # find the missing values
-            missing_values = [v for v in self.template_values if v not in self.kwargs]
-            self.logger.warning(f"{self} prompt, expected values: {self.template_values}\nMissing: {missing_values}")
         return self._perform_templating(**self.kwargs)
 
 
@@ -128,6 +120,13 @@ class MPT:
         Returns:
             str: The rendered template.
         """
+        # if one of the args is of type MPT, call its prompt method
+        for k, v in kwargs.items():
+            if isinstance(v, MPT):
+                kwargs[k] = v.prompt
+                # also retrieve the models from the MPT and choose the common model with the current MPT
+                self.models = list(set(self.models).intersection(v.models))
+
         return self.template.render(**kwargs)
 
 
@@ -158,7 +157,7 @@ class MPT:
             for provider in self.available_models:
                 if provider['model_name'] == model:
                     selected_model = provider['provider']
-                    self.logger.info(f"Selected model: {model}")
+                    self.logger.debug(f"Selected model: {model}")
                     break
             
             if selected_model is not None:

@@ -31,8 +31,9 @@ class UserTaskExecutionSummarizer:
             self.logger.info("_task_execution_summary")
             response = None
 
-            task_execution_summary = MPT("instructions/task_execution_summary.mpt", mojo_knowledge=self.knowledge_collector.mojo_knowledge,
-                                         global_context=self.knowledge_collector.global_context,
+            task_execution_summary = MPT("instructions/task_execution_summary.mpt", 
+                                         mojo_knowledge=self.knowledge_collector.mojodex_knowledge,
+                                         global_context=self.knowledge_collector.localized_context,
                                          username=self.knowledge_collector.user_name,
                                          user_company_knowledge=self.knowledge_collector.user_company_knowledge,
                                          task_name=self.user_task_execution.task_name,

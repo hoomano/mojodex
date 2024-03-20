@@ -61,8 +61,8 @@ class TodosCreator:
         self.logger.debug(f"_extract")
         try:
             todos_extractor = MPT(TodosCreator.todos_extractor_mpt_filename,
-                                  mojo_knowledge=self.knowledge_collector.mojo_knowledge,
-                                  global_context=self.knowledge_collector.global_context,
+                                  mojo_knowledge=self.knowledge_collector.mojodex_knowledge,
+                                  global_context=self.knowledge_collector.localized_context,
                                   username=self.knowledge_collector.user_name,
                                   user_business_goal=self.knowledge_collector.user_business_goal,
                                   user_company_knowledge=self.knowledge_collector.user_company_knowledge,
@@ -74,7 +74,7 @@ class TodosCreator:
                                   language=self.language
                                   )
 
-            results = todos_extractor.run(self.user_task_execution.user_id,
+            results = todos_extractor.run(user_id=self.user_task_execution.user_id,
                                           temperature=0, max_tokens=500,
                                           json_format=True,
                                           user_task_execution_pk=self.user_task_execution.user_task_execution_pk,

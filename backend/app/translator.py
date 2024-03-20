@@ -10,7 +10,7 @@ class Translator:
             translate_mpt = MPT(Translator.translation_prompt,
                                 text=text, language=language)
             responses = translate_mpt.run(
-                user_id, temperature=0, max_tokens=4000)
+                user_id=user_id, temperature=0, max_tokens=4000)
             return responses[0]
         except Exception as e:
             raise Exception(f"Translator :: translate :: {e}")

@@ -74,7 +74,7 @@ class TodosCreator:
                                   language=self.language
                                   )
 
-            results = todos_extractor.run(self.user_task_execution.user_id,
+            results = todos_extractor.run(user_id=self.user_task_execution.user_id,
                                           temperature=0, max_tokens=500,
                                           json_format=True,
                                           user_task_execution_pk=self.user_task_execution.user_task_execution_pk,

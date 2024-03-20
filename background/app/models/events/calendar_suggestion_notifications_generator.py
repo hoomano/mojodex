@@ -64,7 +64,7 @@ class CalendarSuggestionNotificationsGenerator(EventsGenerator):
                                                    calendar_suggestion=calendar_suggestion
                                                    )
 
-            notification_message = calendar_suggestion_notification.run(user_id,
+            notification_message = calendar_suggestion_notification.run(user_id=user_id,
                                                                         temperature=1,
                                                                         max_tokens=50,
                                                                         json_format=True,

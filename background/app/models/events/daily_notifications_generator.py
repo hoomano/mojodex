@@ -64,7 +64,7 @@ class DailyNotificationsGenerator(EventsGenerator):
             # write the prompt in /data/daily_notif_prompt.txt
             with open("/data/daily_notif_prompt.txt", "w") as f:
                 f.write(daily_notification_text.prompt)
-            notification_message = daily_notification_text.run(user_id,
+            notification_message = daily_notification_text.run(user_id=user_id,
                                                                temperature=0,
                                                                json_format=True,
                                                                max_tokens=50)[0]

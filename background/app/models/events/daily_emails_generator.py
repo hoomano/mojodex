@@ -98,7 +98,7 @@ class DailyEmailsGenerator(EventsGenerator):
                                    language=language
                                    )
 
-            email_message = daily_email_text.run(user_id,
+            email_message = daily_email_text.run(user_id=user_id,
                                                  temperature=1, max_tokens=500,
                                                  json_format=True)[0]
             return email_message

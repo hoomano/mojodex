@@ -147,7 +147,7 @@ class GoogleSearchTool(Tool):
                                text_content=text_content,
                                search=query)
 
-            responses = web_scrapper.run(self.user_id,
+            responses = web_scrapper.run(user_id=self.user_id,
                                          temperature=0, max_tokens=1000,
                                          user_task_execution_pk=self.user_task_execution_pk,
                                          task_name_for_system=self.task_name_for_system,

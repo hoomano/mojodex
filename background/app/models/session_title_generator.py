@@ -31,7 +31,7 @@ class SessionTitleGenerator:
                                          username=self.knowledge_collector.user_name,
                                          user_company_knowledge=self.knowledge_collector.user_company_knowledge,
                                          sender=sender, message=message, session_date=session_date, language=language)
-            responses = generate_title.run( self.user_id, temperature=0.5,
+            responses = generate_title.run(user_id= self.user_id, temperature=0.5,
                                                                    max_tokens=50)
             title = responses[0]
             self._save_to_db(title)

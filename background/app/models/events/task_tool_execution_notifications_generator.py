@@ -65,7 +65,7 @@ class TaskToolExecutionNotificationsGenerator(EventsGenerator):
                                     language=language
                                     )
 
-            notification_json = notification_text.run(user_id,
+            notification_json = notification_text.run(user_id=user_id,
                                                       temperature=1, max_tokens=50,
                                                       json_format=True,
                                                       user_task_execution_pk=user_task_execution_pk,

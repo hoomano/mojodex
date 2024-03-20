@@ -67,7 +67,7 @@ class TodosRescheduler:
                                     todo_list=self.todo_list,
                                     n_scheduled=self.n_scheduled
                                     )
-            results = todos_rescheduler.run(self.user_task_execution.user_id,
+            results = todos_rescheduler.run(user_id=self.user_task_execution.user_id,
                                             temperature=0, max_tokens=500, json_format=True,
                                             user_task_execution_pk=self.user_task_execution.user_task_execution_pk,
                                             task_name_for_system=self.user_task_execution.task_name)

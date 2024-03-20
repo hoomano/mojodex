@@ -25,7 +25,7 @@ class UserKnowledgeExtractor:
             extract_user_knowledge = MPT(UserKnowledgeExtractor.extract_user_knowledge_mpt_filename,
                                          conversation=self.conversation, existing_summary=current_summary)
 
-            response = extract_user_knowledge.run(self.user_id,
+            response = extract_user_knowledge.run(user_id=self.user_id,
                                                   temperature=0, max_tokens=200)
             new_summary = response[0].strip()
 

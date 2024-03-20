@@ -31,7 +31,7 @@ class Company(Resource):
                                        company=company, company_description=company_description, correct=correct,
                                        feedback=feedback)
 
-        responses = correct_company_info_mpt.run(user_id, temperature=0, max_tokens=500,
+        responses = correct_company_info_mpt.run(user_id=user_id, temperature=0, max_tokens=500,
                                                  json_format=True)[0]
 
         return responses

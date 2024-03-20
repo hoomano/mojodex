@@ -165,7 +165,7 @@ class MPT:
             for provider in self.available_models:
                 if provider['model_name'] == model:
                     selected_model = provider['provider']
-                    self.logger.info(f"Selected model: {model}")
+                    self.logger.debug(f"Selected model: {model}")
                     break
             
             if selected_model is not None:

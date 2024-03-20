@@ -49,7 +49,7 @@ class Tool(ABC):
                                    usage_description=usage_description,
                                    )
 
-            results = params_generator.run(user_id,
+            results = params_generator.run(user_id=user_id,
                                            temperature=0,
                                            max_tokens=2000,
                                            json_format=True,

@@ -1,0 +1,51 @@
+# Fill all the API keys and other credentials here
+# LLM engine in mojodex_core manage the available credentials and use them as needed
+
+### LLMs
+
+[openai/gpt4-turbo]
+OPENAI_API_KEY=<your_api_key_here>
+
+# [azure/gpt4-turbo]
+# GPT4_TURBO_AZURE_OPENAI_API_BASE= 
+# GPT4_TURBO_AZURE_OPENAI_API_VERSION= 
+# GPT4_TURBO_AZURE_OPENAI_KEY= 
+# GPT4_TURBO_AZURE_OPENAI_DEPLOYMENT_ID= 
+
+# [openai/gpt4-32k]
+# OPENAI_API_KEY=
+
+
+# [azure/gpt4-32k]
+# GPT4_AZURE_OPENAI_DEPLOYMENT_ID=
+# GPT4_AZURE_OPENAI_API_BASE=
+# GPT4_AZURE_OPENAI_API_VERSION=
+# GPT4_AZURE_OPENAI_KEY=
+
+# [mistral/mistral-large]
+# MISTRAL_API_KEY=
+
+# [mistral/mistral-medium]
+# MISTRAL_API_KEY=
+
+# [mistral/mistral-tiny]
+# MISTRAL_API_KEY=
+
+# [azure/mistral-large]
+# MISTRAL_AZURE_API_BASE=
+# MISTRAL_AZURE_API_KEY=
+
+# [local/mistral-7b]
+# OLLAMA_ENDPOINT=
+
+
+# ### Embeddings
+
+# [openai/embedding]
+# OPENAI_API_KEY=
+
+# [azure/embedding]
+# ADA_EMBEDDING_AZURE_OPENAI_API_BASE=
+# ADA_EMBEDDING_AZURE_OPENAI_DEPLOYMENT_ID=
+# ADA_EMBEDDING_AZURE_OPENAI_API_VERSION=
+# ADA_EMBEDDING_AZURE_OPENAI_KEY=

@@ -123,12 +123,10 @@ class MPT:
         # if one of the args is of type MPT, call its prompt method
         for k, v in kwargs.items():
             if isinstance(v, MPT):
-                self.logger.info(f"🌟 Calling prompt for MPT: {v.filepath}")
                 kwargs[k] = v.prompt
                 # also retrieve the models from the MPT and choose the common model with the current MPT
                 self.models = list(set(self.models).intersection(v.models))
 
-        self.logger.info(f"🌟 Final template for {self.filepath}:\n{self.template.render(**kwargs)}\n")
         return self.template.render(**kwargs)
 
 

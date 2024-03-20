@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
-from jinja2 import Template
+
+from mojodex_core.logging_handler import MojodexCoreLogger
 
 from mojodex_core.llm_engine.mpt import MPT
 
@@ -13,6 +14,8 @@ class KnowledgeCollector:
         self.user_summary = user_summary
         self.user_company_knowledge = user_company_knowledge
         self.user_business_goal= user_business_goal
+
+        self.logger = MojodexCoreLogger("KnowledgeCollector")
 
     @staticmethod
     def get_mojo_knowledge():
@@ -37,10 +40,15 @@ class KnowledgeCollector:
     
     @property
     def localized_context(self):
-        timestamp = datetime.utcnow()
-        timestamp -= timedelta(minutes=self.user_timezone_offset)
-        return MPT("mojodex_core/instructions/global_context.mpt",
-                             weekday=timestamp.strftime("%A"),
-                                   datetime=timestamp.strftime("%d %B %Y"),
-                                   time=timestamp.strftime("%H:%M"))(self.user_timezone_offset)
+        try:
+            timestamp = datetime.utcnow()
+            timestamp -= timedelta(minutes=self.user_timezone_offset)
+            return MPT("mojodex_core/instructions/global_context.mpt",
+                                weekday=timestamp.strftime("%A"),
+                                    datetime=timestamp.strftime("%d %B %Y"),
+                                    time=timestamp.strftime("%H:%M"))
+        except Exception as e:
+            self.logger.error(f"Error getting localized context: {e}")
+            return KnowledgeCollector.get_global_context_knowledge(self.user_timezone_offset)
+
 

@@ -50,8 +50,8 @@ class TaskToolExecutionNotificationsGenerator(EventsGenerator):
         try:
             self.logger.info(f"generate_notif_text")
             notification_text = MPT(TaskToolExecutionNotificationsGenerator.notification_text_mpt_filename,
-                                    mojo_knowledge=knowledge_collector.mojo_knowledge,
-                                    global_context=knowledge_collector.global_context,
+                                    mojo_knowledge=knowledge_collector.mojodex_knowledge,
+                                    global_context=knowledge_collector.localized_context,
                                     username=knowledge_collector.user_name,
                                     user_company_knowledge=knowledge_collector.user_company_knowledge,
                                     user_business_goal=knowledge_collector.user_business_goal,

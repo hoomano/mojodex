@@ -26,8 +26,9 @@ class SessionTitleGenerator:
     def generate_session_title(self, sender, message, session_date, language):
         try:
             self.logger.debug("generate_session_title")
-            generate_title = MPT(SessionTitleGenerator.generate_title_mpt_filename, mojo_knowledge=self.knowledge_collector.mojo_knowledge,
-                                         global_context=self.knowledge_collector.global_context,
+            generate_title = MPT(SessionTitleGenerator.generate_title_mpt_filename, 
+                                 mojo_knowledge=self.knowledge_collector.mojodex_knowledge,
+                                         global_context=self.knowledge_collector.localized_context,
                                          username=self.knowledge_collector.user_name,
                                          user_company_knowledge=self.knowledge_collector.user_company_knowledge,
                                          sender=sender, message=message, session_date=session_date, language=language)

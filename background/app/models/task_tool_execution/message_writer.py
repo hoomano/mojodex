@@ -1,4 +1,5 @@
 from background_logger import BackgroundLogger
+from mojodex_core.llm_engine.mpt import MPT
 
 
 class MessageWriter:
@@ -33,8 +34,8 @@ class MessageWriter:
         try:
             self.logger.info(f"_write_message")
             task_tool_message_writer = MPT(MessageWriter.task_tool_message_writer_mpt_filename,
-                                           mojo_knowledge=knowledge_collector.mojo_knowledge,
-                                           global_context=knowledge_collector.global_context,
+                                           mojo_knowledge=knowledge_collector.mojodex_knowledge,
+                                           global_context=knowledge_collector.localized_context,
                                            username=knowledge_collector.user_name,
                                            task=task,
                                            title_start_tag=self.title_start_tag,

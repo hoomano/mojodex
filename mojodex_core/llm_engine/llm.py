@@ -160,6 +160,8 @@ class LLM(ABC):
         try:
             # write data in MojodexMistralAI.dataset_dir/label/task_name_for_system.json
             directory = f"{self.dataset_dir}/{type}/{self.label}/{task_name_for_system}"
+            if not os.path.exists(os.path.join(self.dataset_dir, "chat", self.label)):
+                os.mkdir(os.path.join(self.dataset_dir, "chat", self.label))
             if not os.path.exists(directory):
                 os.mkdir(directory)
             filename = len(os.listdir(directory)) + 1

@@ -53,6 +53,7 @@ class VoiceGenerator:
 
     def text_to_speech(self, text, language_code, user_id, output_filename, user_task_execution_pk=None, task_name_for_system=None):
         try:
+            print("🟢 VoiceGenerator :: text_to_speech")
             if language_code is None:
                 # Note: this is a patch: language code should not be None, we need to find in which case this happens
                 language_code = self._get_language(text, user_id, user_task_execution_pk=user_task_execution_pk, task_name_for_system=task_name_for_system)
@@ -73,4 +74,5 @@ class VoiceGenerator:
             text=text.replace('*', '')
             synthesizer.speak_text(text)
         except Exception as e:
+            print(f"VoiceGenerator :: text_to_speech :: {e}")
             raise Exception(f"Error generating voice with language_code: {language_code}: {e}")

@@ -3,6 +3,10 @@ from typing import List
 
 class SectionsTranslatorStep(WorkflowStep):
 
+    @property
+    def description(self):
+        return "Translate a section to the target language."
+
     def __init__(self, workflow_step):
         super().__init__(workflow_step, input_keys=['section'], output_keys=['translation'])
     

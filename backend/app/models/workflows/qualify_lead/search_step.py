@@ -4,6 +4,10 @@ from typing import List
 
 class SearchStep(WorkflowStep):
 
+    @property
+    def description(self):
+        return "Search a query on Search Engine and make a summary out of it."
+
     def __init__(self, workflow_step):
         super().__init__(workflow_step, input_keys=['query', 'gl', 'hl'], output_keys=['results', 'summary'])
 

@@ -167,6 +167,30 @@ class WorkflowExecution:
             raise Exception(f"_db_workflow :: {e}")
 
 
+    @property
+    def before_checkpoint_steps_executions(self):
+        try:
+            checkpoint_step = self._find_checkpoint_step()
+            if not checkpoint_step:
+                return []
+            checkpoint_step_index = self.steps_executions.index(checkpoint_step)
+            return self.steps_executions[:checkpoint_step_index]
+        except Exception as e:
+            raise Exception(f"before_checkpoint_steps_executions :: {e}")
+        
+
+    @property
+    def after_checkpoint_to_current_steps_executions(self):
+        try:
+            checkpoint_step = self._find_checkpoint_step()
+            if not checkpoint_step:
+                return self.steps_executions
+            checkpoint_step_index = self.steps_executions.index(checkpoint_step)
+            print(f"🟢 checkpoint_step_index: {checkpoint_step_index}")
+            return self.steps_executions[checkpoint_step_index:]
+        except Exception as e:
+            raise Exception(f"after_checkpoint_to_current_steps_executions :: {e}")
+
     def to_json(self):
         try:
             return {

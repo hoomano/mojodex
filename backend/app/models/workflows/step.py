@@ -8,6 +8,11 @@ import time
 class WorkflowStep(ABC):
     logger_prefix = "WorkflowStep :: "
 
+    @property
+    @abstractmethod
+    def description(self):
+        pass
+
     def __init__(self, workflow_step, input_keys: List[str], output_keys: List[str]):
         try:
             self.input_keys = input_keys
@@ -201,6 +206,10 @@ class WorkflowStepExecution:
     @property
     def name(self):
         return self.workflow_step.db_object.name
+    
+    @property
+    def description(self):
+        return self.workflow_step.description
     
     @property
     def current_run(self):

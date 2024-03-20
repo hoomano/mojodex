@@ -1,6 +1,7 @@
 from models.session.assistant_message_context.chat_context import ChatContext
 from models.session.assistant_message_generators.assistant_message_generator import AssistantMessageGenerator
 from abc import ABC, abstractmethod
+import json
 
 class AssistantResponseGenerator(AssistantMessageGenerator, ABC):
     """
@@ -34,6 +35,9 @@ class AssistantResponseGenerator(AssistantMessageGenerator, ABC):
         try:
             conversation_list = self.context.state.get_conversation_as_list(self.context.session_id)
             messages = [{"role": "system", "content": prompt}] + conversation_list
+            # write messages in indented json in /data/conversation.json
+            with open("/data/conversation.json", "w") as file:
+                file.write(json.dumps(messages, indent=4))
             responses = self.message_generator.invoke(messages, self.context.user_id,
                                                         temperature=0,
                                                         max_tokens=4000,

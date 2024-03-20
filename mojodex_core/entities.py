@@ -581,7 +581,7 @@ class MdMessage(Base):
 
     message_pk = Column(Integer, Sequence('md_message_seq'), primary_key=True)
     session_id = Column(String(255), nullable=False)
-    sender = Column(Enum('mojo', 'user', name='md_sender_'), nullable=False)
+    sender = Column(Enum('mojo', 'user', 'system', name='md_sender_'), nullable=False)
     message = Column(JSON, nullable=False)
     creation_date = Column(DateTime(True), nullable=False)
     message_date = Column(DateTime(True), nullable=False)

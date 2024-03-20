@@ -10,7 +10,7 @@ from models.voice_generator import VoiceGenerator
 from packaging import version
 from functools import wraps
 from models.produced_text_manager import ProducedTextManager
-
+from sqlalchemy.orm.attributes import flag_modified
 
 class Session:
     logger_prefix = "Session"
@@ -256,6 +256,12 @@ class Session:
         self.platform = platform
         return self.__manage_task_session(self.platform, user_task_execution_pk, use_message_placeholder=use_message_placeholder, use_draft_placeholder=use_draft_placeholder)
 
+    @user_inputs_processor
+    def process_workflow_step_run_rejection(self, platform, user_workflow_execution_pk, use_message_placeholder=False, use_draft_placeholder=False):
+        self.platform = platform
+        return self.__manage_workflow_session(platform, user_workflow_execution_pk, use_message_placeholder, use_draft_placeholder)
+
+
     def process_mojo_message(self, response_message, response_language):
         """
         Processes a mojo message.
@@ -278,11 +284,9 @@ class Session:
             response_message["message_pk"] = message_pk
             print(f"🟢 text in response_message: {'text' in response_message} platform: {self.platform} -- self.voice_generator is not None: {self.voice_generator is not None}")
             response_message["audio"] = "text" in response_message and self.platform == "mobile" and self.voice_generator is not None
-
             # Does message contains a produced_text ?
             event_name = 'draft_message' if "produced_text_version_pk" in response_message else 'mojo_message'
             socketio_message_sender.send_mojo_message_with_ack(response_message, self.id, event_name = event_name)
-
             if response_message["audio"]:
                 output_filename = os.path.join(self.__get_mojo_messages_audio_storage(), f"{message_pk}.mp3")
                 try:
@@ -290,6 +294,9 @@ class Session:
                 except Exception as e:
                     db_message.in_error_state = datetime.now()
                     log_error(str(e), session_id=self.id)
+            db_message.message = response_message
+            flag_modified(db_message, "message")
+            db.session.commit()
         except Exception as e:
             raise Exception(f"process_mojo_message :: {e}")
 

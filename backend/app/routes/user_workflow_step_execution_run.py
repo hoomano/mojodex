@@ -1,9 +1,10 @@
+from datetime import datetime
 from models.workflows.workflow import WorkflowExecution
 from flask import request
 from flask_restful import Resource
 from app import db, authenticate, log_error, server_socket
 from mojodex_core.entities import *
-
+from jinja2 import Template
 
 class UserWorkflowStepExecutionRun(Resource):
 
@@ -19,6 +20,7 @@ class UserWorkflowStepExecutionRun(Resource):
             timestamp = request.json['datetime']
             user_workflow_step_execution_run_pk = request.json['user_workflow_step_execution_run_pk']
             validated = request.json['validated'] # boolean
+            platform = request.json['platform']
         except KeyError as e:
             return {"error": f"Missing parameter : {e}"}, 400
         
@@ -36,10 +38,29 @@ class UserWorkflowStepExecutionRun(Resource):
             workflow_execution = WorkflowExecution(user_workflow_execution.user_workflow_execution_pk)
             if validated:
                 workflow_execution.validate_current_run()
+                server_socket.start_background_task(workflow_execution.run)
             else:
+                # # todo => set a status rejected ?
+                # add new message to db
+                with open("/data/prompts/workflows/state.txt", "r") as file:
+                    text = Template(file.read())
+                    text = text.render(
+                        before_checkpoint_steps_executions=workflow_execution.before_checkpoint_steps_executions,
+                        after_checkpoint_to_current_steps_executions=workflow_execution.after_checkpoint_to_current_steps_executions,
+                        current_step=workflow_execution.current_step_execution,
+                        )
+                    
+                system_message = MdMessage(
+                                session_id=user_workflow_execution.session_id, sender='system', event_name='worflow_step_run_rejection', message={'text': text},
+                                creation_date=datetime.now(), message_date=datetime.now()
+                )
+                db.session.add(system_message)
+                db.session.commit()
                 workflow_execution.invalidate_current_run()
-            server_socket.start_background_task(workflow_execution.run)
-            #workflow_execution.run()
+                from models.session.session import Session as SessionModel
+                session = SessionModel(user_workflow_execution.session_id)
+                server_socket.start_background_task(session.process_workflow_step_run_rejection, platform, user_workflow_execution.user_workflow_execution_pk)
+           
             return {"message": "Step validated"}, 200
         except Exception as e:
             log_error(e)

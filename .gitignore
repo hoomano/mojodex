@@ -10,7 +10,8 @@ data/costs/*
 data/prompts_dataset/*
 data/postgresql/*
 data/users/*
-.env
+*.env
+.conf
 site/
 
 venv/

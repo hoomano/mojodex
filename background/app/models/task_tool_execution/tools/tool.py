@@ -15,7 +15,7 @@ from mojodex_core.llm_engine.mpt import MPT
 class Tool(ABC):
     task_tool_query_url = "task_tool_query"
 
-    params_generator_mpt_filename = "background/app/instructions/generate_tool_params.mpt"
+    params_generator_mpt_filename = "instructions/generate_tool_params.mpt"
 
     def __init__(self, name, tool_specifications, task_tool_execution_pk, logger, user_id, user_task_execution_pk,
                  task_name_for_system, n_total_usages):

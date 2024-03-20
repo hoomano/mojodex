@@ -15,7 +15,7 @@ class WebsiteParser:
 
     MAX_WEBSITE_PAGES = 100
 
-    website_chunk_validation_mpt_filename = "background/app/instructions/is_website_chunk_relevant.mpt"
+    website_chunk_validation_mpt_filename = "instructions/is_website_chunk_relevant.mpt"
 
     def __init__(self):
         self.logger = BackgroundLogger(f"{WebsiteParser.logger_prefix}")

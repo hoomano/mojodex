@@ -10,7 +10,7 @@ from mojodex_core.llm_engine.mpt import MPT
 
 class DailyNotificationsGenerator(EventsGenerator):
     logger_prefix = "DailyNotificationsGenerator::"
-    daily_notification_text_mpt_filename = "background/app/instructions/daily_notification_text.mpt"
+    daily_notification_text_mpt_filename = "instructions/daily_notification_text.mpt"
 
     def __init__(self):
         self.logger = BackgroundLogger(

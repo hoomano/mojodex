@@ -16,7 +16,7 @@ class TodosRescheduler:
     logger_prefix = "TodosRescheduler"
     todos_scheduling_url = "/todos_scheduling"
 
-    todos_rescheduler_mpt_filename = "background/app/instructions/reschedule_todo.mpt"
+    todos_rescheduler_mpt_filename = "instructions/reschedule_todo.mpt"
 
     def __init__(self, todo_pk, user_task_execution, knowledge_collector, todo_description, n_scheduled,
                  first_scheduled_date, todo_list):

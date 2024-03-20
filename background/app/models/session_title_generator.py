@@ -10,7 +10,7 @@ from mojodex_core.llm_engine.mpt import MPT
 class SessionTitleGenerator:
     logger_prefix = "SessionTitleGenerator::"
 
-    generate_title_mpt_filename = "background/app/instructions/generate_title_prompt.mpt"
+    generate_title_mpt_filename = "instructions/generate_title_prompt.mpt"
 
     def __init__(self, session_id, user_id, knwoledge_collector):
         try:

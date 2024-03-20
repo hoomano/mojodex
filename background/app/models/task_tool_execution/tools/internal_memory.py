@@ -22,7 +22,7 @@ class InternalMemoryTool(Tool):
     n_total_usages = 1
 
     produced_text_retrieval_url = "retrieve_produced_text"
-    information_extractor_mpt_filename = "background/app/instructions/internal_memory_information_extractor.mpt"
+    information_extractor_mpt_filename = "instructions/internal_memory_information_extractor.mpt"
 
     def __init__(self, user_id, task_tool_execution_pk, user_task_execution_pk, task_name_for_system, **kwargs):
         self.logger = BackgroundLogger(f"{InternalMemoryTool.logger_prefix}")

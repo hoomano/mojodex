@@ -19,7 +19,7 @@ from mojodex_core.llm_engine.mpt import MPT
 class TodoDailyEmailsGenerator(EventsGenerator):
     logger_prefix = "TodoDailyEmailsGenerator::"
     message_from_mojodex_email = "/data/mails/message_from_mojodex.html"
-    todo_daily_email_text_mpt_filename = "background/app/instructions/todo_daily_emails_text_prompt.mpt"
+    todo_daily_email_text_mpt_filename = "instructions/todo_daily_emails_text_prompt.mpt"
     todo_daily_email_type = "todo_daily_email"
 
     def __init__(self):

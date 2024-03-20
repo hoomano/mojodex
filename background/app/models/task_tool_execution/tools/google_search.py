@@ -22,7 +22,7 @@ class GoogleSearchTool(Tool):
         }"""
     n_total_usages = 3
 
-    scrapper_mpt_filename = "background/app/instructions/web_scrapper.mpt"
+    scrapper_mpt_filename = "instructions/web_scrapper.mpt"
 
     serp_api_costs_manager = SerpAPICostsManager()
 

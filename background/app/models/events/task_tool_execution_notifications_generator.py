@@ -10,7 +10,7 @@ from mojodex_core.llm_engine.mpt import MPT
 
 class TaskToolExecutionNotificationsGenerator(EventsGenerator):
     logger_prefix = "TaskToolExecutionNotificationsGenerator::"
-    notification_text_mpt_filename = "background/app/instructions/task_tool_execution_notification_text_prompt.mpt"
+    notification_text_mpt_filename = "instructions/task_tool_execution_notification_text_prompt.mpt"
 
     def __init__(self):
         self.logger = BackgroundLogger(

@@ -16,7 +16,7 @@ class TodosCreator:
     logger_prefix = "TodosCreator"
     todos_url = "/todos"
 
-    todos_extractor_mpt_filename = "background/app/instructions/extract_todos.mpt"
+    todos_extractor_mpt_filename = "instructions/extract_todos.mpt"
 
     def __init__(self, user_task_execution, knowledge_collector, language, conversation,
                  linked_user_task_executions_todos):

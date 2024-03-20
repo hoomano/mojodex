@@ -5,7 +5,7 @@ class MessageWriter:
     logger_prefix = "MessageWriter ::"
     tool_result_start_tag, tool_result_end_tag = "<tool_results>", "</tool_results>"
 
-    task_tool_message_writer_mpt_filename = "background/app/instructions/task_tool_execution_message_writer.mpt"
+    task_tool_message_writer_mpt_filename = "instructions/task_tool_execution_message_writer.mpt"
 
     def __init__(self, title_start_tag, title_end_tag, draft_start_tag, draft_end_tag):
         self.logger = BackgroundLogger(f"{MessageWriter.logger_prefix}")

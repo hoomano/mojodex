@@ -10,7 +10,7 @@ from mojodex_core.llm_engine.mpt import MPT
 class UserKnowledgeExtractor:
     logger_prefix = "UserKnowledgeExtractor::"
 
-    extract_user_knowledge_mpt_filename = "background/app/instructions/extract_user_knowledge.mpt"
+    extract_user_knowledge_mpt_filename = "instructions/extract_user_knowledge.mpt"
 
     def __init__(self, session_id, user_id, conversation):
         self.logger = BackgroundLogger(

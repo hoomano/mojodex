@@ -128,6 +128,13 @@ class MPT:
         Returns:
             str: The rendered template.
         """
+        # if one of the args is of type MPT, call its prompt method
+        for k, v in kwargs.items():
+            if isinstance(v, MPT):
+                kwargs[k] = v.prompt
+                # also retrieve the models from the MPT and choose the common model with the current MPT
+                self.models = list(set(self.models).intersection(v.models))
+
         return self.template.render(**kwargs)
 
 

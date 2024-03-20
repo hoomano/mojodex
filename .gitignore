@@ -11,7 +11,7 @@ data/prompts_dataset/*
 data/postgresql/*
 data/users/*
 *.env
-.conf
+*.conf
 site/
 
 venv/

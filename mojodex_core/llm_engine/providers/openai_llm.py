@@ -16,8 +16,6 @@ mojo_openai_logger = MojodexCoreLogger("mojo_openai_logger")
 
 class OpenAILLM(LLM):
 
-    default_embedding_model = "text-embedding-ada-002"
-
     def __init__(self, llm_conf, label='undefined', llm_backup_conf=None, max_retries=3):
         """
         :param api_key: API key to call openAI

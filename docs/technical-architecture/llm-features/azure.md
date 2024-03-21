@@ -1,7 +1,7 @@
 # Azure Open AI Services
 
 
-Setup the configuration keys in your `llm.conf` file:
+Setup the configuration keys in your `models.conf` file:
 
 ```bash
 GPT4_AZURE_OPENAI_DEPLOYMENT_ID=<your-deployment-id>

@@ -1,10 +1,10 @@
 from gevent import monkey
 
+
 monkey.patch_all()
 
 
-from mojodex_core.llm_engine.llm import LLM
-from mojodex_core.llm_engine.embedding_provider import EmbeddingProvider
+from mojodex_core.llm_engine.providers.model_loader import ModelLoader
 from mojodex_core.stt.stt import STT
 from mojodex_core.mail import mojo_mail_client
 
@@ -50,10 +50,10 @@ from mojodex_core.entities import *
 from mojodex_backend_logger import MojodexBackendLogger
 
 # Setup the LLM Engine
-llm, llm_conf, llm_backup_conf = LLM.get_main_llm_provider()
+llm, llm_conf, llm_backup_conf = ModelLoader.get_main_llm_provider()
 
 # Setup the embedder
-embedder, embedding_conf = EmbeddingProvider.get_embedding_provider()
+embedder, embedding_conf = ModelLoader.get_embedding_provider()
 
 # Setup the STT engine
 stt, stt_conf = STT.get_stt()

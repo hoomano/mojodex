@@ -43,8 +43,9 @@ class MPT:
         self.template = None
         self.raw_template = None
         self._parse_file()
-
-        self.available_models, _ = LLM.get_providers()
+        
+        from mojodex_core.llm_engine.providers.model_loader import ModelLoader
+        self.available_models, _ = ModelLoader.get_providers()
         self.models = [d['model_name'] for d in self.shebangs]
     
     @property

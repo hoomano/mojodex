@@ -1,10 +1,9 @@
 import os
 
 
-# TODO: move to /llm.conf
+# TODO: move to /models.conf
 class OpenAIConf:
-
-
+    
     whisper_conf = {
         "api_key": os.environ.get("WHISPER_AZURE_OPENAI_KEY",  os.environ.get("OPENAI_API_KEY")),
         "api_base": os.environ.get("WHISPER_AZURE_OPENAI_API_BASE"),

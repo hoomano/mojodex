@@ -47,7 +47,7 @@ class OpenAILLM(LLM):
                 azure_endpoint=api_base,
                 azure_deployment=self.model,
                 api_key=api_key,
-                max_retries=self.max_retries
+                max_retries=0 if llm_backup_conf else self.max_retries
             ) if api_type == 'azure' else OpenAI(api_key=api_key)
 
             if llm_backup_conf:

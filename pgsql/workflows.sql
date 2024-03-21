@@ -46,7 +46,8 @@ CREATE TABLE public.md_workflow_step (
     workflow_step_pk integer DEFAULT nextval('public.md_workflow_step_seq'::regclass) NOT NULL,
     workflow_fk integer NOT NULL,
     name character varying(255) NOT NULL,
-    is_checkpoint boolean NOT NULL DEFAULT false
+    description character varying(255) NOT NULL,
+    rank integer NOT NULL
 );
 
 --

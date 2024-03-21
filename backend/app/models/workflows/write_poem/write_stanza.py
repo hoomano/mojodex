@@ -11,11 +11,15 @@ class StanzaWriterStep(WorkflowStep):
 
     @property
     def description(self):
-        return "Write a stanza."
+        return "Write stanza of a poem"
 
-    def __init__(self, workflow_step):
-        super().__init__(workflow_step, input_keys=['stanza_topic'], output_keys=['stanza'])
-
+    @property
+    def input_keys(self):
+        return ['stanza_topic']
+    
+    @property
+    def output_keys(self):
+        return ['stanza']
     
     def _execute(self, parameter: dict, learned_instructions: dict, initial_parameter: dict, history: List[dict],  workflow_conversation: str):
         try: 

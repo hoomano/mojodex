@@ -4,13 +4,19 @@ from typing import List
 
 class QueryWriterStep(WorkflowStep):
 
+
     @property
     def description(self):
         return "Write the query to search for the company industry."
 
-    def __init__(self, workflow_step):
-        super().__init__(workflow_step, input_keys=['company'], output_keys=['query', 'gl', 'hl'])
-
+    @property
+    def input_keys(self):
+        return ['company']
+    
+    @property
+    def output_keys(self):
+        return ['query', 'gl', 'hl']
+    
     
     def _execute(self, parameter: dict, learned_instructions: dict, initial_parameter: dict, history: List[dict]):
         try: 

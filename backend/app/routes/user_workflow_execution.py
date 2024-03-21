@@ -5,7 +5,7 @@ from flask import request
 from flask_restful import Resource
 from app import db, authenticate, log_error, server_socket
 from mojodex_core.entities import *
-
+from sqlalchemy.orm.attributes import flag_modified
 
 class UserWorkflowExecution(Resource):
     def __init__(self):
@@ -66,11 +66,18 @@ class UserWorkflowExecution(Resource):
             if "error" in session_creation[0]:
                return session_creation
             session_id = session_creation[0]["session_id"]
+
+            empty_json_input_values = []
+            for input in workflow.json_inputs_spec:
+                # append input to empty_json_input_values but with additional field "value" without editing json_input
+                new_input = input.copy()
+                new_input["value"] = input["default_value"] # todo: remove default_value and change by none
+                empty_json_input_values.append(new_input)
             
             db_workflow_execution = MdUserWorkflowExecution(
                 user_workflow_fk=user_workflow_pk,
                 session_id=session_id,
-                json_inputs=workflow.json_inputs_spec
+                json_inputs=empty_json_input_values
             )
             db.session.add(db_workflow_execution)
             db.session.commit()
@@ -92,29 +99,30 @@ class UserWorkflowExecution(Resource):
         try:
             timestamp = request.json['datetime']
             user_workflow_execution_pk = request.json['user_workflow_execution_pk']
-            initial_parameters = request.json['initial_parameters']
+            json_inputs = request.json['json_inputs']
         except KeyError as e:
             return {"error": f"Missing parameter : {e}"}, 400
         
         try:
-            user_workflow_execution = db.session.query(MdUserWorkflowExecution)\
+            db_workflow_execution = db.session.query(MdUserWorkflowExecution)\
                 .join(MdUserWorkflow, MdUserWorkflow.user_workflow_pk == MdUserWorkflowExecution.user_workflow_fk)\
                 .filter(MdUserWorkflowExecution.user_workflow_execution_pk == user_workflow_execution_pk)\
                 .filter(MdUserWorkflow.user_id == user_id)\
                 .first()
-            if not user_workflow_execution:
+            if not db_workflow_execution:
                 return {"error": "Workflow execution not found for this user"}, 404
             
+            # ensure json_inputs is a list
+            # TODO: also ensure it contains input_name and value
+            if not isinstance(json_inputs, list):
+                return {"error": "json_inputs must be a list"}, 400
+            db_workflow_execution.json_inputs = json_inputs
+            flag_modified(db_workflow_execution, "json_inputs")
+            db_workflow_execution.start_date = datetime.now()
+            db.session.commit()
+
             workflow_execution = WorkflowExecution(user_workflow_execution_pk)
 
-            # ensure initial_parameters is a json
-            if not isinstance(initial_parameters, dict):
-                return {"error": "initial_parameters must be a json"}, 400
-            user_workflow_execution.json_input = initial_parameters
-            user_workflow_execution.start_date = datetime.now()
-            db.session.commit()
-            
-            #workflow_execution.run() # TODO: run must be done asynchronously in a dedicated thread
             server_socket.start_background_task(workflow_execution.run)
             return {"user_workflow_execution_pk": user_workflow_execution_pk}, 200
         except Exception as e:

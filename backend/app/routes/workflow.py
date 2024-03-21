@@ -40,7 +40,9 @@ class Workflow(Resource):
             if not isinstance(steps, list):
                 return {"error": "Steps should be a list of string"}, 400
 
-            for step in steps:
+
+            for step_index in range(len(steps)):
+                step = steps[step_index]
                 # check step is a string
                 if not isinstance(step, str):
                     return {"error": "Step should be a string"}, 400
@@ -55,7 +57,8 @@ class Workflow(Resource):
                         return {"error": f"Step {step} not found in steps library"}, 400
                     db_step = MdWorkflowStep(
                         name=step,
-                        workflow_fk=db_workflow.workflow_pk
+                        workflow_fk=db_workflow.workflow_pk,
+                        step_index=step_index+1
                     )
                     db.session.add(db_step)
                     db.session.flush()

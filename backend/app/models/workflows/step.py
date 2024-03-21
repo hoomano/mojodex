@@ -8,26 +8,34 @@ import time
 class WorkflowStep(ABC):
     logger_prefix = "WorkflowStep :: "
 
-    @property
-    @abstractmethod
-    def description(self):
-        pass
-
-    def __init__(self, workflow_step, input_keys: List[str], output_keys: List[str]):
+    def __init__(self, workflow_step):
         try:
-            self.input_keys = input_keys
-            self.output_keys = output_keys
             self.db_object = workflow_step
         except Exception as e:
             raise Exception(f"{self.logger_prefix} :: __init__ :: {e}")
 
     @property
-    def workflow_step_pk(self):
+    @abstractmethod
+    def description(self) -> str:
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def input_keys(self) -> List[str]:
+        raise NotImplementedError
+        
+    @property
+    @abstractmethod
+    def output_keys(self) -> List[str]:
+        raise NotImplementedError
+
+    @property
+    def workflow_step_pk(self) -> int:
         return self.db_object.workflow_step_pk
     
     @property
     def is_checkpoint(self):
-        return self.db_object.is_checkpoint
+        return True
     
     @abstractmethod
     def _execute(self, parameter: dict, learned_instructions: dict, initial_parameters: dict, history: List[dict], workflow_conversation: str):
@@ -141,26 +149,21 @@ class WorkflowStepExecution:
 
     def initialize_runs(self, parameters: List[dict], session_id: str):
         try:
-            if not self.initialized:
-                for parameter in parameters:
-                    # if parameter is a dict, encode json to string
-                    if isinstance(parameter, dict) or isinstance(parameter, List):
-                        parameter = json.dumps(parameter)
-                    else:
-                        parameter = str(parameter)
-                    # create run in db
-                    db_run = MdUserWorkflowStepExecutionRun(
-                        user_workflow_step_execution_fk=self.db_object.user_workflow_step_execution_pk,
-                        parameter=parameter
-                    )
-                    self.db_session.add(db_run)
-                    self.db_session.commit()
-                    self.runs.append(WorkflowStepExecutionRun(self.db_session, db_run))
-                step_json = self.to_json()
-                # add session_id to step_json
-                step_json["session_id"] = session_id
-                server_socket.emit('workflow_step_execution_initialized', step_json, to=session_id)
-                
+            for parameter in parameters:
+                parameter = json.dumps(parameter)
+                # create run in db
+                db_run = MdUserWorkflowStepExecutionRun(
+                    user_workflow_step_execution_fk=self.db_object.user_workflow_step_execution_pk,
+                    parameter=parameter
+                )
+                self.db_session.add(db_run)
+                self.db_session.commit()
+                self.runs.append(WorkflowStepExecutionRun(self.db_session, db_run))
+            step_json = self.to_json()
+            # add session_id to step_json
+            step_json["session_id"] = session_id
+            server_socket.emit('workflow_step_execution_initialized', step_json, to=session_id)
+            
         except Exception as e:
             raise Exception(f"{self.logger_prefix} :: initialize_runs :: {e}")
 

@@ -10,12 +10,18 @@ class StanzaDividerStep(WorkflowStep):
 
     determine_poem_stanzas_filename = "instructions/determine_poem_stanza.mpt"
 
+
     @property
     def description(self):
-        return "Determine topic of each stanza."
+        return "Determine topic of each stanza of a poem."
 
-    def __init__(self, workflow_step):
-        super().__init__(workflow_step, input_keys=['poem_topic', 'n_stanzas'], output_keys=['stanza_topic'])
+    @property
+    def input_keys(self):
+        return ['poem_topic', 'n_stanzas']
+    
+    @property
+    def output_keys(self):
+        return ['stanza_topic']
 
     
     def _execute(self, parameter: dict, learned_instructions: dict, initial_parameter: dict, history: List[dict], workflow_conversation: str):

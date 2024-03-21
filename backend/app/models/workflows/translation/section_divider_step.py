@@ -5,12 +5,18 @@ from typing import List
 
 class SectionsDividerStep(WorkflowStep):
 
+
     @property
     def description(self):
         return "Divide a text into sections."
 
-    def __init__(self, workflow_step):
-        super().__init__(workflow_step, input_keys=['text'], output_keys=['section'])
+    @property
+    def input_keys(self):
+        return ['text']
+    
+    @property
+    def output_keys(self):
+        return ['section']
 
     
     def _execute(self, parameter: dict, learned_instructions: dict, initial_parameter: dict, history: List[dict]):

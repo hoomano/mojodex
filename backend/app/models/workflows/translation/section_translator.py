@@ -7,8 +7,13 @@ class SectionsTranslatorStep(WorkflowStep):
     def description(self):
         return "Translate a section to the target language."
 
-    def __init__(self, workflow_step):
-        super().__init__(workflow_step, input_keys=['section'], output_keys=['translation'])
+    @property
+    def input_keys(self):
+        return ['section']
+    
+    @property
+    def output_keys(self):
+        return ['translation']
     
     def _execute(self, parameter: dict, learned_instructions: dict, initial_parameter: dict, history: List[dict]):
         # input keys: 'section'

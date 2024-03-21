@@ -1,3 +1,4 @@
+import os
 from flask import request
 from flask_restful import Resource
 from app import db, authenticate, log_error
@@ -10,7 +11,7 @@ from packaging import version
 class UserWorkflow(Resource):
 
     def __init__(self):
-        UserWorkflow.method_decorators = [authenticate()]
+        UserWorkflow.method_decorators = [authenticate(methods=["GET"])]
 
     def get(self, user_id):
         error_message = "Error getting user_workflows"
@@ -74,3 +75,35 @@ class UserWorkflow(Resource):
             log_error(f"{error_message} : {e}")
             return {"error": f"{e}"}, 404
 
+
+    def put(self):
+        if not request.is_json:
+            return {"error": "Request must be JSON"}, 400
+
+        try:
+            secret = request.headers['Authorization']
+            if secret != os.environ["BACKOFFICE_SECRET"]:
+                return {"error": "Authentication error : Wrong secret"}, 403
+        except KeyError:
+            return {"error": f"Missing Authorization secret in headers"}, 403
+
+        try:
+            timestamp = request.json["datetime"]
+            user_id = request.json['user_id']
+            workflow_pk = request.json["workflow_pk"]
+        except KeyError as e:
+            return {"error": f"Missing field {e}"}, 400
+        
+        try:
+            # ensure this does not already exist
+            user_workflow = db.session.query(MdUserWorkflow).filter(and_(MdUserWorkflow.user_id == user_id, MdUserWorkflow.workflow_fk == workflow_pk)).first()
+            if user_workflow:
+                return {"error": "User workflow already exists"}, 400
+            
+            user_workflow = MdUserWorkflow(user_id=user_id, workflow_fk=workflow_pk)
+            db.session.add(user_workflow)
+            db.session.commit()
+            return {"user_workflow_pk": user_workflow.user_workflow_pk}, 200
+        except Exception as e:
+            db.session.rollback()
+            return {"error": f"Error while creating user_workflow: {e}"}, 500

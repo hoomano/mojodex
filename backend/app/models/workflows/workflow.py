@@ -59,7 +59,7 @@ class WorkflowExecution:
             return self.db_session.query(MdWorkflowStep)\
                 .join(MdUserWorkflow, MdUserWorkflow.workflow_fk == MdWorkflowStep.workflow_fk)\
                 .filter(MdUserWorkflow.user_workflow_pk == self.db_object.user_workflow_fk)\
-                .order_by(MdWorkflowStep.workflow_step_pk.asc()).all()
+                .order_by(MdWorkflowStep.rank.asc()).all()
         except Exception as e:
             raise Exception(f"_db_workflow_steps :: {e}")
 
@@ -68,7 +68,7 @@ class WorkflowExecution:
         # self.json_inputs is [{"input_name": "<input_name>", "default_value": "<value>"}]'
         # initial_parameters is {"<input_name>": "<value>", ...}
         try:
-            return {input["input_name"]: input["default_value"] for input in self.json_inputs}
+            return {input["input_name"]: input["value"] for input in self.json_inputs}
         except Exception as e:
             raise Exception(f"initial_parameters :: {e}")
 
@@ -81,7 +81,8 @@ class WorkflowExecution:
             step_execution_to_run = self.current_step_execution
             if not step_execution_to_run:
                 return
-            step_execution_to_run.initialize_runs(self._intermediate_results[-1] if self._intermediate_results else [self.initial_parameters], self.db_object.session_id)
+            if not step_execution_to_run.initialized:
+                step_execution_to_run.initialize_runs(self._intermediate_results[-1] if self._intermediate_results else [self.initial_parameters], self.db_object.session_id)
             
             step_execution_to_run.run(self.initial_parameters, self._history, self.db_object.session_id, workflow_conversation="")
             self._ask_for_validation()

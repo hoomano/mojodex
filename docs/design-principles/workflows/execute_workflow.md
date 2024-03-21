@@ -46,7 +46,7 @@ The workflow execution workflow is a sequence of events that occur from the mome
 ### 1. User Workflow Execution Creation
 Creation of execution is done as soon as the user hits the card of the workflow they want to create.
 
-![select_workflow](../../images/workflows/workflows.png)
+![select_workflow](../../images/workflows/workflows.jpeg)
 
 This generates a call to PUT `/user_workflow_execution` to the backend (`backend/app/routes/user_workflow_execution.py`), specifying the `user_workflow` the user wants to execute.
 This call creates a User Workflow Execution instance in the database and a `session` if not already exists (which is the case in current Mojodex implementations).

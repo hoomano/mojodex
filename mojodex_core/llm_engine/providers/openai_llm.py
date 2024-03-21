@@ -27,10 +27,10 @@ class OpenAILLM(LLM):
         """
         try:
             api_key = llm_conf["api_key"]
-            api_base = llm_conf["api_base"]
-            api_version = llm_conf["api_version"]
-            api_type = llm_conf["api_type"]
-            model = llm_conf["deployment_id"]
+            api_base = llm_conf["api_base"] if "api_base" in llm_conf else None
+            api_version = llm_conf["api_version"] if "api_version" in llm_conf else None
+            api_type = llm_conf["api_type"] if "api_type" in llm_conf else "openai"
+            model = llm_conf["deployment_id"] if "deployment_id" in llm_conf else llm_conf["model"]
             self.label = label
             # if dataset_dir does not exist, create it
             if not os.path.exists(self.dataset_dir):
@@ -52,9 +52,9 @@ class OpenAILLM(LLM):
 
             if llm_backup_conf:
                 self.client_backup = AzureOpenAI(
-                    api_version=llm_backup_conf["api_version"],
-                    azure_endpoint=llm_backup_conf["api_base"],
-                    azure_deployment=llm_backup_conf["deployment_id"],
+                    api_version=llm_backup_conf["api_version"] if "api_version" in llm_backup_conf else None,
+                    azure_endpoint=llm_backup_conf["api_base"] if "api_base" in llm_backup_conf else None,
+                    azure_deployment=llm_backup_conf["deployment_id"] if "deployment_id" in llm_backup_conf else llm_backup_conf["model"],
                     api_key=llm_backup_conf["api_key"],
                     max_retries=self.max_retries
                 ) if api_type == 'azure' else OpenAI(api_key=llm_backup_conf["api_key"])

@@ -90,7 +90,8 @@ class LLM(ABC):
                 from mojodex_core.llm_engine.providers.openai_llm import OpenAILLM
                 conf = {
                     "api_key": provider_conf["openai_api_key"],
-                    "api_type": provider_name
+                    "api_type": provider_name,
+                    "model": model_name
                 }
                 provider = OpenAILLM(conf)
             

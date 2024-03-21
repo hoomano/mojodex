@@ -41,8 +41,8 @@ OPENAI_API_KEY=<your_api_key_here>
 
 # ### Embeddings
 
-# [openai/embedding]
-# OPENAI_API_KEY=
+[openai/embedding]
+OPENAI_API_KEY=
 
 # [azure/embedding]
 # ADA_EMBEDDING_AZURE_OPENAI_API_BASE=

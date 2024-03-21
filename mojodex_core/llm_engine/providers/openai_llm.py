@@ -49,7 +49,8 @@ class OpenAILLM(LLM):
                 api_key=api_key,
                 max_retries=0 if llm_backup_conf else self.max_retries
             ) if api_type == 'azure' else OpenAI(api_key=api_key)
-
+            
+            self.client_backup = None
             if llm_backup_conf:
                 self.client_backup = AzureOpenAI(
                     api_version=llm_backup_conf["api_version"],

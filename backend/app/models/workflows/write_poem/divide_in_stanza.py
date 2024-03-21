@@ -25,7 +25,7 @@ class StanzaDividerStep(WorkflowStep):
             n_stanzas = parameter['n_stanzas']
             print(f"🟢 learned_instructions: {learned_instructions}")
             determine_poem_stanzas_mpt = MPT(StanzaDividerStep.determine_poem_stanzas_filename, poem_topic=poem_topic, n_stanzas=n_stanzas,
-                                             learned_instructions=learned_instructions)
+                                             learned_instructions=learned_instructions, history=history)
             # write determine_poem_stanzas_mpt.prompt into a file
             with open("/data/determine_poem_stanzas_mpt.txt", "w") as f:
                 f.write(determine_poem_stanzas_mpt.prompt)

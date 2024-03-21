@@ -1,9 +1,9 @@
-{%if before_checkpoint_steps_executions%}ACHIEVED WORKFLOW STEPS{%endif%}
-{%for step in before_checkpoint_steps_executions%}{%if step.initialized%}{%for run in step.runs%}{%if run.validated%}---
+ACHIEVED WORKFLOW STEPS
+{%if not before_checkpoint_steps_executions%}None{%else%}{%for step in before_checkpoint_steps_executions%}{%if step.initialized%}{%for run in step.runs%}{%if run.validated%}---
 Step: {{step.name}} - {{step.description}}
 Parameter: {{run.parameter}}
 Result: {{run.result}}
----{%endif%}{%endfor%}{%endif%}{%endfor%}
+---{%endif%}{%endfor%}{%endif%}{%endfor%}{%endif%}
 
 CURRENT WORKFLOW STEPS
 {%for step in after_checkpoint_to_current_steps_executions%}{%if step.initialized%}{%for run in step.runs%}{%if run.validated%}---

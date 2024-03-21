@@ -2,13 +2,16 @@
 
 You are a poet assistant. 
 Your user wants to write a poem in {{n_stanzas}} stanzas about {{poem_topic}}.
-Write a list of the topic of each stanza.
 
-Here is the list of your previous tries. Every try has been rejected the user. For each try, the user provided an instruction to improve the next try.
+{%if history%}Here are the previous steps results:
+{{history|tojson(indent=4)}}{%endif%}
+
+Write a list of the topic of each stanza.
+{%if learned_instructions%}Here is the list of your previous tries. Every try has been rejected the user. For each try, the user provided an instruction to improve the next try.
 {{learned_instructions|tojson(indent=4)}}
 Let's give this another try. Ensure to take into account every user's instructions.
 
-Write the list of the topic of each stanza.
+Write the list of the topic of each stanza.{%endif%}
 Answer in the following format:
 Topic of stanza 1
 Topic of stanza 2

@@ -23,8 +23,10 @@ class StanzaWriterStep(WorkflowStep):
             stanza_topic = parameter['stanza_topic']
             poem_topic = initial_parameter['poem_topic']
             write_poem_stanza_mpt = MPT(StanzaWriterStep.write_poem_stanza_filename, poem_topic=poem_topic, stanza_topic=stanza_topic,
-                                        learned_instructions=learned_instructions)
-
+                                        learned_instructions=learned_instructions, history=history)
+            # write write_poem_stanza_mpt.prompt into a file
+            with open("/data/write_poem_stanza_mpt.txt", "w") as f:
+                f.write(write_poem_stanza_mpt.prompt)
             responses = write_poem_stanza_mpt.run(user_id="fake", temperature=0, max_tokens=1000)
             stanza = responses[0].strip().lower()
             return [{'stanza': stanza}]

@@ -44,7 +44,6 @@ class WorkflowStep(ABC):
             for key in self.input_keys:
                 if key not in parameter:
                     raise Exception(f"execute :: key {key} not in parameter")
-            time.sleep(2) # Todo: for tests only => To remove
             output = self._execute(parameter, learned_instructions, initial_parameter, history, workflow_conversation) # list of dict
             # ensure output is a list
             if not isinstance(output, List):
@@ -188,9 +187,22 @@ class WorkflowStepExecution:
             
 
     def execute(self, run: WorkflowStepExecutionRun, initial_parameter: dict, history: List[dict], workflow_conversation: str):
-        result = self.workflow_step.execute(run.parameter, run.learned_instructions, initial_parameter, history, workflow_conversation)
-        run.result = result
-        return run.result
+        try:
+            result = self.workflow_step.execute(run.parameter, run.learned_instructions, initial_parameter, history, workflow_conversation)
+            run.result = result
+            return run.result
+        except Exception as e:
+            raise Exception(f"execute :: {e}")
+
+    @property
+    def history(self):
+        if not self.result:
+            return []
+        return[{'step_name': self.name, 
+                'parameter': run.parameter,
+                'result': run.result} for run in self.runs if run.validated]
+                
+                
 
     @property
     def result(self):

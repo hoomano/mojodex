@@ -83,9 +83,10 @@ class WorkflowExecution:
                 return
             step_execution_to_run.initialize_runs(self._intermediate_results[-1] if self._intermediate_results else [self.initial_parameters], self.db_object.session_id)
             
-            step_execution_to_run.run(self.initial_parameters, self._intermediate_results, self.db_object.session_id, workflow_conversation="")
+            step_execution_to_run.run(self.initial_parameters, self._history, self.db_object.session_id, workflow_conversation="")
             self._ask_for_validation()
         except Exception as e:
+            # todo > Manage this error case
             print(f"🔴 {self.logger_prefix} - run :: {e}")
             raise Exception(f"run :: {e}")
         
@@ -108,6 +109,13 @@ class WorkflowExecution:
         except Exception as e:
             raise Exception(f"_current_step_execution :: {e}")
 
+    
+    @property
+    def _history(self):
+        try:
+            return [step.history for step in self.steps_executions if step.result]
+        except Exception as e:
+            raise Exception(f"_intermediate_results :: {e}")
 
     @property
     def _intermediate_results(self):

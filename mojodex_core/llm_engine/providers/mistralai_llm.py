@@ -11,7 +11,7 @@ logging.basicConfig(level=logging.ERROR)
 
 class MistralAILLM(LLM):
 
-    def __init__(self, mistral_conf, label='unknown', llm_backup_conf=None, max_retries=0):
+    def __init__(self, mistral_conf, label='unknown', llm_backup_conf=None):
 
         try:
             api_key = mistral_conf["api_key"]
@@ -32,7 +32,6 @@ class MistralAILLM(LLM):
             if not os.path.exists(os.path.join(self.dataset_dir, "chat", self.label)):
                 os.mkdir(os.path.join(self.dataset_dir, "chat", self.label))
 
-            self.max_retries = max_retries
             self.client = MistralClient(
                 api_key=api_key,
                 endpoint=endpoint if api_type == 'azure' else "https://api.mistral.ai",

@@ -1,0 +1,63 @@
+{
+    "datetime": "2024-02-14T10:53:06.502Z",
+    "platforms": [
+        "mobile",
+        "webapp"
+    ],
+    "predefined_actions": [],
+    "task_displayed_data": [
+        {
+            "language_code": "en",
+            "name_for_user": "Meeting Recap",
+            "definition_for_user": "Prepare a detailed recap and next steps for your meeting",
+            "json_input": [
+                {
+                    "input_name": "meeting_informations",
+                    "description_for_user": "How was your meeting?",
+                    "description_for_system": "Informations the user gave about the meeting (ex: participants, date, key topics, followup actions...)",
+                    "placeholder": "Record a complete recap of what was discussed.",
+                    "type": "text_area"
+                }
+            ]
+        },
+        {
+            "language_code": "fr",
+            "name_for_user": "Récapitulatif de Réunion",
+            "definition_for_user": "Préparez un récapitulatif simple de votre réunion",
+            "json_input": [
+                {
+                    "description_for_system": "Informations que l'utilisateur a fournies sur la réunion (ex : participants, date, sujets clés, actions de suivi...)",
+                    "description_for_user": "Comment s'est passée votre réunion ?",
+                    "input_name": "informations_reunion",
+                    "placeholder": "Enregistrez un bref résumé de ce qui a été discuté.",
+                    "type": "text_area"
+                }
+            ]
+        }
+    ],
+    "name_for_system": "prepare_meeting_minutes",
+    "definition_for_system": "The user needs assistance to prepare a meeting minutes",
+    "final_instruction": "Write a well structured detailed meeting minutes including all the exhaustive informations provided by the user.",
+    "output_format_instruction_title": "SHORT CONTEXT - DATE OF THE DAY",
+    "output_format_instruction_draft": "CONTENT OF THE MEETING MINUTES",
+    "output_type": "meeting_minutes",
+    "icon": "📝",
+    "infos_to_extract": [
+        {
+            "info_name": "key_topics",
+            "description": "Key topics discussed in the meeting"
+        },
+        {
+            "info_name": "participants",
+            "description": "Participants of the meeting"
+        },
+        {
+            "info_name": "date_of_meeting",
+            "description": "Date of the meeting"
+        },
+        {
+            "info_name": "followup_actions",
+            "description": "Followup actions if any"
+        }
+    ]
+}

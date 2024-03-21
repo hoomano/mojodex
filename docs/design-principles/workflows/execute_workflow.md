@@ -202,7 +202,61 @@ class WorkflowStepExecution:
 
 #### 3.3 Running a step execution
 Running a step execution consists in running the last run of the step that has not been validated.
+```python
+    def run(self, initial_parameter: dict, history: List[dict], session_id: str, workflow_conversation: str):
+        [...]
+        # run from non-validated actions
+        for run in self.runs:
+            if not run.validated:
+                # create an execution for the run
+                run.prepare_execution() # This creates a run_execution in db
+                run_json = run.to_json()
+                run_json["session_id"] = session_id
+                run_json["step_execution_fk"] = self.db_object.user_workflow_step_execution_pk
+                server_socket.emit('workflow_run_started', run_json, to=session_id)
+                return self.execute(run, initial_parameter, history, workflow_conversation)
+        return None
+        [...]
+```
+
+#### 3.4 Asking for validation
+Once the step execution is done, the user is asked to validate the result. This is done by sending a socketio message to the client application:
+```python
+def _ask_for_validation(self):
+        [...]
+        run_json = self.current_step_execution.current_run.to_json()
+        run_json["session_id"] = self.db_object.session_id
+        run_json["step_execution_fk"] = self.current_step_execution.db_object.user_workflow_step_execution_pk
+        server_socket.emit('workflow_run_ended', run_json, to=self.db_object.session_id)
+        [...]
+```
 
 ### 4. User validation
 #### 4.1. User validates
+If the user validates the result of the run, the route POST `/user_workflow_execution_step_execution_run`is called with value `validated` set to `True`. This route updates the `user_workflow_execution_step_execution_run` instance in the database and triggers the next step execution with `workflow.run` in a dedicated thread.
+```python
+class UserWorkflowStepExecutionRun(Resource):
+    [...]
+    def post(self, user_id):
+        [...]
+        workflow_execution = WorkflowExecution(user_workflow_execution.user_workflow_execution_pk)
+        if validated:
+            workflow_execution.validate_current_run()
+            server_socket.start_background_task(workflow_execution.run)
+        [...]
+```
+            
 #### 4.2. User does not validate
+If the user does not validate the result of the run, the route POST `/user_workflow_execution_step_execution_run`is called with value `validated` set to `False`. 
+This route adds a system message in the workflow execution's session to store a view of the workflow state at this point in the conversation. This message contains the achieved step until current checkpoint and the current steps after current checkpoints (steps that can still be re-executed).
+
+Then, the user will send a message using common route PUT `user_message`. This message will be eventually transcripted if it was audio and transfer to a session through method `process_chat_message`.
+
+The process chat message will decode the message and send it to `WorflowResponseGenerator`located in `backend/app/models/session/assistant_message_generators`. This class will generate the assistant response to user request from on going workflow's conversation (including the system messages).
+
+The goal of the assistant is to capture the new user instruction to re-execute the step with the same input but a new orientation.
+To do that, the LLM can answer with 3 types of tags:
+
+- <no_go_explanation>: If the user asked the assistant to edit something in ACHIEVED STEPS, the assistant will explain why it is not possible to edit this past checkpoint steps.
+- <ask_for_clarification>: If the user is not clear enough in its request for re-execution, the assistant will ask for clarification until it gets a clear instruction.
+- <inform_user> coming along with <user_instruction>: once the assistant caught the user instruction, it will respond by encapsulating the user instruction in a <user_instruction> tag and add a message to inform the user that the instruction has been taken into account into <inform_user> tag.

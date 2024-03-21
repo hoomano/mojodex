@@ -25,10 +25,18 @@ class MPT:
         _perform_templating(**kwargs): Performs templating using the provided keyword arguments.
     """
 
-    def __init__(self, filepath, **kwargs):
+    def __init__(self, filepath, forced_model=None, **kwargs):
         self.logger = MojodexCoreLogger(
                 f"MPT - {filepath}")
         self.filepath = filepath
+        
+        if forced_model is not None:
+            for provider in self.available_models:
+                if provider['model_name'] == forced_model:
+                    self.forced_model : LLM = provider['provider']
+                    self.logger.info(f"Forced model: {forced_model}")
+                    break
+
         # store the other arguments for later use
         self.kwargs = kwargs
         self.shebangs = []
@@ -149,6 +157,10 @@ class MPT:
 
         # for each model in the shebangs, in order, check if there is a provider for it
         # if there is, call it with the prompt
+
+        if self.forced_model is not None:
+            self.logger.info(f"Running prompt with forced model: {self.forced_model}")
+            return self.forced_model.invoke_from_mpt(self, **kwargs)
 
         selected_model : LLM = None
         for model in self.models:

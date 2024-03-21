@@ -61,9 +61,10 @@ main_logger = MojodexBackendLogger("main_logger")
 
 # TODO: setup dedicated email conf file for multiple providers management
 try:
-    from mojodex_core.email_sender import MojoAwsMail
-    mojo_mail_client = MojoAwsMail(sender_name=os.environ['SENDER_NAME'], sender_email=os.environ['SENDER_EMAIL'],
-                                   region="eu-west-3")
+    if os.environ['SENDER_EMAIL']:
+        from mojodex_core.email_sender import MojoAwsMail
+        mojo_mail_client = MojoAwsMail(sender_name=os.environ['SENDER_NAME'], sender_email=os.environ['SENDER_EMAIL'],
+                                    region="eu-west-3")
 except Exception as e:
     main_logger.info(f"No email client available.")
     mojo_mail_client = None

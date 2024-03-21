@@ -25,16 +25,14 @@ class LLM(ABC):
 
         """
         try:
-            logging.info(f"🟢: INFO: LLM get_main_llm_provider()")
             providers = LLM._get_llm_providers()
-            logging.info(f"🟢: INFO: {providers}")
 
             provider = providers[0]
-            provider_name, model_name, llm, conf = LLM._build_provider(provider)
+            _, _, llm, conf = LLM._build_provider(provider)
             provider_conf = conf
             if len(providers) > 1:
                 provider = providers[1]
-                provider_name, model_name, llm, conf = LLM._build_provider(provider)
+                _, _, llm, conf = LLM._build_provider(provider)
                 llm_backup_conf = conf
             else:
                 llm_backup_conf = None
@@ -57,13 +55,13 @@ class LLM(ABC):
             providers = LLM._get_llm_providers()
 
             for provider in providers:
-                provider_name, model_name, llm = LLM._build_provider(provider)
+                provider_name, model_name, llm, conf = LLM._build_provider(provider)
                 provider_conf = {
                     "model_name": model_name,
                     "provider_name": provider_name,
-                    "provider": llm
+                    "provider": llm,
+                    "config": conf
                 }
-                logging.info(f"🟢: INFO: LLM get_providers() >> provider_conf: {provider_conf}")
                 providers_list.append(provider_conf)
 
             return providers_list
@@ -126,6 +124,18 @@ class LLM(ABC):
                         "api_type": provider_name
                     }
                     provider = MistralAILLM(conf)
+                
+                # TODO: migrate to new embedding v3 
+                elif model_name == "embedding":
+                    from mojodex_core.llm_engine.providers.openai_embedding import OpenAIEmbedding
+                    conf = {
+                        "api_key": provider_conf["ada_embedding_azure_openai_key"],
+                        "api_base": provider_conf["ada_embedding_azure_openai_api_base"],
+                        "api_type": provider_name,
+                        "api_version": provider_conf["ada_embedding_azure_openai_api_version"],
+                        "deployment_id": provider_conf["ada_embedding_azure_openai_deployment_id"] if not provider_conf["ada_embedding_azure_openai_deployment_id"] is None else "text-embedding-ada-002",
+                    }
+                    provider = OpenAIEmbedding(conf)
 
             elif provider_name == "mistral":
                 from mojodex_core.llm_engine.providers.mistralai_llm import MistralAILLM

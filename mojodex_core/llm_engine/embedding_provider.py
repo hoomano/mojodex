@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
-import os
+
+from mojodex_core.llm_engine.llm import LLM
 
 class EmbeddingProvider(ABC):
     """
@@ -12,16 +13,16 @@ class EmbeddingProvider(ABC):
         Get the Embedding Provider.
 
         Returns:
-            The Embedding Provider based on the environment variable EMBEDDING_ENGINE.
+            The Embedding Provider based on the configuration file `LLM.llm_conf_filename`.
         """
-        embedding_engine = os.environ.get("EMBEDDING_ENGINE", "openai")
-        if embedding_engine == "openai":
-            from mojodex_core.openai_conf import OpenAIConf
-            from mojodex_core.llm_engine.providers.openai_embedding import OpenAIEmbedding
-            return OpenAIEmbedding, OpenAIConf.conf_embedding
-        else:
-            raise Exception(f"Unknown embedding engine: {embedding_engine}")
+        embedding_providers = LLM.get_providers()
 
+        # find the embedding provider in the list of providers with model_name = 'embedding'
+        embedding_provider = next((provider for provider in embedding_providers if provider['model_name'] == 'embedding'), None)
+        if embedding_provider is None:
+            raise Exception("No embedding provider found in the providers list")
+        return type(embedding_provider['provider']), embedding_provider['config']        
+        
     @abstractmethod
     def embed(self, text, user_id, user_task_execution_pk, task_name_for_system, retries=5):
         """

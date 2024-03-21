@@ -5,10 +5,11 @@ import pytz
 import stripe
 from mojodex_backend_logger import MojodexBackendLogger
 
-from app import db, log_error
+from app import db
+from mojodex_core.logging_handler import log_error
 from mojodex_core.entities import *
 
-from app import send_admin_email
+from mojodex_core.mail import send_admin_email
 from sqlalchemy import and_, func, or_, text
 from sqlalchemy.sql.functions import coalesce
 from packaging import version

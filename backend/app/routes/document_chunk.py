@@ -3,7 +3,8 @@ from datetime import datetime
 
 from flask import request
 from flask_restful import Resource
-from app import db, log_error, document_manager
+from app import db, document_manager
+from mojodex_core.logging_handler import log_error
 from mojodex_core.entities import *
 
 

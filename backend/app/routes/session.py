@@ -2,7 +2,8 @@ import os
 
 from flask import request
 from flask_restful import Resource
-from app import db, authenticate, log_error, authenticate_function,server_socket
+from app import db, authenticate, authenticate_function,server_socket
+from mojodex_core.logging_handler import log_error
 from mojodex_core.entities import *
 
 from models.session_creator import SessionCreator

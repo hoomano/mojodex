@@ -2,7 +2,8 @@ from flask import request
 from flask_restful import Resource
 from jinja2 import Template
 from models.session.session import Session as SessionModel
-from app import db, authenticate, log_error
+from app import db, authenticate
+from mojodex_core.logging_handler import log_error
 from mojodex_core.entities import *
 from datetime import datetime
 

@@ -7,7 +7,7 @@ import requests
 from background_logger import BackgroundLogger
 from models.task_tool_execution.tools.tool import Tool
 from mojodex_core.json_loader import json_decode_retry
-from app import on_json_error
+from mojodex_core.logging_handler import on_json_error
 
 from mojodex_core.llm_engine.mpt import MPT
 

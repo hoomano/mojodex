@@ -3,7 +3,8 @@ from datetime import datetime
 from models.session.assistant_message_generators.assistant_message_generator import AssistantMessageGenerator
 
 from mojodex_core.entities import *
-from app import db, log_error, server_socket, main_logger, socketio_message_sender
+from app import db, server_socket, main_logger, socketio_message_sender
+from mojodex_core.logging_handler import log_error
 
 from models.session.session import Session
 from models.voice_generator import VoiceGenerator

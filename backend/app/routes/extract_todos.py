@@ -5,7 +5,8 @@ from operator import and_
 import requests
 from flask import request
 from flask_restful import Resource
-from app import db, log_error, server_socket
+from app import db
+from mojodex_core.logging_handler import log_error
 from mojodex_core.entities import *
 from sqlalchemy import func, desc
 

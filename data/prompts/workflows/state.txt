@@ -1,4 +1,4 @@
-ACHIEVED WORKFLOW STEPS
+{%if before_checkpoint_steps_executions%}ACHIEVED WORKFLOW STEPS{%endif%}
 {%for step in before_checkpoint_steps_executions%}{%if step.initialized%}{%for run in step.runs%}{%if run.validated%}---
 Step: {{step.name}} - {{step.description}}
 Parameter: {{run.parameter}}

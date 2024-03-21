@@ -853,5 +853,6 @@ class MdUserWorkflowStepExecutionRunExecution(Base):
     user_workflow_step_execution_run_fk = Column(Integer, nullable=False)
     creation_date = Column(DateTime, nullable=False, server_default=text('now()'))
     result = Column(Text)
+    learned_instruction = Column(Text)
 
     md_user_workflow_step_execution_run = relationship('MdUserWorkflowStepExecutionRun', back_populates='md_user_workflow_step_execution_run_execution')

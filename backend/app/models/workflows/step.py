@@ -30,11 +30,11 @@ class WorkflowStep(ABC):
         return self.db_object.is_checkpoint
     
     @abstractmethod
-    def _execute(self, parameter: dict, initial_parameters: dict, history: List[dict]):
+    def _execute(self, parameter: dict, learned_instructions: dict, initial_parameters: dict, history: List[dict], workflow_conversation: str):
        pass
 
     
-    def execute(self, parameter: dict, initial_parameter: dict, history: List[dict]):
+    def execute(self, parameter: dict, learned_instructions: dict, initial_parameter: dict, history: List[dict], workflow_conversation: str):
         """
         Returns a list of parameters (dict)
         """
@@ -45,7 +45,7 @@ class WorkflowStep(ABC):
                 if key not in parameter:
                     raise Exception(f"execute :: key {key} not in parameter")
             time.sleep(2) # Todo: for tests only => To remove
-            output = self._execute(parameter, initial_parameter, history) # list of dict
+            output = self._execute(parameter, learned_instructions, initial_parameter, history, workflow_conversation) # list of dict
             # ensure output is a list
             if not isinstance(output, List):
                 raise Exception(f"execute :: output is not a list")
@@ -170,7 +170,7 @@ class WorkflowStepExecution:
     def validated(self):
         return self.initialized and all(run.validated for run in self.runs)
 
-    def run(self, initial_parameter: dict, history: List[dict], session_id: str):
+    def run(self, initial_parameter: dict, history: List[dict], session_id: str, workflow_conversation: str):
         try:
             # run from non-validated actions
             for run in self.runs:
@@ -181,14 +181,14 @@ class WorkflowStepExecution:
                     run_json["session_id"] = session_id
                     run_json["step_execution_fk"] = self.db_object.user_workflow_step_execution_pk
                     server_socket.emit('workflow_run_started', run_json, to=session_id)
-                    return self.execute(run, initial_parameter, history)
+                    return self.execute(run, initial_parameter, history, workflow_conversation)
             return None
         except Exception as e:
             raise Exception(f"{self.logger_prefix} :: run :: {e}")
             
 
-    def execute(self, run: WorkflowStepExecutionRun, initial_parameter: dict, history: List[dict]):
-        result = self.workflow_step.execute(run.parameter, initial_parameter, history)
+    def execute(self, run: WorkflowStepExecutionRun, initial_parameter: dict, history: List[dict], workflow_conversation: str):
+        result = self.workflow_step.execute(run.parameter, run.learned_instructions, initial_parameter, history, workflow_conversation)
         run.result = result
         return run.result
 
@@ -216,6 +216,12 @@ class WorkflowStepExecution:
         for run in self.runs:
             if not run.validated:
                 return run
+            
+    @property
+    def last_run(self):
+        if self.initialized:
+            return self.runs[-1]
+        return None
             
     def invalidate_last_run(self):
         try:

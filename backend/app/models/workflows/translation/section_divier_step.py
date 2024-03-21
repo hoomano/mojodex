@@ -13,7 +13,7 @@ class SectionsDividerStep(WorkflowStep):
         super().__init__(workflow_step, input_keys=['text'], output_keys=['section'])
 
     
-    def _execute(self, parameter: dict, initial_parameter: dict, history: List[dict]):
+    def _execute(self, parameter: dict, learned_instructions: dict, initial_parameter: dict, history: List[dict]):
         try: 
             # input keys: text
             

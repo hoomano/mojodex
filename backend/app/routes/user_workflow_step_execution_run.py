@@ -56,7 +56,7 @@ class UserWorkflowStepExecutionRun(Resource):
                 )
                 db.session.add(system_message)
                 db.session.commit()
-                workflow_execution.invalidate_current_run()
+                #workflow_execution.invalidate_current_run()
                 from models.session.session import Session as SessionModel
                 session = SessionModel(user_workflow_execution.session_id)
                 server_socket.start_background_task(session.process_workflow_step_run_rejection, platform, user_workflow_execution.user_workflow_execution_pk)

@@ -2,6 +2,7 @@ import json
 from mojodex_core.entities import MdUserWorkflowStepExecutionRunExecution
 
 class WorkflowStepExecutionRunExecution:
+    logger_prefix = "WorkflowStepExecutionRun :: "
     def __init__(self, db_session, db_object):
         self.db_session = db_session
         self.db_object = db_object
@@ -20,6 +21,12 @@ class WorkflowStepExecutionRunExecution:
         self.db_object.result = value
         self.db_session.commit()
 
+    def learn_instruction(self, instruction):
+        try:
+            self.db_object.learned_instruction = instruction
+            self.db_session.commit()
+        except Exception as e:
+            raise Exception(f"{self.logger_prefix} :: learn_instruction :: {e}")
 
 class WorkflowStepExecutionRun:
     logger_prefix = "WorkflowStepExecutionRun :: "
@@ -88,6 +95,23 @@ class WorkflowStepExecutionRun:
         except Exception as e:
             raise Exception(f"{self.logger_prefix} :: result :: {e}")
     
+    def learn_instruction(self, instruction):
+        try:
+            self.current_execution.learn_instruction(instruction)
+        except Exception as e:
+            raise Exception(f"{self.logger_prefix} :: learn_instruction :: {e}")
+
+    @property
+    def learned_instructions(self):
+        # get all instructions from past executions
+        try:
+            run_executions = self.db_session.query(MdUserWorkflowStepExecutionRunExecution)\
+                .filter(MdUserWorkflowStepExecutionRunExecution.user_workflow_step_execution_run_fk == self.db_object_run.user_workflow_step_execution_run_pk)\
+                .all()
+            return [{'result': run_execution.result, 
+                    'instruction': run_execution.learned_instruction}  for run_execution in run_executions if run_execution.learned_instruction]
+        except Exception as e:
+            raise Exception(f"{self.logger_prefix} :: learned_instructions :: {e}")
 
     def to_json(self):
         try: 

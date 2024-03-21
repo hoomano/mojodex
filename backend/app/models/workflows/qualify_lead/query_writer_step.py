@@ -12,7 +12,7 @@ class QueryWriterStep(WorkflowStep):
         super().__init__(workflow_step, input_keys=['company'], output_keys=['query', 'gl', 'hl'])
 
     
-    def _execute(self, parameter: dict, initial_parameter: dict, history: List[dict]):
+    def _execute(self, parameter: dict, learned_instructions: dict, initial_parameter: dict, history: List[dict]):
         try: 
             # input keys: company
         

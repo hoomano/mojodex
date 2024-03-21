@@ -83,7 +83,7 @@ class WorkflowExecution:
                 return
             step_execution_to_run.initialize_runs(self._intermediate_results[-1] if self._intermediate_results else [self.initial_parameters], self.db_object.session_id)
             
-            step_execution_to_run.run(self.initial_parameters, self._intermediate_results, self.db_object.session_id)
+            step_execution_to_run.run(self.initial_parameters, self._intermediate_results, self.db_object.session_id, workflow_conversation="")
             self._ask_for_validation()
         except Exception as e:
             print(f"🔴 {self.logger_prefix} - run :: {e}")
@@ -137,9 +137,14 @@ class WorkflowExecution:
                 return step
         return None
 
-    def invalidate_current_run(self):
+    def invalidate_current_run(self, learned_instruction):
         # find checkpoint step
         checkpoint_step = self._find_checkpoint_step()
+        if checkpoint_step.current_run:
+            checkpoint_step.current_run.learn_instruction(learned_instruction)
+        else:
+            checkpoint_step.last_run.learn_instruction(learned_instruction)
+
         # if there are other steps after checkpoint, reset them
         if not checkpoint_step:
             print("🔴 no checkpoint found")

@@ -248,7 +248,8 @@ CREATE TABLE public.md_user_workflow_step_execution_run_execution (
     user_workflow_step_execution_run_execution_pk integer DEFAULT nextval('public.md_user_workflow_step_execution_run_execution_seq'::regclass) NOT NULL,
     user_workflow_step_execution_run_fk integer NOT NULL,
     creation_date timestamp without time zone NOT NULL DEFAULT now(),
-    result text
+    result text,
+    learned_instruction text
 );
 
 --

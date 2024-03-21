@@ -55,7 +55,7 @@ class WorkflowAssistantResponseGenerator(AssistantResponseGenerator):
             elif WorkflowAssistantResponseGenerator.user_instruction_start_tag in response:
                 instruction = AssistantMessageGenerator.remove_tags_from_text(response, WorkflowAssistantResponseGenerator.user_instruction_start_tag,
                                                         WorkflowAssistantResponseGenerator.user_instruction_end_tag)
-                self.context.state.running_user_workflow_execution.invalidate_current_run()
+                self.context.state.running_user_workflow_execution.invalidate_current_run(instruction)
                 # TODO: self.context.state.running_user_workflow_execution.current_step_execution.current_run.set_new_instruction(instruction) # on last execution
                 server_socket.start_background_task(self.context.state.running_user_workflow_execution.run)
                 if WorkflowAssistantResponseGenerator.inform_user_start_tag in response:

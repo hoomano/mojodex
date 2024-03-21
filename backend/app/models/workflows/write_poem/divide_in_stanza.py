@@ -18,13 +18,17 @@ class StanzaDividerStep(WorkflowStep):
         super().__init__(workflow_step, input_keys=['poem_topic', 'n_stanzas'], output_keys=['stanza_topic'])
 
     
-    def _execute(self, parameter: dict, initial_parameter: dict, history: List[dict]):
+    def _execute(self, parameter: dict, learned_instructions: dict, initial_parameter: dict, history: List[dict], workflow_conversation: str):
         try: 
             # input keys: poem_topic, n_stanza
             poem_topic = parameter['poem_topic']
             n_stanzas = parameter['n_stanzas']
-            determine_poem_stanzas_mpt = MPT(StanzaDividerStep.determine_poem_stanzas_filename, poem_topic=poem_topic, n_stanzas=n_stanzas)
-
+            print(f"🟢 learned_instructions: {learned_instructions}")
+            determine_poem_stanzas_mpt = MPT(StanzaDividerStep.determine_poem_stanzas_filename, poem_topic=poem_topic, n_stanzas=n_stanzas,
+                                             learned_instructions=learned_instructions)
+            # write determine_poem_stanzas_mpt.prompt into a file
+            with open("/data/determine_poem_stanzas_mpt.txt", "w") as f:
+                f.write(determine_poem_stanzas_mpt.prompt)
             responses = determine_poem_stanzas_mpt.run(user_id="fake", temperature=0, max_tokens=100)
             response = responses[0].strip().lower()
             topics_list = response.split("\n")

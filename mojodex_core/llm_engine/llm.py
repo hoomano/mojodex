@@ -3,6 +3,11 @@ import json
 import logging
 import os
 
+from mojodex_core.llm_engine.providers.openai_embedding import OpenAIEmbedding
+from mojodex_core.llm_engine.providers.openai_llm import OpenAILLM
+from mojodex_core.llm_engine.providers.mistralai_llm import MistralAILLM
+
+
 logging.basicConfig(level=logging.INFO)
 
 import configparser
@@ -26,6 +31,9 @@ class LLM(ABC):
         """
         try:
             providers = LLM._get_llm_providers()
+
+            # keep only the providers with name different from OpenAIEmbedding.default_embedding_model
+            providers = [provider for provider in providers if provider.split('/')[1] != OpenAIEmbedding.default_embedding_model]
 
             provider = providers[0]
             _, _, llm, conf = LLM._build_provider(provider)
@@ -51,7 +59,8 @@ class LLM(ABC):
 
         """
         try:
-            providers_list = []
+            llm_providers_list = []
+            embedding_providers_list = []
             providers = LLM._get_llm_providers()
 
             for provider in providers:
@@ -62,9 +71,12 @@ class LLM(ABC):
                     "provider": llm,
                     "config": conf
                 }
-                providers_list.append(provider_conf)
+                if model_name != OpenAIEmbedding.default_embedding_model:
+                    llm_providers_list.append(provider_conf)
+                else:
+                    embedding_providers_list.append(provider_conf)
 
-            return providers_list
+            return llm_providers_list, embedding_providers_list
 
         except Exception as e:
             logging.error(f"🔴: ERROR: {LLM.__subclasses__()[0].__name__} >> {e}")
@@ -87,17 +99,18 @@ class LLM(ABC):
             conf = None
 
             if provider_name == "openai":
-                from mojodex_core.llm_engine.providers.openai_llm import OpenAILLM
                 conf = {
                     "api_key": provider_conf["openai_api_key"],
                     "api_type": provider_name,
                     "model": model_name
                 }
-                provider = OpenAILLM(conf)
+                if model_name == OpenAIEmbedding.default_embedding_model:                    
+                    provider = OpenAIEmbedding(conf)
+                else:
+                    provider = OpenAILLM(conf)
             
             elif provider_name == "azure":
                 if model_name == "gpt4-turbo":
-                    from mojodex_core.llm_engine.providers.openai_llm import OpenAILLM
                     conf = {
                         "api_key": provider_conf["gpt4_turbo_azure_openai_key"],
                         "api_base": provider_conf["gpt4_turbo_azure_openai_api_base"],
@@ -107,7 +120,6 @@ class LLM(ABC):
                     }
                     provider = OpenAILLM(conf)
                 elif model_name == "gpt4-32k":
-                    from mojodex_core.llm_engine.providers.openai_llm import OpenAILLM
                     conf = {
                         "api_key": provider_conf["gpt4_azure_openai_key"],
                         "api_base": provider_conf["gpt4_azure_openai_api_base"],
@@ -117,7 +129,6 @@ class LLM(ABC):
                     }
                     provider = OpenAILLM(conf)
                 elif model_name == "mistral-large":
-                    from mojodex_core.llm_engine.providers.mistralai_llm import MistralAILLM
                     conf = {
                         "api_key": provider_conf["mistral_azure_api_key"],
                         "endpoint": provider_conf["mistral_azure_api_base"],
@@ -128,18 +139,16 @@ class LLM(ABC):
                 
                 # TODO: migrate to new embedding v3 
                 elif model_name == "embedding":
-                    from mojodex_core.llm_engine.providers.openai_embedding import OpenAIEmbedding
                     conf = {
                         "api_key": provider_conf["ada_embedding_azure_openai_key"],
                         "api_base": provider_conf["ada_embedding_azure_openai_api_base"],
                         "api_type": provider_name,
                         "api_version": provider_conf["ada_embedding_azure_openai_api_version"],
-                        "deployment_id": provider_conf["ada_embedding_azure_openai_deployment_id"] if not provider_conf["ada_embedding_azure_openai_deployment_id"] is None else "text-embedding-ada-002",
+                        "deployment_id": provider_conf["ada_embedding_azure_openai_deployment_id"] if not provider_conf["ada_embedding_azure_openai_deployment_id"] is None else OpenAIEmbedding.default_embedding_model,
                     }
                     provider = OpenAIEmbedding(conf)
 
             elif provider_name == "mistral":
-                from mojodex_core.llm_engine.providers.mistralai_llm import MistralAILLM
                 conf = {
                     "api_key": provider_conf["mistral_api_key"],
                     "api_model": model_name

@@ -7,6 +7,7 @@ from app import db
 from mojodex_backend_logger import MojodexBackendLogger
 
 from app import embedder, embedding_conf
+from mojodex_core.llm_engine.providers.openai_embedding import OpenAIEmbedding
 
 
 class DocumentManager:
@@ -15,7 +16,7 @@ class DocumentManager:
     def __init__(self):
         self.logger = MojodexBackendLogger(f"{DocumentManager.logger_prefix}")
         self.embedder = embedder(embedding_conf, label="DOCUMENT_EMBEDDING")
-        self.embedder.model = "text-embedding-ada-002"
+        self.embedder.model = OpenAIEmbedding.default_embedding_model
 
     def __embedded(self, text, user_id, user_task_execution_pk=None, task_name_for_system=None):
         try:

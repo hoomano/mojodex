@@ -36,7 +36,7 @@ class MPT:
         self.raw_template = None
         self._parse_file()
 
-        self.available_models = LLM.get_providers()
+        self.available_models, _ = LLM.get_providers()
         self.models = [d['model_name'] for d in self.shebangs]
     
     @property

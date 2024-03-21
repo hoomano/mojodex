@@ -12,14 +12,15 @@ import os
 # TODO: switch to text-embedding-3-small and text-embedding-3-large https://platform.openai.com/docs/guides/embeddings/what-are-embeddings
 class OpenAIEmbedding(EmbeddingProvider):
     dataset_dir = "/data/prompts_dataset"
-
+    default_embedding_model = "text-embedding-ada-002"
+    
     def __init__(self, embedding_conf, label='openai_embedding'):
         try:
-            api_key = embedding_conf["api_key"]
-            api_base = embedding_conf["api_base"]
-            api_version = embedding_conf["api_version"]
-            api_type = embedding_conf["api_type"]
-            model = embedding_conf["deployment_id"]
+            api_key = embedding_conf["api_key"] if "api_key" in embedding_conf else None
+            api_base = embedding_conf["api_base"] if "api_base" in embedding_conf else None
+            api_version = embedding_conf["api_version"] if "api_version" in embedding_conf else None
+            api_type = embedding_conf["api_type"] if "api_type" in embedding_conf else "openai"
+            model = embedding_conf["deployment_id"] if "deployment_id" in embedding_conf else None
             self.label = label
             # if dataset_dir does not exist, create it
             if not os.path.exists(self.dataset_dir):

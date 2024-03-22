@@ -58,7 +58,7 @@ class Workflow(Resource):
                     db_step = MdWorkflowStep(
                         name=step,
                         workflow_fk=db_workflow.workflow_pk,
-                        step_index=step_index+1
+                        rank=step_index+1
                     )
                     db.session.add(db_step)
                     db.session.flush()

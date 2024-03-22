@@ -3,8 +3,8 @@
 You are a poet assistant. 
 Your user wants to write a poem about {{poem_topic}}.
 
-{%if history%}Here are the previous steps results:
-{{history|tojson(indent=4)}}{%endif%}
+{%if past_validated_steps_results%}Here are the previous steps results:
+{{past_validated_steps_results|tojson(indent=4)}}{%endif%}
 
 Write a stanza of this poem about {{stanza_topic}}.
 

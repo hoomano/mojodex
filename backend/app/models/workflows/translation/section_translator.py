@@ -1,5 +1,6 @@
 from models.workflows.step import WorkflowStep
 from typing import List
+import time
 
 class SectionsTranslatorStep(WorkflowStep):
 
@@ -17,7 +18,7 @@ class SectionsTranslatorStep(WorkflowStep):
     
     def _execute(self, parameter: dict, learned_instructions: dict, initial_parameter: dict, history: List[dict]):
         # input keys: 'section'
-        
+        time.sleep(2)
         return [{'translation': parameter['section'] + ' in ' + initial_parameter['target_language']}]
     
         # output keys: 'translation'

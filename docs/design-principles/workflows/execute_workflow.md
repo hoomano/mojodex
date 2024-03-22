@@ -22,13 +22,7 @@ A step can be run multiple times in a workflow, with different inputs and output
 > Note, sometimes refered as `workflow_execution` for short.
 
 #### User Workflow Execution Step Execution
-- A `user_workflow_execution_step_execution` represents the instance of a step being executed within a workflow execution. It contains all valid executions of a step on a specific input and its output (refer to as `run`). As its previous step may define the different inputs of a step, step execution is initialized as soon as its previous step is fully validated by the user. The step is initialized with all its runs, based on the provided inputs.
-
-#### User Workflow Step Execution Run
-- A `user_workflow_execution_step_execution_run` represents a single run of a step execution. It captures the input and output of the step execution, as well as any relevant metadata pertaining to the execution of a specific step within a workflow execution as whether the step was validated by the user or not.
-
-#### User Workflow Step Execution Run Execution
-- A `user_workflow_execution_step_execution_run_execution` represents the instance of a step execution run being executed. A run can have multiple execution if the user asks for edition on this precise run without changing the input.
+- A `user_workflow_execution_step_execution` represents the instance of a step being executed within a workflow execution. 
 
 #### Session
 - A `session` represents an interaction between the user and the assistant. It captures the messages exchanged between the user and the assistant, as well as the state of the conversation at any given time. A `user_workflow_execution` always needs a `session` for the user and its assistant to co-work on the workflow.
@@ -77,7 +71,8 @@ return {
                 "workflow_name": <name>,
                 "user_workflow_execution_pk": <pk>,
                 "user_workflow_fk": <fk>,
-                "steps": [step_execution.to_json() for step_execution in steps_executions],
+                "steps": [{'workflow_step_pk': step.workflow_step_pk, 'step_name': step.name} for step in self.workflow.steps],
+                "validated_steps_executions": [], # empty at start
                 "session_id": <session_id>,
                 "inputs": <json_inputs>
             }
@@ -111,10 +106,9 @@ class UserWorkflowExecution(Resource):
 ```
 
 The `WorkflowExecution` is the epicenter of workflow execution. The function `run()` will:
-- Determine what is the current step to run
-- Eventually initialize current step's runs according to inputs if not done yet
-- Run current run of current step
-- Ask for user validation once the run is done
+- Determine what is the current step to run with what parameter and create the corresponding step execution object.
+- Run current step
+- Ask for user validation once the step is executed
 
 ![start_user_workflow_execution_from_form](../../images/workflow_execution/start_user_workflow_execution_from_form.png)
 
@@ -125,97 +119,79 @@ The `WorkflowExecution` is the epicenter of workflow execution. The function `ru
 
 ### 3. Workflow Execution
 A Workflow Execution is a Python object that manages the execution of a workflow. It corresponds to a `user_workflow_execution` in the database.
-It has a list of `WorkflowStepExecution` objects, one for each step of the workflow. The current step to run is stored in the `current_step_execution` attribute.
+It has a list of `WorkflowStepExecution` objects, one for each step of the workflow. The current step to run is determined by the _get_current_step() method.
 
-The entry point of the workflow execution is the `run` method of the `WorkflowExecution` class. This method is called in a parallel thread when the user starts the workflow execution or when a step_runs needs to be executed (because of user validation or because of a user instruction to re-execute).
+The entry point of the workflow execution is the `run` method of the `WorkflowExecution` class. This method is called in a parallel thread when the user starts the workflow execution or when a step needs to be executed (because of user validation or because of a user instruction to re-execute).
 
 ```python
 class WorkflowExecution:
     [...]
     def run(self):
         [...]
-        step_execution_to_run = self.current_step_execution
-        if not step_execution_to_run:
-            return # TODO: manage end of workflow
-        
-        if not step_execution_to_run.initialized:
-            step_execution_to_run.initialize_runs(self._intermediate_results[-1] if self._intermediate_results else [self.initial_parameters], self.db_object.session_id)
-        
-        step_execution_to_run.run(self.initial_parameters, self._history, self.db_object.session_id, workflow_conversation="")
-        
+        if not self._get_current_step():
+            return
+        self._get_current_step().execute(self.initial_parameters, self._past_validated_steps_results, self.db_object.session_id)
         self._ask_for_validation()
-        [...]
-        
     [...]
 ```
 
 #### 3.1 Determining current_step
-The `current_step_execution` attribute is defined as the last workflow's step initialized which runs are not all validated or if there is no, the first step not initialized.
+The _get_current_step() method determines the current step to run:
+
+
 ```python
 class WorkflowExecution:
     [...]
-     @property
-    def current_step_execution(self):
+    def _get_current_step(self):
         [...]
-        # browse steps backwards to find last one initialized which runs are not all validated
-        for step_execution in reversed(self.steps_executions):
-            if step_execution.initialized and not step_execution.validated:
-                return step_execution
-        # else, next step to run is the first one not initialized
-        for step_execution in self.steps_executions:
-            if not step_execution.initialized:
-                return step_execution
-        return None
+            if self._current_step: # if current step already determined, return it
+                return self._current_step
+            if not self.validated_steps_executions: # no step validated yet, start from first step
+                self._current_step = self._generate_new_step_execution(self._db_workflow_steps[0], self.initial_parameters) # of first step
+                return self._current_step
+            
+            last_validated_step_execution = self.validated_steps_executions[-1]
+            
+            if len(self.validated_steps_executions) > 1: # no dependency as it was the first step
+                db_dependency_step = [...]
+                # depency step is the workflow_step of step execution that created last_validated_step_execution inputs
+                # It is the workflow_step ranked just before the last_validated_step_execution's workflow_step in the workflow
+            
+                # find last execution of dependency step
+                db_dependency_step_execution = [...]
+                
+                # How many parameters have been executed and validated for last_validated_step_execution's workflow_step?
+                current_step_executions_count = [...]
+                
+                # have all parameters resulting from db_dependency_step_execution been executed and validated?
+                if current_step_executions_count < len(db_dependency_step_execution.result):
+                    current_parameter = db_dependency_step_execution.result[current_step_executions_count]
+                    self._current_step = self._generate_new_step_execution(last_validated_step_execution.workflow_step, current_parameter)
+                    return self._current_step
+
+            # else, generate new step execution of next step
+            next_step = [...]
+            if next_step is None:
+                return None # end of workflow
+            # else
+            self._current_step=self._generate_new_step_execution(next_step, last_validated_step_execution.result[0])
+            return self._current_step
+            [...]
 ```
 
-#### 3.2 Initializing a step execution
-A step execution can have mulitple runs, defined by previous steps response. Therefore, we can't know in advance the number of runs a step will have. 
-
->Example: A workflow "Translate long text" could have 2 steps:
->- Step 1: "Divide the text in sections"
->- Step 2: "Translate each section"
->In this workflow, step 2 will have as many runs as the number of sections in the text.
-
-At the moment the workflow enters the step, the step is initialized with as many runs as necessary. The `initialize_runs` method is called with the previous step's output corresponding to different parameters the step will be called on: 1 execution of a step on 1 parameter is called a "run".
+#### 3.3 Executing a step 
+Executing a step consists in executing the step on a certain parameter as input.
+A socketio message is sent to client before starting execution to update the client interface.
 
 ```python
-class WorkflowStepExecution:
+class WorkflowExecution:
     [...]
-        def initialize_runs(self, parameters: List[dict], session_id: str):
-            [...]
-            for parameter in parameters:
-                parameter = json.dumps(parameter)
-                # create run in db
-                db_run = MdUserWorkflowStepExecutionRun(
-                    user_workflow_step_execution_fk=self.db_object.user_workflow_step_execution_pk,
-                    parameter=parameter
-                )
-                self.db_session.add(db_run)
-                self.db_session.commit()
-                self.runs.append(WorkflowStepExecutionRun(self.db_session, db_run))
-            step_json = self.to_json()
-            # add session_id to step_json
-            step_json["session_id"] = session_id
-            server_socket.emit('workflow_step_execution_initialized', step_json, to=session_id)
-            [...]
-```
-
-#### 3.3 Running a step execution
-Running a step execution consists in running the last run of the step that has not been validated.
-```python
-    def run(self, initial_parameter: dict, history: List[dict], session_id: str, workflow_conversation: str):
+    def execute(self, initial_parameter: dict, past_validated_steps_results: List[dict], session_id: str):
         [...]
-        # run from non-validated actions
-        for run in self.runs:
-            if not run.validated:
-                # create an execution for the run
-                run.prepare_execution() # This creates a run_execution in db
-                run_json = run.to_json()
-                run_json["session_id"] = session_id
-                run_json["step_execution_fk"] = self.db_object.user_workflow_step_execution_pk
-                server_socket.emit('workflow_run_started', run_json, to=session_id)
-                return self.execute(run, initial_parameter, history, workflow_conversation)
-        return None
+            step_json = self.to_json()
+            step_json["session_id"] = session_id
+            server_socket.emit('workflow_step_execution_started', step_json, to=session_id)
+            self.result = self.workflow_step.execute(self.parameter, self.get_learned_instructions(), initial_parameter, past_validated_steps_results)
         [...]
 ```
 
@@ -224,31 +200,30 @@ Once the step execution is done, the user is asked to validate the result. This 
 ```python
 def _ask_for_validation(self):
         [...]
-        run_json = self.current_step_execution.current_run.to_json()
-        run_json["session_id"] = self.db_object.session_id
-        run_json["step_execution_fk"] = self.current_step_execution.db_object.user_workflow_step_execution_pk
-        server_socket.emit('workflow_run_ended', run_json, to=self.db_object.session_id)
+        step_execution_json = self._get_current_step().to_json()
+        step_execution_json["session_id"] = self.db_object.session_id
+        server_socket.emit('workflow_step_execution_ended', step_execution_json, to=self.db_object.session_id)
         [...]
 ```
 
 ### 4. User validation
 #### 4.1. User validates
-If the user validates the result of the run, the route POST `/user_workflow_execution_step_execution_run`is called with value `validated` set to `True`. This route updates the `user_workflow_execution_step_execution_run` instance in the database and triggers the next step execution with `workflow.run` in a dedicated thread.
+If the user validates the result of the run, the route POST `/user_workflow_execution_step_execution`is called with value `validated` set to `True`. This route updates the `user_workflow_execution_step_execution` instance in the database and triggers the next step execution with `workflow.run` in a dedicated thread.
 ```python
-class UserWorkflowStepExecutionRun(Resource):
+class UserWorkflowStepExecution(Resource):
     [...]
     def post(self, user_id):
         [...]
         workflow_execution = WorkflowExecution(user_workflow_execution.user_workflow_execution_pk)
         if validated:
-            workflow_execution.validate_current_run()
+            workflow_execution.validate_step_execution(user_workflow_step_execution_pk)
             server_socket.start_background_task(workflow_execution.run)
         [...]
 ```
             
 #### 4.2. User does not validate
-If the user does not validate the result of the run, the route POST `/user_workflow_execution_step_execution_run`is called with value `validated` set to `False`. 
-This route adds a system message in the workflow execution's session to store a view of the workflow state at this point in the conversation. This message contains the achieved step until current checkpoint and the current steps after current checkpoints (steps that can still be re-executed).
+If the user does not validate the result of the run, the route POST `/user_workflow_execution_step_execution`is called with value `validated` set to `False`. 
+This route adds a system message in the workflow execution's session to store a view of the workflow state at this point in the conversation. This message contains the achieved step until current checkpoint and the current steps executions after current checkpoints (steps that can still be re-executed).
 
 Then, the user will send a message using common route PUT `user_message`. This message will be eventually transcripted if it was audio and transfer to a session through method `process_chat_message`.
 
@@ -260,3 +235,33 @@ To do that, the LLM can answer with 3 types of tags:
 - <no_go_explanation>: If the user asked the assistant to edit something in ACHIEVED STEPS, the assistant will explain why it is not possible to edit this past checkpoint steps.
 - <ask_for_clarification>: If the user is not clear enough in its request for re-execution, the assistant will ask for clarification until it gets a clear instruction.
 - <inform_user> coming along with <user_instruction>: once the assistant caught the user instruction, it will respond by encapsulating the user instruction in a <user_instruction> tag and add a message to inform the user that the instruction has been taken into account into <inform_user> tag.
+
+Once the assistant capture the user instruction, it will:
+- Invalidate the step
+- Launch a new run of the workflow in a dedicated thread
+
+The invalidation method is as follow:
+```python
+class WorkflowExecution:
+    [...]
+    def invalidate_current_step(self, learned_instruction):
+        [...]
+        current_step_in_validation = self._get_last_step_execution() # the step execution we went to invalidate is the last one
+        current_step_in_validation.invalidate(self.db_object.session_id) # set validated to False in database and send socketio message to client
+
+        if current_step_in_validation.workflow_step.is_checkpoint: # if this step is the checkpoint, it is the one that will learn from this failure
+            current_step_in_validation.learn_instruction(learned_instruction)
+            return
+        
+        # If the step in validation is not a checkpoint, find the previous one that is a checkpoint
+        checkpoint_step = self._find_checkpoint_step()
+        # for all step in self.validated_steps_executions after checkpoint_step, invalidate them
+        checkpoint_step_index = self.validated_steps_executions.index(checkpoint_step)
+        for validated_step in self.validated_steps_executions[checkpoint_step_index:]:
+            validated_step.invalidate(self.db_object.session_id)
+            # remove from validated_steps_executions
+            self.validated_steps_executions.remove(validated_step)
+
+        # checkpoint_step learns from this failure
+        checkpoint_step.learn_instruction(learned_instruction)
+```

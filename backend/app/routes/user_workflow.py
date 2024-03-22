@@ -61,6 +61,12 @@ class UserWorkflow(Resource):
                 .offset(offset)\
                 .all()
             
+            def get_workflow_steps(workflow_pk):
+                return db.session.query(MdWorkflowStep)\
+                    .filter(MdWorkflowStep.workflow_fk == workflow_pk)\
+                    .order_by(MdWorkflowStep.rank)\
+                    .all()
+            
             return {'user_workflows': [{
                 "user_workflow_pk": user_workflow.user_workflow_pk,
                 "workflow_pk": workflow.workflow_pk,
@@ -68,6 +74,10 @@ class UserWorkflow(Resource):
                 "icon": workflow.icon,
                 "description": workflow.description,
                 "inputs_spec": workflow.json_inputs_spec,
+                "steps": [{
+                    'workflow_step_pk': step.workflow_step_pk,
+                    'step_name' : step.name
+                } for step in get_workflow_steps(workflow.workflow_pk)]
             } for user_workflow, workflow in results]}, 200
             
         except Exception as e:

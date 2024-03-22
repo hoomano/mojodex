@@ -100,9 +100,9 @@ class MdWorkflow(Base):
 
     workflow_pk = Column(Integer, Sequence('md_workflow_seq'), primary_key=True)
     name = Column(String(255), nullable=False)
-    json_inputs_spec = Column(JSON, nullable=False)
     icon = Column(String(255), nullable=False)
     description = Column(Text, nullable=False)
+    json_inputs_spec = Column(JSON, nullable=False)
 
     md_workflow_step = relationship('MdWorkflowStep', back_populates='md_workflow')
     md_user_workflow = relationship('MdUserWorkflow', back_populates='md_workflow')
@@ -765,6 +765,10 @@ class MdUserWorkflowStepExecution(Base):
     user_workflow_execution_fk = Column(Integer, nullable=False)
     workflow_step_fk = Column(Integer, nullable=False)
     creation_date = Column(DateTime, nullable=False, server_default=text('now()'))
+    parameter = Column(JSON, nullable=False)
+    validated = Column(Boolean, nullable=False, server_default=text('false'))
+    result = Column(JSON)
+    learned_instruction = Column(Text)
 
     md_user_workflow_execution = relationship('MdUserWorkflowExecution', back_populates='md_user_workflow_step_execution')
     md_workflow_step = relationship('MdWorkflowStep', back_populates='md_user_workflow_step_execution')

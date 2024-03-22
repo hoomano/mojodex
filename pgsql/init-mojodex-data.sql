@@ -373,6 +373,37 @@ COPY public.md_user_vocabulary (user_vocabulary_pk, word, creation_date, user_id
 
 
 --
+-- Data for Name: md_workflow; Type: TABLE DATA; Schema: public; Owner: assistant_db_user
+--
+
+COPY public.md_workflow (workflow_pk, name, icon, description, json_inputs_spec) FROM stdin;
+1	Write poem	🌸	Write a poem stanza by stanza	[{"input_name": "poem_topic", "default_value": "Spring"}, {"input_name": "n_stanzas", "default_value": 3}]
+2	Translation	🌐	Translate a text	[{"input_name": "text", "default_value": "salut\\ncomment \\u00e7a va?"}, {"input_name": "target_language", "default_value": "en"}]
+\.
+
+
+
+--
+-- Data for Name: md_user_workflow; Type: TABLE DATA; Schema: public; Owner: assistant_db_user
+--
+
+COPY public.md_user_workflow (user_workflow_pk, user_id, workflow_fk) FROM stdin;
+1	14f919cf95a70935c6c70f4a89ef5fec	1
+2	14f919cf95a70935c6c70f4a89ef5fec	2
+\.
+
+--
+-- Data for Name: md_workflow_step; Type: TABLE DATA; Schema: public; Owner: assistant_db_user
+--
+
+COPY public.md_workflow_step (workflow_step_pk, workflow_fk, name, rank) FROM stdin;
+1	1	stanza_divider	1
+2	1	stanza_writer	2
+3	2	section_divider	1
+4	2	sections_translator	2
+\.
+
+--
 -- Name: home_chat_pk_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
 --
 
@@ -624,6 +655,35 @@ SELECT pg_catalog.setval('public.md_user_vocabulary_pk_seq', 1, false);
 
 SELECT pg_catalog.setval('public.welcome_message_pk_seq', 1, false);
 
+--
+-- Name: md_user_workflow_execution_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
+--
+
+SELECT pg_catalog.setval('public.md_user_workflow_execution_seq', 1, true);
+
+--
+-- Name: md_user_workflow_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
+--
+
+SELECT pg_catalog.setval('public.md_user_workflow_seq', 2, true);
+
+--
+-- Name: md_user_workflow_step_execution_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
+--
+
+SELECT pg_catalog.setval('public.md_user_workflow_step_execution_seq', 1, true);
+
+--
+-- Name: md_workflow_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
+--
+
+SELECT pg_catalog.setval('public.md_workflow_seq', 2, true);
+
+--
+-- Name: md_workflow_step_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
+--
+
+SELECT pg_catalog.setval('public.md_workflow_step_seq', 4, true);
 
 --
 -- PostgreSQL database dump complete

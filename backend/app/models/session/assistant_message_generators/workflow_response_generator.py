@@ -47,25 +47,27 @@ class WorkflowAssistantResponseGenerator(AssistantResponseGenerator):
         Remove and managed tags from the response
         """
         try:
-            print(f"🟢 _manage_response_tags: {response}")
             if WorkflowAssistantResponseGenerator.ask_for_clarification_start_tag in response:
                 return {"text": AssistantMessageGenerator.remove_tags_from_text(response, WorkflowAssistantResponseGenerator.ask_for_clarification_start_tag,
-                                                        WorkflowAssistantResponseGenerator.ask_for_clarification_end_tag)}
+                                                        WorkflowAssistantResponseGenerator.ask_for_clarification_end_tag),
+                                                        "text_with_tags": response}
                                                         
             elif WorkflowAssistantResponseGenerator.user_instruction_start_tag in response:
                 instruction = AssistantMessageGenerator.remove_tags_from_text(response, WorkflowAssistantResponseGenerator.user_instruction_start_tag,
                                                         WorkflowAssistantResponseGenerator.user_instruction_end_tag)
-                self.context.state.running_user_workflow_execution.invalidate_current_run(instruction)
+                self.context.state.running_user_workflow_execution.invalidate_current_step(instruction)
                 server_socket.start_background_task(self.context.state.running_user_workflow_execution.run)
                 if WorkflowAssistantResponseGenerator.inform_user_start_tag in response:
                     return {"text": AssistantMessageGenerator.remove_tags_from_text(response, WorkflowAssistantResponseGenerator.inform_user_start_tag,
-                                                        WorkflowAssistantResponseGenerator.inform_user_end_tag)}
+                                                        WorkflowAssistantResponseGenerator.inform_user_end_tag), 
+                                                        "text_with_tags": response}
                 else:
-                    return {"text": "Ok"}
+                    return {"text": "Ok", "text_with_tags": response}
             
             elif WorkflowAssistantResponseGenerator.no_go_explanation_start_tag in response:
                 return {"text": AssistantMessageGenerator.remove_tags_from_text(response, WorkflowAssistantResponseGenerator.no_go_explanation_start_tag,
-                                                        WorkflowAssistantResponseGenerator.no_go_explanation_end_tag)}
+                                                        WorkflowAssistantResponseGenerator.no_go_explanation_end_tag),
+                                                        "text_with_tags": response}
             return {"text": response}
         except Exception as e:
             raise Exception(f"_manage_response_task_tags :: {e}")

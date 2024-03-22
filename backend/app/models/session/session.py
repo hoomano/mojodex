@@ -221,18 +221,15 @@ class Session:
         # with response_message = ...
         use_message_placeholder = "use_message_placeholder" in message and message["use_message_placeholder"]
         use_draft_placeholder = "use_draft_placeholder" in message and message["use_draft_placeholder"]
-        print(f"🟢 process_chat_message : message: {message}")
+
         if "origin" in message and message["origin"] == "home_chat":
-            print("🟢 process_chat_message : home_chat")
             user_task_execution_pk = message['user_task_execution_pk'] if 'user_task_execution_pk' in message else None
             return self.__manage_home_chat_session(self.platform, user_task_execution_pk, use_message_placeholder, use_draft_placeholder)
         elif 'user_task_execution_pk' in message and message['user_task_execution_pk'] is not None:
-            print("🟢 process_chat_message : task_session")
             # For now only task sessions
             user_task_execution_pk = message['user_task_execution_pk']
             return self.__manage_task_session(self.platform, user_task_execution_pk, use_message_placeholder, use_draft_placeholder)
         elif 'user_workflow_execution_pk' in message and message['user_workflow_execution_pk'] is not None:
-            print("🟢 process_chat_message : workflow_session")
             user_workflow_execution_pk = message['user_workflow_execution_pk']
             return self.__manage_workflow_session(self.platform, user_workflow_execution_pk, use_message_placeholder, use_draft_placeholder)
         else:
@@ -274,7 +271,6 @@ class Session:
             Exception: If there is an error during processing.
         """
         try:
-            print("response_message: ", response_message)
             # Ensure that the message has a session_id
             if "session_id" not in response_message:
                 response_message["session_id"] = self.id
@@ -282,7 +278,6 @@ class Session:
             db_message = self._new_message(response_message, Session.agent_message_key, "mojo_message")
             message_pk = db_message.message_pk
             response_message["message_pk"] = message_pk
-            print(f"🟢 text in response_message: {'text' in response_message} platform: {self.platform} -- self.voice_generator is not None: {self.voice_generator is not None}")
             response_message["audio"] = "text" in response_message and self.platform == "mobile" and self.voice_generator is not None
             # Does message contains a produced_text ?
             event_name = 'draft_message' if "produced_text_version_pk" in response_message else 'mojo_message'
@@ -328,9 +323,7 @@ class Session:
                                                                                user_messages_are_audio= platform=="mobile",
                                                                                running_user_task_execution_pk=user_task_execution_pk)
             response_message = general_chat_response_generator.generate_message()
-            print(f"👉 mojo_message: {response_message}")
             response_language = general_chat_response_generator.context.state.current_language
-            print(f"👉 response_language: {response_language}")
             return response_message, response_language
         except Exception as e:
             raise Exception(f"__manage_home_chat_session :: {e}")
@@ -387,7 +380,6 @@ class Session:
             Exception: If there is an error during management.
         """
         try:
-            print("🟢 __manage_workflow_session")
             tag_proper_nouns = platform == "mobile"
             workflow_assistant_response_generator = WorkflowAssistantResponseGenerator(mojo_message_token_stream_callback=self._mojo_message_stream_callback,
                                                                               use_message_placeholder=use_message_placeholder,
@@ -398,7 +390,6 @@ class Session:
                                                                                running_user_workflow_execution_pk=user_workflow_execution_pk)
 
             response_message = workflow_assistant_response_generator.generate_message()
-            print(f"🟢 __manage_workflow_session: response_message: {response_message}")
             response_language = workflow_assistant_response_generator.context.state.current_language
             return response_message, response_language
         except Exception as e:

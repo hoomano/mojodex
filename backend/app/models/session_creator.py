@@ -1,4 +1,5 @@
-from app import db, log_error
+from app import db
+from mojodex_core.logging_handler import log_error
 from mojodex_core.entities import *
 from datetime import datetime
 import hashlib

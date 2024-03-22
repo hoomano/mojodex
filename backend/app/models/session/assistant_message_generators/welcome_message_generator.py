@@ -2,7 +2,7 @@ from models.session.assistant_message_context.assistant_message_context import A
 from models.session.assistant_message_generators.assistant_message_generator import AssistantMessageGenerator
 from models.knowledge.knowledge_manager import KnowledgeManager
 from datetime import datetime, timedelta
-from app import db, placeholder_generator, llm, llm_conf, llm_backup_conf
+from app import db, placeholder_generator, model_loader
 from mojodex_core.entities import *
 from sqlalchemy import and_
 
@@ -10,7 +10,6 @@ class WelcomeMessageGenerator(AssistantMessageGenerator):
     logger_prefix = "WelcomeMessageGenerator :: "
     # TODO: with @kelly check how to mpt-ize this
     prompt_template_path = "/data/prompts/home_chat/welcome_message.txt"
-    welcome_message_generator = llm(llm_conf, label="HOME_CHAT_FIRST_MESSAGE", llm_backup_conf=llm_backup_conf)
     message_header_start_tag, message_header_end_tag = "<message_header>", "</message_header>"
     message_body_start_tag, message_body_end_tag = "<message_body>", "</message_body>"
 
@@ -19,7 +18,7 @@ class WelcomeMessageGenerator(AssistantMessageGenerator):
         try:
             context = AssistantMessageContext(user)
             self.use_message_placeholder = use_message_placeholder
-            super().__init__(WelcomeMessageGenerator.prompt_template_path, WelcomeMessageGenerator.welcome_message_generator, tag_proper_nouns, context)
+            super().__init__(WelcomeMessageGenerator.prompt_template_path, tag_proper_nouns, context)
         except Exception as e:
             raise Exception(f"{WelcomeMessageGenerator.logger_prefix} __init__ :: {e}")
         
@@ -66,7 +65,7 @@ class WelcomeMessageGenerator(AssistantMessageGenerator):
     def _generate_message_from_prompt(self, prompt):
         try:
             messages = [{"role": "system", "content": prompt}]
-            responses = self.message_generator.invoke(messages, self.context.user_id, temperature=1, max_tokens=1000)
+            responses = model_loader.main_llm.invoke(messages, self.context.user_id, temperature=1, max_tokens=1000, label='WELCOME_MESSAGE_CHAT')
             return responses[0].strip()
         except Exception as e:
             raise Exception(f"{WelcomeMessageGenerator.logger_prefix} _generate_message_from_prompt :: {e}")

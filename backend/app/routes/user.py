@@ -5,7 +5,8 @@ import random
 import requests
 from flask import request
 from flask_restful import Resource
-from app import db, log_error
+from app import db
+from mojodex_core.logging_handler import log_error
 from mojodex_core.entities import *
 import hashlib
 import string
@@ -18,7 +19,7 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 
 from models.purchase_manager import PurchaseManager
 
-from app import send_admin_email
+from mojodex_core.mail import send_admin_email
 from packaging import version
 
 def generate_user_id(name):

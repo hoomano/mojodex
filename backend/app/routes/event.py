@@ -3,8 +3,12 @@ from datetime import datetime
 
 from flask import request
 from flask_restful import Resource
-from app import db, log_error, mojo_mail_client, push_notification_sender
+from app import db
+from push_notification_sender import push_notification_sender
+from mojodex_core.logging_handler import log_error
 from mojodex_core.entities import *
+from mojodex_core.mail import mojo_mail_client
+
 
 
 

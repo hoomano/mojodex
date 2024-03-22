@@ -1,8 +1,8 @@
 from background_logger import BackgroundLogger
 from mojodex_core.json_loader import json_decode_retry
-from app import on_json_error
+from mojodex_core.logging_handler import on_json_error
 
-from app import send_admin_error_email
+from mojodex_core.mail import send_admin_error_email
 from models.events.events_generator import EventsGenerator
 
 from mojodex_core.llm_engine.mpt import MPT

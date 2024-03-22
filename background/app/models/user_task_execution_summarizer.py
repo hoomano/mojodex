@@ -4,7 +4,7 @@ import requests
 
 from background_logger import BackgroundLogger
 
-from app import send_admin_error_email
+from mojodex_core.mail import send_admin_error_email
 from mojodex_core.llm_engine.mpt import MPT
 
 

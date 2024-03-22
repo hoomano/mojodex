@@ -3,12 +3,13 @@ from datetime import datetime
 
 from flask import request
 from flask_restful import Resource
-from app import db, log_error
+from app import db
+from mojodex_core.logging_handler import log_error
 from mojodex_core.entities import MdTextType
 
 from mojodex_core.llm_engine.mpt import MPT
 from mojodex_core.json_loader import json_decode_retry
-from app import on_json_error
+from mojodex_core.logging_handler import on_json_error
 
 
 class TaskJson(Resource):

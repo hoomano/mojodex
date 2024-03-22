@@ -4,12 +4,13 @@ from datetime import datetime
 import requests
 from flask import request
 from flask_restful import Resource
-from app import db, authenticate, log_error, executor
+from app import db, authenticate, executor
+from mojodex_core.logging_handler import log_error
 from mojodex_core.entities import *
 
 from models.documents.website_parser import WebsiteParser
 from mojodex_core.json_loader import json_decode_retry
-from app import on_json_error
+from mojodex_core.logging_handler import on_json_error
 
 from mojodex_core.llm_engine.mpt import MPT
 

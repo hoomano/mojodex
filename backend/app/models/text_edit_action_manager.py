@@ -3,21 +3,19 @@ from datetime import datetime
 from models.session.assistant_message_generators.assistant_message_generator import AssistantMessageGenerator
 
 from mojodex_core.entities import *
-from app import db, log_error, server_socket, main_logger, socketio_message_sender
+from app import db, server_socket, main_logger, socketio_message_sender
+from mojodex_core.logging_handler import log_error
 
 from models.session.session import Session
 from models.voice_generator import VoiceGenerator
 from models.tasks.task_executor import TaskExecutor
 from models.produced_text_manager import ProducedTextManager
 
-from app import llm, llm_conf, llm_backup_conf
+from app import model_loader
 
 
 class TextEditActionManager:
     logger_prefix = "TextEditActionManager"
-
-    text_edit_executor = llm(llm_conf, label="TEXT_EDIT_EXECUTOR",
-                                       llm_backup_conf=llm_backup_conf)
 
     def __init__(
             self,
@@ -52,11 +50,12 @@ class TextEditActionManager:
     def edit_text(self, input_prompt, app_version):
         # Edit text
         try:
-            edited_text = TextEditActionManager.text_edit_executor.invoke(
+            edited_text = model_loader.main_llm.invoke(
                 messages=[{"role": "system", "content": input_prompt}],
                 user_id=self.user_id,
                 temperature=0.3,
                 max_tokens=2000,
+                label="TEXT_EDIT_EXECUTOR",
                 stream=True,
                 stream_callback=lambda stream_output_text: self.__send_draft_token(
                     token_text=stream_output_text),

@@ -3,7 +3,8 @@ import os
 import pytz
 from flask import request
 from flask_restful import Resource
-from app import db, log_error
+from app import db
+from mojodex_core.logging_handler import log_error
 from mojodex_core.entities import *
 
 from models.purchase_manager import PurchaseManager
@@ -11,7 +12,7 @@ from datetime import datetime
 
 from sqlalchemy import func, text
 
-from app import send_admin_email
+from mojodex_core.mail import send_admin_email
 
 
 class ExpiredPurchasesChecker(Resource):

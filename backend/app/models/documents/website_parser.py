@@ -4,7 +4,7 @@ from bs4 import BeautifulSoup
 from mojodex_backend_logger import MojodexBackendLogger
 
 from mojodex_core.json_loader import json_decode_retry
-from app import on_json_error
+from mojodex_core.logging_handler import on_json_error
 from mojodex_core.llm_engine.mpt import MPT
 
 

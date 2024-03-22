@@ -1,11 +1,12 @@
 from gevent import monkey
 
+
 monkey.patch_all()
 
 
-from mojodex_core.llm_engine.llm import LLM
-from mojodex_core.llm_engine.embedding_provider import EmbeddingProvider
+from mojodex_core.llm_engine.providers.model_loader import ModelLoader
 from mojodex_core.stt.stt import STT
+from mojodex_core.mail import mojo_mail_client
 
 import hashlib
 import random
@@ -48,56 +49,13 @@ from mojodex_core.entities import *
 
 from mojodex_backend_logger import MojodexBackendLogger
 
-# Setup the LLM Engine
-llm, llm_conf, llm_backup_conf = LLM.get_llm_provider()
-
-# Setup the embedder
-embedder, embedding_conf = EmbeddingProvider.get_embedding_provider()
+from mojodex_core.llm_engine.providers.model_loader import ModelLoader
+model_loader = ModelLoader()
 
 # Setup the STT engine
 stt, stt_conf = STT.get_stt()
 
 main_logger = MojodexBackendLogger("main_logger")
-
-try:
-    from mojodex_core.email_sender import MojoAwsMail
-    mojo_mail_client = MojoAwsMail(sender_name=os.environ['SENDER_NAME'], sender_email=os.environ['SENDER_EMAIL'],
-                                   region="eu-west-3")
-except Exception as e:
-    main_logger.error(f"Can't initialize MojoAwsMail : {e}")
-    mojo_mail_client = None
-
-
-def send_admin_email(subject, recipients, text):
-    try:
-        if mojo_mail_client:
-            mojo_mail_client.send_mail(subject=subject,
-                                       recipients=recipients,
-                                       text=text)
-    except Exception as e:
-        main_logger.error(f"Error while sending admin email : {e}")
-
-
-admin_email_receivers = os.environ["ADMIN_EMAIL_RECEIVERS"].split(",") if "ADMIN_EMAIL_RECEIVERS" in os.environ else []
-technical_email_receivers = os.environ["TECHNICAL_EMAIL_RECEIVERS"].split(",") if "TECHNICAL_EMAIL_RECEIVERS" in os.environ else []
-
-
-def log_error(error_message, session_id=None, notify_admin=False):
-    try:
-        main_logger.error(error_message)
-        error = MdError(session_id=session_id, message=str(error_message),
-                        creation_date=datetime.now())
-        db.session.add(error)
-        db.session.commit()
-        if notify_admin:
-            send_admin_email(subject=f"MOJODEX ERROR - {os.environ['ENVIRONMENT']}",
-                             recipients=technical_email_receivers,
-                             text=str(error_message))
-    except Exception as e:
-        db.session.rollback()
-        main_logger.error(f"Error while logging error : {e}")
-
-
 
 from placeholder_generator import PlaceholderGenerator
 
@@ -159,28 +117,11 @@ def authenticate(methods=["PUT", "POST", "DELETE", "GET"]):
     return authenticate_wrapper
 
 
-from push_notification_sender import PushNotificationSender
-try:
-    push_notification_sender = PushNotificationSender()
-except Exception as e:
-    main_logger.error(f"Can't initialize NotificationSender : {e}")
-    push_notification_sender = None
-
-
-
 def generate_session_id(user_id):
     random_string = ''.join(random.choices(string.ascii_uppercase + string.digits, k=10))
     clear_string = f"{random_string}_mojodex_{user_id}_{datetime.now().isoformat()}"
     encoded_string = hashlib.md5(clear_string.encode())
     return encoded_string.hexdigest()
-
-
-def on_json_error(result, function_name, retries):
-    error_path = f"/data/{function_name}_{datetime.now().isoformat()}.txt"
-    with open(error_path, "w") as f:
-        f.write(result)
-    raise Exception(
-        f"{function_name} - incorrect JSON : aborting after {retries} retries...  data available in {error_path}")
 
 
 from socketio_message_sender import SocketioMessageSender

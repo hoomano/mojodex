@@ -5,7 +5,7 @@ import re
 from azure.cognitiveservices.speech import SpeechConfig, SpeechSynthesizer
 from azure.cognitiveservices.speech.audio import AudioOutputConfig
 
-from app import log_error
+from mojodex_core.logging_handler import log_error
 
 from mojodex_core.llm_engine.mpt import MPT
 

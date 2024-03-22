@@ -5,7 +5,6 @@ from datetime import datetime
 from mojodex_core.entities import MdError
 from mojodex_core.db import db_session
 
-
 class EmojiFormatter(logging.Formatter):
     def __init__(self):
         super().__init__()
@@ -46,39 +45,6 @@ class MojodexCoreLogger(logging.Logger):
 
 core_logger = MojodexCoreLogger("core_logger")
 
-try:
-    from mojodex_core.email_sender import MojoAwsMail
-    mojo_mail_client = MojoAwsMail(sender_name=os.environ['SENDER_NAME'], sender_email=os.environ['SENDER_EMAIL'],
-                                   region="eu-west-3")
-except Exception as e:
-    core_logger.error(f"Can't initialize MojoAwsMail : {e}")
-    mojo_mail_client = None
-
-
-
-def send_admin_email(subject, recipients, text):
-    try:
-        if mojo_mail_client:
-            mojo_mail_client.send_mail(subject=subject,
-                                       recipients=recipients,
-                                       text=text)
-    except Exception as e:
-        core_logger.error(f"Error while sending admin email : {e}")
-
-
-admin_email_receivers = os.environ["ADMIN_EMAIL_RECEIVERS"].split(",") if "ADMIN_EMAIL_RECEIVERS" in os.environ else []
-technical_email_receivers = os.environ["TECHNICAL_EMAIL_RECEIVERS"].split(",") if "TECHNICAL_EMAIL_RECEIVERS" in os.environ else []
-
-
-def send_admin_error_email(error_message):
-    try:
-        mojo_mail_client.send_mail(subject=f"MOJODEX BACKGROUND ERROR - {os.environ['ENVIRONMENT']}",
-                                       recipients=technical_email_receivers,
-                                       text=error_message)
-    except Exception as e:
-        core_logger.error(f"Error while sending admin email : {e}")
-
-
 def log_error(error_message, session_id=None, notify_admin=False):
     try:
         core_logger.error(error_message)
@@ -87,10 +53,19 @@ def log_error(error_message, session_id=None, notify_admin=False):
         db_session.add(error)
         db_session.commit()
         if notify_admin:
+            from mojodex_core.mail import send_admin_email, technical_email_receivers
             send_admin_email(subject=f"MOJODEX ERROR - {os.environ['ENVIRONMENT']}",
                              recipients=technical_email_receivers,
                              text=str(error_message))
     except Exception as e:
         db_session.rollback()
         core_logger.error(f"Error while storing error to database: {e}")
+
+
+def on_json_error(result, function_name, retries):
+    error_path = f"/data/{function_name}_{datetime.now().isoformat()}.txt"
+    with open(error_path, "w") as f:
+        f.write(result)
+    raise Exception(
+        f"{function_name} - incorrect JSON: aborting after {retries} retries...  data available in {error_path}")
 

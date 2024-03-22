@@ -3,8 +3,10 @@ import os
 import stripe
 from flask import request
 from flask_restful import Resource
-from app import authenticate, log_error, db, send_admin_email
+from app import db
 from mojodex_core.entities import *
+from mojodex_core.mail import send_admin_email
+from mojodex_core.logging_handler import log_error
 
 from mojodex_backend_logger import MojodexBackendLogger
 

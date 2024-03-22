@@ -11,7 +11,7 @@ from sqlalchemy import func, text
 
 from models.todos.todos_rescheduler import TodosRescheduler
 
-from app import send_admin_error_email
+from mojodex_core.mail import send_admin_error_email
 
 
 class RescheduleTodoCortex:

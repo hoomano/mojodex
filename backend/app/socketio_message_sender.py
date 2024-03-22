@@ -1,6 +1,7 @@
 import time
 
-from app import db, main_logger, server_socket, executor, log_error
+from app import db, main_logger, server_socket, executor
+from mojodex_core.logging_handler import log_error
 from mojodex_core.entities import *
 
 class SocketioMessageSender:

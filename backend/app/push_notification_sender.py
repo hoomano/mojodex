@@ -4,7 +4,8 @@ import requests
 from google.oauth2 import service_account
 from mojodex_core.entities import *
 from mojodex_backend_logger import MojodexBackendLogger
-from app import log_error, db
+from mojodex_core.logging_handler import log_error
+from app import db
 import google.auth.transport.requests
 import os
 
@@ -88,3 +89,22 @@ class PushNotificationSender:
             log_error(
                 f"{self.logger_prefix} _invalidate_device: {e}",
                 notify_admin=True)
+
+
+class PushNotificationSenderLogging:
+    
+    def __init__(self):
+        self.logger = MojodexBackendLogger(f"{PushNotificationSender.logger_prefix}")
+    
+    def send_notification_to_user(self, user_id, title, description, data):
+        self.logger.info(f"send_notification_to_user: user_id {user_id} - title: {title} - description: {description} - data {data}")
+
+try:
+    if os.environ.get('FIREBASE_PROJECT_ID', ''):
+        push_notification_sender = PushNotificationSender()
+    else:
+        push_notification_sender = PushNotificationSenderLogging()
+except Exception as e:
+    log_error.error(f"Can't initialize NotificationSender : {e}")
+    push_notification_sender = PushNotificationSenderLogging()
+

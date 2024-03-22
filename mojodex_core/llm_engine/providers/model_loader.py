@@ -2,10 +2,10 @@ import configparser
 
 from mojodex_core.llm_engine.embedding_provider import EmbeddingProvider
 from mojodex_core.llm_engine.llm import LLM
-from mojodex_core.llm_engine.providers.ollama_llm import OllamaLLM
 from mojodex_core.llm_engine.providers.openai_embedding import OpenAIEmbedding
 from mojodex_core.llm_engine.providers.openai_llm import OpenAILLM
 from mojodex_core.llm_engine.providers.mistralai_llm import MistralAILLM
+from mojodex_core.llm_engine.providers.ollama_llm import OllamaLLM
 
 import logging
 import os
@@ -26,6 +26,7 @@ class ModelLoader:
         self.main_llm: LLM = self._get_main_llm_provider()
         self.embedding_provider: EmbeddingProvider = self._get_embedding_provider()
 
+    def _get_main_llm_provider(self):
         """
         Returns the first ModelLoader provider in the models.conf file
 
@@ -156,7 +157,7 @@ class ModelLoader:
                     provider = MistralAILLM(conf)
 
                 # TODO: migrate to new embedding v3
-                elif model_name == "embedding":
+                elif model_name == "text-embedding-ada-002":
                     conf = {
                         "api_key": provider_conf["ada_embedding_azure_openai_key"],
                         "api_base": provider_conf["ada_embedding_azure_openai_api_base"],

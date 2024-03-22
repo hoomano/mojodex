@@ -49,11 +49,8 @@ from mojodex_core.entities import *
 
 from mojodex_backend_logger import MojodexBackendLogger
 
-# Setup the LLM Engine
-llm, llm_conf, llm_backup_conf = ModelLoader.get_main_llm_provider()
-
-# Setup the embedder
-embedder, embedding_conf = ModelLoader.get_embedding_provider()
+from mojodex_core.llm_engine.providers.model_loader import ModelLoader
+model_loader = ModelLoader()
 
 # Setup the STT engine
 stt, stt_conf = STT.get_stt()

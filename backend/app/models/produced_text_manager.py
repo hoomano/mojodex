@@ -6,14 +6,12 @@ from mojodex_core.entities import MdProducedText, MdMessage, MdProducedTextVersi
 
 from mojodex_backend_logger import MojodexBackendLogger
 
-from app import embedder, embedding_conf
+from app import model_loader
 from mojodex_core.llm_engine.mpt import MPT
 
 
 class ProducedTextManager:
     logger_prefix = "📝 ProducedTextManager"
-
-    embedder = embedder(embedding_conf, label="PRODUCED_TEXT_EMBEDDER")
 
     is_edition_mpt_filename = "instructions/is_edition.mpt"
 
@@ -198,7 +196,7 @@ class ProducedTextManager:
     def embed_produced_text(title, production, user_id, user_task_execution_pk=None, task_name_for_system=None):
         try:
             text_to_embedded = f"{title}\n\n{production}"
-            embedded_text = ProducedTextManager.embedder.embed(text_to_embedded, user_id,
+            embedded_text = model_loader.embedding_provider.embed(text_to_embedded, user_id, label="PRODUCED_TEXT_EMBEDDER",
                                                                user_task_execution_pk=user_task_execution_pk,
                                                                task_name_for_system=task_name_for_system)
             return embedded_text

@@ -7,7 +7,7 @@ class AssistantMessageGenerator(ABC):
     """
     logger_prefix = "AssistantMessageGenerator :: "
 
-    def __init__(self, prompt_template_path, message_generator, tag_proper_nouns, assistant_message_context):
+    def __init__(self, prompt_template_path, tag_proper_nouns, assistant_message_context):
         """
         Constructor for AssistantMessageGenerator
         :param prompt_template_path: path to the prompt template
@@ -16,7 +16,6 @@ class AssistantMessageGenerator(ABC):
         :param assistant_message_context: context for the assistant message"""
         try:
             self.prompt_template_path = prompt_template_path
-            self.message_generator = message_generator
             self.tag_proper_nouns = tag_proper_nouns
             self.context = assistant_message_context
         except Exception as e:

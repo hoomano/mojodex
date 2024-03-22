@@ -14,7 +14,7 @@ class LLM(ABC):
     dataset_dir = "/data/prompts_dataset"
 
     @abstractmethod
-    def __init__(self, llm_conf, llm_backup_conf=None, label='undefined', max_retries=0):
+    def __init__(self, llm_conf, llm_backup_conf=None, max_retries=0):
         """
         Initializes the LLM object.
 
@@ -34,7 +34,7 @@ class LLM(ABC):
 
 
     @abstractmethod
-    def invoke(self, messages, user_id, temperature, max_tokens, user_task_execution_pk, task_name_for_system):
+    def invoke(self, messages, user_id, temperature, max_tokens, user_task_execution_pk, task_name_for_system, label):
         """
         Perform a LLM chat completion.
 
@@ -77,12 +77,12 @@ class LLM(ABC):
         """
         pass
 
-    def _write_in_dataset(self, json_data, task_name_for_system, type):
+    def _write_in_dataset(self, json_data, task_name_for_system, type, label):
         try:
             # write data in MojodexMistralAI.dataset_dir/label/task_name_for_system.json
-            directory = f"{self.dataset_dir}/{type}/{self.label}/{task_name_for_system}"
-            if not os.path.exists(os.path.join(self.dataset_dir, "chat", self.label)):
-                os.mkdir(os.path.join(self.dataset_dir, "chat", self.label))
+            directory = f"{self.dataset_dir}/{type}/{label}/{task_name_for_system}"
+            if not os.path.exists(os.path.join(self.dataset_dir, "chat", label)):
+                os.mkdir(os.path.join(self.dataset_dir, "chat", label))
             if not os.path.exists(directory):
                 os.mkdir(directory)
             filename = len(os.listdir(directory)) + 1

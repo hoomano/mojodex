@@ -14,31 +14,14 @@ class OpenAIEmbedding(EmbeddingProvider):
     dataset_dir = "/data/prompts_dataset"
     default_embedding_model = "text-embedding-ada-002"
     
-    def __init__(self, embedding_conf, label='openai_embedding'):
+    def __init__(self, embedding_conf):
         try:
             api_key = embedding_conf["api_key"] if "api_key" in embedding_conf else None
             api_base = embedding_conf["api_base"] if "api_base" in embedding_conf else None
             api_version = embedding_conf["api_version"] if "api_version" in embedding_conf else None
             api_type = embedding_conf["api_type"] if "api_type" in embedding_conf else "openai"
             model = embedding_conf["deployment_id"] if "deployment_id" in embedding_conf else embedding_conf["model"]
-            self.label = label
-            # if dataset_dir does not exist, create it
-            if not os.path.exists(self.dataset_dir):
-                os.mkdir(self.dataset_dir)
-            if not os.path.exists(os.path.join(self.dataset_dir, "chat")):
-                os.mkdir(os.path.join(self.dataset_dir, "chat"))
-            if not os.path.exists(os.path.join(self.dataset_dir, "chat", self.label)):
-                os.mkdir(os.path.join(self.dataset_dir, "chat", self.label))
 
-            self.model = model
-            self.client = AzureOpenAI(
-                api_version=api_version,
-                azure_endpoint=api_base,
-                azure_deployment=self.model,
-                api_key=api_key,
-            ) if api_type == 'azure' else OpenAI(api_key=api_key)
-
-            self.label = label
             self.model = model
             self.client = AzureOpenAI(
                 api_version=api_version,
@@ -56,11 +39,12 @@ class OpenAIEmbedding(EmbeddingProvider):
     def _num_tokens_from_string(self, string):
         # https://github.com/openai/openai-cookbook/blob/main/examples/How_to_count_tokens_with_tiktoken.ipynb
         """Returns the number of tokens in a text string."""
+        # TODO: find a way to dynamically find the encoding base depending on the embedding model
         encoding = tiktoken.get_encoding("p50k_base")
         num_tokens = len(encoding.encode(string))
         return num_tokens
 
-    def embed(self, text, user_id, user_task_execution_pk, task_name_for_system, retries=12, wating_time=5):
+    def embed(self, text, user_id, user_task_execution_pk, task_name_for_system, label, retries=12, wating_time=5):
         try:
             try:
                 n_tokens_prompt = self._num_tokens_from_string(text)
@@ -74,7 +58,7 @@ class OpenAIEmbedding(EmbeddingProvider):
             )
             responses = embedding.data[0].embedding
             self.tokens_costs_manager.on_tokens_counted(user_id, n_tokens_prompt, 0, 0,
-                                                        self.model, self.label, user_task_execution_pk, task_name_for_system)
+                                                        self.model, label, user_task_execution_pk, task_name_for_system)
             return responses
         except RateLimitError as e:
             # wait 5 seconds and retry because we are in background, we can wait

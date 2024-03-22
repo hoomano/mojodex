@@ -47,7 +47,7 @@ class MPT:
         self._parse_file()
         
         from mojodex_core.llm_engine.providers.model_loader import ModelLoader
-        self.available_models, _ = ModelLoader.get_providers()
+        self.available_models, _ = ModelLoader().providers
         self.models = [d['model_name'] for d in self.shebangs]
     
     @property
@@ -186,10 +186,6 @@ MPT's compatibility list: {self.models}
 To fix the problem:
 1. Check the providers in the models.conf file.
 2. Check the MPT file's shebangs for compatibility with the providers.""")
-            
-            # put a reference to the execution with the filepath of the MPT instruction
-            # label is the filename without the file extension
-            selected_model.label = self.filepath.split('/')[-1].split('.')[0]
             
             return selected_model.invoke_from_mpt(self, **kwargs)
         except Exception as e:

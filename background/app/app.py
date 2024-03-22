@@ -39,9 +39,6 @@ engine_container = db.get_engine(app)
 
 from background_logger import BackgroundLogger
 
-# Setup the LLM Engine
-llm, llm_conf, llm_backup_conf = ModelLoader.get_main_llm_provider()
-
 # Setup the embedder
 embedder, embedding_conf = ModelLoader.get_embedding_provider()
 

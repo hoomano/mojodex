@@ -36,6 +36,8 @@ class MPT:
                     self.forced_model : LLM = provider['provider']
                     self.logger.info(f"Forced model: {forced_model}")
                     break
+        else:
+            self.forced_model = None
 
         # store the other arguments for later use
         self.kwargs = kwargs
@@ -155,32 +157,36 @@ class MPT:
         Returns:
             str: The result of the LLM call.
         """
+        try:
+            # for each model in the shebangs, in order, check if there is a provider for it
+            # if there is, call it with the prompt
 
-        # for each model in the shebangs, in order, check if there is a provider for it
-        # if there is, call it with the prompt
+            if self.forced_model is not None:
+                self.logger.info(f"Running prompt with forced model: {self.forced_model}")
+                return self.forced_model.invoke_from_mpt(self, **kwargs)
 
-        if self.forced_model is not None:
-            self.logger.info(f"Running prompt with forced model: {self.forced_model}")
-            return self.forced_model.invoke_from_mpt(self, **kwargs)
-
-        selected_model : LLM = None
-        for model in self.models:
-            # TODO: how to use version in provider selection / configuration?
-            #version = shebang['version']
-            for provider in self.available_models:
-                if provider['model_name'] == model:
-                    selected_model = provider['provider']
-                    self.logger.debug(f"Selected model: {model}")
+            selected_model : LLM = None
+            for model in self.models:
+                # TODO: how to use version in provider selection / configuration?
+                #version = shebang['version']
+                for provider in self.available_models:
+                    self.logger.info(f"Checking provider: {provider['model_name']} == {model}?")
+                    if provider['model_name'] == model:
+                        selected_model = provider['provider']
+                        self.logger.debug(f"Selected model: {model}")
+                        break
+                
+                if selected_model is not None:
                     break
-            
-            if selected_model is not None:
-                break
 
-        if selected_model is None:
-            raise Exception(f"No provider found for model: {model}")
-        
-        # put a reference to the execution with the filepath of the MPT instruction
-        # label is the filename without the file extension
-        selected_model.label = self.filepath.split('/')[-1].split('.')[0]
-        
-        return selected_model.invoke_from_mpt(self, **kwargs)
+            if selected_model is None:
+                raise Exception(f"{self} > No provider found for model: {model}")
+            
+            # put a reference to the execution with the filepath of the MPT instruction
+            # label is the filename without the file extension
+            selected_model.label = self.filepath.split('/')[-1].split('.')[0]
+            
+            return selected_model.invoke_from_mpt(self, **kwargs)
+        except Exception as e:
+            self.logger.error(f"Error running MPT: {self} > {e}")
+            return None

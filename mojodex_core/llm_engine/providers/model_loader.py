@@ -53,8 +53,6 @@ class ModelLoader:
         """
         _, embedding_providers = ModelLoader.get_providers()
 
-        logging.info(f"🟢: INFO: ModelLoader.get_embedding_provider() >> embedding_providers: {embedding_providers}")
-
         # find the embedding provider in the list of providers with model_name = 'embedding'
         if len(embedding_providers) == 0:
             raise Exception("No embedding provider found in the providers list")
@@ -80,7 +78,6 @@ class ModelLoader:
                     "provider": llm,
                     "config": conf
                 }
-                logging.info("🟢: INFO: ModelLoader.get_providers() >> provider_conf: ", provider_conf)
                 if model_name != OpenAIEmbedding.default_embedding_model:
                     llm_providers_list.append(provider_conf)
                 else:
@@ -182,6 +179,7 @@ class ModelLoader:
     def _get_llm_providers():
         try:
             conf_file = os.path.join(os.path.dirname(__file__), ModelLoader.llm_conf_filename)
+            logging.info(f">>>>> confile: {conf_file}")
             config = configparser.ConfigParser()
             config.read(conf_file)
             logging.info(f">>>>> Sections in conf: {config.sections()}")

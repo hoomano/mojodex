@@ -20,7 +20,7 @@ class OpenAIEmbedding(EmbeddingProvider):
             api_base = embedding_conf["api_base"] if "api_base" in embedding_conf else None
             api_version = embedding_conf["api_version"] if "api_version" in embedding_conf else None
             api_type = embedding_conf["api_type"] if "api_type" in embedding_conf else "openai"
-            model = embedding_conf["deployment_id"] if "deployment_id" in embedding_conf else None
+            model = embedding_conf["deployment_id"] if "deployment_id" in embedding_conf else embedding_conf["model"]
             self.label = label
             # if dataset_dir does not exist, create it
             if not os.path.exists(self.dataset_dir):

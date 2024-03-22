@@ -2,6 +2,7 @@ import configparser
 
 from mojodex_core.llm_engine.embedding_provider import EmbeddingProvider
 from mojodex_core.llm_engine.llm import LLM
+from mojodex_core.llm_engine.providers.ollama_llm import OllamaLLM
 from mojodex_core.llm_engine.providers.openai_embedding import OpenAIEmbedding
 from mojodex_core.llm_engine.providers.openai_llm import OpenAILLM
 from mojodex_core.llm_engine.providers.mistralai_llm import MistralAILLM
@@ -10,7 +11,6 @@ import logging
 import os
 
 logging.basicConfig(level=logging.INFO)
-
 
 class ModelLoader:
     llm_conf_filename = "models.conf"
@@ -26,7 +26,6 @@ class ModelLoader:
         self.main_llm: LLM = self._get_main_llm_provider()
         self.embedding_provider: EmbeddingProvider = self._get_embedding_provider()
 
-    def _get_main_llm_provider(self):
         """
         Returns the first ModelLoader provider in the models.conf file
 
@@ -174,6 +173,14 @@ class ModelLoader:
                 }
                 provider = MistralAILLM(conf)
 
+            
+            elif provider_name == "ollama":
+                conf = {
+                    "endpoint": provider_conf["ollama_endpoint"],
+                    "model": model_name
+                }
+                provider = OllamaLLM(conf)
+            
             if provider is None:
                 logging.error(f"🔴: ERROR: ModelLoader _build_provider() >> in config file {ModelLoader.llm_conf_filename} section __{provider_section}__ provider has not been implemented")
                 

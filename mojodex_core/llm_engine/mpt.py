@@ -180,7 +180,12 @@ class MPT:
                     break
 
             if selected_model is None:
-                raise Exception(f"{self} > No provider found for model: {model}")
+                raise Exception(f"""{self} > No matching provider <> model found:
+providers: {self.available_models}
+MPT's compatibility list: {self.models}
+To fix the problem:
+1. Check the providers in the models.conf file.
+2. Check the MPT file's shebangs for compatibility with the providers.""")
             
             # put a reference to the execution with the filepath of the MPT instruction
             # label is the filename without the file extension

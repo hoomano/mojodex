@@ -4,7 +4,7 @@
 ### LLMs
 
 [openai/gpt-4-turbo-preview]
-OPENAI_API_KEY=
+OPENAI_API_KEY=<your api key here>
 
 # [azure/gpt4-turbo]
 # GPT4_TURBO_AZURE_OPENAI_API_BASE= 
@@ -42,7 +42,7 @@ OPENAI_API_KEY=
 # ### Embeddings
 
 [openai/text-embedding-ada-002]
-OPENAI_API_KEY=
+OPENAI_API_KEY=<your api key>
 
 # [azure/embedding]
 # ADA_EMBEDDING_AZURE_OPENAI_API_BASE=

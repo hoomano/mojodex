@@ -170,7 +170,6 @@ class MPT:
                 # TODO: how to use version in provider selection / configuration?
                 #version = shebang['version']
                 for provider in self.available_models:
-                    self.logger.info(f"Checking provider: {provider['model_name']} == {model}?")
                     if provider['model_name'] == model:
                         selected_model = provider['provider']
                         self.logger.debug(f"Selected model: {model}")

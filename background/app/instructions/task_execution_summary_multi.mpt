@@ -1,0 +1,70 @@
+#! mistral:text
+#! mistral:instruct
+#! mistral-medium
+#! gpt4-turbo/2023-03-15-preview
+#! gpt-4-turbo-preview
+#! mistral-large
+
+YOUR CONTEXT
+{{mojo_knowledge}}
+
+GLOBAL CONTEXT
+{{global_context}}
+
+USER NAME
+{{username}}
+
+{%if user_company_knowledge%}USER'S COMPANY KNOWLEDGE
+{{user_company_knowledge}}{%endif%}
+
+Here is the task achieved by your user.
+-------
+TASK TO ACCOMPLISH
+{{task_name}}: {{task_definition}}
+
+USER INPUTS
+{{ user_task_inputs | tojson(indent=4) }}
+
+{%if user_messages_conversation%}CONVERSATION
+{{ user_messages_conversation }}{%endif%}
+-------
+
+
+{% if mistral:text %}
+Here is an example:
+EXAMPLE_1:
+##########
+TASK TO ACCOMPLISH
+prepare_event_conversation_recap: The user needs assistance to prepare a recap of a conversation during an event
+
+USER INPUTS
+[
+        {
+            \"description_for_system\": \"D\\u00e9tails sur la conversation pendant l\\u0027\\u00e9v\\u00e9nement, qui peuvent inclure des informations de contact, les principaux points de discussion et les prochaines \\u00e9tapes possibles.\",
+        \"description_for_user\": \"Comment s\\u0027est pass\\u00e9e votre conversation ?\",
+        \"input_name\": \"event_conversation_details\",
+        \"placeholder\": \"Enregistrez un bref r\\u00e9sum\\u00e9 de ce qui a \\u00e9t\\u00e9 discut\\u00e9, les infos de contact et les prochaines \\u00e9tapes ?\",
+        \"type\": \"text_area\",
+        \"value\": \"avec l\\u0027\\u00e9quipe oneragtime, on veut pr\\u00e9parer un projet commun utilisant la solution mojodex comme socle technologique. la prochaine \\u00e9tape est de pr\\u00e9parer une proposition commerciale \\u00e0 valider avec st\\u00e9phanie. La discussion a eu lieu avec ian et koosha\"
+    }
+]
+
+RESULT:
+<title>Projet Commun avec Oneragtime</title>
+<summary>Vous avez discut\u00e9 avec Ian et Koosha de l'\u00e9quipe Oneragtime pour pr\u00e9parer un projet commun utilisant Mojodex. La prochaine \u00e9tape est de pr\u00e9parer une proposition commerciale \u00e0 valider avec St\u00e9phanie.</summary>
+##########
+
+
+-------
+{% endif %}
+
+Give a title to this task execution so that the user can remember what the task was about. Give important information in the title such as names, subjects...
+Make a summary of this task execution so that the user can remember what the task was about.
+Summary is addressed to the user. No need to call them.
+10 words max for the title and 3 sentences max for the summary.
+Format:
+<title>TITLE</title>
+<summary>SUMMARY</summary>
+
+Use same language as user.
+No talk, just title and summary.

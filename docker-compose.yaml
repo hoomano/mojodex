@@ -73,9 +73,9 @@ services:
     depends_on:
      - mojodex-backend
 
-  mojodex-llm-mistral7b:
+  mojodex-ollama:
     image: ollama/ollama
-    container_name: mojodex_llm_mistral7b
+    container_name: mojodex_ollama
     volumes:
       - ~/.ollama:/root/.ollama
     ports:

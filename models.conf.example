@@ -36,7 +36,7 @@ OPENAI_API_KEY=<your api key here>
 # MISTRAL_AZURE_API_KEY=
 
 # [ollama/mistral:instruct]
-# OLLAMA_ENDPOINT=http://mojodex_llm_mistral7b:11434
+# OLLAMA_ENDPOINT=http://mojodex_ollama:11434
 
 
 # ### Embeddings

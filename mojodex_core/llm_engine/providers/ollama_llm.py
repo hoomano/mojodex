@@ -15,7 +15,7 @@ class OllamaLLM(LLM):
     def __init__(self, ollama_conf):
 
         try:
-
+            self._name = ollama_conf["model_name"]
             self.model = ollama_conf.get(
                 "model") if ollama_conf.get("model") else None
             self.endpoint = ollama_conf.get("endpoint") if ollama_conf.get(
@@ -37,6 +37,14 @@ class OllamaLLM(LLM):
         except Exception as e:
             raise Exception(
                 f"🔴 Error initializing OllamaLLM __init__  : {e}")
+        
+    @property
+    def name(self):
+        return self._name
+    
+    @name.setter
+    def name(self, value):
+        self._name = value
 
     # TODO: implement this method with appropriate encoding for Ollama
     def num_tokens_from_string(self, string):

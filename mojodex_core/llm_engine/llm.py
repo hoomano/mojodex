@@ -13,6 +13,12 @@ class LLM(ABC):
 
     dataset_dir = "/data/prompts_dataset"
 
+    @property
+    @abstractmethod
+    def name(self):
+        """Name of the model."""
+        pass
+
     @abstractmethod
     def __init__(self, llm_conf, llm_backup_conf=None, max_retries=0):
         """

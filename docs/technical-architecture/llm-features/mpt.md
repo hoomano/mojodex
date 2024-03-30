@@ -46,6 +46,78 @@ The body of the `.mpt` file contains a mix of jinja2 templates, custom HTML-like
 </template>
 ```
 
+## Advanced Templating Techniques
+
+To accommodate the unique requirements and capabilities of different LLM models within a single MPT file, advanced templating techniques are employed. This approach allows developers to specify model-specific prompts and logic, ensuring optimal interaction with each model's unique interpretation and response characteristics.
+
+### Example of Model-Specific Templating
+
+Consider a scenario where different models, such as `mistral-medium`, `gpt-4-turbo`, and `mistral-large`, require tailored prompts to achieve the same task. The `.mpt` file can contain directives (shebangs) and conditional templating to customize the prompt for each model:
+
+```plaintext
+#! mistral:instruct
+#! mistral-medium
+#! gpt4-turbo/2023-03-15-preview
+#! gpt-4-turbo-preview
+#! mistral-large
+
+YOUR CONTEXT
+{{mojo_knowledge}}
+
+GLOBAL CONTEXT
+{{global_context}}
+
+USER NAME
+{{username}}
+
+{% if user_company_knowledge %}USER'S COMPANY KNOWLEDGE
+{{user_company_knowledge}}{% endif %}
+
+Here is the task achieved by your user.
+-------
+TASK TO ACCOMPLISH
+{{task_name}}: {{task_definition}}
+
+USER INPUTS
+{{ user_task_inputs | tojson(indent=4) }}
+
+{% if user_messages_conversation %}CONVERSATION
+{{ user_messages_conversation }}{% endif %}
+-------
+
+{# fewshot for small models like mistral7b, i.e. mistral:instruct with ollama #}
+{% if model in ["mistral:instruct"] %}
+EXAMPLES OF GOOD EXECUTIONS OF THE TASK SUMMARIZATION:
+
+EXAMPLE 1:
+------
+TASK TO ACCOMPLISH
+structure_ideas_into_doc: The user needs assistance to turn ideas into a structured written doc
+
+USER INPUTS:
+pr\\u00e9pare une note de musique
+
+TASK RESULT:
+<title>Structuration d'une Note de Musique</title>
+<summary>Assistance fournie pour transformer des id\u00e9es en un document structur\u00e9. Le sujet principal \u00e9tait la pr\u00e9paration d'une note de musique. Le processus a impliqu\u00e9 la transcription et l'organisation des id\u00e9es fournies.</summary>
+------
+{% endif %}
+
+Give a title to this task execution so that the user can remember what the task was about. Give important information in the title such as names, subjects...
+Make a summary of this task execution so that the user can remember what the task was about.
+Summary is addressed to the user. No need to call them.
+10 words max for the title and 3 sentences max for the summary.
+Format:
+<title>TITLE</title>
+<summary>SUMMARY</summary>
+
+Use the same language as the user.
+No talk, just title and summary.
+```
+
+This example showcases how to define complex logic and conditionally include content based on the model being used, offering unparalleled flexibility in crafting prompts for diverse LLMs.
+
+
 ## MPT Workflow
 
 Developers create `.mpt` files following the format specification. The runtime sequence involves:

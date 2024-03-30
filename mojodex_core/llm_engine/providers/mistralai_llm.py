@@ -14,6 +14,7 @@ class MistralAILLM(LLM):
     def __init__(self, mistral_conf):
 
         try:
+            self._name = mistral_conf["model_name"]
             api_key = mistral_conf["api_key"]
             self.model = mistral_conf["api_model"]
 
@@ -38,7 +39,15 @@ class MistralAILLM(LLM):
         except Exception as e:
             raise Exception(
                 f"🔴 Error initializing MistralAILLM __init__  : {e}")
+        
+    @property
+    def name(self):
+        return self._name
 
+    @name.setter
+    def name(self, value):
+        self._name = value
+    
     # TODO: implement this method with appropriate encoding for Mistral
     def num_tokens_from_string(self, string):
         """Returns the number of tokens in a text string."""

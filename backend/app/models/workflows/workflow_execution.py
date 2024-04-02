@@ -113,6 +113,7 @@ class WorkflowExecution:
                 .filter(MdUserWorkflow.user_workflow_pk == self.db_object.user_workflow_fk) \
                 .filter(MdWorkflowStep.rank == last_validated_step_execution.workflow_step.rank + 1) \
                 .first()
+            # Reached last rank order => there is no next step
             if next_step is None:
                 return None  # end of workflow
             # else

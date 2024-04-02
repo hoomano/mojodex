@@ -138,6 +138,7 @@ from user_task_execution_purchase_updater import UserTaskExecutionPurchaseUpdate
 
 userTaskExecutionPurchaseUpdater = UserTaskExecutionPurchaseUpdater()
 
+from mojodex_core.logging_handler import log_error
 
 @app.route("/")
 def index():

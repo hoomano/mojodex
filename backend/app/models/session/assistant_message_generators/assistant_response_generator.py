@@ -1,7 +1,6 @@
 from models.session.assistant_message_context.chat_context import ChatContext
 from models.session.assistant_message_generators.assistant_message_generator import AssistantMessageGenerator
 from abc import ABC, abstractmethod
-import json
 
 from app import model_loader
 

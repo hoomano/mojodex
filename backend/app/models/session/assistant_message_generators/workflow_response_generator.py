@@ -1,14 +1,12 @@
 from models.session.assistant_message_generators.assistant_message_generator import AssistantMessageGenerator
 from models.session.assistant_message_state.workflow_chat_state import WorkflowChatState
 from models.knowledge.knowledge_manager import KnowledgeManager
-from models.session.assistant_message_state.chat_state import ChatState
 from models.session.assistant_message_context.chat_context import ChatContext
 from models.session.assistant_message_generators.assistant_response_generator import AssistantResponseGenerator
-from app import llm, llm_conf, llm_backup_conf, placeholder_generator, server_socket
+from app import placeholder_generator, server_socket
 
 class WorkflowAssistantResponseGenerator(AssistantResponseGenerator):
     prompt_template_path = "/data/prompts/workflows/run.txt"
-    message_generator = llm(llm_conf,label="CHAT", llm_backup_conf = llm_backup_conf)
     user_instruction_start_tag, user_instruction_end_tag = "<user_instruction>", "</user_instruction>"
     ask_for_clarification_start_tag, ask_for_clarification_end_tag = "<ask_for_clarification>", "</ask_for_clarification>"
     inform_user_start_tag, inform_user_end_tag = "<inform_user>", "</inform_user>"
@@ -19,7 +17,7 @@ class WorkflowAssistantResponseGenerator(AssistantResponseGenerator):
         self.use_message_placeholder=use_message_placeholder
         chat_state = WorkflowChatState(running_user_workflow_execution_pk)
         chat_context= ChatContext(user, session_id, user_messages_are_audio, chat_state)
-        super().__init__(self.prompt_template_path, self.message_generator, chat_context,tag_proper_nouns, 0)
+        super().__init__(self.prompt_template_path, chat_context, tag_proper_nouns, 0)
 
 
     def _get_message_placeholder(self):

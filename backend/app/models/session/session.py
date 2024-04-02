@@ -1,5 +1,6 @@
 import os
-from app import db, log_error, server_socket, time_manager, socketio_message_sender, main_logger
+from app import db, server_socket, time_manager, socketio_message_sender, main_logger
+from mojodex_core.logging_handler import log_error
 from models.session.assistant_message_generators.workflow_response_generator import WorkflowAssistantResponseGenerator
 from models.session.assistant_message_generators.general_chat_response_generator import GeneralChatResponseGenerator
 from models.session.assistant_message_generators.task_assistant_response_generator import TaskAssistantResponseGenerator

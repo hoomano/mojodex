@@ -1,7 +1,8 @@
 import os
 from flask import request
 from flask_restful import Resource
-from app import db, authenticate, log_error
+from app import db, authenticate
+from mojodex_core.logging_handler import log_error
 from mojodex_core.entities import *
 from sqlalchemy import and_, or_, func
 from sqlalchemy.sql.functions import coalesce

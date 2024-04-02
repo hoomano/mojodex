@@ -661,7 +661,7 @@ SELECT pg_catalog.setval('public.md_user_workflow_execution_seq', 1, true);
 -- Name: md_user_workflow_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
 --
 
-SELECT pg_catalog.setval('public.md_user_workflow_seq', 2, true);
+SELECT pg_catalog.setval('public.md_user_workflow_seq', 1, true);
 
 --
 -- Name: md_user_workflow_step_execution_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
@@ -673,13 +673,13 @@ SELECT pg_catalog.setval('public.md_user_workflow_step_execution_seq', 1, true);
 -- Name: md_workflow_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
 --
 
-SELECT pg_catalog.setval('public.md_workflow_seq', 2, true);
+SELECT pg_catalog.setval('public.md_workflow_seq', 1, true);
 
 --
 -- Name: md_workflow_step_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
 --
 
-SELECT pg_catalog.setval('public.md_workflow_step_seq', 4, true);
+SELECT pg_catalog.setval('public.md_workflow_step_seq', 2, true);
 
 --
 -- PostgreSQL database dump complete

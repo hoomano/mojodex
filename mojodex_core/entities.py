@@ -772,7 +772,6 @@ class MdUserWorkflowStepExecution(Base):
 
     md_user_workflow_execution = relationship('MdUserWorkflowExecution', back_populates='md_user_workflow_step_execution')
     md_workflow_step = relationship('MdWorkflowStep', back_populates='md_user_workflow_step_execution')
-    md_user_workflow_step_execution_run = relationship('MdUserWorkflowStepExecutionRun', back_populates='md_user_workflow_step_execution')
 
 
 class MdProducedTextVersion(Base):
@@ -827,36 +826,3 @@ class MdTodoScheduling(Base):
     reschedule_justification = Column(Text)
 
     md_todo = relationship('MdTodo', back_populates='md_todo_scheduling')
-
-
-class MdUserWorkflowStepExecutionRun(Base):
-    __tablename__ = 'md_user_workflow_step_execution_run'
-    __table_args__ = (
-        ForeignKeyConstraint(['user_workflow_step_execution_fk'], ['md_user_workflow_step_execution.user_workflow_step_execution_pk'], name='user_wf_step_exec_run_user_wf_step_exec_fk_fkey'),
-        PrimaryKeyConstraint('user_workflow_step_execution_run_pk', name='md_user_workflow_step_execution_run_pkey')
-    )
-
-    user_workflow_step_execution_run_pk = Column(Integer, Sequence('md_user_workflow_step_execution_run_seq'), primary_key=True)
-    user_workflow_step_execution_fk = Column(Integer, nullable=False)
-    creation_date = Column(DateTime, nullable=False, server_default=text('now()'))
-    validated = Column(Boolean, nullable=False, server_default=text('false'))
-    parameter = Column(Text)
-
-    md_user_workflow_step_execution = relationship('MdUserWorkflowStepExecution', back_populates='md_user_workflow_step_execution_run')
-    md_user_workflow_step_execution_run_execution = relationship('MdUserWorkflowStepExecutionRunExecution', back_populates='md_user_workflow_step_execution_run')
-
-
-class MdUserWorkflowStepExecutionRunExecution(Base):
-    __tablename__ = 'md_user_workflow_step_execution_run_execution'
-    __table_args__ = (
-        ForeignKeyConstraint(['user_workflow_step_execution_run_fk'], ['md_user_workflow_step_execution_run.user_workflow_step_execution_run_pk'], name='md_user_wf_step_exec_run_exec_user_wf_step_exec_run_fk_fkey'),
-        PrimaryKeyConstraint('user_workflow_step_execution_run_execution_pk', name='md_user_workflow_step_execution_run_execution_pkey')
-    )
-
-    user_workflow_step_execution_run_execution_pk = Column(Integer, Sequence('md_user_workflow_step_execution_run_execution_seq'), primary_key=True)
-    user_workflow_step_execution_run_fk = Column(Integer, nullable=False)
-    creation_date = Column(DateTime, nullable=False, server_default=text('now()'))
-    result = Column(Text)
-    learned_instruction = Column(Text)
-
-    md_user_workflow_step_execution_run = relationship('MdUserWorkflowStepExecutionRun', back_populates='md_user_workflow_step_execution_run_execution')

@@ -1,6 +1,7 @@
 from flask import request
 from flask_restful import Resource
 from app import db
+import os
 from mojodex_core.logging_handler import log_error
 from mojodex_core.entities import *
 from models.workflows.steps_library import steps_class
@@ -9,6 +10,16 @@ class Workflow(Resource):
 
     def put(self):
         """Create new workflow"""
+        if not request.is_json:
+            return {"error": "Request must be JSON"}, 400
+
+        try:
+            secret = request.headers['Authorization']
+            if secret != os.environ["BACKOFFICE_SECRET"]:
+                return {"error": "Authentication error : Wrong secret"}, 403
+        except KeyError:
+            return {"error": f"Missing Authorization secret in headers"}, 403
+
         try:
             timestamp = request.json['datetime']
             name = request.json['name']

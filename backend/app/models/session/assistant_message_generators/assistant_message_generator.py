@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from models.session.assistant_message_context.assistant_message_context import AssistantMessageContext
 from jinja2 import Template
 
 class AssistantMessageGenerator(ABC):
@@ -7,11 +8,10 @@ class AssistantMessageGenerator(ABC):
     """
     logger_prefix = "AssistantMessageGenerator :: "
 
-    def __init__(self, prompt_template_path, tag_proper_nouns, assistant_message_context):
+    def __init__(self, prompt_template_path, tag_proper_nouns, assistant_message_context: AssistantMessageContext):
         """
         Constructor for AssistantMessageGenerator
         :param prompt_template_path: path to the prompt template
-        :param message_generator: message generator
         :param tag_proper_nouns: whether to tag proper nouns
         :param assistant_message_context: context for the assistant message"""
         try:

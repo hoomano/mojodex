@@ -24,9 +24,11 @@ class TaskEnabledAssistantResponseGenerator(AssistantResponseGenerator, ABC):
 
     def __init__(self, prompt_template_path, mojo_message_token_stream_callback, draft_token_stream_callback, use_message_placeholder, use_draft_placeholder, tag_proper_nouns, chat_context, llm_call_temperature):
         try:
-            super().__init__(prompt_template_path, chat_context, use_message_placeholder, use_draft_placeholder, tag_proper_nouns, llm_call_temperature)
+            super().__init__(prompt_template_path, chat_context, tag_proper_nouns, llm_call_temperature)
             self.mojo_message_token_stream_callback = mojo_message_token_stream_callback
             self.draft_token_stream_callback = draft_token_stream_callback
+            self.use_message_placeholder = use_message_placeholder
+            self.use_draft_placeholder = use_draft_placeholder
             self.task_input_manager = TaskInputsManager(chat_context.session_id)
             self.task_tool_manager = TaskToolManager(chat_context.session_id)
             self.task_executor = TaskExecutor(chat_context.session_id, chat_context.user_id)
@@ -54,7 +56,7 @@ class TaskEnabledAssistantResponseGenerator(AssistantResponseGenerator, ABC):
             elif self.use_draft_placeholder:
                 placeholder = self._get_task_execution_placeholder()
             if placeholder:
-                placeholder_generator.stream(placeholder, self._token_stream_callback)
+                placeholder_generator.stream(placeholder, self._token_callback)
                 return placeholder
         except Exception as e:
             raise Exception(f"{TaskEnabledAssistantResponseGenerator.logger_prefix} _handle_placeholder :: {e}")

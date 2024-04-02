@@ -1,3 +1,4 @@
+from models.session.assistant_message_context.chat_context import ChatContext
 from models.session.assistant_message_generators.assistant_message_generator import AssistantMessageGenerator
 from abc import ABC, abstractmethod
 
@@ -10,19 +11,16 @@ class AssistantResponseGenerator(AssistantMessageGenerator, ABC):
 
     user_language_start_tag, user_language_end_tag = "<user_language>",  "</user_language>"
 
-    def __init__(self, prompt_template_path, chat_context, use_message_placeholder, use_draft_placeholder, tag_proper_nouns, llm_call_temperature):
+
+    def __init__(self, prompt_template_path, chat_context: ChatContext, tag_proper_nouns, llm_call_temperature):
         """
         Constructor for AssistantResponseGenerator
         :param prompt_template_path: path to the prompt template
         :param chat_context: context for the assistant message
-        :param use_message_placeholder: whether to use the message placeholder
-        :param use_draft_placeholder: whether to use the draft placeholder
         :param tag_proper_nouns: whether to tag proper nouns
         :param llm_call_temperature: temperature for the LLM call
         """
         try:
-            self.use_message_placeholder = use_message_placeholder
-            self.use_draft_placeholder = use_draft_placeholder
             self.llm_call_temperature = llm_call_temperature
             super().__init__(prompt_template_path, tag_proper_nouns, chat_context)
         except Exception as e:
@@ -38,7 +36,6 @@ class AssistantResponseGenerator(AssistantMessageGenerator, ABC):
         try:
             conversation_list = self.context.state.get_conversation_as_list(self.context.session_id)
             messages = [{"role": "system", "content": prompt}] + conversation_list
-
             responses = model_loader.main_llm.invoke(messages, self.context.user_id,
                                                         temperature=0,
                                                         max_tokens=4000,

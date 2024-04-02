@@ -1,6 +1,7 @@
 import os
 from app import db, server_socket, time_manager, socketio_message_sender, main_logger
 from mojodex_core.logging_handler import log_error
+from models.session.assistant_message_generators.workflow_response_generator import WorkflowAssistantResponseGenerator
 from models.session.assistant_message_generators.general_chat_response_generator import GeneralChatResponseGenerator
 from models.session.assistant_message_generators.task_assistant_response_generator import TaskAssistantResponseGenerator
 from models.session.assistant_message_generators.assistant_message_generator import AssistantMessageGenerator
@@ -10,7 +11,7 @@ from models.voice_generator import VoiceGenerator
 from packaging import version
 from functools import wraps
 from models.produced_text_manager import ProducedTextManager
-
+from sqlalchemy.orm.attributes import flag_modified
 
 class Session:
     logger_prefix = "Session"
@@ -158,8 +159,6 @@ class Session:
             raise Exception(f"_produced_text_stream_callback :: {e}")
 
 
-
-
     ### STREAM ACKNOWLEDGEMENTS ###
     def set_produced_text_version_read_by_user(self, produced_text_version_pk):
         produced_text_version = db.session.query(MdProducedTextVersion).filter(
@@ -178,8 +177,6 @@ class Session:
             db.session.commit()
         except Exception as e:
             log_error("Error during set_mojo_message_read_by_user: " + str(e))
-
-
 
     ### PROCESS MESSAGE ###
     def user_inputs_processor(generate_mojo_message_func):
@@ -229,10 +226,13 @@ class Session:
         if "origin" in message and message["origin"] == "home_chat":
             user_task_execution_pk = message['user_task_execution_pk'] if 'user_task_execution_pk' in message else None
             return self.__manage_home_chat_session(self.platform, user_task_execution_pk, use_message_placeholder, use_draft_placeholder)
-        elif 'user_task_execution_pk' in message:
+        elif 'user_task_execution_pk' in message and message['user_task_execution_pk'] is not None:
             # For now only task sessions
             user_task_execution_pk = message['user_task_execution_pk']
             return self.__manage_task_session(self.platform, user_task_execution_pk, use_message_placeholder, use_draft_placeholder)
+        elif 'user_workflow_execution_pk' in message and message['user_workflow_execution_pk'] is not None:
+            user_workflow_execution_pk = message['user_workflow_execution_pk']
+            return self.__manage_workflow_session(self.platform, user_workflow_execution_pk, use_message_placeholder, use_draft_placeholder)
         else:
             raise Exception("Unknown message origin")
 
@@ -254,6 +254,12 @@ class Session:
         self.platform = platform
         return self.__manage_task_session(self.platform, user_task_execution_pk, use_message_placeholder=use_message_placeholder, use_draft_placeholder=use_draft_placeholder)
 
+    @user_inputs_processor
+    def process_workflow_step_run_rejection(self, platform, user_workflow_execution_pk, use_message_placeholder=False, use_draft_placeholder=False):
+        self.platform = platform
+        return self.__manage_workflow_session(platform, user_workflow_execution_pk, use_message_placeholder, use_draft_placeholder)
+
+
     def process_mojo_message(self, response_message, response_language):
         """
         Processes a mojo message.
@@ -273,13 +279,10 @@ class Session:
             db_message = self._new_message(response_message, Session.agent_message_key, "mojo_message")
             message_pk = db_message.message_pk
             response_message["message_pk"] = message_pk
-            print(f"🟢 text in response_message: {'text' in response_message} platform: {self.platform} -- self.voice_generator is not None: {self.voice_generator is not None}")
             response_message["audio"] = "text" in response_message and self.platform == "mobile" and self.voice_generator is not None
-
             # Does message contains a produced_text ?
             event_name = 'draft_message' if "produced_text_version_pk" in response_message else 'mojo_message'
             socketio_message_sender.send_mojo_message_with_ack(response_message, self.id, event_name = event_name)
-
             if response_message["audio"]:
                 output_filename = os.path.join(self.__get_mojo_messages_audio_storage(), f"{message_pk}.mp3")
                 try:
@@ -287,6 +290,9 @@ class Session:
                 except Exception as e:
                     db_message.in_error_state = datetime.now()
                     log_error(str(e), session_id=self.id)
+            db_message.message = response_message
+            flag_modified(db_message, "message")
+            db.session.commit()
         except Exception as e:
             raise Exception(f"process_mojo_message :: {e}")
 
@@ -318,9 +324,7 @@ class Session:
                                                                                user_messages_are_audio= platform=="mobile",
                                                                                running_user_task_execution_pk=user_task_execution_pk)
             response_message = general_chat_response_generator.generate_message()
-            print(f"👉 mojo_message: {response_message}")
             response_language = general_chat_response_generator.context.state.current_language
-            print(f"👉 response_language: {response_language}")
             return response_message, response_language
         except Exception as e:
             raise Exception(f"__manage_home_chat_session :: {e}")
@@ -358,6 +362,39 @@ class Session:
             return response_message, response_language
         except Exception as e:
             raise Exception(f"__manage_task_session :: {e}")
+
+
+    def __manage_workflow_session(self, platform, user_workflow_execution_pk, use_message_placeholder=False, use_draft_placeholder=False):
+        """
+        Manages a workflow session.
+
+        Args:
+            platform (str): The platform the user is on.
+            user_workflow_execution_pk (str): The primary key of the running user task execution if any
+            use_message_placeholder (bool, optional): Whether to use a message placeholder. Defaults to False.
+            use_draft_placeholder (bool, optional): Whether to use a draft placeholder. Defaults to False.
+
+        Returns:
+            tuple: The response message and response language.
+
+        Raises:
+            Exception: If there is an error during management.
+        """
+        try:
+            tag_proper_nouns = platform == "mobile"
+            workflow_assistant_response_generator = WorkflowAssistantResponseGenerator(mojo_message_token_stream_callback=self._mojo_message_stream_callback,
+                                                                              use_message_placeholder=use_message_placeholder,
+                                                                               tag_proper_nouns=tag_proper_nouns,
+                                                                               user=self._get_user(),
+                                                                               session_id=self.id,
+                                                                               user_messages_are_audio= platform=="mobile",
+                                                                               running_user_workflow_execution_pk=user_workflow_execution_pk)
+
+            response_message = workflow_assistant_response_generator.generate_message()
+            response_language = workflow_assistant_response_generator.context.state.current_language
+            return response_message, response_language
+        except Exception as e:
+            raise Exception(f"__manage_workflow_session :: {e}")
 
     def __process_error_during_message_generation(self, e):
         """

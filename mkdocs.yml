@@ -77,6 +77,9 @@ nav:
       - Proactive To-do: 
         - What's a to-do: design-principles/to-do_list/whats_a_todo.md
         - How it works: design-principles/to-do_list/how_todo_works.md
+      - Workflows:
+        - What's a workflow: design-principles/workflows/whats_a_workflow.md
+        - How it works: design-principles/workflows/execute_workflow.md
     - Technical Architecture:
       - Overview: technical-architecture/overview.md
       - Backend: technical-architecture/backend.md
@@ -101,5 +104,7 @@ nav:
     - Configure a new task: guides/tasks/new_task.md
     - New Task example: guides/tasks/example.md
     - Add a new tool: guides/tools/new_tool.md
+    - Configure a new workflow: guides/workflows/new_workflow.md
     - Tutorial - Sales Assistant Example: guides/sales_assistant_example/index.md
     - Sales Assistant Team Guide: guides/sales_assistant_example/sales_assistant_scope_template.md
+

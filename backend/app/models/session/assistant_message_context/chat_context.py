@@ -1,10 +1,11 @@
+from models.session.assistant_message_state.chat_state import ChatState
 from models.session.assistant_message_context.assistant_message_context import AssistantMessageContext
 
 
 class ChatContext(AssistantMessageContext):
     logger_prefix = "ChatContext :: "
 
-    def __init__(self, user, session_id, user_messages_are_audio, chat_state):
+    def __init__(self, user, session_id, user_messages_are_audio, chat_state: ChatState):
         try:
             self.state = chat_state
             self.user_messages_are_audio = user_messages_are_audio

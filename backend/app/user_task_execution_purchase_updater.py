@@ -2,7 +2,7 @@ import os
 from datetime import datetime
 
 import socketio
-from app import log_error
+from mojodex_core.logging_handler import log_error
 from mojodex_backend_logger import MojodexBackendLogger
 import requests
 

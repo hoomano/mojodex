@@ -6,7 +6,7 @@ from models.session.assistant_message_generators.assistant_message_generator imp
 from models.produced_text_manager import ProducedTextManager
 from models.session.assistant_message_generators.assistant_response_generator import AssistantResponseGenerator
 from abc import ABC, abstractmethod
-from app import placeholder_generator, db, llm, llm_conf, llm_backup_conf, server_socket
+from app import placeholder_generator, db, server_socket
 from mojodex_core.entities import *
 from mojodex_core.logging_handler import log_error
 from models.knowledge.knowledge_manager import KnowledgeManager
@@ -21,11 +21,10 @@ class TaskEnabledAssistantResponseGenerator(AssistantResponseGenerator, ABC):
 
     # TODO: with @kelly check how to mpt-ize this
     task_specific_instructions_prompt = "/data/prompts/tasks/task_specific_instructions.txt"
-    message_generator = llm(llm_conf,label="CHAT", llm_backup_conf = llm_backup_conf)
 
     def __init__(self, prompt_template_path, mojo_message_token_stream_callback, draft_token_stream_callback, use_message_placeholder, use_draft_placeholder, tag_proper_nouns, chat_context, llm_call_temperature):
         try:
-            super().__init__(prompt_template_path, self.message_generator, chat_context, tag_proper_nouns, llm_call_temperature)
+            super().__init__(prompt_template_path, chat_context, tag_proper_nouns, llm_call_temperature)
             self.mojo_message_token_stream_callback = mojo_message_token_stream_callback
             self.draft_token_stream_callback = draft_token_stream_callback
             self.use_message_placeholder = use_message_placeholder

@@ -8,16 +8,14 @@ class AssistantMessageGenerator(ABC):
     """
     logger_prefix = "AssistantMessageGenerator :: "
 
-    def __init__(self, prompt_template_path, message_generator, tag_proper_nouns, assistant_message_context: AssistantMessageContext):
+    def __init__(self, prompt_template_path, tag_proper_nouns, assistant_message_context: AssistantMessageContext):
         """
         Constructor for AssistantMessageGenerator
         :param prompt_template_path: path to the prompt template
-        :param message_generator: message generator
         :param tag_proper_nouns: whether to tag proper nouns
         :param assistant_message_context: context for the assistant message"""
         try:
             self.prompt_template_path = prompt_template_path
-            self.message_generator = message_generator
             self.tag_proper_nouns = tag_proper_nouns
             self.context = assistant_message_context
         except Exception as e:
@@ -91,9 +89,6 @@ class AssistantMessageGenerator(ABC):
             if placeholder:
                 return placeholder
             prompt = self._render_prompt_from_template()
-            # write prompt in a file
-            with open('/data/prompt.txt', 'w') as f:
-                f.write(prompt)
             llm_output = self._generate_message_from_prompt(prompt)
             if llm_output:
                 return self._handle_llm_output(llm_output)

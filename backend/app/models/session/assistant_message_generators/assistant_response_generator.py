@@ -3,6 +3,8 @@ from models.session.assistant_message_generators.assistant_message_generator imp
 from abc import ABC, abstractmethod
 import json
 
+from app import model_loader
+
 class AssistantResponseGenerator(AssistantMessageGenerator, ABC):
     """
     Abstract class for generating responses from the assistant within the context of a conversation
@@ -10,18 +12,18 @@ class AssistantResponseGenerator(AssistantMessageGenerator, ABC):
 
     user_language_start_tag, user_language_end_tag = "<user_language>",  "</user_language>"
 
-    def __init__(self, prompt_template_path, message_generator, chat_context: ChatContext, tag_proper_nouns, llm_call_temperature):
+
+    def __init__(self, prompt_template_path, chat_context: ChatContext, tag_proper_nouns, llm_call_temperature):
         """
         Constructor for AssistantResponseGenerator
         :param prompt_template_path: path to the prompt template
-        :param message_generator: message generator
         :param chat_context: context for the assistant message
         :param tag_proper_nouns: whether to tag proper nouns
         :param llm_call_temperature: temperature for the LLM call
         """
         try:
             self.llm_call_temperature = llm_call_temperature
-            super().__init__(prompt_template_path, message_generator, tag_proper_nouns, chat_context)
+            super().__init__(prompt_template_path, tag_proper_nouns, chat_context)
         except Exception as e:
             raise Exception(f"AssistantResponseGenerator :: __init__ :: {e}")
 
@@ -35,12 +37,10 @@ class AssistantResponseGenerator(AssistantMessageGenerator, ABC):
         try:
             conversation_list = self.context.state.get_conversation_as_list(self.context.session_id)
             messages = [{"role": "system", "content": prompt}] + conversation_list
-            # write messages in indented json in /data/conversation.json
-            with open("/data/conversation.json", "w") as file:
-                file.write(json.dumps(messages, indent=4))
-            responses = self.message_generator.invoke(messages, self.context.user_id,
+            responses = model_loader.main_llm.invoke(messages, self.context.user_id,
                                                         temperature=0,
                                                         max_tokens=4000,
+                                                        label="CHAT",
                                                         stream=True, stream_callback=self._token_callback)
 
             return responses[0].strip() if responses else None

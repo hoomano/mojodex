@@ -3,7 +3,8 @@ import os
 from datetime import datetime
 from flask import request
 from flask_restful import Resource
-from app import db, authenticate, log_error, executor
+from app import db, authenticate
+from mojodex_core.logging_handler import log_error
 from mojodex_core.entities import *
 
 from models.session.session import Session

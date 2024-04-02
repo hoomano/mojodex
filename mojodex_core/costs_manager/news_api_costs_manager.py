@@ -1,6 +1,6 @@
 from datetime import datetime
 from mojodex_core.costs_manager.costs_manager import CostsManager
-from mojodex_core.logging_handler import send_admin_error_email
+from mojodex_core.mail import send_admin_error_email
 
 
 class NewsAPICostsManager(CostsManager):

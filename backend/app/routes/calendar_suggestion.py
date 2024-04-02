@@ -2,7 +2,8 @@ import os
 import time
 from flask import request
 from flask_restful import Resource
-from app import authenticate, db, log_error, server_socket
+from app import authenticate, db, server_socket
+from mojodex_core.logging_handler import log_error
 
 from datetime import datetime, timedelta
 from jinja2 import Template
@@ -12,7 +13,7 @@ from mojodex_core.llm_engine.mpt import MPT
 
 from placeholder_generator import PlaceholderGenerator
 from mojodex_core.json_loader import json_decode_retry
-from app import on_json_error
+from mojodex_core.logging_handler import on_json_error
 from packaging import version
 
 

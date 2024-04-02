@@ -4,14 +4,15 @@ from datetime import datetime
 from bs4 import BeautifulSoup
 from flask import request
 from flask_restful import Resource
-from app import authenticate, log_error, db
+from app import authenticate, db
+from mojodex_core.logging_handler import log_error
 from mojodex_core.entities import MdPurchase, MdProduct, MdProductCategory, MdUser, MdEvent
 from models.purchase_manager import PurchaseManager
 
-from app import send_admin_email
+from mojodex_core.mail import send_admin_email
 from sqlalchemy import or_
 
-from app import mojo_mail_client
+from mojodex_core.mail import mojo_mail_client
 
 
 class FreeProductAssociation(Resource):

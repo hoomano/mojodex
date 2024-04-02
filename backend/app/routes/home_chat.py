@@ -4,7 +4,8 @@ from models.session.assistant_message_generators.welcome_message_generator impor
 from flask import request
 from flask_restful import Resource
 from models.session.session import Session as SessionModel
-from app import authenticate, db, log_error, server_socket
+from app import authenticate, db, server_socket
+from mojodex_core.logging_handler import log_error
 from datetime import datetime, timedelta
 from mojodex_core.entities import *
 from packaging import version

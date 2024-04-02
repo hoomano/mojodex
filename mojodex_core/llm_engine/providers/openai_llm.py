@@ -16,7 +16,7 @@ mojo_openai_logger = MojodexCoreLogger("mojo_openai_logger")
 
 class OpenAILLM(LLM):
 
-    def __init__(self, llm_conf, label='undefined', llm_backup_conf=None, max_retries=3):
+    def __init__(self, llm_conf, llm_backup_conf=None, max_retries=3):
         """
         :param api_key: API key to call openAI
         :param api_base: Endpoint to call openAI
@@ -27,18 +27,15 @@ class OpenAILLM(LLM):
         """
         try:
             api_key = llm_conf["api_key"]
-            api_base = llm_conf["api_base"]
-            api_version = llm_conf["api_version"]
-            api_type = llm_conf["api_type"]
-            model = llm_conf["deployment_id"]
-            self.label = label
+            api_base = llm_conf["api_base"] if "api_base" in llm_conf else None
+            api_version = llm_conf["api_version"] if "api_version" in llm_conf else None
+            api_type = llm_conf["api_type"] if "api_type" in llm_conf else "openai"
+            model = llm_conf["deployment_id"] if "deployment_id" in llm_conf else llm_conf["model"]
             # if dataset_dir does not exist, create it
             if not os.path.exists(self.dataset_dir):
                 os.mkdir(self.dataset_dir)
             if not os.path.exists(os.path.join(self.dataset_dir, "chat")):
                 os.mkdir(os.path.join(self.dataset_dir, "chat"))
-            if not os.path.exists(os.path.join(self.dataset_dir, "chat", self.label)):
-                os.mkdir(os.path.join(self.dataset_dir, "chat", self.label))
 
             self.model = model
             self.max_retries = max_retries
@@ -49,20 +46,19 @@ class OpenAILLM(LLM):
                 api_key=api_key,
                 max_retries=0 if llm_backup_conf else self.max_retries
             ) if api_type == 'azure' else OpenAI(api_key=api_key)
-            
+
             self.client_backup = None
             if llm_backup_conf:
                 self.client_backup = AzureOpenAI(
-                    api_version=llm_backup_conf["api_version"],
-                    azure_endpoint=llm_backup_conf["api_base"],
-                    azure_deployment=llm_backup_conf["deployment_id"],
+                    api_version=llm_backup_conf["api_version"] if "api_version" in llm_backup_conf else None,
+                    azure_endpoint=llm_backup_conf["api_base"] if "api_base" in llm_backup_conf else None,
+                    azure_deployment=llm_backup_conf["deployment_id"] if "deployment_id" in llm_backup_conf else llm_backup_conf["model"],
                     api_key=llm_backup_conf["api_key"],
                     max_retries=self.max_retries
                 ) if api_type == 'azure' else OpenAI(api_key=llm_backup_conf["api_key"])
 
             self.tokens_costs_manager = TokensCostsManager()
-            LLM.__init__(self, llm_conf, llm_backup_conf=llm_backup_conf,
-                         label=label, max_retries=self.max_retries)
+            LLM.__init__(self, llm_conf, llm_backup_conf=llm_backup_conf, max_retries=self.max_retries)
         except Exception as e:
             raise Exception(f"🔴 Error initializing OpenAILLM __init__  : {e}")
 
@@ -161,11 +157,15 @@ class OpenAILLM(LLM):
                         stream=False, stream_callback=None, json_format=False, user_task_execution_pk=None,
                         task_name_for_system=None):
         try:
+            # put a reference to the execution with the filepath of the MPT instruction
+            # label is the filename without the file extension
+            label = mpt.filepath.split('/')[-1].split('.')[0]
+            
             if self.model not in mpt.models:
                 mojo_openai_logger.warning(
                     f"{mpt} does not contain model: {self.model} in its dashbangs")
             messages = [{"role": "user", "content": mpt.prompt}]
-            responses = self.recursive_invoke(messages, user_id, temperature, max_tokens,
+            responses = self.recursive_invoke(messages, user_id, temperature, max_tokens, label=label,
                                            frequency_penalty=frequency_penalty, presence_penalty=presence_penalty,
                                            stream=stream, stream_callback=stream_callback, json_format=json_format,
                                            user_task_execution_pk=user_task_execution_pk,
@@ -179,20 +179,26 @@ class OpenAILLM(LLM):
                 f"🔴 Error in Mojodex OpenAI invoke: {e} - model: {self.model}"
                 )
 
-    def invoke(self, messages: List, user_id, temperature, max_tokens,
+    def invoke(self, messages: List, user_id, temperature, max_tokens, label,
                frequency_penalty=0, presence_penalty=0, stream=False, stream_callback=None, json_format=False,
                user_task_execution_pk=None, task_name_for_system=None):
-        return self.recursive_invoke(messages, user_id, temperature, max_tokens,
+        return self.recursive_invoke(messages, user_id, temperature, max_tokens, label,
                                    frequency_penalty=frequency_penalty, presence_penalty=presence_penalty,
                                    stream=stream, stream_callback=stream_callback, json_format=json_format,
                                    user_task_execution_pk=user_task_execution_pk,
                                    task_name_for_system=task_name_for_system,
                                    n_additional_calls_if_finish_reason_is_length=0)
 
-    def recursive_invoke(self, messages, user_id, temperature, max_tokens,
+    def recursive_invoke(self, messages, user_id, temperature, max_tokens, label,
                        frequency_penalty=0, presence_penalty=0, stream=False, stream_callback=None, json_format=False,
                        user_task_execution_pk=None, task_name_for_system=None, n_additional_calls_if_finish_reason_is_length=0):
         try:
+
+            try:
+                if not os.path.exists(os.path.join(self.dataset_dir, "chat", label)):
+                    os.mkdir(os.path.join(self.dataset_dir, "chat", label))
+            except Exception as e:
+                log_error(f"Error creating directory for dataset chat/{label}", notify_admin=False)
 
             # check complete number of tokens in prompt
             n_tokens_prompt = self.num_tokens_from_messages(messages[:1])
@@ -222,13 +228,13 @@ class OpenAILLM(LLM):
                     [{'role': 'assistant', 'content': response}])
 
             self.tokens_costs_manager.on_tokens_counted(user_id, n_tokens_prompt, n_tokens_conversation, n_tokens_response,
-                                                        self.model, self.label, user_task_execution_pk, task_name_for_system)
+                                                        self.model, label, user_task_execution_pk, task_name_for_system)
             self._write_in_dataset({"temperature": temperature, "max_tokens": max_tokens, "n_responses": 1,
                                     "frequency_penalty": frequency_penalty, "presence_penalty": presence_penalty,
-                                    "messages": messages, "responses": responses}, task_name_for_system, "chat")
+                                    "messages": messages, "responses": responses}, task_name_for_system, "chat", label=label)
             return responses
         except Exception as e:
             log_error(
-                f"Error in Mojodex OpenAI chat for user_id: {user_id} - user_task_execution_pk: {user_task_execution_pk} - task_name_for_system: {task_name_for_system}: {e}", notify_admin=True)
+                f"Error in Mojodex OpenAI chat for user_id: {user_id} - label: {label} user_task_execution_pk: {user_task_execution_pk} - task_name_for_system: {task_name_for_system}: {e}", notify_admin=True)
             raise Exception(
-                f"🔴 Error in Mojodex OpenAI chat: {e} - model: {self.model}")
+                f"🔴 Error in Mojodex OpenAI recursive_invoke() > label: {label} {e} - model: {self.model}")

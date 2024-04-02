@@ -1,11 +1,12 @@
 from gevent import monkey
 
+
 monkey.patch_all()
 
-from mojodex_core.llm_engine.llm import LLM
-from mojodex_core.llm_engine.embedding_provider import EmbeddingProvider
+from mojodex_core.llm_engine.providers.model_loader import ModelLoader
 
-from datetime import datetime
+from mojodex_core.mail import mojo_mail_client
+
 
 from flask import Flask
 from flask_restful import Api
@@ -38,37 +39,10 @@ engine_container = db.get_engine(app)
 
 from background_logger import BackgroundLogger
 
-# Setup the LLM Engine
-llm, llm_conf, llm_backup_conf = LLM.get_llm_provider()
-
-# Setup the embedder
-embedder, embedding_conf = EmbeddingProvider.get_embedding_provider()
+from mojodex_core.llm_engine.providers.model_loader import ModelLoader
+model_loader = ModelLoader()
 
 main_logger = BackgroundLogger("main_logger")
-
-try:
-    from mojodex_core.email_sender import MojoAwsMail
-    mojo_mail_client = MojoAwsMail(
-        sender_name=os.environ['SENDER_NAME'], sender_email=os.environ['SENDER_EMAIL'], region="eu-west-3")
-except Exception as e:
-    main_logger.error(f"Error while initializing MojoAwsMail : {e}")
-    mojo_mail_client = None
-
-admin_email_receivers = os.environ["ADMIN_EMAIL_RECEIVERS"].split(
-    ",") if "ADMIN_EMAIL_RECEIVERS" in os.environ else []
-technical_email_receivers = os.environ["TECHNICAL_EMAIL_RECEIVERS"].split(
-    ",") if "TECHNICAL_EMAIL_RECEIVERS" in os.environ else []
-
-
-def send_admin_error_email(error_message):
-    try:
-        mojo_mail_client.send_mail(subject=f"MOJODEX BACKGROUND ERROR - {os.environ['ENVIRONMENT']}",
-                                   recipients=technical_email_receivers,
-                                   text=error_message)
-    except Exception as e:
-        main_logger.error(f"Error while sending admin email : {e}")
-
-
 
 from models.documents.document_manager import DocumentManager
 document_manager = DocumentManager()
@@ -79,13 +53,6 @@ language_retriever = LanguageRetriever()
 from conversation_retriever import ConversationRetriever
 conversation_retriever = ConversationRetriever()
 
-
-def on_json_error(result, function_name, retries):
-    error_path = f"/data/{function_name}_{datetime.now().isoformat()}.txt"
-    with open(error_path, "w") as f:
-        f.write(result)
-    raise Exception(
-        f"{function_name} - incorrect JSON: aborting after {retries} retries...  data available in {error_path}")
 
 from http_routes import HttpRouteManager
 HttpRouteManager(api)

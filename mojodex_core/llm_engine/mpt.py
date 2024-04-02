@@ -25,18 +25,30 @@ class MPT:
         _perform_templating(**kwargs): Performs templating using the provided keyword arguments.
     """
 
-    def __init__(self, filepath, **kwargs):
+    def __init__(self, filepath, forced_model=None, **kwargs):
         self.logger = MojodexCoreLogger(
                 f"MPT - {filepath}")
         self.filepath = filepath
+        
+        if forced_model is not None:
+            for provider in self.available_models:
+                if provider['model_name'] == forced_model:
+                    self.forced_model : LLM = provider['provider']
+                    self.logger.info(f"Forced model: {forced_model}")
+                    break
+        else:
+            self.forced_model = None
+
         # store the other arguments for later use
         self.kwargs = kwargs
         self.shebangs = []
         self.template = None
         self.raw_template = None
         self._parse_file()
-
-        self.available_models = LLM.get_providers()
+        
+        # TODO: move import to the top
+        from mojodex_core.llm_engine.providers.model_loader import ModelLoader
+        self.available_models, _ = ModelLoader().providers
         self.models = [d['model_name'] for d in self.shebangs]
     
     @property
@@ -146,28 +158,37 @@ class MPT:
         Returns:
             str: The result of the LLM call.
         """
+        try:
+            # for each model in the shebangs, in order, check if there is a provider for it
+            # if there is, call it with the prompt
 
-        # for each model in the shebangs, in order, check if there is a provider for it
-        # if there is, call it with the prompt
+            if self.forced_model is not None:
+                self.logger.info(f"Running prompt with forced model: {self.forced_model}")
+                return self.forced_model.invoke_from_mpt(self, **kwargs)
 
-        selected_model : LLM = None
-        for model in self.models:
-            # TODO: how to use version in provider selection / configuration?
-            #version = shebang['version']
-            for provider in self.available_models:
-                if provider['model_name'] == model:
-                    selected_model = provider['provider']
-                    self.logger.debug(f"Selected model: {model}")
+            selected_model : LLM = None
+            for model in self.models:
+                # TODO: how to use version in provider selection / configuration?
+                #version = shebang['version']
+                for provider in self.available_models:
+                    self.logger.info(f"Checking provider: {provider['model_name']} == {model}?")
+                    if provider['model_name'] == model:
+                        selected_model = provider['provider']
+                        self.logger.debug(f"Selected model: {model}")
+                        break
+                
+                if selected_model is not None:
                     break
-            
-            if selected_model is not None:
-                break
 
-        if selected_model is None:
-            raise Exception(f"No provider found for model: {model}")
-        
-        # put a reference to the execution with the filepath of the MPT instruction
-        # label is the filename without the file extension
-        selected_model.label = self.filepath.split('/')[-1].split('.')[0]
-        
-        return selected_model.invoke_from_mpt(self, **kwargs)
+            if selected_model is None:
+                raise Exception(f"""{self} > No matching provider <> model found:
+providers: {self.available_models}
+MPT's compatibility list: {self.models}
+To fix the problem:
+1. Check the providers in the models.conf file.
+2. Check the MPT file's shebangs for compatibility with the providers.""")
+            
+            return selected_model.invoke_from_mpt(self, **kwargs)
+        except Exception as e:
+            self.logger.error(f"Error running MPT: {self} > {e}")
+            return None

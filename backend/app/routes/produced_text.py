@@ -3,7 +3,8 @@ from datetime import datetime
 from sqlalchemy import func
 from flask import request
 from flask_restful import Resource
-from app import db, authenticate, log_error, authenticate_function
+from app import db, authenticate, authenticate_function
+from mojodex_core.logging_handler import log_error
 from mojodex_core.entities import *
 
 

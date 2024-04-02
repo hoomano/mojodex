@@ -1,6 +1,8 @@
 from models.session.assistant_message_generators.assistant_message_generator import AssistantMessageGenerator
 from abc import ABC, abstractmethod
 
+from app import model_loader
+
 class AssistantResponseGenerator(AssistantMessageGenerator, ABC):
     """
     Abstract class for generating responses from the assistant within the context of a conversation
@@ -8,11 +10,10 @@ class AssistantResponseGenerator(AssistantMessageGenerator, ABC):
 
     user_language_start_tag, user_language_end_tag = "<user_language>",  "</user_language>"
 
-    def __init__(self, prompt_template_path, message_generator, chat_context, use_message_placeholder, use_draft_placeholder, tag_proper_nouns, llm_call_temperature):
+    def __init__(self, prompt_template_path, chat_context, use_message_placeholder, use_draft_placeholder, tag_proper_nouns, llm_call_temperature):
         """
         Constructor for AssistantResponseGenerator
         :param prompt_template_path: path to the prompt template
-        :param message_generator: message generator
         :param chat_context: context for the assistant message
         :param use_message_placeholder: whether to use the message placeholder
         :param use_draft_placeholder: whether to use the draft placeholder
@@ -23,7 +24,7 @@ class AssistantResponseGenerator(AssistantMessageGenerator, ABC):
             self.use_message_placeholder = use_message_placeholder
             self.use_draft_placeholder = use_draft_placeholder
             self.llm_call_temperature = llm_call_temperature
-            super().__init__(prompt_template_path, message_generator, tag_proper_nouns, chat_context)
+            super().__init__(prompt_template_path, tag_proper_nouns, chat_context)
         except Exception as e:
             raise Exception(f"AssistantResponseGenerator :: __init__ :: {e}")
 
@@ -38,9 +39,10 @@ class AssistantResponseGenerator(AssistantMessageGenerator, ABC):
             conversation_list = self.context.state.get_conversation_as_list(self.context.session_id)
             messages = [{"role": "system", "content": prompt}] + conversation_list
 
-            responses = self.message_generator.invoke(messages, self.context.user_id,
+            responses = model_loader.main_llm.invoke(messages, self.context.user_id,
                                                         temperature=0,
                                                         max_tokens=4000,
+                                                        label="CHAT",
                                                         stream=True, stream_callback=self._token_callback)
 
             return responses[0].strip() if responses else None

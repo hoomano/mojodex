@@ -1,7 +1,11 @@
 #! gpt4-turbo/2023-03-15-preview
 #! gpt-4-turbo-preview
+#! gpt4-32k
+#! gpt-4
 #! mistral-large
+#! mistral-medium
 #! mistral:instruct
+#! mistral-tiny
 
 YOUR CONTEXT
 {{mojo_knowledge}}
@@ -28,7 +32,7 @@ USER INPUTS
 -------
 
 {# fewshot for small models like mistral7b, i.e. mistral:instruct with ollama #}
-{% if model in ["mistral:instruct"] %}
+{% if model in ["mistral:instruct", "mistral-tiny", "mistral-medium"] %}
 EXAMPLES OF GOOD EXECUTIONS OF THE TASK SUMMARIZATION:
 
 EXAMPLE 1:
@@ -79,7 +83,7 @@ FORMAT:
 <title>TITLE</title>
 <summary>SUMMARY</summary>
 
-{% if model in ["mistral:instruct"] %}
+{% if model in ["mistral:instruct", "mistral-tiny", "mistral-medium"] %}
 Let's do this step by step.
 First deduce the language of the user from the USER INPUTS values.
 Then, think about a perfect title and summary.

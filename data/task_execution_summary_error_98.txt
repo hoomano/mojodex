@@ -1,6 +1,0 @@
-PROMPT:
-None 
-
-
- RESPONSE:
-None

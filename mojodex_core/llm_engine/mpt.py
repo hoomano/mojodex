@@ -5,6 +5,7 @@ from mojodex_core.llm_engine.llm import LLM
 
 from mojodex_core.logging_handler import MojodexCoreLogger
 
+
 class MPT:
     """
     The MPT class represents a Mojodex Prompt Template.
@@ -27,17 +28,28 @@ class MPT:
 
     def __init__(self, filepath, forced_model=None, **kwargs):
         self.logger = MojodexCoreLogger(
-                f"MPT - {filepath}")
+            f"MPT - {filepath}")
         self.filepath = filepath
         
-        if forced_model is not None:
+        try:
+            from mojodex_core.llm_engine.providers.model_loader import ModelLoader
+            self.available_models, _ = ModelLoader().providers
+        except Exception as e:
+            self.logger.debug(
+                f"{self.filepath} > available_models loading: {e}")
+            self.available_models = None
+
+        if forced_model is not None and self.available_models is not None:
             for provider in self.available_models:
                 if provider['model_name'] == forced_model:
-                    self.forced_model : LLM = provider['provider']
+                    self.forced_model: LLM = provider['provider']
                     self.logger.info(f"Forced model: {forced_model}")
                     break
+            if self.forced_model is None:
+                self.logger.info(f"Forced model not found: {forced_model}")
         else:
             self.forced_model = None
+
 
         # store the other arguments for later use
         self.kwargs = kwargs
@@ -45,12 +57,12 @@ class MPT:
         self.template = None
         self.raw_template = None
         self._parse_file()
-        
+
         # TODO: move import to the top
         from mojodex_core.llm_engine.providers.model_loader import ModelLoader
         self.available_models, _ = ModelLoader().providers
         self.models = [d['model_name'] for d in self.shebangs]
-    
+
     @property
     def tags(self):
         """
@@ -61,7 +73,7 @@ class MPT:
             list: A list of tags extracted from the template.
         """
         return re.findall(r'(<[^>]*>)', self.raw_template)
-    
+
     @property
     def template_values(self):
         """
@@ -84,8 +96,34 @@ class MPT:
         Returns:
             str: The rendered prompt.
         """
-        return self._perform_templating(**self.kwargs)
 
+        if self.forced_model is not None:
+            self.logger.info(
+                f"Prompt template resolved with forced_model: {self.forced_model.name}")
+            return self._perform_templating(**self.kwargs, model=self.forced_model)
+        elif self.matching_model is not None:
+            return self._perform_templating(**self.kwargs, model=self.matching_model.name)
+        else:
+            return self._perform_templating(**self.kwargs)
+
+    @property
+    def matching_model(self) -> LLM:
+        # return the first available model matching with the shebangs
+        try:
+            selected_model = None
+            for model in self.models:
+                for provider in self.available_models:
+                    if provider['model_name'] == model:
+                        selected_model = provider['provider']
+                        break
+
+                if selected_model is not None:
+                    break
+
+            return selected_model
+        except Exception as e:
+            self.logger.error(f"Error finding matching model: {e}")
+            return None
 
     def _parse_file(self):
         """
@@ -106,7 +144,8 @@ class MPT:
                             'version': version if version else 'latest'
                         })
                     else:
-                        raise ValueError(f"Invalid shebang: {shebang}\nFormat: #! model_name(/version)")
+                        raise ValueError(
+                            f"Invalid shebang: {shebang}\nFormat: #! model_name(/version)")
                     i += 1
                 # find the first non empty line after shebangs
                 while not lines[i].strip():
@@ -114,7 +153,7 @@ class MPT:
                 # remove all the empty lines at the end of the file
                 while not lines[-1].strip():
                     lines.pop()
-                
+
                 self.raw_template = ''.join(lines[i:])
                 self.template = jinja2.Template(self.raw_template)
         except FileNotFoundError as e:
@@ -139,8 +178,13 @@ class MPT:
                 # also retrieve the models from the MPT and choose the common model with the current MPT
                 self.models = list(set(self.models).intersection(v.models))
 
-        return self.template.render(**kwargs)
-
+        try:
+            return self.template.render(**kwargs)
+        except Exception as e:
+            self.logger.error(f"Error performing templating: {e}")
+            self.logger.error(
+                f"Check that you passed all the template values: {self.template_values}")
+            return None
 
     def __str__(self):
         """
@@ -150,7 +194,7 @@ class MPT:
             str: A string representation of the MPT object.
         """
         return f"MPT: {self.filepath}"
-    
+
     def run(self, **kwargs):
         """
         Run the prompt to the appropriate model.
@@ -163,32 +207,20 @@ class MPT:
             # if there is, call it with the prompt
 
             if self.forced_model is not None:
-                self.logger.info(f"Running prompt with forced model: {self.forced_model}")
+                self.logger.info(
+                    f"Running prompt with forced model: {self.forced_model.name}")
                 return self.forced_model.invoke_from_mpt(self, **kwargs)
 
-            selected_model : LLM = None
-            for model in self.models:
-                # TODO: how to use version in provider selection / configuration?
-                #version = shebang['version']
-                for provider in self.available_models:
-                    self.logger.info(f"Checking provider: {provider['model_name']} == {model}?")
-                    if provider['model_name'] == model:
-                        selected_model = provider['provider']
-                        self.logger.debug(f"Selected model: {model}")
-                        break
-                
-                if selected_model is not None:
-                    break
-
-            if selected_model is None:
+            elif self.matching_model is not None:
+                return self.matching_model.invoke_from_mpt(self, **kwargs)
+            else:
                 raise Exception(f"""{self} > No matching provider <> model found:
 providers: {self.available_models}
 MPT's compatibility list: {self.models}
 To fix the problem:
 1. Check the providers in the models.conf file.
 2. Check the MPT file's shebangs for compatibility with the providers.""")
-            
-            return selected_model.invoke_from_mpt(self, **kwargs)
+
         except Exception as e:
             self.logger.error(f"Error running MPT: {self} > {e}")
             return None

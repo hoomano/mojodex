@@ -3,7 +3,10 @@ import os
 from datetime import datetime
 
 from mojodex_core.entities import MdError
-from mojodex_core.db import db_session
+try:
+    from mojodex_core.db import db_session
+except ImportError:
+    logging.warning("Error importing db_session from mojodex_core.db")
 
 class EmojiFormatter(logging.Formatter):
     def __init__(self):
@@ -50,15 +53,17 @@ def log_error(error_message, session_id=None, notify_admin=False):
         core_logger.error(error_message)
         error = MdError(session_id=session_id, message=str(error_message),
                         creation_date=datetime.now())
-        db_session.add(error)
-        db_session.commit()
+        if db_session is None:
+            db_session.add(error)
+            db_session.commit()
         if notify_admin:
             from mojodex_core.mail import send_admin_email, technical_email_receivers
             send_admin_email(subject=f"MOJODEX ERROR - {os.environ['ENVIRONMENT']}",
-                             recipients=technical_email_receivers,
-                             text=str(error_message))
+                            recipients=technical_email_receivers,
+                            text=str(error_message))
     except Exception as e:
-        db_session.rollback()
+        if db_session is not None:
+            db_session.rollback()
         core_logger.error(f"Error while storing error to database: {e}")
 
 

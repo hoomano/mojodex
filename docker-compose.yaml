@@ -72,3 +72,11 @@ services:
       - "3000:3000"
     depends_on:
      - mojodex-backend
+
+  mojodex-ollama:
+    image: ollama/ollama
+    container_name: mojodex_ollama
+    volumes:
+      - ~/.ollama:/root/.ollama
+    ports:
+      - 11434:11434

@@ -26,6 +26,7 @@ class OpenAILLM(LLM):
         :param max_retries: max_retries for openAI calls on rateLimit errors, unavailable... (default 3)
         """
         try:
+            self._name = llm_conf["model_name"]
             api_key = llm_conf["api_key"]
             api_base = llm_conf["api_base"] if "api_base" in llm_conf else None
             api_version = llm_conf["api_version"] if "api_version" in llm_conf else None
@@ -62,7 +63,7 @@ class OpenAILLM(LLM):
         except Exception as e:
             raise Exception(f"🔴 Error initializing OpenAILLM __init__  : {e}")
 
-
+    
     def num_tokens_from_messages(self, messages):
         # Working for models gpt-4, gpt-3.5-turbo, text-embedding-ada-002
         # https://github.com/openai/openai-cookbook/blob/main/examples/How_to_count_tokens_with_tiktoken.ipynb

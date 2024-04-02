@@ -5,6 +5,7 @@ from mojodex_core.llm_engine.llm import LLM
 from mojodex_core.llm_engine.providers.openai_embedding import OpenAIEmbedding
 from mojodex_core.llm_engine.providers.openai_llm import OpenAILLM
 from mojodex_core.llm_engine.providers.mistralai_llm import MistralAILLM
+from mojodex_core.llm_engine.providers.ollama_llm import OllamaLLM
 
 import logging
 import os
@@ -18,7 +19,8 @@ class ModelLoader:
 
     def __new__(cls, *args, **kwargs):
         if not cls._instance:
-            cls._instance = super(ModelLoader, cls).__new__(cls, *args, **kwargs)
+            cls._instance = super(ModelLoader, cls).__new__(
+                cls, *args, **kwargs)
         return cls._instance
 
     def __init__(self):
@@ -111,7 +113,8 @@ class ModelLoader:
             provider_name = provider_section.split('/')[0]
             model_name = provider_section.split('/')[1]
             if model_name is None or provider_name is None:
-                logging.error(f"🔴: ERROR: ModelLoader _build_provider() >> in config file {ModelLoader.llm_conf_filename} section __{provider_section}__ provider_name or model_name is missing")
+                logging.error(
+                    f"🔴: ERROR: ModelLoader _build_provider() >> in config file {ModelLoader.llm_conf_filename} section __{provider_section}__ provider_name or model_name is missing")
                 return None, None, None
 
             provider = None
@@ -135,7 +138,8 @@ class ModelLoader:
                         "api_base": provider_conf["gpt4_turbo_azure_openai_api_base"],
                         "api_type": provider_name,
                         "api_version": provider_conf["gpt4_turbo_azure_openai_api_version"],
-                        "deployment_id": provider_conf["gpt4_turbo_azure_openai_deployment_id"]
+                        "deployment_id": provider_conf["gpt4_turbo_azure_openai_deployment_id"],
+                        "model_name": model_name
                     }
                     provider = OpenAILLM(conf)
                 elif model_name == "gpt4-32k":
@@ -144,7 +148,8 @@ class ModelLoader:
                         "api_base": provider_conf["gpt4_azure_openai_api_base"],
                         "api_type": provider_name,
                         "api_version": provider_conf["gpt4_azure_openai_api_version"],
-                        "deployment_id": provider_conf["gpt4_azure_openai_deployment_id"]
+                        "deployment_id": provider_conf["gpt4_azure_openai_deployment_id"],
+                        "model_name": model_name
                     }
                     provider = OpenAILLM(conf)
                 elif model_name == "mistral-large":
@@ -152,38 +157,51 @@ class ModelLoader:
                         "api_key": provider_conf["mistral_azure_api_key"],
                         "endpoint": provider_conf["mistral_azure_api_base"],
                         "api_model": model_name,
-                        "api_type": provider_name
+                        "api_type": provider_name,
+                        "model_name": model_name
                     }
                     provider = MistralAILLM(conf)
 
                 # TODO: migrate to new embedding v3
-                elif model_name == "embedding":
+                elif model_name == OpenAIEmbedding.default_embedding_model:
                     conf = {
                         "api_key": provider_conf["ada_embedding_azure_openai_key"],
                         "api_base": provider_conf["ada_embedding_azure_openai_api_base"],
                         "api_type": provider_name,
                         "api_version": provider_conf["ada_embedding_azure_openai_api_version"],
                         "deployment_id": provider_conf["ada_embedding_azure_openai_deployment_id"] if not provider_conf["ada_embedding_azure_openai_deployment_id"] is None else OpenAIEmbedding.default_embedding_model,
+                        "model_name": model_name
                     }
                     provider = OpenAIEmbedding(conf)
 
             elif provider_name == "mistral":
                 conf = {
                     "api_key": provider_conf["mistral_api_key"],
-                    "api_model": model_name
+                    "api_model": model_name,
+                    "model_name": model_name
                 }
                 provider = MistralAILLM(conf)
 
+            elif provider_name == "ollama":
+                conf = {
+                    "endpoint": provider_conf["ollama_endpoint"],
+                    "model": model_name,
+                    "model_name": model_name
+                }
+                provider = OllamaLLM(conf)
+
             if provider is None:
-                logging.error(f"🔴: ERROR: ModelLoader _build_provider() >> in config file {ModelLoader.llm_conf_filename} section __{provider_section}__ provider has not been implemented")
-                
+                logging.error(
+                    f"🔴: ERROR: ModelLoader _build_provider() >> in config file {ModelLoader.llm_conf_filename} section __{provider_section}__ provider has not been implemented")
+
             return provider_name, model_name, provider, conf
         except Exception as e:
             logging.error(f"🔴: ERROR: ModelLoader _build_provider() >> {e}")
             return None, None, None, None
 
     def _get_llm_provider(self, provider):
-        conf_file = os.path.join(os.path.dirname(__file__), ModelLoader.llm_conf_filename)
+        conf_file = os.path.join(os.path.dirname(
+            __file__), ModelLoader.llm_conf_filename)
         config = configparser.ConfigParser()
         config.read(conf_file)
         return dict(config[provider])
@@ -198,7 +216,7 @@ class ModelLoader:
         except Exception as e:
             logging.error(f"🔴: ERROR: ModelLoader get_llm_providersr() >> me")
             return []
-    
+
     def _get_providers_by_model(self, model):
         """
         Return a list of providers that support the given model.
@@ -228,4 +246,3 @@ class ModelLoader:
             provider, model_name = section.split('/')
             models.append(model_name)
         return set(models)
-

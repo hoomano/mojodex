@@ -16,7 +16,8 @@ class WorkflowExecution:
             self.db_session = Session(engine)
             self.db_object = self._get_db_object(workflow_execution_pk)
             self.workflow = Workflow(self._db_workflow)
-            self.validated_steps_executions = [WorkflowStepExecution(self.db_session, db_validated_step_execution) for
+            self.user_id = self._db_user_workflow.user_id
+            self.validated_steps_executions = [WorkflowStepExecution(self.db_session, db_validated_step_execution, self.user_id) for
                                                db_validated_step_execution in self._db_validated_step_executions]
             self._current_step = None
         except Exception as e:
@@ -61,7 +62,7 @@ class WorkflowExecution:
             )
             self.db_session.add(db_workflow_step_execution)
             self.db_session.commit()
-            return WorkflowStepExecution(self.db_session, db_workflow_step_execution)
+            return WorkflowStepExecution(self.db_session, db_workflow_step_execution, self.user_id)
         except Exception as e:
             raise Exception(f"_generate_new_step_execution :: {e}")
 
@@ -170,7 +171,7 @@ class WorkflowExecution:
             db_step_execution = self.db_session.query(MdUserWorkflowStepExecution) \
                 .filter(MdUserWorkflowStepExecution.user_workflow_step_execution_pk == step_execution_pk) \
                 .first()
-            return WorkflowStepExecution(self.db_session, db_step_execution)
+            return WorkflowStepExecution(self.db_session, db_step_execution, self.user_id)
         except Exception as e:
             raise Exception(f"_last_step_execution :: {e}")
 
@@ -195,7 +196,7 @@ class WorkflowExecution:
                 MdUserWorkflowStepExecution.user_workflow_execution_fk == self.db_object.user_workflow_execution_pk) \
                 .order_by(MdUserWorkflowStepExecution.creation_date.desc()) \
                 .first()
-            return WorkflowStepExecution(self.db_session, db_step_execution)
+            return WorkflowStepExecution(self.db_session, db_step_execution, self.user_id)
         except Exception as e:
             raise Exception(f"_last_step_execution :: {e}")
 
@@ -228,6 +229,15 @@ class WorkflowExecution:
                 .first()
         except Exception as e:
             raise Exception(f"_db_workflow :: {e}")
+
+    @property
+    def _db_user_workflow(self):
+        try:
+            return self.db_session.query(MdUserWorkflow) \
+                .filter(MdUserWorkflow.user_workflow_pk == self.db_object.user_workflow_fk) \
+                .first()
+        except Exception as e:
+            raise Exception(f"_db_user_workflow :: {e}")
 
     def get_before_checkpoint_validated_steps_executions(self, current_step_in_validation):
         try:

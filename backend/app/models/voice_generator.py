@@ -73,5 +73,4 @@ class VoiceGenerator:
             text=text.replace('*', '')
             synthesizer.speak_text(text)
         except Exception as e:
-            print(f"VoiceGenerator :: text_to_speech :: {e}")
             raise Exception(f"Error generating voice with language_code: {language_code}: {e}")

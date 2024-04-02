@@ -24,17 +24,14 @@ class StanzaDividerStep(WorkflowStep):
         return ['stanza_topic']
 
     
-    def _execute(self, parameter: dict, learned_instructions: dict, initial_parameter: dict, past_validated_steps_results: List[dict]):
+    def _execute(self, parameter: dict, learned_instructions: dict, initial_parameter: dict, past_validated_steps_results: List[dict], user_id: str):
         try: 
             # input keys: poem_topic, n_stanza
             poem_topic = parameter['poem_topic']
             n_stanzas = parameter['n_stanzas']
             determine_poem_stanzas_mpt = MPT(StanzaDividerStep.determine_poem_stanzas_filename, poem_topic=poem_topic, n_stanzas=n_stanzas,
                                              learned_instructions=learned_instructions, past_validated_steps_results=past_validated_steps_results)
-            # write determine_poem_stanzas_mpt.prompt into a file
-            with open("/data/determine_poem_stanzas_mpt.txt", "w") as f:
-                f.write(determine_poem_stanzas_mpt.prompt)
-            responses = determine_poem_stanzas_mpt.run(user_id="fake", temperature=0, max_tokens=100)
+            responses = determine_poem_stanzas_mpt.run(user_id=user_id, temperature=0, max_tokens=100)
             response = responses[0].strip().lower()
             topics_list = response.split("\n")
             return [{'stanza_topic': topic} for topic in topics_list]

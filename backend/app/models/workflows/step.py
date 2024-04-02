@@ -39,11 +39,11 @@ class WorkflowStep(ABC):
         return self.db_object.rank
     
     @abstractmethod
-    def _execute(self, parameter: dict, learned_instructions: dict, initial_parameters: dict, past_validated_steps_results: List[dict]):
+    def _execute(self, parameter: dict, learned_instructions: dict, initial_parameters: dict, past_validated_steps_results: List[dict], user_id: str):
        pass
 
     
-    def execute(self, parameter: dict, learned_instructions: dict, initial_parameter: dict, past_validated_steps_results: List[dict]):
+    def execute(self, parameter: dict, learned_instructions: dict, initial_parameter: dict, past_validated_steps_results: List[dict], user_id: str):
         """
         Returns a list of parameters (dict)
         """
@@ -53,7 +53,7 @@ class WorkflowStep(ABC):
             for key in self.input_keys:
                 if key not in parameter:
                     raise Exception(f"execute :: key {key} not in parameter")
-            output = self._execute(parameter, learned_instructions, initial_parameter, past_validated_steps_results) # list of dict
+            output = self._execute(parameter, learned_instructions, initial_parameter, past_validated_steps_results, user_id) # list of dict
             # ensure output is a list
             if not isinstance(output, List):
                 raise Exception(f"execute :: output is not a list")

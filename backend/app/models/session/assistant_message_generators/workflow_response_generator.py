@@ -84,8 +84,6 @@ class WorkflowAssistantResponseGenerator(AssistantResponseGenerator):
                                                     user_company_knowledge=user_company_knowledge,
                                                     workflow=self.context.state.running_user_workflow_execution.workflow,
                                                     user_workflow_inputs=self.context.state.running_user_workflow_execution.json_inputs,
-                                                    # steps_executions=self.context.state.running_user_workflow_execution.steps_executions,
-                                                    # current_step=self.context.state.running_user_workflow_execution.current_step_execution,
                                                     audio_message=self.context.user_messages_are_audio,
                                                     tag_proper_nouns=self.tag_proper_nouns
                                                     )

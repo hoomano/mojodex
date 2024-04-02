@@ -8,10 +8,11 @@ from sqlalchemy.orm.attributes import flag_modified
 class WorkflowStepExecution:
     logger_prefix = "WorkflowStepExecution"
 
-    def __init__(self, db_session, db_object: MdUserWorkflowStepExecution):
+    def __init__(self, db_session, db_object: MdUserWorkflowStepExecution, user_id):
         try:
             self.db_session = db_session
             self.db_object = db_object
+            self.user_id = user_id
             self.workflow_step = steps_class[self._db_workflow_step.name](self._db_workflow_step)
         except Exception as e:
             raise Exception(f"{self.logger_prefix} :: __init__ :: {e}")
@@ -34,7 +35,7 @@ class WorkflowStepExecution:
             step_json["session_id"] = session_id
             server_socket.emit('workflow_step_execution_started', step_json, to=session_id)
             self.result = self.workflow_step.execute(self.parameter, self.get_learned_instructions(), initial_parameter,
-                                                     past_validated_steps_results)
+                                                     past_validated_steps_results, user_id=self.user_id)
         except Exception as e:
             raise Exception(f"execute :: {e}")
 

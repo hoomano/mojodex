@@ -13,7 +13,7 @@ data/users/*
 *.env
 *.conf
 site/
-
+.vscode/
 venv/
 *.egg-info
 

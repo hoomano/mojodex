@@ -37,14 +37,6 @@ class OllamaLLM(LLM):
         except Exception as e:
             raise Exception(
                 f"🔴 Error initializing OllamaLLM __init__  : {e}")
-        
-    @property
-    def name(self):
-        return self._name
-    
-    @name.setter
-    def name(self, value):
-        self._name = value
 
     # TODO: implement this method with appropriate encoding for Ollama
     def num_tokens_from_string(self, string):

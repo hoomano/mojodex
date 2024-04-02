@@ -44,7 +44,7 @@ OPENAI_API_KEY=<your api key here>
 [openai/text-embedding-ada-002]
 OPENAI_API_KEY=<your api key>
 
-# [azure/embedding]
+# [azure/text-embedding-ada-002]
 # ADA_EMBEDDING_AZURE_OPENAI_API_BASE=
 # ADA_EMBEDDING_AZURE_OPENAI_DEPLOYMENT_ID=
 # ADA_EMBEDDING_AZURE_OPENAI_API_VERSION=

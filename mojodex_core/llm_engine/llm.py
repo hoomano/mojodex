@@ -13,11 +13,6 @@ class LLM(ABC):
 
     dataset_dir = "/data/prompts_dataset"
 
-    @property
-    @abstractmethod
-    def name(self):
-        """Name of the model."""
-        pass
 
     @abstractmethod
     def __init__(self, llm_conf, llm_backup_conf=None, max_retries=0):
@@ -31,6 +26,15 @@ class LLM(ABC):
             max_retries (int, optional): The maximum number of retries. Defaults to 0.
         """
         pass
+        
+    @property
+    def name(self):
+        return self._name
+    
+    @name.setter
+    def name(self, value):
+        self._name = value
+
 
     def num_tokens_from_messages(self, string):
         """

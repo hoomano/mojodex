@@ -63,14 +63,6 @@ class OpenAILLM(LLM):
         except Exception as e:
             raise Exception(f"🔴 Error initializing OpenAILLM __init__  : {e}")
 
-        
-    @property
-    def name(self):
-        return self._name
-    
-    @name.setter
-    def name(self, value):
-        self._name = value
     
     def num_tokens_from_messages(self, messages):
         # Working for models gpt-4, gpt-3.5-turbo, text-embedding-ada-002

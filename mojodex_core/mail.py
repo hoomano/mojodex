@@ -8,7 +8,7 @@ admin_email_receivers = os.environ["ADMIN_EMAIL_RECEIVERS"].split(",") if "ADMIN
 technical_email_receivers = os.environ["TECHNICAL_EMAIL_RECEIVERS"].split(",") if "TECHNICAL_EMAIL_RECEIVERS" in os.environ else []
 
 
-class MailClientLogging():
+class MailClientLogging:
     def __init__(self):
         pass
 

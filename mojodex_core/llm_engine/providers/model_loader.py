@@ -163,7 +163,7 @@ class ModelLoader:
                     provider = MistralAILLM(conf)
 
                 # TODO: migrate to new embedding v3
-                elif model_name == "text-embedding-ada-002":
+                elif model_name == OpenAIEmbedding.default_embedding_model:
                     conf = {
                         "api_key": provider_conf["ada_embedding_azure_openai_key"],
                         "api_base": provider_conf["ada_embedding_azure_openai_api_base"],

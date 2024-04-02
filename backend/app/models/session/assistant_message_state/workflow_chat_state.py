@@ -1,8 +1,7 @@
-from models.workflows.workflow import WorkflowExecution
+from models.workflows.workflow_execution import WorkflowExecution
 from models.session.assistant_message_state.chat_state import ChatState
 from app import db
 from mojodex_core.entities import MdWorkflow, MdUserWorkflow, MdUserWorkflowExecution
-from sqlalchemy import or_, func
 
 
 class WorkflowChatState(ChatState):

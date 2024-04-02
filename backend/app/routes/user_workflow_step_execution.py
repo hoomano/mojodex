@@ -1,5 +1,5 @@
 from datetime import datetime
-from models.workflows.workflow import WorkflowExecution
+from models.workflows.workflow_execution import WorkflowExecution
 from flask import request
 from flask_restful import Resource
 from app import db, authenticate, server_socket
@@ -50,9 +50,6 @@ class UserWorkflowStepExecution(Resource):
                         after_checkpoint_validated_steps_executions=workflow_execution.get_after_checkpoint_validated_steps_executions(current_step_in_validation),
                         current_step=current_step_in_validation,
                         )
-                # write text in /data/system_message.txt
-                with open("/data/system_message.txt", "w") as file:
-                    file.write(text)
                     
                 system_message = MdMessage(
                                 session_id=user_workflow_execution.session_id, sender='system', event_name='worflow_step_execution_rejection', message={'text': text},

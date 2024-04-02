@@ -1,6 +1,6 @@
 from datetime import datetime
 from models.session_creator import SessionCreator
-from models.workflows.workflow import WorkflowExecution
+from models.workflows.workflow_execution import WorkflowExecution
 from flask import request
 from flask_restful import Resource
 from app import db, authenticate, server_socket

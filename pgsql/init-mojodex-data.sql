@@ -377,8 +377,7 @@ COPY public.md_user_vocabulary (user_vocabulary_pk, word, creation_date, user_id
 --
 
 COPY public.md_workflow (workflow_pk, name, icon, description, json_inputs_spec) FROM stdin;
-1	Write poem	🌸	Write a poem stanza by stanza	[{"input_name": "poem_topic", "default_value": "Spring"}, {"input_name": "n_stanzas", "default_value": 3}]
-2	Translation	🌐	Translate a text	[{"input_name": "text", "default_value": "salut\\ncomment \\u00e7a va?"}, {"input_name": "target_language", "default_value": "en"}]
+1	Write poem	🌸	Write a poem stanza by stanza	[{"input_name": "poem_topic"}, {"input_name": "n_stanzas"}]
 \.
 
 
@@ -389,7 +388,6 @@ COPY public.md_workflow (workflow_pk, name, icon, description, json_inputs_spec)
 
 COPY public.md_user_workflow (user_workflow_pk, user_id, workflow_fk) FROM stdin;
 1	14f919cf95a70935c6c70f4a89ef5fec	1
-2	14f919cf95a70935c6c70f4a89ef5fec	2
 \.
 
 --
@@ -399,8 +397,6 @@ COPY public.md_user_workflow (user_workflow_pk, user_id, workflow_fk) FROM stdin
 COPY public.md_workflow_step (workflow_step_pk, workflow_fk, name, rank) FROM stdin;
 1	1	stanza_divider	1
 2	1	stanza_writer	2
-3	2	section_divider	1
-4	2	sections_translator	2
 \.
 
 --

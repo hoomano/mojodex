@@ -86,6 +86,7 @@ class WorkflowExecution:
                     .filter(
                     MdUserWorkflowStepExecution.user_workflow_execution_fk == self.db_object.user_workflow_execution_pk) \
                     .filter(MdUserWorkflowStepExecution.workflow_step_fk == db_dependency_step.workflow_step_pk) \
+                    .order_by(MdUserWorkflowStepExecution.creation_date.desc()) \
                     .first()
 
                 # load all validated step executions of current step:

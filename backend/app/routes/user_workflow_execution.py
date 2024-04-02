@@ -72,7 +72,7 @@ class UserWorkflowExecution(Resource):
             for input in workflow.json_inputs_spec:
                 # append input to empty_json_input_values but with additional field "value" without editing json_input
                 new_input = input.copy()
-                new_input["value"] = input["default_value"] # todo: remove default_value and change by none
+                new_input["value"] = None
                 empty_json_input_values.append(new_input)
             
             db_workflow_execution = MdUserWorkflowExecution(

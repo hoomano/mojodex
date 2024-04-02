@@ -2,7 +2,7 @@ import json
 from app import server_socket
 from models.workflows.step_execution import WorkflowStepExecution
 from mojodex_core.entities import MdUserWorkflowExecution, MdUserWorkflow, MdWorkflowStep, MdWorkflow, MdUserWorkflowStepExecution
-from mojodex_core.db import MySession
+from mojodex_core.db import engine, Session
 
 class Workflow:
     def __init__(self, db_object):
@@ -26,7 +26,7 @@ class WorkflowExecution:
 
     def __init__(self, workflow_execution_pk):
         try:
-            self.db_session = MySession()
+            self.db_session = Session(engine)
             self.db_object = self._get_db_object(workflow_execution_pk)
             self.workflow = Workflow(self._db_workflow)
             self.validated_steps_executions = [WorkflowStepExecution(self.db_session, db_validated_step_execution) for db_validated_step_execution in self._db_validated_step_executions]

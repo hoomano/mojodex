@@ -24,6 +24,7 @@ class Workflow(Resource):
 
         try:
             timestamp = request.json['datetime']
+            platforms = request.json["platforms"]
             name_for_system = request.json['name_for_system']
             icon = request.json['icon']
             definition_for_system = request.json['definition_for_system']
@@ -40,6 +41,18 @@ class Workflow(Resource):
             if name_for_system != name_for_system.lower():
                 return {
                     "error": f"name_for_system must be in lower case and use underscores. Example : 'answer_to_prospect'"}, 400
+
+            # ensure platform is a list
+            if not isinstance(platforms, list):
+                return {"error": f"'platforms' must be a list"}, 400
+            # get platform_pk of each platform based on platform name
+            platform_pks = []
+            for platform_name in platforms:
+                md_platform = db.session.query(MdPlatform).filter(MdPlatform.name == platform_name).first()
+                if md_platform is None:
+                    return {"error": f"Platform '{platform_name}' is an invalid platform"}, 400
+                else:
+                    platform_pks.append(md_platform.platform_pk)
 
             # ensure that displayed_data is a list
             if not isinstance(workflow_displayed_data, list):
@@ -153,13 +166,19 @@ class Workflow(Resource):
                     db.session.add(db_step_displayed_data)
                     db.session.flush()
 
+            # add workflow_platform_association
+            for platform_pk in platform_pks:
+                workflow_platform_association = MdWorkflowPlatformAssociation(
+                    workflow_fk=db_workflow.workflow_pk,
+                    platform_fk=platform_pk
+                )
+                db.session.add(workflow_platform_association)
             db.session.commit()
             return {"workflow_pk": db_workflow.workflow_pk}, 200
         except Exception as e:
             db.session.rollback()
             log_error(f"{self.logger_prefix} - Error while creating workflow: {e}")
             return {"error": f"Error while creating workflow: {e}"}, 500
-
 
     def _get_workflow_steps(self, workflow_pk):
         try:
@@ -222,8 +241,25 @@ class Workflow(Resource):
                     "json_inputs_spec": translation.json_inputs_spec
                 } for translation in workflow_translations]
 
+            platforms = (
+                db.session
+                .query(
+                    MdPlatform
+                )
+                .join(
+                    MdWorkflowPlatformAssociation,
+                    MdWorkflowPlatformAssociation.platform_fk == MdPlatform.platform_pk
+                )
+                .filter(
+                    MdWorkflowPlatformAssociation.workflow_fk == workflow_pk
+                )
+                .all())
+
+            platforms = [platform.name for platform in platforms]
+
             workflow_json = {
                 "workflow_pk": workflow_pk,
+                "platforms": platforms,
                 "workflow_displayed_data": workflow_displayed_data,
                 "name_for_system": workflow.name_for_system,
                 "definition_for_system": workflow.definition_for_system,

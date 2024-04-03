@@ -73,6 +73,14 @@ class UserWorkflow(Resource):
 
         # Logic
         try:
+            # Get the platform_pk based on the platform name passed
+            md_platform = db.session.query(MdPlatform).filter(MdPlatform.name == platform).first()
+            if md_platform is None:
+                log_error(f"{error_message} : the platform '{platform}' is invalid")
+                return {"error": f"{error_message} : the platform '{platform}' is invalid"}, 404
+            else:
+                platform_pk = md_platform.platform_pk
+
             if "user_workflow_pk" in request.args:
                 user_workflow_pk = int(request.args["user_workflow_pk"])
 
@@ -81,8 +89,15 @@ class UserWorkflow(Resource):
                     .join(MdWorkflow, MdWorkflow.workflow_pk == MdUserWorkflow.workflow_fk) \
                     .join(MdWorkflowDisplayedData, MdWorkflowDisplayedData.workflow_fk == MdWorkflow.workflow_pk) \
                     .join(MdUser, MdUser.user_id == MdUserWorkflow.user_id) \
+                    .join(
+                        MdWorkflowPlatformAssociation,
+                        MdWorkflowPlatformAssociation.workflow_fk == MdWorkflow.workflow_pk
+                         ) \
                     .filter(MdUserWorkflow.user_id == user_id) \
                     .filter(MdUserWorkflow.user_workflow_pk == user_workflow_pk) \
+                    .filter(
+                        MdWorkflowPlatformAssociation.platform_fk == platform_pk
+                     ) \
                     .filter(or_(
                         MdWorkflowDisplayedData.language_code == MdUser.language_code,
                         MdWorkflowDisplayedData.language_code == 'en'
@@ -144,9 +159,13 @@ class UserWorkflow(Resource):
                                            en_subquery.c.en_definition_for_user).label(
                                            "definition_for_user")) \
                 .join(MdWorkflow, MdWorkflow.workflow_pk == MdUserWorkflow.workflow_fk) \
+                .join(
+                MdWorkflowPlatformAssociation,
+                MdWorkflowPlatformAssociation.workflow_fk == MdWorkflow.workflow_pk) \
                 .outerjoin(user_lang_subquery, MdWorkflow.workflow_pk == user_lang_subquery.c.workflow_fk) \
                 .outerjoin(en_subquery, MdWorkflow.workflow_pk == en_subquery.c.workflow_fk) \
                 .filter(MdUserWorkflow.user_id == user_id) \
+                .filter(MdWorkflowPlatformAssociation.platform_fk == platform_pk) \
                 .order_by(MdUserWorkflow.workflow_fk) \
                 .limit(n_user_workflows) \
                 .offset(offset) \

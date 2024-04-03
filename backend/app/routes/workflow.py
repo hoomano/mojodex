@@ -8,6 +8,7 @@ from models.workflows.steps_library import steps_class
 
 
 class Workflow(Resource):
+    logger_prefix = "Route :: Workflow :: "
 
     def put(self):
         """Create new workflow"""
@@ -100,36 +101,92 @@ class Workflow(Resource):
 
             # ensure steps is a list
             if not isinstance(steps, list):
-                return {"error": "Steps should be a list of string"}, 400
+                return {"error": "Steps must be a list of string"}, 400
 
             for step_index in range(len(steps)):
                 step = steps[step_index]
-                # check step is a string
-                if not isinstance(step, str):
-                    return {"error": "Step should be a string"}, 400
-                # check if step exists in db
-                db_step = db.session.query(MdWorkflowStep) \
-                    .filter(MdWorkflowStep.name == step) \
-                    .filter(MdWorkflowStep.workflow_fk == db_workflow.workflow_pk) \
-                    .first()
-                if not db_step:
-                    # ensure key exists in steps_class 
-                    if not step in steps_class:
-                        return {"error": f"Step {step} not found in steps library"}, 400
-                    db_step = MdWorkflowStep(
-                        name=step,
-                        workflow_fk=db_workflow.workflow_pk,
-                        rank=step_index + 1
+                # check step is a dict
+                if not isinstance(step, dict):
+                    return {"error": "Step must be a dict"}, 400
+                if "name_for_system" not in step:
+                    return {"error": "Step must contain 'name_for_system'"}, 400
+                step_name_for_system = step["name_for_system"]
+                # ensure key exists in steps_class
+                if step_name_for_system not in steps_class:
+                    return {"error": f"Step {step_name_for_system} not found in steps library"}, 400
+
+                db_step = MdWorkflowStep(
+                    name_for_system=step_name_for_system,
+                    workflow_fk=db_workflow.workflow_pk,
+                    rank=step_index + 1
+                )
+                db.session.add(db_step)
+                db.session.flush()
+
+                if "step_displayed_data" not in step:
+                    return {"error": f"Step {step_name_for_system} must contain 'step_displayed_data'"}, 400
+                step_displayed_data = step["step_displayed_data"]
+
+                # check content of step_displayed_data
+                if not isinstance(step_displayed_data, list):
+                    return {"error": f"Step_displayed_data for step {step_name_for_system} must be a list of dict"}, 400
+                for translation in step_displayed_data:
+                    if not isinstance(translation, dict):
+                        return {"error": f"Step_displayed_data for step {step_name_for_system} must be a list of dict"}, 400
+                    if "language_code" not in translation:
+                        return {"error": f"Step_displayed_data for step {step_name_for_system} must contain 'language_code'"}, 400
+                    step_language_code = translation["language_code"]
+                    if "name_for_user" not in translation:
+                        return {"error": f"Step_displayed_data for step {step_name_for_system} - language {step_language_code} must contain 'name_for_user'"}, 400
+                    step_name_for_user = translation["name_for_user"]
+                    if "definition_for_user" not in translation:
+                        return {"error": f"Step_displayed_data for step {step_name_for_system} - language {step_language_code} must contain 'definition_for_user'"}, 400
+                    step_definition_for_user = translation["definition_for_user"]
+
+                    # add step_displayed_data to db
+                    db_step_displayed_data = MdWorkflowStepDisplayedData(
+                        workflow_step_fk=db_step.workflow_step_pk,
+                        language_code=step_language_code,
+                        name_for_user=step_name_for_user,
+                        definition_for_user=step_definition_for_user
                     )
-                    db.session.add(db_step)
+                    db.session.add(db_step_displayed_data)
                     db.session.flush()
 
             db.session.commit()
             return {"workflow_pk": db_workflow.workflow_pk}, 200
         except Exception as e:
             db.session.rollback()
-            log_error(e)
+            log_error(f"{self.logger_prefix} - Error while creating workflow: {e}")
             return {"error": f"Error while creating workflow: {e}"}, 500
+
+
+    def _get_workflow_steps(self, workflow_pk):
+        try:
+            steps = db.session.query(MdWorkflowStep) \
+                .filter(MdWorkflowStep.workflow_fk == workflow_pk) \
+                .order_by(MdWorkflowStep.rank) \
+                .all()
+            steps_json = []
+            for step in steps:
+                step_translations = db.session.query(MdWorkflowStepDisplayedData).filter(
+                    MdWorkflowStepDisplayedData.workflow_step_fk == step.workflow_step_pk).all()
+                step_displayed_data = [
+                    {
+                        "language_code": translation.language_code,
+                        "name_for_user": translation.name_for_user,
+                        "definition_for_user": translation.definition_for_user
+                    } for translation in step_translations]
+
+                steps_json.append({
+                    "step_pk": step.workflow_step_pk,
+                    "name_for_system": step.name_for_system,
+                    "rank": step.rank,
+                    "step_displayed_data": step_displayed_data
+                })
+            return steps_json
+        except Exception as e:
+            raise Exception(f"Error getting workflow steps : {e}")
 
     def get(self):
         try:
@@ -137,7 +194,7 @@ class Workflow(Resource):
             if secret != os.environ["BACKOFFICE_SECRET"]:
                 return {"error": "Authentication error : Wrong secret"}, 403
         except KeyError:
-            log_error(f"Error getting workflow json : Missing Authorization secret in headers")
+            log_error(f"{self.logger_prefix} - Error getting workflow json : Missing Authorization secret in headers")
             return {"error": f"Missing Authorization secret in headers"}, 403
 
         # data
@@ -170,12 +227,13 @@ class Workflow(Resource):
                 "workflow_displayed_data": workflow_displayed_data,
                 "name_for_system": workflow.name_for_system,
                 "definition_for_system": workflow.definition_for_system,
-                "icon": workflow.icon
+                "icon": workflow.icon,
+                "steps": self._get_workflow_steps(workflow_pk)
             }
 
             return workflow_json, 200
 
         except Exception as e:
-            log_error(f"Error getting workflow json : {e}")
+            log_error(f"{self.logger_prefix} Error getting workflow json : {e}")
             db.session.rollback()
             return {"error": f"Error getting workflow json : {e}"}, 500

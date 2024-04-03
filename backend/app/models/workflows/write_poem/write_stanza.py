@@ -9,7 +9,7 @@ class StanzaWriterStep(WorkflowStep):
     write_poem_stanza_filename = "instructions/write_poem_stanza.mpt"
 
     @property
-    def description(self):
+    def definition_for_system(self):
         return "Write stanza of a poem"
 
     @property

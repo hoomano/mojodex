@@ -279,10 +279,11 @@ class MdWorkflowStep(Base):
 
     workflow_step_pk = Column(Integer, Sequence('md_workflow_step_seq'), primary_key=True)
     workflow_fk = Column(Integer, nullable=False)
-    name = Column(String(255), nullable=False)
+    name_for_system = Column(String(255), nullable=False)
     rank = Column(Integer, nullable=False)
 
     md_workflow = relationship('MdWorkflow', back_populates='md_workflow_step')
+    md_workflow_step_displayed_data = relationship('MdWorkflowStepDisplayedData', back_populates='md_workflow_step')
     md_user_workflow_step_execution = relationship('MdUserWorkflowStepExecution', back_populates='md_workflow_step')
 
 
@@ -536,6 +537,22 @@ class MdUserWorkflow(Base):
     user = relationship('MdUser', back_populates='md_user_workflow')
     md_workflow = relationship('MdWorkflow', back_populates='md_user_workflow')
     md_user_workflow_execution = relationship('MdUserWorkflowExecution', back_populates='md_user_workflow')
+
+
+class MdWorkflowStepDisplayedData(Base):
+    __tablename__ = 'md_workflow_step_displayed_data'
+    __table_args__ = (
+        ForeignKeyConstraint(['workflow_step_fk'], ['md_workflow_step.workflow_step_pk'], name='md_workflow_step_displayed_data_workflow_step_fk_fkey'),
+        PrimaryKeyConstraint('workflow_step_displayed_data_pk', name='md_workflow_step_displayed_data_pkey')
+    )
+
+    workflow_step_displayed_data_pk = Column(Integer, Sequence('md_workflow_step_displayed_data_seq'), primary_key=True)
+    workflow_step_fk = Column(Integer, nullable=False)
+    language_code = Column(String(2), nullable=False)
+    name_for_user = Column(String(255), nullable=False)
+    definition_for_user = Column(Text, nullable=False)
+
+    md_workflow_step = relationship('MdWorkflowStep', back_populates='md_workflow_step_displayed_data')
 
 
 class MdDocumentChunk(Base):

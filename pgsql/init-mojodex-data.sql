@@ -371,6 +371,55 @@ COPY public.md_todo_scheduling (todo_scheduling_pk, todo_fk, scheduled_date, cre
 COPY public.md_user_vocabulary (user_vocabulary_pk, word, creation_date, user_id) FROM stdin;
 \.
 
+--
+-- Data for Name: md_workflow; Type: TABLE DATA; Schema: public; Owner: assistant_db_user
+--
+
+COPY public.md_workflow (workflow_pk, name_for_system, icon, definition_for_system) FROM stdin;
+1	write_poem	🌸	Write a poem stanza by stanza
+\.
+
+
+--
+-- Data for Name: md_user_workflow; Type: TABLE DATA; Schema: public; Owner: assistant_db_user
+--
+
+COPY public.md_user_workflow (user_workflow_pk, user_id, workflow_fk) FROM stdin;
+1	14f919cf95a70935c6c70f4a89ef5fec	1
+\.
+
+
+--
+-- Data for Name: md_workflow_displayed_data; Type: TABLE DATA; Schema: public; Owner: assistant_db_user
+--
+
+COPY public.md_workflow_displayed_data (workflow_displayed_data_pk, workflow_fk, language_code, name_for_user, definition_for_user, json_inputs_spec) FROM stdin;
+1	1	en	Write a poem	Write a poem stanza by stanza.	[{"input_name_for_system": "poem_topic", "type": "text_area", "input_name_for_user": "Topic of the poem"}, {"input_name_for_system": "n_stanzas", "type": "text_area", "input_name_for_user": "Number of stanzas"}]
+2	1	fr	Ecrire un poème	Ecrire un poème strophe par strophe	[{"input_name_for_system": "poem_topic", "type": "text_area", "input_name_for_user": "Sujet du po\\u00e8me"}, {"input_name_for_system": "n_stanzas", "type": "text_area", "input_name_for_user": "Nombre de strophes"}]
+\.
+
+
+--
+-- Data for Name: md_workflow_step; Type: TABLE DATA; Schema: public; Owner: assistant_db_user
+--
+
+COPY public.md_workflow_step (workflow_step_pk, workflow_fk, name_for_system, rank) FROM stdin;
+1	1	stanza_divider	1
+2	1	stanza_writer	2
+\.
+
+
+--
+-- Data for Name: md_workflow_step_displayed_data; Type: TABLE DATA; Schema: public; Owner: assistant_db_user
+--
+
+COPY public.md_workflow_step_displayed_data (workflow_step_displayed_data_pk, workflow_step_fk, language_code, name_for_user, definition_for_user) FROM stdin;
+1	1	en	Stanza divider	Determines topic of each stanza
+2	1	fr	Diviseur de strophes	Détermine le sujet de chaque strophe
+3	2	en	Stanza writer	Writes a stanza
+4	2	fr	Ecrivain de strophes	Ecrit une strophe
+\.
+
 
 --
 -- Name: home_chat_pk_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
@@ -631,16 +680,24 @@ SELECT pg_catalog.setval('public.welcome_message_pk_seq', 1, false);
 SELECT pg_catalog.setval('public.md_user_workflow_execution_seq', 1, true);
 
 --
+-- Name: md_user_workflow_step_execution_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
+--
+
+SELECT pg_catalog.setval('public.md_user_workflow_step_execution_seq', 1, true);
+
+--
 -- Name: md_user_workflow_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
 --
 
 SELECT pg_catalog.setval('public.md_user_workflow_seq', 1, true);
 
+
 --
--- Name: md_user_workflow_step_execution_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
+-- Name: md_workflow_displayed_data_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
 --
 
-SELECT pg_catalog.setval('public.md_user_workflow_step_execution_seq', 1, true);
+SELECT pg_catalog.setval('public.md_workflow_displayed_data_seq', 2, true);
+
 
 --
 -- Name: md_workflow_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
@@ -648,17 +705,20 @@ SELECT pg_catalog.setval('public.md_user_workflow_step_execution_seq', 1, true);
 
 SELECT pg_catalog.setval('public.md_workflow_seq', 1, true);
 
+
 --
--- Name: md_workflow_displayed_data_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
+-- Name: md_workflow_step_displayed_data_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
 --
 
-SELECT pg_catalog.setval('public.md_workflow_displayed_data_seq', 1, true);
+SELECT pg_catalog.setval('public.md_workflow_step_displayed_data_seq', 4, true);
+
 
 --
 -- Name: md_workflow_step_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
 --
 
-SELECT pg_catalog.setval('public.md_workflow_step_seq', 1, true);
+SELECT pg_catalog.setval('public.md_workflow_step_seq', 2, true);
+
 
 --
 -- PostgreSQL database dump complete

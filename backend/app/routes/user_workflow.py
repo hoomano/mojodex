@@ -14,6 +14,51 @@ class UserWorkflow(Resource):
     def __init__(self):
         UserWorkflow.method_decorators = [authenticate(methods=["GET"])]
 
+    def _get_workflow_steps_in_user_language(self, workflow_pk, user_id):
+        # Subquery for user_language_code
+        user_lang_subquery = (
+            db.session.query(
+                MdWorkflowStepDisplayedData.workflow_step_fk.label("workflow_step_fk"),
+                MdWorkflowStepDisplayedData.name_for_user.label("user_lang_name_for_user"),
+                MdWorkflowStepDisplayedData.definition_for_user.label("user_lang_definition_for_user"),
+            )
+            .join(MdUser, MdUser.user_id == user_id)
+            .filter(MdWorkflowStepDisplayedData.language_code == MdUser.language_code)
+            .subquery()
+        )
+
+        # Subquery for 'en'
+        en_subquery = (
+            db.session.query(
+                MdWorkflowStepDisplayedData.workflow_step_fk.label("workflow_step_fk"),
+                MdWorkflowStepDisplayedData.name_for_user.label("en_name_for_user"),
+                MdWorkflowStepDisplayedData.definition_for_user.label("en_definition_for_user"),
+            )
+            .filter(MdWorkflowStepDisplayedData.language_code == "en")
+            .subquery()
+        )
+
+        steps = db.session.query(MdWorkflowStep, coalesce(
+            user_lang_subquery.c.user_lang_name_for_user,
+            en_subquery.c.en_name_for_user).label(
+            "name_for_user"),
+                                 coalesce(
+                                     user_lang_subquery.c.user_lang_definition_for_user,
+                                     en_subquery.c.en_definition_for_user).label(
+                                     "definition_for_user")) \
+            .outerjoin(user_lang_subquery, MdWorkflowStep.workflow_step_pk == user_lang_subquery.c.workflow_step_fk) \
+            .outerjoin(en_subquery, MdWorkflowStep.workflow_step_pk == en_subquery.c.workflow_step_fk) \
+            .filter(MdWorkflowStep.workflow_fk == workflow_pk) \
+            .order_by(MdWorkflowStep.rank) \
+            .all()
+
+        return [{
+            'workflow_step_pk': step.workflow_step_pk,
+            'step_name_for_user': name_for_user,
+            'step_definition_for_user': definition_for_user
+        } for step, name_for_user, definition_for_user in steps
+        ]
+
     def get(self, user_id):
         error_message = "Error getting user_workflows"
         try:
@@ -39,13 +84,13 @@ class UserWorkflow(Resource):
                     .filter(MdUserWorkflow.user_id == user_id) \
                     .filter(MdUserWorkflow.user_workflow_pk == user_workflow_pk) \
                     .filter(or_(
-                    MdWorkflowDisplayedData.language_code == MdUser.language_code,
-                    MdWorkflowDisplayedData.language_code == 'en'
-                )) \
+                        MdWorkflowDisplayedData.language_code == MdUser.language_code,
+                        MdWorkflowDisplayedData.language_code == 'en'
+                    )) \
                     .order_by(
                     # Sort by user's language first otherwise by english
                     func.nullif(MdWorkflowDisplayedData.language_code, 'en').asc()
-                ) \
+                    ) \
                     .first()
 
                 if not result:
@@ -58,7 +103,8 @@ class UserWorkflow(Resource):
                     "workflow_pk": workflow.workflow_pk,
                     "name": workflow_displayed_data.name_for_user,
                     "icon": workflow.icon,
-                    "description": workflow_displayed_data.definition_for_user
+                    "steps": self._get_workflow_steps_in_user_language(workflow.workflow_pk, user_id),
+                    "definition": workflow_displayed_data.definition_for_user
                 }, 200
 
             # get user_workflows
@@ -106,22 +152,13 @@ class UserWorkflow(Resource):
                 .offset(offset) \
                 .all()
 
-            def get_workflow_steps(workflow_pk):
-                return db.session.query(MdWorkflowStep) \
-                    .filter(MdWorkflowStep.workflow_fk == workflow_pk) \
-                    .order_by(MdWorkflowStep.rank) \
-                    .all()
-
             return {'user_workflows': [{
                 "user_workflow_pk": user_workflow.user_workflow_pk,
                 "workflow_pk": workflow.workflow_pk,
-                "name": name_for_user,
+                "name_for_user": name_for_user,
                 "icon": workflow.icon,
-                "description": definition_for_user,
-                "steps": [{
-                    'workflow_step_pk': step.workflow_step_pk,
-                    'step_name': step.name
-                } for step in get_workflow_steps(workflow.workflow_pk)]
+                "definition_for_user": definition_for_user,
+                "steps": self._get_workflow_steps_in_user_language(workflow.workflow_pk, user_id)
             } for user_workflow, workflow, name_for_user, definition_for_user in results]}, 200
 
         except Exception as e:

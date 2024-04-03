@@ -1411,8 +1411,33 @@ CREATE SEQUENCE public.md_workflow_step_seq
 CREATE TABLE public.md_workflow_step (
     workflow_step_pk integer DEFAULT nextval('public.md_workflow_step_seq'::regclass) NOT NULL,
     workflow_fk integer NOT NULL,
-    name character varying(255) NOT NULL,
+    name_for_system character varying(255) NOT NULL,
     rank integer NOT NULL
+);
+
+--
+-- Name: md_workflow_step_displayed_data_seq; Type: SEQUENCE; Schema: public;
+--
+
+CREATE SEQUENCE public.md_workflow_step_displayed_data_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+
+--
+-- Name: md_workflow_step_displayed_data; Type: TABLE; Schema: public;
+--
+
+CREATE TABLE public.md_workflow_step_displayed_data (
+    workflow_step_displayed_data_pk integer DEFAULT nextval('public.md_workflow_step_displayed_data_seq'::regclass) NOT NULL,
+    workflow_step_fk integer NOT NULL,
+    language_code character varying(2) NOT NULL,
+    name_for_user character varying(255) NOT NULL,
+    definition_for_user text NOT NULL
 );
 
 --
@@ -1739,6 +1764,13 @@ ALTER TABLE ONLY public.md_workflow
 
 ALTER TABLE ONLY public.md_workflow_displayed_data
     ADD CONSTRAINT md_workflow_displayed_data_pkey PRIMARY KEY (workflow_displayed_data_pk);
+
+--
+-- Name: md_workflow_step_displayed_data md_workflow_step_displayed_data_pkey; Type: CONSTRAINT; Schema: public;
+--
+
+ALTER TABLE ONLY public.md_workflow_step_displayed_data
+    ADD CONSTRAINT md_workflow_step_displayed_data_pkey PRIMARY KEY (workflow_step_displayed_data_pk);
 
 --
 -- Name: md_workflow_step md_workflow_step_pkey; Type: CONSTRAINT; Schema: public;
@@ -2189,12 +2221,19 @@ ALTER TABLE ONLY public.md_user_workflow
 ALTER TABLE ONLY public.md_user_workflow
     ADD CONSTRAINT md_user_workflow_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.md_user(user_id);
 
-    --
+--
 -- Name: md_workflow_displayed_data md_workflow_displayed_data_fk_fkey; Type: FK CONSTRAINT; Schema: public;
 --
 
 ALTER TABLE ONLY public.md_workflow_displayed_data
     ADD CONSTRAINT md_workflow_displayed_data_workflow_fk_fkey FOREIGN KEY (workflow_fk) REFERENCES public.md_workflow(workflow_pk);
+
+--
+-- Name: md_workflow_step_displayed_data md_workflow_step_displayed_data_fk_fkey; Type: FK CONSTRAINT; Schema: public;
+--
+
+ALTER TABLE ONLY public.md_workflow_step_displayed_data
+    ADD CONSTRAINT md_workflow_step_displayed_data_workflow_step_fk_fkey FOREIGN KEY (workflow_step_fk) REFERENCES public.md_workflow_step(workflow_step_pk);
 
 
 --
@@ -2229,4 +2268,3 @@ ALTER TABLE ONLY public.md_user_workflow_step_execution
 --
 -- PostgreSQL database dump complete
 --
-

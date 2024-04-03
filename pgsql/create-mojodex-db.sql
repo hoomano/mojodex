@@ -112,34 +112,6 @@ CREATE SEQUENCE public.home_chat_pk_seq
     NO MAXVALUE
     CACHE 1;
 
-
-
---
--- Name: md_activity_instance_seq; Type: SEQUENCE; Schema: public;
---
-
-CREATE SEQUENCE public.md_activity_instance_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-
---
--- Name: md_activity_seq; Type: SEQUENCE; Schema: public;
---
-
-CREATE SEQUENCE public.md_activity_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-
 --
 -- Name: welcome_message_pk_seq; Type: SEQUENCE; Schema: public;
 --
@@ -1390,9 +1362,35 @@ CREATE SEQUENCE public.md_workflow_seq
 --
 CREATE TABLE public.md_workflow (
     workflow_pk integer DEFAULT nextval('public.md_workflow_seq'::regclass) NOT NULL,
-    name character varying(255) NOT NULL,
+    name_for_system character varying(255) NOT NULL,
     icon character varying(255) NOT NULL,
-    description text NOT NULL,
+    definition_for_system text NOT NULL
+);
+
+
+--
+-- Name: md_workflow_displayed_data_seq; Type: SEQUENCE; Schema: public;
+--
+
+CREATE SEQUENCE public.md_workflow_displayed_data_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+
+--
+-- Name: md_workflow_displayed_data; Type: TABLE; Schema: public;
+--
+
+CREATE TABLE public.md_workflow_displayed_data (
+    workflow_displayed_data_pk integer DEFAULT nextval('public.md_workflow_displayed_data_seq'::regclass) NOT NULL,
+    workflow_fk integer NOT NULL,
+    language_code character varying(2) NOT NULL,
+    name_for_user character varying(255) NOT NULL,
+    definition_for_user text NOT NULL,
     json_inputs_spec json NOT NULL
 );
 
@@ -1734,6 +1732,13 @@ ALTER TABLE ONLY public.md_user_task
 
 ALTER TABLE ONLY public.md_workflow
     ADD CONSTRAINT md_workflow_pkey PRIMARY KEY (workflow_pk);
+
+--
+-- Name: md_workflow_displayed_data md_workflow_displayed_data_pkey; Type: CONSTRAINT; Schema: public;
+--
+
+ALTER TABLE ONLY public.md_workflow_displayed_data
+    ADD CONSTRAINT md_workflow_displayed_data_pkey PRIMARY KEY (workflow_displayed_data_pk);
 
 --
 -- Name: md_workflow_step md_workflow_step_pkey; Type: CONSTRAINT; Schema: public;
@@ -2183,6 +2188,14 @@ ALTER TABLE ONLY public.md_user_workflow
 
 ALTER TABLE ONLY public.md_user_workflow
     ADD CONSTRAINT md_user_workflow_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.md_user(user_id);
+
+    --
+-- Name: md_workflow_displayed_data md_workflow_displayed_data_fk_fkey; Type: FK CONSTRAINT; Schema: public;
+--
+
+ALTER TABLE ONLY public.md_workflow_displayed_data
+    ADD CONSTRAINT md_workflow_displayed_data_workflow_fk_fkey FOREIGN KEY (workflow_fk) REFERENCES public.md_workflow(workflow_pk);
+
 
 --
 -- Name: md_user_workflow_execution md_user_workflow_execution_user_workflow_fk_fkey; Type: FK CONSTRAINT; Schema: public;

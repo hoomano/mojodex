@@ -11,7 +11,7 @@ USER NAME
 {{user_company_knowledge}}{%endif%}
 
 RUNNING WORKFLOW
-{{workflow.name}}: {{workflow.description}}
+{{workflow.name_for_system}}: {{workflow.definition_for_system}}
 
 {%if user_workflow_inputs%}USER INPUTS
 {{ user_workflow_inputs | tojson(indent=4) }}{%endif%}

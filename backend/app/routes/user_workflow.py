@@ -18,8 +18,10 @@ class UserWorkflow(Resource):
         error_message = "Error getting user_workflows"
         try:
             timestamp = request.args["datetime"]
-            platform = request.args["platform"] if "platform" in request.args else "webapp" # for the moment default to webapp if nothing is passed
-            app_version =  version.parse(request.args["version"]) if "version" in request.args else version.parse("0.0.0") # for the moment default to 0.0.0 if nothing is passed
+            platform = request.args[
+                "platform"] if "platform" in request.args else "webapp"  # for the moment default to webapp if nothing is passed
+            app_version = version.parse(request.args["version"]) if "version" in request.args else version.parse(
+                "0.0.0")  # for the moment default to 0.0.0 if nothing is passed
         except KeyError as e:
             log_error(f"{error_message}: Missing field {e}")
             return {"error": f"Missing field {e}"}, 400
@@ -30,62 +32,102 @@ class UserWorkflow(Resource):
                 user_workflow_pk = int(request.args["user_workflow_pk"])
 
                 # get user_workflow info
-                result = db.session.query(MdUserWorkflow, MdWorkflow)\
-                    .join(MdWorkflow, MdWorkflow.workflow_pk == MdUserWorkflow.workflow_fk)\
-                    .filter(MdUserWorkflow.user_workflow_pk == user_workflow_pk)\
-                    .filter(MdUserWorkflow.user_id == user_id)\
+                result = db.session.query(MdUserWorkflow, MdWorkflow, MdWorkflowDisplayedData) \
+                    .join(MdWorkflow, MdWorkflow.workflow_pk == MdUserWorkflow.workflow_fk) \
+                    .join(MdWorkflowDisplayedData, MdWorkflowDisplayedData.workflow_fk == MdWorkflow.workflow_pk) \
+                    .join(MdUser, MdUser.user_id == MdUserWorkflow.user_id) \
+                    .filter(MdUserWorkflow.user_id == user_id) \
+                    .filter(MdUserWorkflow.user_workflow_pk == user_workflow_pk) \
+                    .filter(or_(
+                    MdWorkflowDisplayedData.language_code == MdUser.language_code,
+                    MdWorkflowDisplayedData.language_code == 'en'
+                )) \
+                    .order_by(
+                    # Sort by user's language first otherwise by english
+                    func.nullif(MdWorkflowDisplayedData.language_code, 'en').asc()
+                ) \
                     .first()
-                
+
                 if not result:
-                    return {"error": "Workflow not found for this user"}, 404
-                
-                user_workflow, workflow = result
+                    log_error(f"Workflow with user_workflow_pk {user_workflow_pk} not found for this user")
+                    return {"error": f"Workflow with user_workflow_pk {user_workflow_pk} not found for this user"}, 404
+
+                user_workflow, workflow, workflow_displayed_data = result
                 return {
                     "user_workflow_pk": user_workflow.user_workflow_pk,
                     "workflow_pk": workflow.workflow_pk,
-                    "name": workflow.name,
+                    "name": workflow_displayed_data.name_for_user,
                     "icon": workflow.icon,
-                    "description": workflow.description,
-                    "inputs_spec": workflow.json_inputs_spec,
+                    "description": workflow_displayed_data.definition_for_user
                 }, 200
-                
 
             # get user_workflows
-            n_user_workflows = min(50, int(request.args["n_user_workflows"])) if "n_user_workflows" in request.args else 50
+            n_user_workflows = min(50,
+                                   int(request.args["n_user_workflows"])) if "n_user_workflows" in request.args else 50
             offset = int(request.args["offset"]) if "offset" in request.args else 0
 
-            results = db.session.query(MdUserWorkflow, MdWorkflow)\
-                .join(MdWorkflow, MdWorkflow.workflow_pk == MdUserWorkflow.workflow_fk)\
-                .filter(MdUserWorkflow.user_id == user_id)\
-                .order_by(MdUserWorkflow.workflow_fk)\
-                .limit(n_user_workflows)\
-                .offset(offset)\
+            # Subquery for user_language_code
+            user_lang_subquery = (
+                db.session.query(
+                    MdWorkflowDisplayedData.workflow_fk.label("workflow_fk"),
+                    MdWorkflowDisplayedData.name_for_user.label("user_lang_name_for_user"),
+                    MdWorkflowDisplayedData.definition_for_user.label("user_lang_definition_for_user"),
+                )
+                .join(MdUser, MdUser.user_id == user_id)
+                .filter(MdWorkflowDisplayedData.language_code == MdUser.language_code)
+                .subquery()
+            )
+
+            # Subquery for 'en'
+            en_subquery = (
+                db.session.query(
+                    MdWorkflowDisplayedData.workflow_fk.label("workflow_fk"),
+                    MdWorkflowDisplayedData.name_for_user.label("en_name_for_user"),
+                    MdWorkflowDisplayedData.definition_for_user.label("en_definition_for_user"),
+                )
+                .filter(MdWorkflowDisplayedData.language_code == "en")
+                .subquery()
+            )
+
+            results = db.session.query(MdUserWorkflow, MdWorkflow, coalesce(
+                user_lang_subquery.c.user_lang_name_for_user,
+                en_subquery.c.en_name_for_user).label(
+                "name_for_user"),
+                                       coalesce(
+                                           user_lang_subquery.c.user_lang_definition_for_user,
+                                           en_subquery.c.en_definition_for_user).label(
+                                           "definition_for_user")) \
+                .join(MdWorkflow, MdWorkflow.workflow_pk == MdUserWorkflow.workflow_fk) \
+                .outerjoin(user_lang_subquery, MdWorkflow.workflow_pk == user_lang_subquery.c.workflow_fk) \
+                .outerjoin(en_subquery, MdWorkflow.workflow_pk == en_subquery.c.workflow_fk) \
+                .filter(MdUserWorkflow.user_id == user_id) \
+                .order_by(MdUserWorkflow.workflow_fk) \
+                .limit(n_user_workflows) \
+                .offset(offset) \
                 .all()
-            
+
             def get_workflow_steps(workflow_pk):
-                return db.session.query(MdWorkflowStep)\
-                    .filter(MdWorkflowStep.workflow_fk == workflow_pk)\
-                    .order_by(MdWorkflowStep.rank)\
+                return db.session.query(MdWorkflowStep) \
+                    .filter(MdWorkflowStep.workflow_fk == workflow_pk) \
+                    .order_by(MdWorkflowStep.rank) \
                     .all()
-            
+
             return {'user_workflows': [{
                 "user_workflow_pk": user_workflow.user_workflow_pk,
                 "workflow_pk": workflow.workflow_pk,
-                "name": workflow.name,
+                "name": name_for_user,
                 "icon": workflow.icon,
-                "description": workflow.description,
-                "inputs_spec": workflow.json_inputs_spec,
+                "description": definition_for_user,
                 "steps": [{
                     'workflow_step_pk': step.workflow_step_pk,
-                    'step_name' : step.name
+                    'step_name': step.name
                 } for step in get_workflow_steps(workflow.workflow_pk)]
-            } for user_workflow, workflow in results]}, 200
-            
+            } for user_workflow, workflow, name_for_user, definition_for_user in results]}, 200
+
         except Exception as e:
             db.session.rollback()
             log_error(f"{error_message} : {e}")
             return {"error": f"{e}"}, 404
-
 
     def put(self):
         if not request.is_json:
@@ -104,13 +146,14 @@ class UserWorkflow(Resource):
             workflow_pk = request.json["workflow_pk"]
         except KeyError as e:
             return {"error": f"Missing field {e}"}, 400
-        
+
         try:
             # ensure this does not already exist
-            user_workflow = db.session.query(MdUserWorkflow).filter(and_(MdUserWorkflow.user_id == user_id, MdUserWorkflow.workflow_fk == workflow_pk)).first()
+            user_workflow = db.session.query(MdUserWorkflow).filter(
+                and_(MdUserWorkflow.user_id == user_id, MdUserWorkflow.workflow_fk == workflow_pk)).first()
             if user_workflow:
                 return {"error": "User workflow already exists"}, 400
-            
+
             user_workflow = MdUserWorkflow(user_id=user_id, workflow_fk=workflow_pk)
             db.session.add(user_workflow)
             db.session.commit()

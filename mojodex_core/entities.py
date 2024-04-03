@@ -99,11 +99,11 @@ class MdWorkflow(Base):
     )
 
     workflow_pk = Column(Integer, Sequence('md_workflow_seq'), primary_key=True)
-    name = Column(String(255), nullable=False)
+    name_for_system = Column(String(255), nullable=False)
     icon = Column(String(255), nullable=False)
-    description = Column(Text, nullable=False)
-    json_inputs_spec = Column(JSON, nullable=False)
+    definition_for_system = Column(Text, nullable=False)
 
+    md_workflow_displayed_data = relationship('MdWorkflowDisplayedData', back_populates='md_workflow')
     md_workflow_step = relationship('MdWorkflowStep', back_populates='md_workflow')
     md_user_workflow = relationship('MdUserWorkflow', back_populates='md_workflow')
 
@@ -251,6 +251,23 @@ class MdUser(Base):
     md_home_chat = relationship('MdHomeChat', back_populates='user')
     md_calendar_suggestion = relationship('MdCalendarSuggestion', back_populates='user')
     md_produced_text = relationship('MdProducedText', back_populates='user')
+
+
+class MdWorkflowDisplayedData(Base):
+    __tablename__ = 'md_workflow_displayed_data'
+    __table_args__ = (
+        ForeignKeyConstraint(['workflow_fk'], ['md_workflow.workflow_pk'], name='md_workflow_displayed_data_workflow_fk_fkey'),
+        PrimaryKeyConstraint('workflow_displayed_data_pk', name='md_workflow_displayed_data_pkey')
+    )
+
+    workflow_displayed_data_pk = Column(Integer, Sequence('md_workflow_displayed_data_seq'), primary_key=True)
+    workflow_fk = Column(Integer, nullable=False)
+    language_code = Column(String(2), nullable=False)
+    name_for_user = Column(String(255), nullable=False)
+    definition_for_user = Column(Text, nullable=False)
+    json_inputs_spec = Column(JSON, nullable=False)
+
+    md_workflow = relationship('MdWorkflow', back_populates='md_workflow_displayed_data')
 
 
 class MdWorkflowStep(Base):

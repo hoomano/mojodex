@@ -127,7 +127,7 @@ class WorkflowExecution:
         # self.json_inputs is [{"input_name": "<input_name>", "default_value": "<value>"}]'
         # initial_parameters is {"<input_name>": "<value>", ...}
         try:
-            return {input["input_name"]: input["value"] for input in self.json_inputs}
+            return {input["input_name_for_system"]: input["value"] for input in self.json_inputs}
         except Exception as e:
             raise Exception(f"initial_parameters :: {e}")
 
@@ -267,7 +267,7 @@ class WorkflowExecution:
     def to_json(self):
         try:
             return {
-                "workflow_name": self.workflow.name,
+                #"workflow_name": self.workflow.name_for_user(self.language_code),
                 "user_workflow_execution_pk": self.db_object.user_workflow_execution_pk,
                 "user_workflow_fk": self.db_object.user_workflow_fk,
                 "steps": [{'workflow_step_pk': step.workflow_step_pk, 'step_name': step.name} for step in

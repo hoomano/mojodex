@@ -373,33 +373,6 @@ COPY public.md_user_vocabulary (user_vocabulary_pk, word, creation_date, user_id
 
 
 --
--- Data for Name: md_workflow; Type: TABLE DATA; Schema: public; Owner: assistant_db_user
---
-
-COPY public.md_workflow (workflow_pk, name, icon, description, json_inputs_spec) FROM stdin;
-1	Write poem	🌸	Write a poem stanza by stanza	[{"input_name": "poem_topic"}, {"input_name": "n_stanzas"}]
-\.
-
-
-
---
--- Data for Name: md_user_workflow; Type: TABLE DATA; Schema: public; Owner: assistant_db_user
---
-
-COPY public.md_user_workflow (user_workflow_pk, user_id, workflow_fk) FROM stdin;
-1	14f919cf95a70935c6c70f4a89ef5fec	1
-\.
-
---
--- Data for Name: md_workflow_step; Type: TABLE DATA; Schema: public; Owner: assistant_db_user
---
-
-COPY public.md_workflow_step (workflow_step_pk, workflow_fk, name, rank) FROM stdin;
-1	1	stanza_divider	1
-2	1	stanza_writer	2
-\.
-
---
 -- Name: home_chat_pk_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
 --
 
@@ -676,10 +649,16 @@ SELECT pg_catalog.setval('public.md_user_workflow_step_execution_seq', 1, true);
 SELECT pg_catalog.setval('public.md_workflow_seq', 1, true);
 
 --
+-- Name: md_workflow_displayed_data_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
+--
+
+SELECT pg_catalog.setval('public.md_workflow_displayed_data_seq', 1, true);
+
+--
 -- Name: md_workflow_step_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
 --
 
-SELECT pg_catalog.setval('public.md_workflow_step_seq', 2, true);
+SELECT pg_catalog.setval('public.md_workflow_step_seq', 1, true);
 
 --
 -- PostgreSQL database dump complete

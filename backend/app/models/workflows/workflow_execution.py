@@ -4,6 +4,7 @@ from models.workflows.workflow import Workflow
 from mojodex_core.entities import MdUserWorkflowExecution, MdUserWorkflow, MdWorkflowStep, MdWorkflow, \
     MdUserWorkflowStepExecution
 from mojodex_core.db import engine, Session
+from typing import List
 
 class WorkflowExecution:
     logger_prefix = "WorkflowExecution :: "
@@ -159,7 +160,7 @@ class WorkflowExecution:
         except Exception as e:
             raise Exception(f"_ask_for_validation :: {e}")
 
-    def get_step_execution_from_pk(self, step_execution_pk):
+    def get_step_execution_from_pk(self, step_execution_pk: int) -> WorkflowStepExecution:
         try:
             db_step_execution = self.db_session.query(MdUserWorkflowStepExecution) \
                 .filter(MdUserWorkflowStepExecution.user_workflow_step_execution_pk == step_execution_pk) \
@@ -168,7 +169,7 @@ class WorkflowExecution:
         except Exception as e:
             raise Exception(f"_last_step_execution :: {e}")
 
-    def validate_step_execution(self, step_execution_pk):
+    def validate_step_execution(self, step_execution_pk: int):
         try:
             step_execution = self.get_step_execution_from_pk(step_execution_pk)
             step_execution.validate()
@@ -232,7 +233,7 @@ class WorkflowExecution:
         except Exception as e:
             raise Exception(f"_db_user_workflow :: {e}")
 
-    def get_before_checkpoint_validated_steps_executions(self, current_step_in_validation):
+    def get_before_checkpoint_validated_steps_executions(self, current_step_in_validation: WorkflowStepExecution) -> List[WorkflowStepExecution]:
         try:
             if current_step_in_validation.workflow_step.is_checkpoint:
                 return self.validated_steps_executions
@@ -244,7 +245,7 @@ class WorkflowExecution:
         except Exception as e:
             raise Exception(f"before_checkpoint_steps_executions :: {e}")
 
-    def get_after_checkpoint_validated_steps_executions(self, current_step_in_validation):
+    def get_after_checkpoint_validated_steps_executions(self, current_step_in_validation: WorkflowStepExecution) -> List[WorkflowStepExecution]:
         try:
             if current_step_in_validation.workflow_step.is_checkpoint:
                 return []

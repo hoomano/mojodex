@@ -59,7 +59,7 @@ class UserWorkflowExecution(Resource):
         db_workflow_execution = MdUserWorkflowExecution(
                 user_workflow_fk=user_workflow_pk,
                 session_id=session_id,
-                json_inputs=workflow.json_inputs_spec
+                json_inputs=empty_json_input_values
             )
         db.session.add(db_workflow_execution)
         db.session.commit()
@@ -68,11 +68,17 @@ class UserWorkflowExecution(Resource):
 This call also returns a json representation of the workflow, including json_inputs_spec to display to the user in the interface so that user have the instructions to start. Those input fields are the one defined in [the workflows's json configuration file as `json_inputs_spec`](../../guides/tasks/task_spec.json).
 ```python
 return {
-                "workflow_name": <name>,
+                "workflow_name_for_user": "<workflow_name_for_user>",
+                "workflow_definition_for_user": "<workflow_definition_for_user>",
                 "user_workflow_execution_pk": <pk>,
                 "user_workflow_fk": <fk>,
-                "steps": [{'workflow_step_pk': step.workflow_step_pk, 'step_name': step.name} for step in self.workflow.steps],
-                "validated_steps_executions": [], # empty at start
+                "steps": [{
+                            "workflow_step_pk": <workflow_step_pk>,
+                            "step_name_for_user": "<step_name_for_user>",
+                            "step_definition_for_user": "<step_definition_for_user>"
+                        },...],
+                "validated_steps_executions": [step_execution.to_json() for step_execution in
+                                               self.validated_steps_executions],
                 "session_id": <session_id>,
                 "inputs": <json_inputs>
             }

@@ -1,0 +1,239 @@
+#! gpt4-turbo/2023-03-15-preview
+
+You are an expert python developer.
+The program you are going to create is in Python.
+I want you to create a CLI program for a digital assistant.
+The product is called Mojodex.
+
+
+This is the specification of the program:
+# Mojodex
+
+Mojodex is a CLI program that allows users to manage workflows.
+
+## Features
+### Login
+
+To enable user authentication, I aim to implement the `mojodex` command in the application.
+This command will request the user to provide their username and password.
+Upon successful authentication, the user will be granted access.
+
+Example of returned data from the server upon successful authentication:
+```
+{
+    "token": "XAbAveK90RyNTv7-1KAKXA7bU0htNr3GTUoAex9qe5s",
+    "language_code": "en",
+    "name": "Demo User",
+    "terms_and_conditions_agreed": true,
+    "company_fk": null
+}
+```
+
+In case of incorrect credentials, an error message will be shown.
+
+To maintain user authentication, we can utilize a hidden file to store the token.
+The hidden file `credentials` is created in the user's directory under the `~/.mojodex` directory.
+
+### Prompt
+
+Once the user is connected, the program will display a prompt: `mojodex>`.
+The prompt will allow the user to enter commands.
+
+### Help
+
+To provide assistance to the user, the program will have a `help` command.
+The `help` command will display a list of available commands and their descriptions.
+
+## Commands
+
+### Workflow
+
+The `workflow` command will allow the user to manage workflows.
+The user can list and run workflows.
+
+#### List
+
+As a user, I want to be able to list the workflows. The command will be `workflow list` and it will return a list.
+
+Route: `GET /user_workflow`
+Params: datetime=now&platform=webapp&version=0.0.0
+
+Example:
+```
+{
+    "user_workflows": [
+        {
+            "user_workflow_pk": 1,
+            "workflow_pk": 1,
+            "name": "Write poem",
+            "icon": "🌸",
+            "description": "Write a poem stanza by stanza",
+            "inputs_spec": [
+                {
+                    "input_name": "poem_topic"
+                },
+                {
+                    "input_name": "n_stanzas"
+                }
+            ],
+            "steps": [
+                {
+                    "workflow_step_pk": 1,
+                    "step_name": "stanza_divider"
+                },
+                {
+                    "workflow_step_pk": 2,
+                    "step_name": "stanza_writer"
+                }
+            ]
+        }
+    ]
+}
+```
+
+The prompt will display the list of workflows like this:
+```
+mojodex> workflow list
+1. 🌸 Write poem - Write a poem stanza by stanza
+```
+
+
+#### Run
+
+As a user, I want to be able to run a workflow. The command will be `workflow run <workflow_id>`.
+The user will provide the workflow ID as an argument.
+
+Example:
+```
+mojodex> workflow run 1
+```
+
+Route: `POST /user_workflow_execution`
+payload:
+```
+{
+    "datetime": "now",
+    "user_workflow_pk": 1,
+    "platform": "webapp"
+}
+```
+
+This is the structure of the workflow returned by the server:
+```json
+{
+    "workflow_name": "Write poem",
+    "user_workflow_execution_pk": 3,
+    "user_workflow_fk": 1,
+    "steps": [
+        {
+            "workflow_step_pk": 1,
+            "step_name": "stanza_divider"
+        },
+        {
+            "workflow_step_pk": 2,
+            "step_name": "stanza_writer"
+        }
+    ],
+    "validated_steps_executions": [],
+    "session_id": "1b9ef29986d7f011d7cee72fa5506b14",
+    "inputs": [
+        {
+            "input_name": "poem_topic",
+            "value": null
+        },
+        {
+            "input_name": "n_stanzas",
+            "value": null
+        }
+    ]
+}
+```
+
+When a workflow is executed, a socketio room is created for it, with the session_id serving as the room name. 
+The server sends messages to this room, which are then displayed by the CLI.
+
+When the workflow is waiting for inputs, the user can provide the necessary inputs.
+
+The inputs are displayed in the prompt in sequence:
+```
+mojodex> workflow run 1
+poem_topic:
+```
+The user can provide the input and press enter, the input is sent to the server and the client display the next input.
+```
+mojodex> workflow run 1
+poem_topic: Beauty of life at spring
+n_stanzas:
+```
+The user can provide the input, for example `3` and press enter. 
+As there is no more input to provide, the workflow is started.
+
+The client sends the information in the form of a JSON file:
+Route: `PUT /user_workflow_execution
+```
+[
+    {
+        "input_name": "poem_topic",
+        "value": "Beauty of life at spring"
+    },
+    {
+        "input_name": "n_stanzas",
+        "value": 3
+    }
+]
+```
+
+The server will then execute the workflow and send messages to the room.
+
+#### SocketIO Messages
+
+The server sends the following messages:
+
+- `workflow_step_execution_started`: When a step is started.
+- `workflow_step_execution_ended`: When a step is completed.
+
+The client will display these messages in the prompt.
+
+Example:
+```
+mojodex> workflow run 1
+poem_topic: Beauty of life at spring
+n_stanzas: 3
+Step stanza_divider started
+Step stanza_divider ended
+```
+
+#### User validation
+
+When a step is ended, the user can validate or reject it.
+When the `workflow_step_execution_ended` message is received, the cli calls the `GET /user_workflow_execution?user_workflow_execution_pk=<user_workflow_execution_pk>` route to get the status of the step and the results of the current step run.
+
+The client displays the results of the step and asks the user to validate or reject it.
+
+Example:
+```
+mojodex> workflow run 1
+poem_topic: Beauty of life at spring
+n_stanzas: 3
+Step stanza_divider started
+Step stanza_divider ended
+Results:
+- Stanza 1: "Beauty of life at spring is wonderful"
+- Stanza 2: "The flowers bloom in the spring"
+- Stanza 3: "Nature awakens from its slumber"
+Continue (Y/n)?
+```
+
+The user can type `Y` (or press `Enter` by default) to continue or `n` to reject the step.
+
+If the user accepts, the client sends a `POST /user_workflow_step_execution` request with the following payload:
+```
+{
+    "datetime": "now",
+    "user_workflow_step_execution_pk": 1,
+    "validated": true,
+    "platform": "webapp"
+}
+```
+
+If the user rejects, the cli print a short message "work in progress".

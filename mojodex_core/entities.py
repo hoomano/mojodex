@@ -103,6 +103,7 @@ class MdWorkflow(Base):
     name_for_system = Column(String(255), nullable=False)
     icon = Column(String(255), nullable=False)
     definition_for_system = Column(Text, nullable=False)
+    output_text_type_fk = Column(Integer)
 
     md_workflow_displayed_data = relationship('MdWorkflowDisplayedData', back_populates='md_workflow')
     md_workflow_platform_association = relationship('MdWorkflowPlatformAssociation', back_populates='md_workflow')

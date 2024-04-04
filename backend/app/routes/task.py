@@ -50,14 +50,16 @@ class Task(Resource):
             if name_for_system != name_for_system.lower():
                 return {"error": f"name_for_system must be in lower case and use underscores. Example : 'answer_to_prospect'"}, 400
             # ensure output_type is in md_text_type
-            output_type_pk = db.session.query(MdTextType.text_type_pk).filter(MdTextType.name == output_type).first()[0]
-            if not output_type_pk:
+            db_output_type = db.session.query(MdTextType.text_type_pk).filter(MdTextType.name == output_type).first()
+            if not db_output_type:
                 # add text_type to md_text_type
                 text_type = MdTextType(name=output_type)
                 db.session.add(text_type)
                 db.session.flush()
                 db.session.refresh(text_type)
                 output_type_pk = text_type.text_type_pk
+            else:
+                output_type_pk = db_output_type[0]
 
             # ensure that display_data is a list
             if not isinstance(task_displayed_data, list):

@@ -14,8 +14,6 @@ from mojodex_core.llm_engine.mpt import MPT
 class ProducedTextManager(ABC):
     logger_prefix = "📝 ProducedTextManager"
 
-    is_edition_mpt_filename = "instructions/is_edition.mpt"
-
     get_text_type_mpt_filename = "instructions/get_text_type.mpt"
 
     def __init__(self, session_id, user_id=None, use_draft_placeholder=False, user_task_execution_pk=None,

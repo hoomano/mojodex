@@ -175,7 +175,7 @@ class WorkflowExecution:
             produced_text_manager = WorkflowProducedTextManager(self.db_object.session_id, self.user_id,
                                                                 self.db_object.user_workflow_execution_pk)
             produced_text, produced_text_version = produced_text_manager.generate_title_and_save(production,
-                                                                                                 text_type_pk=None,
+                                                                                                 text_type_pk=self.workflow.db_object.output_text_type_fk,
                                                                                                  workflow_name_for_system=self.workflow.name_for_system,
                                                                                                  workflow_definition_for_system=self.workflow.definition_for_system)
             return produced_text, produced_text_version

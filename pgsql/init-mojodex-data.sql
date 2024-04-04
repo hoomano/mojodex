@@ -76,6 +76,7 @@ COPY public.md_text_type (text_type_pk, name) FROM stdin;
 1	meeting_minutes
 2	email
 3	document
+4	poem
 \.
 
 
@@ -375,8 +376,8 @@ COPY public.md_user_vocabulary (user_vocabulary_pk, word, creation_date, user_id
 -- Data for Name: md_workflow; Type: TABLE DATA; Schema: public; Owner: assistant_db_user
 --
 
-COPY public.md_workflow (workflow_pk, name_for_system, icon, definition_for_system) FROM stdin;
-1	write_poem	🌸	Write a poem stanza by stanza
+COPY public.md_workflow (workflow_pk, name_for_system, icon, definition_for_system, output_text_type_fk) FROM stdin;
+1	write_poem	🌸	Write a poem stanza by stanza	4
 \.
 
 
@@ -423,7 +424,6 @@ COPY public.md_workflow_step_displayed_data (workflow_step_displayed_data_pk, wo
 --
 -- Data for Name: md_workflow_platform_association; Type: TABLE DATA; Schema: public; Owner: assistant_db_user
 --
-
 COPY public.md_workflow_platform_association (workflow_platform_association_pk, workflow_fk, platform_fk) FROM stdin;
 1	1	2
 \.
@@ -629,7 +629,7 @@ SELECT pg_catalog.setval('public.md_text_edit_action_text_type_association_seq',
 -- Name: md_text_type_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
 --
 
-SELECT pg_catalog.setval('public.md_text_type_seq', 3, true);
+SELECT pg_catalog.setval('public.md_text_type_seq', 4, true);
 
 
 --
@@ -686,17 +686,19 @@ SELECT pg_catalog.setval('public.welcome_message_pk_seq', 1, false);
 
 SELECT pg_catalog.setval('public.md_user_workflow_execution_seq', 1, true);
 
---
--- Name: md_user_workflow_step_execution_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
---
-
-SELECT pg_catalog.setval('public.md_user_workflow_step_execution_seq', 1, true);
 
 --
 -- Name: md_user_workflow_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
 --
 
-SELECT pg_catalog.setval('public.md_user_workflow_seq', 1, true);
+SELECT pg_catalog.setval('public.md_user_workflow_seq', 1, false);
+
+
+--
+-- Name: md_user_workflow_step_execution_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
+--
+
+SELECT pg_catalog.setval('public.md_user_workflow_step_execution_seq', 1, true);
 
 
 --
@@ -729,7 +731,6 @@ SELECT pg_catalog.setval('public.md_workflow_step_seq', 2, true);
 --
 -- Name: md_workflow_platform_association_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
 --
-
 SELECT pg_catalog.setval('public.md_workflow_platform_association_seq', 1, true);
 
 --

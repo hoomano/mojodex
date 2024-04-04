@@ -1365,7 +1365,8 @@ CREATE TABLE public.md_workflow (
     workflow_pk integer DEFAULT nextval('public.md_workflow_seq'::regclass) NOT NULL,
     name_for_system character varying(255) NOT NULL,
     icon character varying(255) NOT NULL,
-    definition_for_system text NOT NULL
+    definition_for_system text NOT NULL,
+    output_text_type_fk integer
 );
 
 

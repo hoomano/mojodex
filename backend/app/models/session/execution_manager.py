@@ -14,10 +14,8 @@ class ExecutionManager:
     def manage_execution_text(self, execution_text, running_task, running_task_displayed_data,
                               running_user_task_execution, task_executor, use_draft_placeholder=False):
         try:
-            print(f"execution_text: {execution_text}")
             mojo_text = AssistantMessageGenerator.remove_tags_from_text(execution_text, self.execution_start_tag,
                                                                              self.execution_end_tag)
-            print(f"mojo_text: {mojo_text}")
 
             if running_task:
                 response = task_executor.manage_execution_text(execution_text=mojo_text, task=running_task,

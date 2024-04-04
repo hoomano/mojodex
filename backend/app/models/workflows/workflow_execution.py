@@ -1,6 +1,8 @@
 from app import server_socket
 from models.workflows.step_execution import WorkflowStepExecution
 from models.workflows.workflow import Workflow
+
+from models.produced_text_managers.workflow_produced_text_manager import WorkflowProducedTextManager
 from mojodex_core.entities import MdUserWorkflowExecution, MdUserWorkflow, MdWorkflowStep, MdWorkflow, \
     MdUserWorkflowStepExecution
 from mojodex_core.db import engine, Session
@@ -130,7 +132,7 @@ class WorkflowExecution:
     def run(self):
         try:
             if not self._get_current_step():
-                end_workflow_execution()
+                self.end_workflow_execution()
                 return
             self._get_current_step().execute(self.initial_parameters, self._past_validated_steps_results,
                                              self.db_object.session_id)
@@ -143,10 +145,17 @@ class WorkflowExecution:
 
     def end_workflow_execution(self):
         try:
-            self._generate_produced_text()
-            server_socket.emit('workflow_execution_ended', self.to_json(), to=self.db_object.session_id)
+            produced_text, produced_text_version=self._generate_produced_text()
+            server_socket.emit('workflow_execution_produced_text', {
+                "user_workflow_execution_pk": self.db_object.user_workflow_execution_pk,
+                "produced_text": produced_text_version.production,
+                "produced_text_title": produced_text_version.title,
+                "produced_text_pk": produced_text.produced_text_pk,
+                "produced_text_version_pk": produced_text_version.produced_text_version_pk,
+                "session_id": self.db_object.session_id
+            }, to=self.db_object.session_id)
         except Exception as e:
-            raise Exception(f"_ask_for_validation :: {e}")
+            raise Exception(f"end_workflow_execution :: {e}")
 
     def _generate_produced_text(self):
         try:
@@ -158,9 +167,19 @@ class WorkflowExecution:
                 .filter(
                 MdUserWorkflowStepExecution.workflow_step_fk == last_step.workflow_step_pk) \
                 .filter(MdUserWorkflowStepExecution.validated == True) \
-                .order_by(MdUserWorkflowStepExecution.creation_date.desc())
-            produced_text = "\n".join([step.result for step in validated_last_step_executions])
-            # create produced text
+                .order_by(MdUserWorkflowStepExecution.creation_date.desc())\
+                .all()
+
+            production = "\n\n".join([list(step.result[0].values())[0] for step in validated_last_step_executions])
+
+            produced_text_manager = WorkflowProducedTextManager(self.db_object.session_id, self.user_id,
+                                                                self.db_object.user_workflow_execution_pk)
+            produced_text, produced_text_version = produced_text_manager.generate_title_and_save(production,
+                                                                                                 text_type_pk=None,
+                                                                                                 workflow_name_for_system=self.workflow.name_for_system,
+                                                                                                 workflow_definition_for_system=self.workflow.definition_for_system)
+            return produced_text, produced_text_version
+
         except Exception as e:
             raise Exception(f"_generate_produced_text :: {e}")
 

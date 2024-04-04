@@ -32,7 +32,7 @@ class StanzaDividerStep(WorkflowStep):
             determine_poem_stanzas_mpt = MPT(StanzaDividerStep.determine_poem_stanzas_filename, poem_topic=poem_topic, n_stanzas=n_stanzas,
                                              learned_instructions=learned_instructions, past_validated_steps_results=past_validated_steps_results)
             responses = determine_poem_stanzas_mpt.run(user_id=user_id, temperature=0, max_tokens=100)
-            response = responses[0].strip().lower()
+            response = responses[0].strip()
             topics_list = response.split("\n")
             return [{'stanza_topic': topic} for topic in topics_list]
         

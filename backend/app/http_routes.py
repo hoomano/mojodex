@@ -57,7 +57,7 @@ from routes.user_workflow_execution import UserWorkflowExecution
 from routes.workflow import Workflow
 from routes.user_workflow import UserWorkflow
 from routes.user_workflow_step_execution import UserWorkflowStepExecution
-
+from routes.product_workflow_association import ProductWorkflowAssociation
 class HttpRouteManager:
     def __init__(self, api):
         api.add_resource(Purchase, '/purchase')
@@ -119,4 +119,5 @@ class HttpRouteManager:
         api.add_resource(UserWorkflowExecution, "/user_workflow_execution")
         api.add_resource(Workflow, "/workflow")
         api.add_resource(UserWorkflow, "/user_workflow")
+        api.add_resource(ProductWorkflowAssociation, "/product_workflow_association")
         api.add_resource(UserWorkflowStepExecution, "/user_workflow_step_execution")

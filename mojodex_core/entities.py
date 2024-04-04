@@ -103,11 +103,13 @@ class MdWorkflow(Base):
     name_for_system = Column(String(255), nullable=False)
     icon = Column(String(255), nullable=False)
     definition_for_system = Column(Text, nullable=False)
+    visible_for_teasing = Column(Boolean, nullable=False, server_default=text('false'))
     output_text_type_fk = Column(Integer)
 
     md_workflow_displayed_data = relationship('MdWorkflowDisplayedData', back_populates='md_workflow')
     md_workflow_platform_association = relationship('MdWorkflowPlatformAssociation', back_populates='md_workflow')
     md_workflow_step = relationship('MdWorkflowStep', back_populates='md_workflow')
+    md_product_workflow = relationship('MdProductWorkflow', back_populates='md_workflow')
     md_user_workflow = relationship('MdUserWorkflow', back_populates='md_workflow')
 
 
@@ -132,6 +134,7 @@ class MdProduct(Base):
     md_product_category = relationship('MdProductCategory', back_populates='md_product')
     md_product_displayed_data = relationship('MdProductDisplayedData', back_populates='md_product')
     md_product_task = relationship('MdProductTask', back_populates='md_product')
+    md_product_workflow = relationship('MdProductWorkflow', back_populates='md_product')
     md_purchase = relationship('MdPurchase', back_populates='md_product')
 
 
@@ -388,6 +391,22 @@ class MdProductTask(Base):
     md_task = relationship('MdTask', back_populates='md_product_task')
 
 
+class MdProductWorkflow(Base):
+    __tablename__ = 'md_product_workflow'
+    __table_args__ = (
+        ForeignKeyConstraint(['product_fk'], ['md_product.product_pk'], name='product_workflow_product_fk_fkey'),
+        ForeignKeyConstraint(['workflow_fk'], ['md_workflow.workflow_pk'], name='product_workflow_workflow_fk_fkey'),
+        PrimaryKeyConstraint('product_workflow_pk', name='product_workflow_pkey')
+    )
+
+    product_workflow_pk = Column(Integer, Sequence('md_product_workflow_seq'), primary_key=True)
+    product_fk = Column(Integer, nullable=False)
+    workflow_fk = Column(Integer, nullable=False)
+
+    md_product = relationship('MdProduct', back_populates='md_product_workflow')
+    md_workflow = relationship('MdWorkflow', back_populates='md_product_workflow')
+
+
 class MdPurchase(Base):
     __tablename__ = 'md_purchase'
     __table_args__ = (
@@ -552,6 +571,7 @@ class MdUserWorkflow(Base):
     user_workflow_pk = Column(Integer, Sequence('md_user_workflow_seq'), primary_key=True)
     user_id = Column(String(255), nullable=False)
     workflow_fk = Column(Integer, nullable=False)
+    enabled = Column(Boolean, nullable=False, server_default=text('true'))
 
     user = relationship('MdUser', back_populates='md_user_workflow')
     md_workflow = relationship('MdWorkflow', back_populates='md_user_workflow')

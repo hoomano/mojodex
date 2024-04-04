@@ -128,18 +128,20 @@ Step 2 is "Check the SERP API results and select the 3 most relevant one"
         step result:  "result 1, result 2, ..."
         <USER VALIDATES>
 
-STEP 5: Associate workflow to a user
+STEP 5: Associate workflow to a user through a product.
 Replace `<BACKOFFICE_SECRET>` with your actual token and `<user_id>` and `<workflow_pk>` with the actual user id and workflow primary key.
 Then, run the following command in your terminal:
 
-```shell
-curl --location --request PUT 'http://localhost:5001/user_workflow' \
---header 'Authorization: <BACKOFFICE_SECRET>' \
+
+Default user `demo@example.com` is associated with default product `demo` with pk 1. Let's add the task to this product.
+```
+curl --location --request PUT 'http://localhost:5001/product_workflow_association' \
+--header 'Authorization: backoffice_secret' \
 --header 'Content-Type: application/json' \
 --data-raw '{
  "datetime": "'"$(date -u +"%Y-%m-%dT%H:%M:%S.%3NZ")"'",
- "user_id": <user_id>,
- "workflow_pk": <workflow_pk>
+ "product_pk": 1,
+ "workflow_pk": <workflow_pk retrieved from previous command>
 }'
 ```
 

@@ -3,13 +3,14 @@ from datetime import datetime
 from models.session.assistant_message_generators.assistant_message_generator import AssistantMessageGenerator
 
 from models.produced_text_managers.task_produced_text_manager import TaskProducedTextManager
+
+from models.session.execution_manager import ExecutionManager
 from mojodex_core.entities import *
 from app import db, server_socket, main_logger, socketio_message_sender
 from mojodex_core.logging_handler import log_error
 
 from models.session.session import Session
 from models.voice_generator import VoiceGenerator
-from models.tasks.task_executor import TaskExecutor
 from models.produced_text_managers.produced_text_manager import ProducedTextManager
 
 from app import model_loader
@@ -70,7 +71,7 @@ class TextEditActionManager:
                 "produced_text_title": self.__get_title_without_tags(edited_text),
                 "produced_text": self.__get_draft_without_tags(edited_text),
                 "text": self.__get_text_without_tags(edited_text),
-                "text_with_tags": TaskExecutor.execution_start_tag + edited_text + TaskExecutor.execution_end_tag
+                "text_with_tags": ExecutionManager.execution_start_tag + edited_text + ExecutionManager.execution_end_tag
             }
 
             title = self.__get_title_without_tags(edited_text)

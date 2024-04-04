@@ -29,7 +29,7 @@ class GeneralChatResponseGenerator(TaskEnabledAssistantResponseGenerator):
             if self.user_message_start_tag in response:
                 text = AssistantMessageGenerator.remove_tags_from_text(response, self.user_message_start_tag, self.user_message_end_tag)
                 return {"text": text, 'text_with_tags': response}
-            return self._manage_response_task_tags(response)
+            return super()._manage_response_tags(response)
         except Exception as e:
             raise Exception(f"{GeneralChatResponseGenerator.logger_prefix} _manage_response_tags :: {e}")
 

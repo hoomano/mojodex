@@ -8,6 +8,8 @@ from abc import ABC, abstractmethod
 from app import placeholder_generator, db, server_socket
 
 from models.produced_text_managers.task_produced_text_manager import TaskProducedTextManager
+
+from models.session.execution_manager import ExecutionManager
 from mojodex_core.entities import *
 from mojodex_core.logging_handler import log_error
 from models.knowledge.knowledge_manager import KnowledgeManager
@@ -32,6 +34,7 @@ class TaskEnabledAssistantResponseGenerator(AssistantResponseGenerator, ABC):
             self.use_draft_placeholder = use_draft_placeholder
             self.task_input_manager = TaskInputsManager(chat_context.session_id)
             self.task_tool_manager = TaskToolManager(chat_context.session_id)
+            self.execution_manager = ExecutionManager(chat_context.session_id)
             self.task_executor = TaskExecutor(chat_context.session_id, chat_context.user_id)
         except Exception as e:
             raise Exception(f"{TaskEnabledAssistantResponseGenerator.logger_prefix} __init__ :: {e}")
@@ -95,17 +98,22 @@ class TaskEnabledAssistantResponseGenerator(AssistantResponseGenerator, ABC):
                 return self.task_tool_manager.manage_tool_usage_text(response,
                                                                         self.running_user_task_execution.user_task_execution_pk,
                                                                         self._get_task_tools_json(self.running_task))
-            elif TaskExecutor.execution_start_tag in response:
-                # take the text between <execution> and </execution>
-                # TODO: separate running_task = None from not None
-                return self.task_executor.manage_execution_text(execution_text=response, task=self.running_task, task_name=self.running_task_displayed_data.name_for_user if self.running_task_displayed_data else None,
-                                                                user_task_execution_pk=self.running_user_task_execution.user_task_execution_pk if self.running_user_task_execution else None,
-                                                                use_draft_placeholder=self.use_draft_placeholder)
             return {"text": response}
         except Exception as e:
             raise Exception(f"_manage_response_task_tags :: {e}")
+
+    def _manage_execution_tags(self, response):
+        try:
+            return self.execution_manager.manage_execution_text(response, self.running_task, self.running_task_displayed_data,
+                                          self.running_user_task_execution, self.task_executor,
+                                          use_draft_placeholder=self.use_draft_placeholder)
+        except Exception as e:
+            raise Exception(f"_manage_execution_tags :: {e}")
     
     def _manage_response_tags(self, response):
+        execution = self._manage_execution_tags(response)
+        if execution:
+            return execution
         return self._manage_response_task_tags(response)
 
     @abstractmethod
@@ -139,10 +147,10 @@ class TaskEnabledAssistantResponseGenerator(AssistantResponseGenerator, ABC):
 
     ### SPECIFIC METHODS FOR TASKS ###
     def _get_task_execution_placeholder(self):
-        return f"{TaskExecutor.execution_start_tag}" \
+        return f"{ExecutionManager.execution_start_tag}" \
                         f"{TaskProducedTextManager.title_start_tag}{placeholder_generator.mojo_draft_title}{TaskProducedTextManager.title_end_tag}" \
                         f"{TaskProducedTextManager.draft_start_tag}{placeholder_generator.mojo_draft_body}{TaskProducedTextManager.draft_end_tag}" \
-                        f"{TaskExecutor.execution_end_tag}"
+                        f"{ExecutionManager.execution_end_tag}"
 
     def _get_task_input_placeholder(self):
         return f"{TaskInputsManager.user_message_start_tag}{placeholder_generator.mojo_message}{TaskInputsManager.user_message_end_tag}"
@@ -226,8 +234,8 @@ class TaskEnabledAssistantResponseGenerator(AssistantResponseGenerator, ABC):
         if text and self.mojo_message_token_stream_callback:
             self.mojo_message_token_stream_callback(text)
 
-        elif TaskExecutor.execution_start_tag in partial_text:
+        elif ExecutionManager.execution_start_tag in partial_text:
             # take the text between <execution> and </execution>
-            text = AssistantMessageGenerator.remove_tags_from_text(partial_text, TaskExecutor.execution_start_tag,
-                                                        TaskExecutor.execution_end_tag)
+            text = AssistantMessageGenerator.remove_tags_from_text(partial_text, ExecutionManager.execution_start_tag,
+                                                        ExecutionManager.execution_end_tag)
             self.draft_token_stream_callback(text)

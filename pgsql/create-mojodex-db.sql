@@ -515,6 +515,7 @@ CREATE TABLE public.md_produced_text (
     produced_text_pk integer DEFAULT nextval('public.md_produced_text_seq'::regclass) NOT NULL,
     user_id character varying(255) NOT NULL,
     user_task_execution_fk integer,
+    user_workflow_execution_fk integer,
     session_id character varying(255),
     deleted_by_user timestamp with time zone
 );
@@ -1916,6 +1917,13 @@ ALTER TABLE ONLY public.md_produced_text
 
 ALTER TABLE ONLY public.md_produced_text
     ADD CONSTRAINT md_produced_text_user_task_execution_fk_fkey FOREIGN KEY (user_task_execution_fk) REFERENCES public.md_user_task_execution(user_task_execution_pk);
+
+--
+-- Name: md_produced_text md_produced_text_user_workflow_execution_fk_fkey; Type: FK CONSTRAINT; Schema: public;
+--
+
+ALTER TABLE ONLY public.md_produced_text
+    ADD CONSTRAINT md_produced_text_user_workflow_execution_fk_fkey FOREIGN KEY (user_workflow_execution_fk) REFERENCES public.md_user_workflow_execution(user_workflow_execution_pk);
 
 
 --

@@ -711,6 +711,7 @@ class MdUserWorkflowExecution(Base):
 
     session = relationship('MdSession', back_populates='md_user_workflow_execution')
     md_user_workflow = relationship('MdUserWorkflow', back_populates='md_user_workflow_execution')
+    md_produced_text = relationship('MdProducedText', back_populates='md_user_workflow_execution')
     md_user_workflow_step_execution = relationship('MdUserWorkflowStepExecution', back_populates='md_user_workflow_execution')
 
 
@@ -751,18 +752,21 @@ class MdProducedText(Base):
         ForeignKeyConstraint(['session_id'], ['md_session.session_id'], name='md_produced_text_session_id_fkey'),
         ForeignKeyConstraint(['user_id'], ['md_user.user_id'], name='md_produced_text_user_id_fkey'),
         ForeignKeyConstraint(['user_task_execution_fk'], ['md_user_task_execution.user_task_execution_pk'], name='md_produced_text_user_task_execution_fk_fkey'),
+        ForeignKeyConstraint(['user_workflow_execution_fk'], ['md_user_workflow_execution.user_workflow_execution_pk'], name='md_produced_text_user_workflow_execution_fk_fkey'),
         PrimaryKeyConstraint('produced_text_pk', name='produced_text_pkey')
     )
 
     produced_text_pk = Column(Integer, Sequence('md_produced_text_seq'), primary_key=True)
     user_id = Column(String(255), nullable=False)
     user_task_execution_fk = Column(Integer)
+    user_workflow_execution_fk = Column(Integer)
     session_id = Column(String(255))
     deleted_by_user = Column(DateTime(True))
 
     session = relationship('MdSession', back_populates='md_produced_text')
     user = relationship('MdUser', back_populates='md_produced_text')
     md_user_task_execution = relationship('MdUserTaskExecution', back_populates='md_produced_text')
+    md_user_workflow_execution = relationship('MdUserWorkflowExecution', back_populates='md_produced_text')
     md_produced_text_version = relationship('MdProducedTextVersion', back_populates='md_produced_text')
 
 

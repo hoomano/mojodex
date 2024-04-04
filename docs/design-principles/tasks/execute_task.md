@@ -245,10 +245,10 @@ with open(self.answer_user_prompt, 'r') as f:
                                     language=self.language,
                                     audio_message=self.platform == "mobile",
                                     tag_proper_nouns=tag_proper_nouns,
-                                    title_start_tag=ProducedTextManager.title_start_tag,
-                                    title_end_tag=ProducedTextManager.title_end_tag,
-                                    draft_start_tag=ProducedTextManager.draft_start_tag,
-                                    draft_end_tag=ProducedTextManager.draft_end_tag,
+                                    title_start_tag=TaskProducedTextManager.title_start_tag,
+                                    title_end_tag=TaskProducedTextManager.title_end_tag,
+                                    draft_start_tag=TaskProducedTextManager.draft_start_tag,
+                                    draft_end_tag=TaskProducedTextManager.draft_end_tag,
                                     task_tool_associations=self.task_tool_associations_json
                                     )
 

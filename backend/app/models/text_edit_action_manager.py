@@ -2,6 +2,7 @@ import os
 from datetime import datetime
 from models.session.assistant_message_generators.assistant_message_generator import AssistantMessageGenerator
 
+from models.produced_text_managers.task_produced_text_manager import TaskProducedTextManager
 from mojodex_core.entities import *
 from app import db, server_socket, main_logger, socketio_message_sender
 from mojodex_core.logging_handler import log_error
@@ -9,7 +10,7 @@ from mojodex_core.logging_handler import log_error
 from models.session.session import Session
 from models.voice_generator import VoiceGenerator
 from models.tasks.task_executor import TaskExecutor
-from models.produced_text_manager import ProducedTextManager
+from models.produced_text_managers.produced_text_manager import ProducedTextManager
 
 from app import model_loader
 
@@ -150,8 +151,8 @@ class TextEditActionManager:
         try:
             return AssistantMessageGenerator.remove_tags_from_text(
                 text=edited_text.strip(),
-                start_tag=ProducedTextManager.title_start_tag,
-                end_tag=ProducedTextManager.title_end_tag
+                start_tag=TaskProducedTextManager.title_start_tag,
+                end_tag=TaskProducedTextManager.title_end_tag
             )
         except Exception as e:
             raise Exception(f"__get_title_without_tags :: {e}")
@@ -160,15 +161,15 @@ class TextEditActionManager:
         try:
             return AssistantMessageGenerator.remove_tags_from_text(
                 text=edited_text.strip(),
-                start_tag=ProducedTextManager.draft_start_tag,
-                end_tag=ProducedTextManager.draft_end_tag
+                start_tag=TaskProducedTextManager.draft_start_tag,
+                end_tag=TaskProducedTextManager.draft_end_tag
             )
         except Exception as e:
             raise Exception(f"__get_draft_without_tags :: {e}")
 
     def __get_text_without_tags(self, edited_text):
         try:
-            return ProducedTextManager.remove_tags(edited_text.strip())
+            return TaskProducedTextManager.remove_tags(edited_text.strip())
         except Exception as e:
             raise Exception(f"__get_text_without_tags :: {e}")
 

@@ -3,10 +3,11 @@ from datetime import datetime
 
 import requests
 from models.session.assistant_message_generators.assistant_message_generator import AssistantMessageGenerator
-from models.produced_text_manager import ProducedTextManager
 from models.session.assistant_message_generators.assistant_response_generator import AssistantResponseGenerator
 from abc import ABC, abstractmethod
 from app import placeholder_generator, db, server_socket
+
+from models.produced_text_managers.task_produced_text_manager import TaskProducedTextManager
 from mojodex_core.entities import *
 from mojodex_core.logging_handler import log_error
 from models.knowledge.knowledge_manager import KnowledgeManager
@@ -96,8 +97,9 @@ class TaskEnabledAssistantResponseGenerator(AssistantResponseGenerator, ABC):
                                                                         self._get_task_tools_json(self.running_task))
             elif TaskExecutor.execution_start_tag in response:
                 # take the text between <execution> and </execution>
-                return self.task_executor.manage_execution_text(execution_text=response, task=self.running_task, task_name=self.running_task_displayed_data.name_for_user,
-                                                                user_task_execution_pk=self.running_user_task_execution.user_task_execution_pk,
+                # TODO: separate running_task = None from not None
+                return self.task_executor.manage_execution_text(execution_text=response, task=self.running_task, task_name=self.running_task_displayed_data.name_for_user if self.running_task_displayed_data else None,
+                                                                user_task_execution_pk=self.running_user_task_execution.user_task_execution_pk if self.running_user_task_execution else None,
                                                                 use_draft_placeholder=self.use_draft_placeholder)
             return {"text": response}
         except Exception as e:
@@ -138,8 +140,8 @@ class TaskEnabledAssistantResponseGenerator(AssistantResponseGenerator, ABC):
     ### SPECIFIC METHODS FOR TASKS ###
     def _get_task_execution_placeholder(self):
         return f"{TaskExecutor.execution_start_tag}" \
-                        f"{ProducedTextManager.title_start_tag}{placeholder_generator.mojo_draft_title}{ProducedTextManager.title_end_tag}" \
-                        f"{ProducedTextManager.draft_start_tag}{placeholder_generator.mojo_draft_body}{ProducedTextManager.title_end_tag}" \
+                        f"{TaskProducedTextManager.title_start_tag}{placeholder_generator.mojo_draft_title}{TaskProducedTextManager.title_end_tag}" \
+                        f"{TaskProducedTextManager.draft_start_tag}{placeholder_generator.mojo_draft_body}{TaskProducedTextManager.draft_end_tag}" \
                         f"{TaskExecutor.execution_end_tag}"
 
     def _get_task_input_placeholder(self):
@@ -165,10 +167,10 @@ class TaskEnabledAssistantResponseGenerator(AssistantResponseGenerator, ABC):
             with open(self.task_specific_instructions_prompt, "r") as f:
                 template = Template(f.read())
                 return template.render(task=task,
-                                    title_start_tag=ProducedTextManager.title_start_tag,
-                                    title_end_tag=ProducedTextManager.title_end_tag,
-                                    draft_start_tag=ProducedTextManager.draft_start_tag,
-                                    draft_end_tag=ProducedTextManager.draft_end_tag,
+                                    title_start_tag=TaskProducedTextManager.title_start_tag,
+                                    title_end_tag=TaskProducedTextManager.title_end_tag,
+                                    draft_start_tag=TaskProducedTextManager.draft_start_tag,
+                                    draft_end_tag=TaskProducedTextManager.draft_end_tag,
                                     task_tool_associations=self.__get_task_tools_json(task),
                                     user_task_inputs=self.__get_running_user_task_execution_inputs()
                                     )

@@ -90,7 +90,6 @@ class WorkflowExecution:
                     .filter(
                     MdUserWorkflowStepExecution.workflow_step_fk == last_validated_step_execution.workflow_step.workflow_step_pk) \
                     .filter(MdUserWorkflowStepExecution.validated == True) \
-                    .order_by(MdUserWorkflowStepExecution.creation_date.desc()) \
                     .count()
 
                 # have all parameters been executed and validated?
@@ -131,6 +130,7 @@ class WorkflowExecution:
     def run(self):
         try:
             if not self._get_current_step():
+                end_workflow_execution()
                 return
             self._get_current_step().execute(self.initial_parameters, self._past_validated_steps_results,
                                              self.db_object.session_id)
@@ -140,6 +140,29 @@ class WorkflowExecution:
             # todo > Manage this error case
             print(f"🔴 {self.logger_prefix} - run :: {e}")
             raise Exception(f"run :: {e}")
+
+    def end_workflow_execution(self):
+        try:
+            self._generate_produced_text()
+            server_socket.emit('workflow_execution_ended', self.to_json(), to=self.db_object.session_id)
+        except Exception as e:
+            raise Exception(f"_ask_for_validation :: {e}")
+
+    def _generate_produced_text(self):
+        try:
+            # concatenation of results of last step's validated executions
+            last_step= self.workflow.db_steps[-1]
+            validated_last_step_executions = self.db_session.query(MdUserWorkflowStepExecution) \
+                .filter(
+                MdUserWorkflowStepExecution.user_workflow_execution_fk == self.db_object.user_workflow_execution_pk) \
+                .filter(
+                MdUserWorkflowStepExecution.workflow_step_fk == last_step.workflow_step_pk) \
+                .filter(MdUserWorkflowStepExecution.validated == True) \
+                .order_by(MdUserWorkflowStepExecution.creation_date.desc())
+            produced_text = "\n".join([step.result for step in validated_last_step_executions])
+            # create produced text
+        except Exception as e:
+            raise Exception(f"_generate_produced_text :: {e}")
 
     @property
     def _past_validated_steps_results(self):

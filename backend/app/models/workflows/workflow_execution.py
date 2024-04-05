@@ -4,6 +4,7 @@ from models.workflows.workflow import Workflow
 from mojodex_core.entities import MdUserWorkflowExecution, MdUserWorkflow, MdWorkflowStep, MdWorkflow, \
     MdUserWorkflowStepExecution
 from mojodex_core.db import engine, Session
+from typing import List
 
 class WorkflowExecution:
     logger_prefix = "WorkflowExecution :: "
@@ -15,8 +16,8 @@ class WorkflowExecution:
         try:
             self.db_session = Session(engine)
             self.db_object = self._get_db_object(workflow_execution_pk)
-            self.workflow = Workflow(self._db_workflow)
             self.user_id = self._db_user_workflow.user_id
+            self.workflow = Workflow(self._db_workflow, self.db_session, self.user_id)
             self.validated_steps_executions = [WorkflowStepExecution(self.db_session, db_validated_step_execution, self.user_id) for
                                                db_validated_step_execution in self._db_validated_step_executions]
             self._current_step = None
@@ -32,15 +33,7 @@ class WorkflowExecution:
         except Exception as e:
             raise Exception(f"_get_db_object :: {e}")
 
-    @property
-    def _db_workflow_steps(self):
-        try:
-            return self.db_session.query(MdWorkflowStep) \
-                .join(MdUserWorkflow, MdUserWorkflow.workflow_fk == MdWorkflowStep.workflow_fk) \
-                .filter(MdUserWorkflow.user_workflow_pk == self.db_object.user_workflow_fk) \
-                .order_by(MdWorkflowStep.rank.asc()).all()
-        except Exception as e:
-            raise Exception(f"_db_workflow_steps :: {e}")
+
 
     @property
     def _db_validated_step_executions(self):
@@ -71,7 +64,7 @@ class WorkflowExecution:
             if self._current_step:
                 return self._current_step
             if not self.validated_steps_executions:  # no step validated yet
-                self._current_step = self._generate_new_step_execution(self._db_workflow_steps[0],
+                self._current_step = self._generate_new_step_execution(self.workflow.db_steps[0],
                                                                        self.initial_parameters)  # of first step
                 return self._current_step
             last_validated_step_execution = self.validated_steps_executions[-1]
@@ -127,7 +120,7 @@ class WorkflowExecution:
         # self.json_inputs is [{"input_name": "<input_name>", "default_value": "<value>"}]'
         # initial_parameters is {"<input_name>": "<value>", ...}
         try:
-            return {input["input_name"]: input["value"] for input in self.json_inputs}
+            return {input["input_name_for_system"]: input["value"] for input in self.json_inputs}
         except Exception as e:
             raise Exception(f"initial_parameters :: {e}")
 
@@ -152,7 +145,7 @@ class WorkflowExecution:
     def _past_validated_steps_results(self):
         try:
             return [{
-                'step_name': step.name,
+                'step_name': step.name_for_system,
                 'parameter': step.parameter,
                 'result': step.result
             } for step in self.validated_steps_executions]
@@ -167,7 +160,7 @@ class WorkflowExecution:
         except Exception as e:
             raise Exception(f"_ask_for_validation :: {e}")
 
-    def get_step_execution_from_pk(self, step_execution_pk):
+    def get_step_execution_from_pk(self, step_execution_pk: int) -> WorkflowStepExecution:
         try:
             db_step_execution = self.db_session.query(MdUserWorkflowStepExecution) \
                 .filter(MdUserWorkflowStepExecution.user_workflow_step_execution_pk == step_execution_pk) \
@@ -176,7 +169,7 @@ class WorkflowExecution:
         except Exception as e:
             raise Exception(f"_last_step_execution :: {e}")
 
-    def validate_step_execution(self, step_execution_pk):
+    def validate_step_execution(self, step_execution_pk: int):
         try:
             step_execution = self.get_step_execution_from_pk(step_execution_pk)
             step_execution.validate()
@@ -240,7 +233,7 @@ class WorkflowExecution:
         except Exception as e:
             raise Exception(f"_db_user_workflow :: {e}")
 
-    def get_before_checkpoint_validated_steps_executions(self, current_step_in_validation):
+    def get_before_checkpoint_validated_steps_executions(self, current_step_in_validation: WorkflowStepExecution) -> List[WorkflowStepExecution]:
         try:
             if current_step_in_validation.workflow_step.is_checkpoint:
                 return self.validated_steps_executions
@@ -252,7 +245,7 @@ class WorkflowExecution:
         except Exception as e:
             raise Exception(f"before_checkpoint_steps_executions :: {e}")
 
-    def get_after_checkpoint_validated_steps_executions(self, current_step_in_validation):
+    def get_after_checkpoint_validated_steps_executions(self, current_step_in_validation: WorkflowStepExecution) -> List[WorkflowStepExecution]:
         try:
             if current_step_in_validation.workflow_step.is_checkpoint:
                 return []
@@ -264,14 +257,15 @@ class WorkflowExecution:
         except Exception as e:
             raise Exception(f"after_checkpoint_to_current_steps_executions :: {e}")
 
+
     def to_json(self):
         try:
             return {
-                "workflow_name": self.workflow.name,
+                "workflow_name_for_user": self.workflow.name_for_user,
+                "workflow_definition_for_user": self.workflow.definition_for_user,
                 "user_workflow_execution_pk": self.db_object.user_workflow_execution_pk,
                 "user_workflow_fk": self.db_object.user_workflow_fk,
-                "steps": [{'workflow_step_pk': step.workflow_step_pk, 'step_name': step.name} for step in
-                          self._db_workflow_steps],
+                "steps": self.workflow.json_steps,
                 "validated_steps_executions": [step_execution.to_json() for step_execution in
                                                self.validated_steps_executions],
                 "session_id": self.db_object.session_id,

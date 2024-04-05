@@ -12,7 +12,7 @@ class StanzaDividerStep(WorkflowStep):
 
 
     @property
-    def description(self):
+    def definition_for_system(self):
         return "Determine topic of each stanza of a poem."
 
     @property

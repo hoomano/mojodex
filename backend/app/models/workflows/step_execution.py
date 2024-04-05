@@ -13,7 +13,7 @@ class WorkflowStepExecution:
             self.db_session = db_session
             self.db_object = db_object
             self.user_id = user_id
-            self.workflow_step = steps_class[self._db_workflow_step.name](self._db_workflow_step)
+            self.workflow_step = steps_class[self._db_workflow_step.name_for_system](self._db_workflow_step)
         except Exception as e:
             raise Exception(f"{self.logger_prefix} :: __init__ :: {e}")
 
@@ -108,19 +108,29 @@ class WorkflowStepExecution:
             raise Exception(f"{self.logger_prefix} :: get_learned_instructions :: {e}")
 
     @property
-    def name(self):
-        return self.workflow_step.db_object.name
+    def name_for_user(self):
+        return self.workflow_step.get_name_for_user(self.db_session, self.user_id)
 
     @property
-    def description(self):
-        return self.workflow_step.description
+    def definition_for_user(self):
+        return self.workflow_step.get_definition_for_user(self.db_session, self.user_id)
+
+
+    @property
+    def name_for_system(self):
+        return self.workflow_step.name_for_system
+
+    @property
+    def definition_for_system(self):
+        return self.workflow_step.definition_for_system
 
     def to_json(self):
         try:
             return {
                 "user_workflow_step_execution_pk": self.db_object.user_workflow_step_execution_pk,
                 "workflow_step_pk": self.db_object.workflow_step_fk,
-                "step_name": self.name,
+                "step_name": self.name_for_user,
+                "step_definition": self.definition_for_user,
                 "validated": self.validated,
                 "parameter": self.parameter,
                 "result": self.result

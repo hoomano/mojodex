@@ -18,8 +18,8 @@ from models.workflows.step import WorkflowStep
 class MyWorkflowStep(WorkflowStep):
 
     @property
-    def description(self):
-        return "This is the description of the step" # Description of the step as used in prompts
+    def definition_for_system(self):
+        return "This is a definition of the step" # Definition of the step as used in prompts
 
     @property
     def input_keys(self):
@@ -55,14 +55,35 @@ curl --location --request PUT 'http://localhost:5001/workflow' \
 --header 'Authorization: <BACKOFFICE_SECRET>' \
 --header 'Content-Type: application/json' \
 --data-raw '{"datetime": "2024-02-14T17:49:26.545180",
-    "name": "<WORKFLOW_NAME>",
-    "steps": ["<STEP_1_NAME>", "<STEP_2_NAME>"],
+    "name_for_system": "<WORKFLOW_NAME_FOR_SYSTEM>",
     "icon": "<EMOJI>",
-    "description": "<WORKFLOW_DESCRIPTION>",
-    "json_inputs_spec": [{"input_name": "<INPUT_NAME>", "default_value": "<DEFAULT_VALUE>"}]
+    "definition_for_system": "<WORKFLOW_DEFINITION_FOR_SYSTEM>",
+    "steps": [{
+        "name_for_system": "<STEP_NAME_FOR_SYSTEM>",
+        "step_displayed_data":[
+            {
+                "language_code": "<2-LETTERS LANGUAGE-CODE>",
+                "name_for_user": "<STEP_NAME_FOR_USER>",
+                "definition_for_user": "<STEP_DEFINITION_FOR_USER>"
+            },
+            ...
+        ]},
+        ...
+        ],
+    "workflow_displayed_data": [
+        {   
+            "language_code":"<2-LETTERS LANGUAGE-CODE>",
+            "name_for_user": <WORKFLOW_NAME_FOR_USER>",
+            "definition_for_user": <WORKFLOW_DEFINITION_FOR_USER>",
+            "json_inputs_spec": [
+                {"input_name_for_system": "<INPUT_NAME_FOR_SYSTEM>", "type": "text_area", "input_name_for_user":"<INPUT_NAME_FOR_USER>"},
+                ...
+               ]
+        },
+         ...
+    ]
 }'
 ```
-⚠️ "default_value" in "json_inputs_spec" is temporary, for debug purpose. Nothing has been implemented yet to handle other values than the default one.
 
 STEP 4: Define workflow checkpoints
 By default, every step is defined as a checkpoint. This means that at the end of each step_execution_run, if the user does not validate the result, the user will give an instruction and this same step_execution_run will be executed again.

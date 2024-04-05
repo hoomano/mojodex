@@ -1,17 +1,17 @@
 ACHIEVED WORKFLOW STEPS
 {%if not before_checkpoint_validated_steps_executions%}None{%else%}{%for step in before_checkpoint_validated_steps_executions%}---
-Step: {{step.name}} - {{step.description}}
+Step: {{step.name_for_system}} - {{step.definition_for_system}}
 Parameter: {{step.parameter}}
 Result: {{step.result}}
 ---{%endfor%}{%endif%}
 
 CURRENT WORKFLOW STEPS
 {%for step in after_checkpoint_validated_steps_executions%}---
-Step: {{step.name}} - {{step.description}}
+Step: {{step.name_for_system}} - {{step.definition_for_system}}
 Parameter: {{step.parameter}}
 Result: {{step.result}}
 ---{%endfor%}---
-Step: {{current_step.name}} - {{current_step.description}}
+Step: {{current_step.name_for_system}} - {{current_step.definition_for_system}}
 Parameter: {{current_step.parameter}}
 Result: {{current_step.result}}
 ---

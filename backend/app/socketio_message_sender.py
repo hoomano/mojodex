@@ -25,7 +25,7 @@ class SocketioMessageSender:
         #self.mojo_messages_waiting_for_acknowledgment, self.produced_text_messages_waiting_for_acknowledgment = {}, {}
         self.messages_waiting_for_acknowledgment = {}
 
-    def _mojo_message_received(self, data, *args):
+    def _ack_received(self, data, *args):
         if "backend_event_manager" in data and data["backend_event_manager"]:
             # any backend event manager receiving a message should not prevent the message to be re-sent to the user while they have not acknowledged it
             return
@@ -38,6 +38,20 @@ class SocketioMessageSender:
 
         from models.session.session import Session as SessionModel
         session = SessionModel(session_id)
+
+        # This will work from version 0.4.11:
+        if 'event_name' in data:
+            event_name = data['event_name']
+            # find the event in the list of socketio_events
+            socketio_event = next((event for event in self.socketio_events if event.event_name == event_name), None)
+            if socketio_event is None:
+                raise Exception(f"Event name {data['event_name']} not found in socketio_events")
+            id_key = socketio_event.id_key
+            message_id = int(data[id_key])
+            if message_id in self.messages_waiting_for_acknowledgment[event_name]:
+                del self.messages_waiting_for_acknowledgment[event_name][message_id]
+                session.set_mojo_message_read_by_user(message_pk=message_pk) # What should be done here?
+
         if "message_pk" in data and data["message_pk"]:
             message_pk = int(data["message_pk"])
             if message_pk in self.mojo_messages_waiting_for_acknowledgment:
@@ -51,21 +65,28 @@ class SocketioMessageSender:
 
         return session
 
-    def send_socketio_message_with_ack(self, message, session_id, socketio_event: SocketioEvent, remaining_tries=120):
+    def send_socketio_message_with_ack(self, message, session_id, event_name: str, remaining_tries=120):
         # max_tries = every 5s for 10 minutes
-        self.messages_waiting_for_acknowledgment[socketio_event.event_name][message[socketio_event.id_key]] = message
+        # socketio event is first of socketio_events with event_name
+        socketio_event = next((event for event in self.socketio_events if event.event_name == event_name), None)
+        if socketio_event is None:
+            raise Exception(f"Event name {event_name} not found in socketio_events")
+        id_key = socketio_event.id_key
+        message_id = message[id_key]
+
+        self.messages_waiting_for_acknowledgment[event_name][message_id] = message
         if "session_id" not in message:
             message["session_id"] = session_id
-        server_socket.emit(socketio_event.event_name, message, to=session_id, callback=self._mojo_message_received)
+        server_socket.emit(event_name, message, to=session_id, callback=self._ack_received)
 
         def waiting_for_acknowledgment():
             # sleep 5 seconds
             time.sleep(5)
             # if the message is still not None, resend it
-            if message[socketio_event.id_key] in self.messages_waiting_for_acknowledgment[socketio_event.event_name]:
+            if message_id in self.messages_waiting_for_acknowledgment[event_name]:
                 self.send_socketio_message_with_ack(
-                    self.messages_waiting_for_acknowledgment[socketio_event.event_name][socketio_event.id_key], session_id,
-                    socketio_event=socketio_event, remaining_tries=remaining_tries - 1)
+                    self.messages_waiting_for_acknowledgment[event_name][id_key], session_id,
+                    event_name=event_name, remaining_tries=remaining_tries - 1)
 
         # start a timer of 5 seconds, in 5 seconds if it has not been killed, it will resend the message. Use executor
         if remaining_tries > 0:

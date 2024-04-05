@@ -1,4 +1,4 @@
-from datetime import datetime
+"""from datetime import datetime
 from models.session_creator import SessionCreator
 from models.workflows.workflow_execution import WorkflowExecution
 from flask import request
@@ -16,7 +16,7 @@ class UserWorkflowExecution(Resource):
         self.session_creator = SessionCreator()
 
     def get(self, user_id):
-        """Get the json describing workflow's state"""
+        \"""Get the json describing workflow's state\"""
         error_message = "Error while getting workflow execution"
         try:
             timestamp = request.args['datetime']
@@ -41,7 +41,7 @@ class UserWorkflowExecution(Resource):
             return {"error": f"{error_message}: {e}"}, 500
 
     def put(self, user_id):
-        """Create new user_workflow_execution"""
+        \"""Create new user_workflow_execution\"""
         error_message = "Error while creating workflow execution"
         if not request.json:
             return {"error": "Missing JSON body"}, 400
@@ -125,7 +125,7 @@ class UserWorkflowExecution(Resource):
             return {"error": f"{error_message}: {e}"}, 500
 
     def post(self, user_id):
-        """Run workflow execution"""
+        \"""Run workflow execution\"""
         error_message = "Error while running workflow execution"
         if not request.json:
             return {"error": "Missing JSON body"}, 400
@@ -162,3 +162,4 @@ class UserWorkflowExecution(Resource):
         except Exception as e:
             log_error(e)
             return {"error": f"{error_message}: {e}"}, 500
+"""

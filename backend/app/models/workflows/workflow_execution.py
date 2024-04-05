@@ -3,7 +3,7 @@ from models.workflows.step_execution import WorkflowStepExecution
 from models.workflows.workflow import Workflow
 
 from models.produced_text_managers.workflow_produced_text_manager import WorkflowProducedTextManager
-from mojodex_core.entities import MdUserWorkflowExecution, MdUserWorkflow, MdWorkflowStep, MdWorkflow, \
+from mojodex_core.entities import MdUserTaskExecution, MdUserTask, MdWorkflowStep, MdTask, \
     MdUserWorkflowStepExecution
 from mojodex_core.db import engine, Session
 from typing import List
@@ -28,8 +28,8 @@ class WorkflowExecution:
 
     def _get_db_object(self, workflow_execution_pk):
         try:
-            db_workflow_execution = self.db_session.query(MdUserWorkflowExecution) \
-                .filter(MdUserWorkflowExecution.user_workflow_execution_pk == workflow_execution_pk) \
+            db_workflow_execution = self.db_session.query(MdUserTaskExecution) \
+                .filter(MdUserTaskExecution.user_task_execution_pk == workflow_execution_pk) \
                 .first()
             return db_workflow_execution
         except Exception as e:
@@ -42,7 +42,7 @@ class WorkflowExecution:
         try:
             return self.db_session.query(MdUserWorkflowStepExecution) \
                 .filter(
-                MdUserWorkflowStepExecution.user_workflow_execution_fk == self.db_object.user_workflow_execution_pk) \
+                MdUserWorkflowStepExecution.user_task_execution_fk == self.db_object.user_task_execution_pk) \
                 .filter(MdUserWorkflowStepExecution.validated == True) \
                 .all()
         except Exception as e:
@@ -51,7 +51,7 @@ class WorkflowExecution:
     def _generate_new_step_execution(self, step, parameter: dict):
         try:
             db_workflow_step_execution = MdUserWorkflowStepExecution(
-                user_workflow_execution_fk=self.db_object.user_workflow_execution_pk,
+                user_task_execution_fk=self.db_object.user_task_execution_pk,
                 workflow_step_fk=step.workflow_step_pk,
                 parameter=parameter
             )
@@ -72,15 +72,15 @@ class WorkflowExecution:
             last_validated_step_execution = self.validated_steps_executions[-1]
             if len(self.validated_steps_executions) > 1:  # no dependency as it was the first step
                 db_dependency_step = self.db_session.query(MdWorkflowStep) \
-                    .join(MdUserWorkflow, MdUserWorkflow.workflow_fk == MdWorkflowStep.workflow_fk) \
-                    .filter(MdUserWorkflow.user_workflow_pk == self.db_object.user_workflow_fk) \
+                    .join(MdUserTask, MdUserTask.task_fk == MdWorkflowStep.task_fk) \
+                    .filter(MdUserTask.user_task_pk == self.db_object.user_task_fk) \
                     .filter(MdWorkflowStep.rank == last_validated_step_execution.workflow_step.rank - 1) \
                     .first()
 
                 # find last execution of dependency step
                 db_dependency_step_execution = self.db_session.query(MdUserWorkflowStepExecution) \
                     .filter(
-                    MdUserWorkflowStepExecution.user_workflow_execution_fk == self.db_object.user_workflow_execution_pk) \
+                    MdUserWorkflowStepExecution.user_task_execution_fk == self.db_object.user_task_execution_pk) \
                     .filter(MdUserWorkflowStepExecution.workflow_step_fk == db_dependency_step.workflow_step_pk) \
                     .order_by(MdUserWorkflowStepExecution.creation_date.desc()) \
                     .first()
@@ -88,7 +88,7 @@ class WorkflowExecution:
                 # load all validated step executions of current step:
                 current_step_executions_count = self.db_session.query(MdUserWorkflowStepExecution) \
                     .filter(
-                    MdUserWorkflowStepExecution.user_workflow_execution_fk == self.db_object.user_workflow_execution_pk) \
+                    MdUserWorkflowStepExecution.user_task_execution_fk == self.db_object.user_task_execution_pk) \
                     .filter(
                     MdUserWorkflowStepExecution.workflow_step_fk == last_validated_step_execution.workflow_step.workflow_step_pk) \
                     .filter(MdUserWorkflowStepExecution.validated == True) \
@@ -103,8 +103,8 @@ class WorkflowExecution:
 
             # else, generate new step execution of next step
             next_step = self.db_session.query(MdWorkflowStep) \
-                .join(MdUserWorkflow, MdUserWorkflow.workflow_fk == MdWorkflowStep.workflow_fk) \
-                .filter(MdUserWorkflow.user_workflow_pk == self.db_object.user_workflow_fk) \
+                .join(MdUserTask, MdUserTask.task_fk == MdWorkflowStep.task_fk) \
+                .filter(MdUserTask.user_task_pk == self.db_object.user_task_fk) \
                 .filter(MdWorkflowStep.rank == last_validated_step_execution.workflow_step.rank + 1) \
                 .first()
             # Reached last rank order => there is no next step
@@ -147,7 +147,7 @@ class WorkflowExecution:
         try:
             produced_text, produced_text_version=self._generate_produced_text()
             server_socket.emit('workflow_execution_produced_text', {
-                "user_workflow_execution_pk": self.db_object.user_workflow_execution_pk,
+                "user_task_execution_pk": self.db_object.user_task_execution_pk,
                 "produced_text": produced_text_version.production,
                 "produced_text_title": produced_text_version.title,
                 "produced_text_pk": produced_text.produced_text_pk,
@@ -163,7 +163,7 @@ class WorkflowExecution:
             last_step= self.workflow.db_steps[-1]
             validated_last_step_executions = self.db_session.query(MdUserWorkflowStepExecution) \
                 .filter(
-                MdUserWorkflowStepExecution.user_workflow_execution_fk == self.db_object.user_workflow_execution_pk) \
+                MdUserWorkflowStepExecution.user_task_execution_fk == self.db_object.user_task_execution_pk) \
                 .filter(
                 MdUserWorkflowStepExecution.workflow_step_fk == last_step.workflow_step_pk) \
                 .filter(MdUserWorkflowStepExecution.validated == True) \
@@ -173,7 +173,7 @@ class WorkflowExecution:
             production = "\n\n".join([list(step.result[0].values())[0] for step in validated_last_step_executions])
 
             produced_text_manager = WorkflowProducedTextManager(self.db_object.session_id, self.user_id,
-                                                                self.db_object.user_workflow_execution_pk)
+                                                                self.db_object.user_task_execution_pk)
             produced_text, produced_text_version = produced_text_manager.generate_title_and_save(production,
                                                                                                  text_type_pk=self.workflow.db_object.output_text_type_fk,
                                                                                                  workflow_name_for_system=self.workflow.name_for_system,
@@ -229,7 +229,7 @@ class WorkflowExecution:
         try:
             db_step_execution = self.db_session.query(MdUserWorkflowStepExecution) \
                 .filter(
-                MdUserWorkflowStepExecution.user_workflow_execution_fk == self.db_object.user_workflow_execution_pk) \
+                MdUserWorkflowStepExecution.user_task_execution_fk == self.db_object.user_task_execution_pk) \
                 .order_by(MdUserWorkflowStepExecution.creation_date.desc()) \
                 .first()
             return WorkflowStepExecution(self.db_session, db_step_execution, self.user_id)
@@ -259,9 +259,9 @@ class WorkflowExecution:
     @property
     def _db_workflow(self):
         try:
-            return self.db_session.query(MdWorkflow) \
-                .join(MdUserWorkflow, MdUserWorkflow.workflow_fk == MdWorkflow.workflow_pk) \
-                .filter(MdUserWorkflow.user_workflow_pk == self.db_object.user_workflow_fk) \
+            return self.db_session.query(MdTask) \
+                .join(MdUserTask, MdUserTask.task_fk == MdTask.task_pk) \
+                .filter(MdUserTask.user_task_pk == self.db_object.user_task_fk) \
                 .first()
         except Exception as e:
             raise Exception(f"_db_workflow :: {e}")
@@ -269,8 +269,8 @@ class WorkflowExecution:
     @property
     def _db_user_workflow(self):
         try:
-            return self.db_session.query(MdUserWorkflow) \
-                .filter(MdUserWorkflow.user_workflow_pk == self.db_object.user_workflow_fk) \
+            return self.db_session.query(MdUserTask) \
+                .filter(MdUserTask.user_task_pk == self.db_object.user_task_fk) \
                 .first()
         except Exception as e:
             raise Exception(f"_db_user_workflow :: {e}")
@@ -305,8 +305,8 @@ class WorkflowExecution:
             return {
                 "workflow_name_for_user": self.workflow.name_for_user,
                 "workflow_definition_for_user": self.workflow.definition_for_user,
-                "user_workflow_execution_pk": self.db_object.user_workflow_execution_pk,
-                "user_workflow_fk": self.db_object.user_workflow_fk,
+                "user_task_execution_pk": self.db_object.user_task_execution_pk,
+                "user_task_fk": self.db_object.user_task_fk,
                 "steps": self.workflow.json_steps,
                 "validated_steps_executions": [step_execution.to_json() for step_execution in
                                                self.validated_steps_executions],

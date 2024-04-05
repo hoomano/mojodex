@@ -1,4 +1,4 @@
-import os
+"""import os
 from flask import request
 from flask_restful import Resource
 from app import db, authenticate
@@ -256,3 +256,4 @@ class UserWorkflow(Resource):
             db.session.rollback()
             log_error(f"{error_message} : {e}")
             return {"error": f"{e}"}, 404
+"""

@@ -1,5 +1,5 @@
 from sqlalchemy import or_, func
-from mojodex_core.entities import MdWorkflowDisplayedData, MdWorkflowStep, MdUserWorkflow, MdUser, MdWorkflow, MdWorkflowStepDisplayedData
+from mojodex_core.entities import MdTask, MdTaskDisplayedData, MdUserTask, MdUser, MdWorkflowStep, MdWorkflowStepDisplayedData
 from sqlalchemy.sql.functions import coalesce
 
 
@@ -19,17 +19,17 @@ class Workflow:
 
     @property
     def _db_displayed_data(self):
-        return self.db_session.query(MdWorkflowDisplayedData) \
-            .join(MdWorkflow, MdWorkflow.workflow_pk == MdWorkflowDisplayedData.workflow_fk) \
-            .join(MdUserWorkflow, MdUserWorkflow.workflow_fk == MdWorkflow.workflow_pk) \
+        return self.db_session.query(MdTaskDisplayedData) \
+            .join(MdTask, MdTask.task_pk == MdTaskDisplayedData.task_fk) \
+            .join(MdUserTask, MdUserTask.task_fk == MdTask.task_pk) \
             .join(MdUser, MdUser.user_id == self.user_id) \
-            .filter(MdWorkflowDisplayedData.workflow_fk == self.db_object.workflow_pk) \
+            .filter(MdTaskDisplayedData.task_fk == self.db_object.task_pk) \
             .filter(
-            or_(MdWorkflowDisplayedData.language_code == MdUser.language_code,
-                MdWorkflowDisplayedData.language_code == 'en')) \
+            or_(MdTaskDisplayedData.language_code == MdUser.language_code,
+                MdTaskDisplayedData.language_code == 'en')) \
             .order_by(
             # Sort by user's language first otherwise by english
-            func.nullif(MdWorkflowDisplayedData.language_code, 'en').asc()
+            func.nullif(MdTaskDisplayedData.language_code, 'en').asc()
         ).first()
 
     @property
@@ -43,7 +43,7 @@ class Workflow:
     @property
     def db_steps(self):
         return self.db_session.query(MdWorkflowStep) \
-            .filter(MdWorkflowStep.workflow_fk == self.db_object.workflow_pk) \
+            .filter(MdWorkflowStep.task_fk == self.db_object.task_pk) \
             .order_by(MdWorkflowStep.rank.asc()).all()
 
 

@@ -1,4 +1,4 @@
-import os
+"""import os
 
 from flask import request
 from flask_restful import Resource
@@ -78,3 +78,4 @@ class ProductWorkflowAssociation(Resource):
             return {"product_workflow_association_pk": product_workflow_association.product_workflow_pk}, 200
         except Exception as e:
             return {"error": f"Error while creating product_workflow_association: {e}"}, 500
+"""

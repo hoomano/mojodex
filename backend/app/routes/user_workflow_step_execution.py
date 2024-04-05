@@ -1,4 +1,4 @@
-from datetime import datetime
+"""from datetime import datetime
 from models.workflows.workflow_execution import WorkflowExecution
 from flask import request
 from flask_restful import Resource
@@ -13,7 +13,7 @@ class UserWorkflowStepExecution(Resource):
         UserWorkflowStepExecution.method_decorators = [authenticate()]
 
     def post(self, user_id):
-        """Route to validate a step"""
+        \"""Route to validate a step\"""
         error_message = "Error while validating step"
         if not request.json:
             return {"error": "Missing JSON body"}, 400
@@ -62,3 +62,4 @@ class UserWorkflowStepExecution(Resource):
         except Exception as e:
             log_error(e)
             return {"error": f"{error_message}: {e}"}, 500
+"""

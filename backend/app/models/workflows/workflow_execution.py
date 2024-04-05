@@ -1,4 +1,4 @@
-from app import server_socket
+from app import server_socket, socketio_message_sender
 from models.workflows.step_execution import WorkflowStepExecution
 from models.workflows.workflow import Workflow
 
@@ -34,8 +34,6 @@ class WorkflowExecution:
             return db_workflow_execution
         except Exception as e:
             raise Exception(f"_get_db_object :: {e}")
-
-
 
     @property
     def _db_validated_step_executions(self):
@@ -139,9 +137,9 @@ class WorkflowExecution:
 
             self._ask_for_validation()
         except Exception as e:
-            # todo > Manage this error case
             print(f"🔴 {self.logger_prefix} - run :: {e}")
-            raise Exception(f"run :: {e}")
+            socketio_message_sender.send_error(f"Error during workflow run: {e}", self.db_object.session_id,
+                                               user_task_execution_pk=self.db_object.user_task_execution_pk)
 
     def end_workflow_execution(self):
         try:

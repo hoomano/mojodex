@@ -4,9 +4,26 @@ from app import db, main_logger, server_socket, executor
 from mojodex_core.logging_handler import log_error
 from mojodex_core.entities import *
 
+class SocketioEvent:
+    def __init__(self, event_name, id_key):
+        """
+        :param event_name: Event name to send on the right socketio channel
+        :param id_key: Key in the message to identify the message (referencing a pk or any unique identifier)
+        """
+        self.event_name = event_name
+        self.id_key = id_key
+
 class SocketioMessageSender:
+
+    # List of eligible socketio events to send with acknowledgment
+    socketio_events = [
+                    SocketioEvent("mojo_message", "message_pk"),
+                    SocketioEvent("draft_message", "produced_text_version_pk")
+    ]
+
     def __init__(self):
-        self.mojo_messages_waiting_for_acknowledgment, self.produced_text_messages_waiting_for_acknowledgment = {}, {}
+        #self.mojo_messages_waiting_for_acknowledgment, self.produced_text_messages_waiting_for_acknowledgment = {}, {}
+        self.messages_waiting_for_acknowledgment = {}
 
     def _mojo_message_received(self, data, *args):
         if "backend_event_manager" in data and data["backend_event_manager"]:
@@ -34,28 +51,21 @@ class SocketioMessageSender:
 
         return session
 
-    def send_mojo_message_with_ack(self, message, session_id, event_name='mojo_message', remaining_tries=120):
+    def send_socketio_message_with_ack(self, message, session_id, socketio_event: SocketioEvent, remaining_tries=120):
         # max_tries = every 5s for 10 minutes
-        if "produced_text_version_pk" in message:
-            self.produced_text_messages_waiting_for_acknowledgment[message["produced_text_version_pk"]] = message
-        elif "message_pk" in message:
-            self.mojo_messages_waiting_for_acknowledgment[message["message_pk"]] = message
+        self.messages_waiting_for_acknowledgment[socketio_event.event_name][message[socketio_event.id_key]] = message
         if "session_id" not in message:
             message["session_id"] = session_id
-        server_socket.emit(event_name, message, to=session_id, callback=self._mojo_message_received)
+        server_socket.emit(socketio_event.event_name, message, to=session_id, callback=self._mojo_message_received)
 
         def waiting_for_acknowledgment():
             # sleep 5 seconds
             time.sleep(5)
             # if the message is still not None, resend it
-            if "message_pk" in message and message["message_pk"] in self.mojo_messages_waiting_for_acknowledgment:
-                self.send_mojo_message_with_ack(self.mojo_messages_waiting_for_acknowledgment[message["message_pk"]], session_id,
-                                           event_name=event_name, remaining_tries=remaining_tries - 1)
-            elif "produced_text_version_pk" in message and message[
-                "produced_text_version_pk"] in self.produced_text_messages_waiting_for_acknowledgment:
-                self.send_mojo_message_with_ack(
-                    self.produced_text_messages_waiting_for_acknowledgment[message["produced_text_version_pk"]], session_id,
-                    event_name=event_name, remaining_tries=remaining_tries - 1)
+            if message[socketio_event.id_key] in self.messages_waiting_for_acknowledgment[socketio_event.event_name]:
+                self.send_socketio_message_with_ack(
+                    self.messages_waiting_for_acknowledgment[socketio_event.event_name][socketio_event.id_key], session_id,
+                    socketio_event=socketio_event, remaining_tries=remaining_tries - 1)
 
         # start a timer of 5 seconds, in 5 seconds if it has not been killed, it will resend the message. Use executor
         if remaining_tries > 0:

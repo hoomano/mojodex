@@ -110,7 +110,7 @@ class TextEditActionManager:
             draft_message["audio"] = "text" in draft_message and self.platform == "mobile" and self.voice_generator
 
             # Send message to frontend
-            socketio_message_sender.send_mojo_message_with_ack(
+            socketio_message_sender.send_socketio_message_with_ack(
                 message=draft_message,
                 session_id=self.session_id,
                 event_name="draft_message"

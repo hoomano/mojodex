@@ -280,7 +280,7 @@ class Session:
             response_message["audio"] = "text" in response_message and self.platform == "mobile" and self.voice_generator is not None
             # Does message contains a produced_text ?
             event_name = 'draft_message' if "produced_text_version_pk" in response_message else 'mojo_message'
-            socketio_message_sender.send_mojo_message_with_ack(response_message, self.id, event_name = event_name)
+            socketio_message_sender.send_socketio_message_with_ack(response_message, self.id, event_name = event_name)
             if response_message["audio"]:
                 output_filename = os.path.join(self.__get_mojo_messages_audio_storage(), f"{message_pk}.mp3")
                 try:

@@ -5,8 +5,6 @@ from flask_restful import Resource
 from app import db
 from mojodex_core.entities import *
 
-from models.purchase_manager import PurchaseManager
-
 
 class ProductTaskAssociation(Resource):
     active_status = "active"

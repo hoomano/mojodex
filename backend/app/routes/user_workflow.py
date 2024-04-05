@@ -94,6 +94,7 @@ class UserWorkflow(Resource):
                         MdWorkflowPlatformAssociation.workflow_fk == MdWorkflow.workflow_pk
                          ) \
                     .filter(MdUserWorkflow.user_id == user_id) \
+                    .filter(MdUserWorkflow.enabled == True )\
                     .filter(MdUserWorkflow.user_workflow_pk == user_workflow_pk) \
                     .filter(
                         MdWorkflowPlatformAssociation.platform_fk == platform_pk
@@ -119,7 +120,8 @@ class UserWorkflow(Resource):
                     "name": workflow_displayed_data.name_for_user,
                     "icon": workflow.icon,
                     "steps": self._get_workflow_steps_in_user_language(workflow.workflow_pk, user_id),
-                    "definition": workflow_displayed_data.definition_for_user
+                    "definition": workflow_displayed_data.definition_for_user,
+                    "enabled": True
                 }, 200
 
             # get user_workflows
@@ -164,6 +166,7 @@ class UserWorkflow(Resource):
                 MdWorkflowPlatformAssociation.workflow_fk == MdWorkflow.workflow_pk) \
                 .outerjoin(user_lang_subquery, MdWorkflow.workflow_pk == user_lang_subquery.c.workflow_fk) \
                 .outerjoin(en_subquery, MdWorkflow.workflow_pk == en_subquery.c.workflow_fk) \
+                .filter(MdUserWorkflow.enabled == True)\
                 .filter(MdUserWorkflow.user_id == user_id) \
                 .filter(MdWorkflowPlatformAssociation.platform_fk == platform_pk) \
                 .order_by(MdUserWorkflow.workflow_fk) \
@@ -171,49 +174,85 @@ class UserWorkflow(Resource):
                 .offset(offset) \
                 .all()
 
-            return {'user_workflows': [{
+            response = {'user_workflows': [{
                 "user_workflow_pk": user_workflow.user_workflow_pk,
                 "workflow_pk": workflow.workflow_pk,
                 "name_for_user": name_for_user,
                 "icon": workflow.icon,
                 "definition_for_user": definition_for_user,
-                "steps": self._get_workflow_steps_in_user_language(workflow.workflow_pk, user_id)
-            } for user_workflow, workflow, name_for_user, definition_for_user in results]}, 200
+                "steps": self._get_workflow_steps_in_user_language(workflow.workflow_pk, user_id),
+                "enabled": True
+            } for user_workflow, workflow, name_for_user, definition_for_user in results]}
 
+            # other workflows that are not enabled for this user but:
+            # - he used to have it enabled in a previous purchase (user_workflow exists and enabled = False in this case)
+            # - he never had it enabled (user_workflow does not exist in this case) and workflow.visible_for_teasing is true
+            if len(response["user_workflows"]) < n_user_workflows:
+                total_user_workflows = db.session.query(MdUserWorkflow) \
+                    .filter(MdUserWorkflow.enabled == True) \
+                    .filter(MdUserWorkflow.user_id == user_id).count()
+
+                disabled_workflows_offset = max(0, offset - total_user_workflows)
+                # Fetch the disabled workflows or workflows not in the md_user_workflow table for this user
+                # outerjoin: join all workflow with associated user_workflow of this user, even if there is no user_workflow (=null)
+                # filter on whether the user_workflow is disabled or the user_workflow is null (workflow_fk = null)
+                disabled_workflows_query = (
+                    db.session
+                    .query(
+                        MdWorkflow,
+                        MdUserWorkflow,
+                        coalesce(
+                            user_lang_subquery.c.user_lang_name_for_user,
+                            en_subquery.c.en_name_for_user).label(
+                            "name_for_user"),
+                        coalesce(
+                            user_lang_subquery.c.user_lang_definition_for_user,
+                            en_subquery.c.en_definition_for_user).label(
+                            "definition_for_user")
+                    )
+                    .outerjoin(
+                        MdUserWorkflow,
+                        and_(
+                            MdUserWorkflow.workflow_fk == MdWorkflow.workflow_pk,
+                            MdUserWorkflow.user_id == user_id
+                        )
+                    )
+                    .join(
+                        MdWorkflowPlatformAssociation,
+                        MdWorkflowPlatformAssociation.workflow_fk == MdWorkflow.workflow_pk
+                    )
+                    .outerjoin(user_lang_subquery, MdWorkflow.workflow_pk == user_lang_subquery.c.workflow_fk)
+                    .outerjoin(en_subquery, MdWorkflow.workflow_pk == en_subquery.c.workflow_fk)
+                    .filter(
+                        and_(
+                            MdWorkflowPlatformAssociation.platform_fk == platform_pk,
+                            or_(
+                                MdUserWorkflow.enabled != True,
+                                and_(
+                                    MdUserWorkflow.workflow_fk.is_(None),
+                                    MdWorkflow.visible_for_teasing == True
+                                )
+                            )
+                        )
+                    )).order_by(MdWorkflow.workflow_pk).limit(
+                    n_user_workflows - len(response["user_workflows"])).offset(disabled_workflows_offset).all()
+
+                disabled_workflows_list = [
+                    {
+                        "user_workflow_pk": user_workflow.user_workflow_pk if user_workflow else None,
+                        "workflow_pk": workflow.workflow_pk,
+                        "name_for_user": name_for_user,
+                        "definition_for_user": definition_for_user,
+                        "icon": workflow.icon,
+                        "steps": self._get_workflow_steps_in_user_language(workflow.workflow_pk, user_id),
+                        "enabled": False
+                    } for workflow, user_workflow, name_for_user, definition_for_user in disabled_workflows_query
+                ]
+
+                response["user_workflows"] += disabled_workflows_list
+
+            return response, 200
         except Exception as e:
             db.session.rollback()
             log_error(f"{error_message} : {e}")
             return {"error": f"{e}"}, 404
-
-    def put(self):
-        if not request.is_json:
-            return {"error": "Request must be JSON"}, 400
-
-        try:
-            secret = request.headers['Authorization']
-            if secret != os.environ["BACKOFFICE_SECRET"]:
-                return {"error": "Authentication error : Wrong secret"}, 403
-        except KeyError:
-            return {"error": f"Missing Authorization secret in headers"}, 403
-
-        try:
-            timestamp = request.json["datetime"]
-            user_id = request.json['user_id']
-            workflow_pk = request.json["workflow_pk"]
-        except KeyError as e:
-            return {"error": f"Missing field {e}"}, 400
-
-        try:
-            # ensure this does not already exist
-            user_workflow = db.session.query(MdUserWorkflow).filter(
-                and_(MdUserWorkflow.user_id == user_id, MdUserWorkflow.workflow_fk == workflow_pk)).first()
-            if user_workflow:
-                return {"error": "User workflow already exists"}, 400
-
-            user_workflow = MdUserWorkflow(user_id=user_id, workflow_fk=workflow_pk)
-            db.session.add(user_workflow)
-            db.session.commit()
-            return {"user_workflow_pk": user_workflow.user_workflow_pk}, 200
-        except Exception as e:
-            db.session.rollback()
-            return {"error": f"Error while creating user_workflow: {e}"}, 500

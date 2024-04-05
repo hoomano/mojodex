@@ -686,6 +686,29 @@ CREATE TABLE public.md_product_task (
     task_fk integer NOT NULL
 );
 
+--
+-- Name: md_product_workflow_seq; Type: SEQUENCE; Schema: public;
+--
+
+CREATE SEQUENCE public.md_product_workflow_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+
+--
+-- Name: md_product_workflow; Type: TABLE; Schema: public;
+--
+
+CREATE TABLE public.md_product_workflow (
+    product_workflow_pk integer DEFAULT nextval('public.md_product_workflow_seq'::regclass) NOT NULL,
+    product_fk integer NOT NULL,
+    workflow_fk integer NOT NULL
+);
+
 
 
 --
@@ -1297,7 +1320,8 @@ CREATE SEQUENCE public.md_user_workflow_seq
 CREATE TABLE public.md_user_workflow (
     user_workflow_pk integer DEFAULT nextval('public.md_user_workflow_seq'::regclass) NOT NULL,
     user_id character varying(255) NOT NULL,
-    workflow_fk integer NOT NULL
+    workflow_fk integer NOT NULL,
+    enabled boolean DEFAULT true NOT NULL
 );
 
 --
@@ -1366,7 +1390,8 @@ CREATE TABLE public.md_workflow (
     name_for_system character varying(255) NOT NULL,
     icon character varying(255) NOT NULL,
     definition_for_system text NOT NULL,
-    output_text_type_fk integer
+    output_text_type_fk integer,
+    visible_for_teasing boolean DEFAULT false NOT NULL
 );
 
 
@@ -1703,6 +1728,14 @@ ALTER TABLE ONLY public.md_product
 
 ALTER TABLE ONLY public.md_product_task
     ADD CONSTRAINT product_task_pkey PRIMARY KEY (product_task_pk);
+
+--
+-- Name: md_product_workflow product_workflow_pkey; Type: CONSTRAINT; Schema: public;
+--
+
+ALTER TABLE ONLY public.md_product_workflow
+    ADD CONSTRAINT product_workflow_pkey PRIMARY KEY (product_workflow_pk);
+
 
 
 --
@@ -2109,6 +2142,21 @@ ALTER TABLE ONLY public.md_product_task
 
 ALTER TABLE ONLY public.md_product_task
     ADD CONSTRAINT product_task_task_fk_fkey FOREIGN KEY (task_fk) REFERENCES public.md_task(task_pk);
+
+--
+-- Name: md_product_workflow product_workflow_product_fk_fkey; Type: FK CONSTRAINT; Schema: public;
+--
+
+ALTER TABLE ONLY public.md_product_workflow
+    ADD CONSTRAINT product_workflow_product_fk_fkey FOREIGN KEY (product_fk) REFERENCES public.md_product(product_pk);
+
+
+--
+-- Name: md_product_workflow product_workflow_workflow_fk_fkey; Type: FK CONSTRAINT; Schema: public;
+--
+
+ALTER TABLE ONLY public.md_product_workflow
+    ADD CONSTRAINT product_workflow_workflow_fk_fkey FOREIGN KEY (workflow_fk) REFERENCES public.md_workflow(workflow_pk);
 
 
 --

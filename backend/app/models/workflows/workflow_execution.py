@@ -1,6 +1,8 @@
 from app import server_socket
 from models.workflows.step_execution import WorkflowStepExecution
 from models.workflows.workflow import Workflow
+
+from models.produced_text_managers.workflow_produced_text_manager import WorkflowProducedTextManager
 from mojodex_core.entities import MdUserWorkflowExecution, MdUserWorkflow, MdWorkflowStep, MdWorkflow, \
     MdUserWorkflowStepExecution
 from mojodex_core.db import engine, Session
@@ -90,7 +92,6 @@ class WorkflowExecution:
                     .filter(
                     MdUserWorkflowStepExecution.workflow_step_fk == last_validated_step_execution.workflow_step.workflow_step_pk) \
                     .filter(MdUserWorkflowStepExecution.validated == True) \
-                    .order_by(MdUserWorkflowStepExecution.creation_date.desc()) \
                     .count()
 
                 # have all parameters been executed and validated?
@@ -131,6 +132,7 @@ class WorkflowExecution:
     def run(self):
         try:
             if not self._get_current_step():
+                self.end_workflow_execution()
                 return
             self._get_current_step().execute(self.initial_parameters, self._past_validated_steps_results,
                                              self.db_object.session_id)
@@ -140,6 +142,46 @@ class WorkflowExecution:
             # todo > Manage this error case
             print(f"🔴 {self.logger_prefix} - run :: {e}")
             raise Exception(f"run :: {e}")
+
+    def end_workflow_execution(self):
+        try:
+            produced_text, produced_text_version=self._generate_produced_text()
+            server_socket.emit('workflow_execution_produced_text', {
+                "user_workflow_execution_pk": self.db_object.user_workflow_execution_pk,
+                "produced_text": produced_text_version.production,
+                "produced_text_title": produced_text_version.title,
+                "produced_text_pk": produced_text.produced_text_pk,
+                "produced_text_version_pk": produced_text_version.produced_text_version_pk,
+                "session_id": self.db_object.session_id
+            }, to=self.db_object.session_id)
+        except Exception as e:
+            raise Exception(f"end_workflow_execution :: {e}")
+
+    def _generate_produced_text(self):
+        try:
+            # concatenation of results of last step's validated executions
+            last_step= self.workflow.db_steps[-1]
+            validated_last_step_executions = self.db_session.query(MdUserWorkflowStepExecution) \
+                .filter(
+                MdUserWorkflowStepExecution.user_workflow_execution_fk == self.db_object.user_workflow_execution_pk) \
+                .filter(
+                MdUserWorkflowStepExecution.workflow_step_fk == last_step.workflow_step_pk) \
+                .filter(MdUserWorkflowStepExecution.validated == True) \
+                .order_by(MdUserWorkflowStepExecution.creation_date.desc())\
+                .all()
+
+            production = "\n\n".join([list(step.result[0].values())[0] for step in validated_last_step_executions])
+
+            produced_text_manager = WorkflowProducedTextManager(self.db_object.session_id, self.user_id,
+                                                                self.db_object.user_workflow_execution_pk)
+            produced_text, produced_text_version = produced_text_manager.generate_title_and_save(production,
+                                                                                                 text_type_pk=self.workflow.db_object.output_text_type_fk,
+                                                                                                 workflow_name_for_system=self.workflow.name_for_system,
+                                                                                                 workflow_definition_for_system=self.workflow.definition_for_system)
+            return produced_text, produced_text_version
+
+        except Exception as e:
+            raise Exception(f"_generate_produced_text :: {e}")
 
     @property
     def _past_validated_steps_results(self):

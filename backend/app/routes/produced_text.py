@@ -8,7 +8,7 @@ from mojodex_core.logging_handler import log_error
 from mojodex_core.entities import *
 
 
-from models.produced_text_manager import ProducedTextManager
+from models.produced_text_managers.produced_text_manager import ProducedTextManager
 
 
 class ProducedText(Resource):

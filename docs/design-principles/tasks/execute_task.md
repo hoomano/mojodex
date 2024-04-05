@@ -245,10 +245,10 @@ with open(self.answer_user_prompt, 'r') as f:
                                     language=self.language,
                                     audio_message=self.platform == "mobile",
                                     tag_proper_nouns=tag_proper_nouns,
-                                    title_start_tag=ProducedTextManager.title_start_tag,
-                                    title_end_tag=ProducedTextManager.title_end_tag,
-                                    draft_start_tag=ProducedTextManager.draft_start_tag,
-                                    draft_end_tag=ProducedTextManager.draft_end_tag,
+                                    title_start_tag=TaskProducedTextManager.title_start_tag,
+                                    title_end_tag=TaskProducedTextManager.title_end_tag,
+                                    draft_start_tag=TaskProducedTextManager.draft_start_tag,
+                                    draft_end_tag=TaskProducedTextManager.draft_end_tag,
                                     task_tool_associations=self.task_tool_associations_json
                                     )
 
@@ -327,7 +327,7 @@ It will return a map containing message metadata with text to display to the use
 - TaskExecutionManager handles a response indicating the assistant has completed the task. In this case, the response format will include the result of the task enclosed in specific tags.
 ```python
 [...]
-if TaskExecutor.execution_start_tag in response:
+if ExecutionManager.execution_start_tag in response:
     return self.task_executor.manage_execution_text(execution_text=response, task=self.task, task_displayed_data=self.task_displayed_data,
                                                     user_task_execution_pk=self.task_execution.user_task_execution_pk,
                                                     user_message=user_message,

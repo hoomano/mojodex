@@ -30,6 +30,7 @@ class Workflow(Resource):
             definition_for_system = request.json['definition_for_system']
             workflow_displayed_data = request.json["workflow_displayed_data"]
             steps = request.json['steps']
+            output_type = request.json["output_type"].strip().lower()
         except KeyError as e:
             return {"error": f"Missing parameter : {e}"}, 400
 
@@ -41,7 +42,18 @@ class Workflow(Resource):
             if name_for_system != name_for_system.lower():
                 return {
                     "error": f"name_for_system must be in lower case and use underscores. Example : 'answer_to_prospect'"}, 400
-
+            # ensure output_type is in md_text_type
+            db_output_type = \
+            db.session.query(MdTextType.text_type_pk).filter(MdTextType.name == output_type).first()
+            if not db_output_type:
+                # add text_type to md_text_type
+                text_type = MdTextType(name=output_type)
+                db.session.add(text_type)
+                db.session.flush()
+                db.session.refresh(text_type)
+                output_type_pk = text_type.text_type_pk
+            else:
+                output_type_pk = db_output_type[0]
             # ensure platform is a list
             if not isinstance(platforms, list):
                 return {"error": f"'platforms' must be a list"}, 400
@@ -95,7 +107,8 @@ class Workflow(Resource):
             db_workflow = MdWorkflow(
                 name_for_system=name_for_system,
                 icon=icon,
-                definition_for_system=definition_for_system
+                definition_for_system=definition_for_system,
+                output_text_type_fk=output_type_pk
             )
             db.session.add(db_workflow)
             db.session.flush()
@@ -225,12 +238,13 @@ class Workflow(Resource):
 
         # Logic
         try:
-            workflow = db.session.query(MdWorkflow) \
+            result = db.session.query(MdWorkflow, MdTextType) \
                 .filter(MdWorkflow.workflow_pk == workflow_pk) \
+                .join(MdTextType, MdTextType.text_type_pk == MdWorkflow.output_text_type_fk) \
                 .first()
-            if workflow is None:
+            if result is None:
                 return {"error": f"Workflow with pk {workflow_pk} not found"}, 404
-
+            workflow, output_type = result
             workflow_translations = db.session.query(MdWorkflowDisplayedData).filter(
                 MdWorkflowDisplayedData.workflow_fk == workflow_pk).all()
             workflow_displayed_data = [
@@ -264,6 +278,7 @@ class Workflow(Resource):
                 "name_for_system": workflow.name_for_system,
                 "definition_for_system": workflow.definition_for_system,
                 "icon": workflow.icon,
+                "output_type": output_type.name,
                 "steps": self._get_workflow_steps(workflow_pk)
             }
 

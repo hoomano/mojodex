@@ -2,6 +2,8 @@ import os
 from flask import request
 from flask_restful import Resource
 from app import db, authenticate, time_manager
+
+from models.workflows.workflow_execution import WorkflowExecution
 from mojodex_core.logging_handler import log_error
 from mojodex_core.entities import *
 from datetime import datetime
@@ -520,7 +522,8 @@ class UserTaskExecution(Resource):
                         produced_text_subquery.c.produced_text_title.label("produced_text_title"),
                         produced_text_subquery.c.produced_text_production.label("produced_text_production"),
                         produced_text_subquery.c.produced_text_version_pk.label("produced_text_version_pk"),
-                        MdUser.timezone_offset
+                        MdUser.timezone_offset,
+                        MdUser.language_code
                     ).join(MdUserTask, MdUserTask.user_task_pk == MdUserTaskExecution.user_task_fk)
                     .join(MdUser, MdUser.user_id == MdUserTask.user_id)
                     .join(MdTask, MdTask.task_pk == MdUserTask.task_fk)
@@ -545,9 +548,15 @@ class UserTaskExecution(Resource):
                               produced_text_subquery.c.produced_text_pk, produced_text_subquery.c.produced_text_title,
                               produced_text_subquery.c.produced_text_production,
                               produced_text_subquery.c.produced_text_version_pk,
-                              MdUser.timezone_offset
+                              MdUser.timezone_offset,
+                              MdUser.language_code
                               )
                     .first())._asdict()
+
+                if result["MdTask"].type == "workflow":
+                    workflow_execution = WorkflowExecution(user_task_execution_pk)
+                else:
+                    workflow_execution = None
 
                 return {
                     "user_task_execution_pk": result["MdUserTaskExecution"].user_task_execution_pk,
@@ -565,6 +574,7 @@ class UserTaskExecution(Resource):
                     "session_id": result["MdUserTaskExecution"].session_id,
                     "icon": result["MdTask"].icon,
                     "task_name": result["MdTaskDisplayedData"].name_for_user,
+                    "task_type": result["MdTask"].type,
                     "actions": get_predefined_actions(result["MdTask"].task_pk),
                     "user_task_pk": result["MdUserTaskExecution"].user_task_fk,
                     "n_todos": get_n_todos(result["MdUserTaskExecution"].user_task_execution_pk),
@@ -577,7 +587,9 @@ class UserTaskExecution(Resource):
                         result["MdUserTaskExecution"].user_task_execution_pk),
                     "text_edit_actions": recover_text_edit_actions(
                         result["MdUserTaskExecution"].user_task_fk),
-                    "working_on_todos": result["MdUserTaskExecution"].todos_extracted is None
+                    "working_on_todos": result["MdUserTaskExecution"].todos_extracted is None,
+                    "step_executions": workflow_execution.get_steps_execution_json() if result["MdTask"].type == "workflow" else None,
+                    "steps": workflow_execution.workflow.get_json_steps_with_translation(result["language_code"]) if result["MdTask"].type == "workflow" else None
                 }, 200
 
             n_user_task_executions = min(50,
@@ -634,7 +646,8 @@ class UserTaskExecution(Resource):
                     produced_text_subquery.c.produced_text_title.label("produced_text_title"),
                     produced_text_subquery.c.produced_text_production.label("produced_text_production"),
                     produced_text_subquery.c.produced_text_version_pk.label("produced_text_version_pk"),
-                    MdUser.timezone_offset
+                    MdUser.timezone_offset,
+                    MdUser.language_code
                 )
                 .distinct(MdUserTaskExecution.user_task_execution_pk)
                 .join(MdUserTask, MdUserTask.user_task_pk == MdUserTaskExecution.user_task_fk)
@@ -669,7 +682,8 @@ class UserTaskExecution(Resource):
                                       produced_text_subquery.c.produced_text_title,
                                       produced_text_subquery.c.produced_text_production,
                                       produced_text_subquery.c.produced_text_version_pk,
-                                      MdUser.timezone_offset
+                                      MdUser.timezone_offset,
+                                      MdUser.language_code
                                       )
                       .order_by(MdUserTaskExecution.user_task_execution_pk.desc())
                       .limit(n_user_task_executions)
@@ -677,6 +691,14 @@ class UserTaskExecution(Resource):
                       .all())
 
             result = [row._asdict() for row in result]
+
+            def get_workflow_specific_data(row):
+                print(row)
+                workflow_execution = WorkflowExecution(row["MdUserTaskExecution"].user_task_execution_pk)
+                return {
+                    "steps": workflow_execution.workflow.get_json_steps_with_translation(row["language_code"]),
+                    "step_executions": workflow_execution.get_steps_execution_json()
+                }
 
             results_list = [{
                 "user_task_execution_pk": row["MdUserTaskExecution"].user_task_execution_pk,
@@ -705,7 +727,8 @@ class UserTaskExecution(Resource):
                 "produced_text_version_pk": row["produced_text_version_pk"],
                 "task_tool_executions": get_task_tool_executions(row["MdUserTaskExecution"].user_task_execution_pk),
                 "text_edit_actions": recover_text_edit_actions(row["MdUserTaskExecution"].user_task_fk),
-                "working_on_todos": row["MdUserTaskExecution"].todos_extracted is None
+                "working_on_todos": row["MdUserTaskExecution"].todos_extracted is None,
+                **(get_workflow_specific_data(row) if row["MdTask"].type == "workflow" else {})
             } for row in result]
 
             return {"user_task_executions": results_list}, 200

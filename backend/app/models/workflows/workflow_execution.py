@@ -19,7 +19,7 @@ class WorkflowExecution:
             self.db_session = Session(engine)
             self.db_object = self._get_db_object(workflow_execution_pk)
             self.user_id = self._db_user_workflow.user_id
-            self.workflow = Workflow(self._db_workflow, self.db_session, self.user_id)
+            self.workflow = Workflow(self._db_workflow, self.db_session)
             self.validated_steps_executions = [WorkflowStepExecution(self.db_session, db_validated_step_execution, self.user_id) for
                                                db_validated_step_execution in self._db_validated_step_executions]
             self._current_step = None
@@ -61,7 +61,7 @@ class WorkflowExecution:
         except Exception as e:
             raise Exception(f"_generate_new_step_execution :: {e}")
 
-    def _get_current_step(self):
+    def _get_next_step_execution_to_run(self):
         try:
             if self._current_step:
                 return self._current_step
@@ -131,10 +131,10 @@ class WorkflowExecution:
 
     def run(self):
         try:
-            if not self._get_current_step():
+            if not self._get_next_step_execution_to_run():
                 self.end_workflow_execution()
                 return
-            self._get_current_step().execute(self.initial_parameters, self._past_validated_steps_results,
+            self._get_next_step_execution_to_run().execute(self.initial_parameters, self._past_validated_steps_results,
                                              self.db_object.session_id)
 
             self._ask_for_validation()
@@ -193,7 +193,7 @@ class WorkflowExecution:
 
     def _ask_for_validation(self):
         try:
-            step_execution_json = self._get_current_step().to_json()
+            step_execution_json = self._current_step.to_json()
             step_execution_json["session_id"] = self.db_object.session_id
             server_socket.emit('workflow_step_execution_ended', step_execution_json, to=self.db_object.session_id)
         except Exception as e:
@@ -297,18 +297,12 @@ class WorkflowExecution:
             raise Exception(f"after_checkpoint_to_current_steps_executions :: {e}")
 
 
-    def to_json(self):
+    def get_steps_execution_json(self):
         try:
-            return {
-                "workflow_name_for_user": self.workflow.name_for_user,
-                "workflow_definition_for_user": self.workflow.definition_for_user,
-                "user_task_execution_pk": self.db_object.user_task_execution_pk,
-                "user_task_fk": self.db_object.user_task_fk,
-                "steps": self.workflow.json_steps,
-                "validated_steps_executions": [step_execution.to_json() for step_execution in
-                                               self.validated_steps_executions],
-                "session_id": self.db_object.session_id,
-                "inputs": self.json_inputs
-            }
+            validated_steps_json = [step_execution.to_json() for step_execution in self.validated_steps_executions]
+            last_step_execution = self._get_last_step_execution()
+            if last_step_execution.validated is None:
+                validated_steps_json.append(WorkflowStepExecution(self.db_session, last_step_execution, self.user_id).to_json())
+            return validated_steps_json
         except Exception as e:
-            raise Exception(f"{self.logger_prefix} to_json :: {e}")
+            raise Exception(f"{self.logger_prefix} get_steps_execution_json :: {e}")

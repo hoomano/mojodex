@@ -1441,6 +1441,29 @@ CREATE TABLE public.md_workflow_step_displayed_data (
 );
 
 --
+-- Name: md_workflow_platform_association_seq; Type: SEQUENCE; Schema: public;
+--
+
+CREATE SEQUENCE public.md_workflow_platform_association_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+
+--
+-- Name: md_workflow_platform_association; Type: TABLE; Schema: public;
+--
+
+CREATE TABLE public.md_workflow_platform_association (
+    workflow_platform_association_pk integer DEFAULT nextval('public.md_workflow_platform_association_seq'::regclass) NOT NULL,
+    workflow_fk integer NOT NULL,
+    platform_fk integer NOT NULL
+);
+
+--
 -- Name: md_device device_pkey; Type: CONSTRAINT; Schema: public;
 --
 
@@ -1800,6 +1823,12 @@ ALTER TABLE ONLY public.md_user_workflow_execution
 ALTER TABLE ONLY public.md_user_workflow_step_execution
     ADD CONSTRAINT md_user_workflow_step_execution_pkey PRIMARY KEY (user_workflow_step_execution_pk);
 
+--
+-- Name: md_workflow_platform_association md_workflow_platform_association_pkey; Type: CONSTRAINT; Schema: public;
+--
+
+ALTER TABLE ONLY public.md_workflow_platform_association
+    ADD CONSTRAINT md_workflow_platform_association_pkey PRIMARY KEY (workflow_platform_association_pk);
 
 --
 -- Name: md_device device_user_id_fkey; Type: FK CONSTRAINT; Schema: public;
@@ -2264,6 +2293,20 @@ ALTER TABLE ONLY public.md_user_workflow_step_execution
 ALTER TABLE ONLY public.md_user_workflow_step_execution
     ADD CONSTRAINT md_user_workflow_step_execution_workflow_step_fk_fkey FOREIGN KEY (workflow_step_fk) REFERENCES public.md_workflow_step(workflow_step_pk);
 
+--
+-- Name: md_workflow_platform_association md_workflow_platform_association_platform_fkey; Type: FK CONSTRAINT; Schema: public;
+--
+
+ALTER TABLE ONLY public.md_workflow_platform_association
+    ADD CONSTRAINT md_workflow_platform_association_platform_fkey FOREIGN KEY (platform_fk) REFERENCES public.md_platform(platform_pk);
+
+
+--
+-- Name: md_workflow_platform_association md_workflow_platform_association_workflow_fkey; Type: FK CONSTRAINT; Schema: public;
+--
+
+ALTER TABLE ONLY public.md_workflow_platform_association
+    ADD CONSTRAINT md_workflow_platform_association_workflow_fkey FOREIGN KEY (workflow_fk) REFERENCES public.md_workflow(workflow_pk);
 
 --
 -- PostgreSQL database dump complete

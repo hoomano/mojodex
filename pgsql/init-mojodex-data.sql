@@ -420,6 +420,13 @@ COPY public.md_workflow_step_displayed_data (workflow_step_displayed_data_pk, wo
 4	2	fr	Ecrivain de strophes	Ecrit une strophe
 \.
 
+--
+-- Data for Name: md_workflow_platform_association; Type: TABLE DATA; Schema: public; Owner: assistant_db_user
+--
+
+COPY public.md_workflow_platform_association (workflow_platform_association_pk, workflow_fk, platform_fk) FROM stdin;
+1	1	2
+\.
 
 --
 -- Name: home_chat_pk_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
@@ -719,6 +726,11 @@ SELECT pg_catalog.setval('public.md_workflow_step_displayed_data_seq', 4, true);
 
 SELECT pg_catalog.setval('public.md_workflow_step_seq', 2, true);
 
+--
+-- Name: md_workflow_platform_association_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
+--
+
+SELECT pg_catalog.setval('public.md_workflow_platform_association_seq', 1, true);
 
 --
 -- PostgreSQL database dump complete

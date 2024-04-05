@@ -58,6 +58,7 @@ curl --location --request PUT 'http://localhost:5001/workflow' \
     "name_for_system": "<WORKFLOW_NAME_FOR_SYSTEM>",
     "icon": "<EMOJI>",
     "definition_for_system": "<WORKFLOW_DEFINITION_FOR_SYSTEM>",
+    "platforms": ["webapp", "mobile"], # List of platforms where the workflow is available
     "steps": [{
         "name_for_system": "<STEP_NAME_FOR_SYSTEM>",
         "step_displayed_data":[

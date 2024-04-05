@@ -31,6 +31,7 @@ class MdPlatform(Base):
     platform_pk = Column(Integer, Sequence('md_platform_seq'), primary_key=True)
     name = Column(String(255), nullable=False)
 
+    md_workflow_platform_association = relationship('MdWorkflowPlatformAssociation', back_populates='md_platform')
     md_task_platform_association = relationship('MdTaskPlatformAssociation', back_populates='md_platform')
 
 
@@ -104,6 +105,7 @@ class MdWorkflow(Base):
     definition_for_system = Column(Text, nullable=False)
 
     md_workflow_displayed_data = relationship('MdWorkflowDisplayedData', back_populates='md_workflow')
+    md_workflow_platform_association = relationship('MdWorkflowPlatformAssociation', back_populates='md_workflow')
     md_workflow_step = relationship('MdWorkflowStep', back_populates='md_workflow')
     md_user_workflow = relationship('MdUserWorkflow', back_populates='md_workflow')
 
@@ -268,6 +270,22 @@ class MdWorkflowDisplayedData(Base):
     json_inputs_spec = Column(JSON, nullable=False)
 
     md_workflow = relationship('MdWorkflow', back_populates='md_workflow_displayed_data')
+
+
+class MdWorkflowPlatformAssociation(Base):
+    __tablename__ = 'md_workflow_platform_association'
+    __table_args__ = (
+        ForeignKeyConstraint(['platform_fk'], ['md_platform.platform_pk'], name='md_workflow_platform_association_platform_fkey'),
+        ForeignKeyConstraint(['workflow_fk'], ['md_workflow.workflow_pk'], name='md_workflow_platform_association_workflow_fkey'),
+        PrimaryKeyConstraint('workflow_platform_association_pk', name='md_workflow_platform_association_pkey')
+    )
+
+    workflow_platform_association_pk = Column(Integer, Sequence('md_workflow_platform_association_seq'), primary_key=True)
+    workflow_fk = Column(Integer, nullable=False)
+    platform_fk = Column(Integer, nullable=False)
+
+    md_platform = relationship('MdPlatform', back_populates='md_workflow_platform_association')
+    md_workflow = relationship('MdWorkflow', back_populates='md_workflow_platform_association')
 
 
 class MdWorkflowStep(Base):

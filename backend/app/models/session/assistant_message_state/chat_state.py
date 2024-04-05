@@ -31,6 +31,8 @@ class ChatState:
                             conversation.append({"role": agent_key, "content": message.message['text_with_tags']})
                         else:
                             conversation.append({"role": agent_key, "content": message.message['text']})
+                elif message.sender == "system":
+                    conversation.append({"role": "system", "content": message.message['text']})
                 else:
                     raise Exception("Unknown message sender")
             return conversation

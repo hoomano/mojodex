@@ -693,7 +693,6 @@ class UserTaskExecution(Resource):
             result = [row._asdict() for row in result]
 
             def get_workflow_specific_data(row):
-                print(row)
                 workflow_execution = WorkflowExecution(row["MdUserTaskExecution"].user_task_execution_pk)
                 return {
                     "steps": workflow_execution.workflow.get_json_steps_with_translation(row["language_code"]),

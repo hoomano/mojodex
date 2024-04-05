@@ -161,6 +161,7 @@ class InstructTaskEnabledAssistantResponseGenerator(AssistantResponseGenerator, 
             user_tasks = db.session.query(MdTask).\
                 join(MdUserTask, MdTask.task_pk == MdUserTask.task_fk).\
                 filter(MdUserTask.user_id == self.context.user_id).\
+                filter(MdTask.type == "instruct").\
                 filter(MdUserTask.enabled==True).all()
             return [{
                 'task_pk': task.task_pk,

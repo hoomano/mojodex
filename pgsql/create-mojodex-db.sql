@@ -780,7 +780,7 @@ CREATE TABLE public.md_task (
     type public._task_type NOT NULL default 'instruct',
     name_for_system character varying(255) NOT NULL,
     definition_for_system text NOT NULL,
-    final_instruction text NOT NULL,
+    final_instruction text,
     icon character varying(255),
     output_text_type_fk integer,
     output_format_instruction_title character varying(255),

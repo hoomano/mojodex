@@ -61,19 +61,15 @@ class SocketioMessageSender:
         if remaining_tries > 0:
             executor.submit(waiting_for_acknowledgment)
 
-    def send_error(self, error, session_id, user_message_pk=None):
+    def send_error(self, error, session_id, **kwargs):
         """
         Send error to the user and log it in console + db
         :param error: Error to send and log
         :param session_id: Session id in which the error occurred
-        :param user_message_pk: Message pk if the error happens treating a specific user_message
         :return:
         """
         try:
-            #print("🔴 send_error " + error)
-            message = {"error": error, "session_id": session_id}
-            if user_message_pk:
-                message["user_message_pk"] = user_message_pk
+            message = {"error": error, "session_id": session_id, **kwargs}
             server_socket.emit('error', message, to=session_id)
             log_error(message, session_id=session_id)
             return message

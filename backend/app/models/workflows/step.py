@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from typing import List
 from mojodex_core.db import Session
 from sqlalchemy import or_, func
-from mojodex_core.entities import MdWorkflowStepDisplayedData, MdWorkflowStep, MdUserWorkflow, MdUser
+from mojodex_core.entities import MdWorkflowStepDisplayedData, MdWorkflowStep, MdUserTask, MdUser
 
 
 class WorkflowStep(ABC):
@@ -27,7 +27,7 @@ class WorkflowStep(ABC):
         try:
             return db_session.query(MdWorkflowStepDisplayedData) \
                 .join(MdWorkflowStep, MdWorkflowStep.workflow_step_pk == MdWorkflowStepDisplayedData.workflow_step_fk) \
-                .join(MdUserWorkflow, MdUserWorkflow.workflow_fk == MdWorkflowStep.workflow_fk) \
+                .join(MdUserTask, MdUserTask.task_fk == MdWorkflowStep.task_fk) \
                 .join(MdUser, MdUser.user_id == user_id) \
                 .filter(MdWorkflowStepDisplayedData.workflow_step_fk == self.db_object.workflow_step_pk) \
                 .filter(or_(

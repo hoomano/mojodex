@@ -6,8 +6,8 @@ from app import db
 from mojodex_core.logging_handler import log_error
 from mojodex_core.entities import *
 from sqlalchemy import func
-
 from sqlalchemy.orm.attributes import flag_modified
+from models.workflows.steps_library import steps_class
 
 class Task(Resource):
 
@@ -29,21 +29,34 @@ class Task(Resource):
         # data
         try:
             timestamp = request.json["datetime"]
+            task_type = request.json["task_type"]
+            if task_type not in ["instruct", "workflow"]:
+                return {"error": f"task_type must be 'instruct' or 'workflow'"}, 400
+            if task_type == "instruct":
+                final_instruction = request.json["final_instruction"]
+                output_format_instruction_title = request.json["output_format_instruction_title"]
+                output_format_instruction_draft = request.json["output_format_instruction_draft"]
+                infos_to_extract = request.json["infos_to_extract"]
+            else:
+                final_instruction = None
+                output_format_instruction_title = None
+                output_format_instruction_draft = None
+                infos_to_extract = None
+
             platforms = request.json["platforms"]
             name_for_system = request.json["name_for_system"]
             definition_for_system = request.json["definition_for_system"]
-            final_instruction = request.json["final_instruction"]
-            output_format_instruction_title = request.json["output_format_instruction_title"]
-            output_format_instruction_draft = request.json["output_format_instruction_draft"]
-            infos_to_extract = request.json["infos_to_extract"]
             icon = request.json["icon"]
             task_displayed_data = request.json["task_displayed_data"]
-            predefined_actions = request.json["predefined_actions"]
+            predefined_actions = request.json["predefined_actions"] if "predefined_actions" in request.json else []
             output_type = request.json["output_type"].strip().lower()
         except KeyError as e:
             return {"error": f"Missing field {e}"}, 400
 
         try:
+
+            ### COMMON FOR BOTH TASK TYPES
+
             # ensure there is no space and no upper case in name_for system
             if " " in name_for_system:
                 return {"error": f"name_for_system must not contain spaces but underscores. Example : 'answer_to_prospect'"}, 400
@@ -120,23 +133,10 @@ class Task(Resource):
                             if "name" not in displayed_data[language_code]:
                                 return {"error": f"The predefined_action with task_pk : '{item['task_pk']}' and language_code '{language_code}' must contain 'name'"}, 400
 
-            # ensure infos_to_extract is a list
-            if not isinstance(infos_to_extract, list):
-                return {"error": f"infos_to_extract must be a list of dict"}, 400
-
-            # ensure each item in infos_to_extract contains at least "input_name", "description"
-            for item in infos_to_extract:
-                if not isinstance(item, dict):
-                    return {"error": f"infos_to_extract must be a list of dict"}, 400
-                if "info_name" not in item:
-                    return {"error": f"infos_to_extract must contain 'info_name'"}, 400
-                if "description" not in item:
-                    return {"error": f"infos_to_extract must contain 'description'"}, 400
-
             # ensure platform is a list
             if not isinstance(platforms, list):
                 return {"error": f"'platforms' must be a list"}, 400
-            # get pltform_pk of each platform based on platform name
+            # get platform_pk of each platform based on platform name
             platform_pks = []
             for platform_name in platforms:
                 md_platform = db.session.query(MdPlatform).filter(MdPlatform.name == platform_name).first()
@@ -145,7 +145,26 @@ class Task(Resource):
                 else: 
                     platform_pks.append(md_platform.platform_pk)
 
+
+            # SPECIFIC TO INSTRUCT TASKS
+            if task_type == "instruct":
+
+                # ensure infos_to_extract is a list
+                if not isinstance(infos_to_extract, list):
+                    return {"error": f"infos_to_extract must be a list of dict"}, 400
+
+                # ensure each item in infos_to_extract contains at least "input_name", "description"
+                for item in infos_to_extract:
+                    if not isinstance(item, dict):
+                        return {"error": f"infos_to_extract must be a list of dict"}, 400
+                    if "info_name" not in item:
+                        return {"error": f"infos_to_extract must contain 'info_name'"}, 400
+                    if "description" not in item:
+                        return {"error": f"infos_to_extract must contain 'description'"}, 400
+
+
             task = MdTask(
+                type=task_type,
                 name_for_system=name_for_system,
                 definition_for_system=definition_for_system,
                 final_instruction=final_instruction,
@@ -208,6 +227,69 @@ class Task(Resource):
                     platform_fk=platform_pk
                 )
                 db.session.add(task_platform_association)
+
+            # SPECIFIC TO WORKFLOW TASKS
+            if task_type == "workflow":
+                steps = request.json["steps"]
+                # ensure steps is a list
+                if not isinstance(steps, list):
+                    return {"error": "Steps must be a list of string"}, 400
+
+                for step_index in range(len(steps)):
+                    step = steps[step_index]
+                    # check step is a dict
+                    if not isinstance(step, dict):
+                        return {"error": "Step must be a dict"}, 400
+                    if "name_for_system" not in step:
+                        return {"error": "Step must contain 'name_for_system'"}, 400
+                    step_name_for_system = step["name_for_system"]
+                    # ensure key exists in steps_class
+                    if step_name_for_system not in steps_class:
+                        return {"error": f"Step {step_name_for_system} not found in steps library"}, 400
+
+                    db_step = MdWorkflowStep(
+                        name_for_system=step_name_for_system,
+                        task_fk=task.task_pk,
+                        rank=step_index + 1
+                    )
+                    db.session.add(db_step)
+                    db.session.flush()
+
+                    if "step_displayed_data" not in step:
+                        return {"error": f"Step {step_name_for_system} must contain 'step_displayed_data'"}, 400
+                    step_displayed_data = step["step_displayed_data"]
+
+                    # check content of step_displayed_data
+                    if not isinstance(step_displayed_data, list):
+                        return {
+                            "error": f"Step_displayed_data for step {step_name_for_system} must be a list of dict"}, 400
+                    for translation in step_displayed_data:
+                        if not isinstance(translation, dict):
+                            return {
+                                "error": f"Step_displayed_data for step {step_name_for_system} must be a list of dict"}, 400
+                        if "language_code" not in translation:
+                            return {
+                                "error": f"Step_displayed_data for step {step_name_for_system} must contain 'language_code'"}, 400
+                        step_language_code = translation["language_code"]
+                        if "name_for_user" not in translation:
+                            return {
+                                "error": f"Step_displayed_data for step {step_name_for_system} - language {step_language_code} must contain 'name_for_user'"}, 400
+                        step_name_for_user = translation["name_for_user"]
+                        if "definition_for_user" not in translation:
+                            return {
+                                "error": f"Step_displayed_data for step {step_name_for_system} - language {step_language_code} must contain 'definition_for_user'"}, 400
+                        step_definition_for_user = translation["definition_for_user"]
+
+                        # add step_displayed_data to db
+                        db_step_displayed_data = MdWorkflowStepDisplayedData(
+                            workflow_step_fk=db_step.workflow_step_pk,
+                            language_code=step_language_code,
+                            name_for_user=step_name_for_user,
+                            definition_for_user=step_definition_for_user
+                        )
+                        db.session.add(db_step_displayed_data)
+                        db.session.flush()
+
 
             db.session.commit()
             return {"task_pk": task.task_pk}, 200
@@ -429,12 +511,41 @@ class Task(Resource):
                 task.output_text_type_fk = output_type_pk
                 db.session.flush()
 
+            # TODO: add "STEPS" modification
+
             db.session.commit()
             return {"task_pk": task.task_pk}, 200
         except Exception as e:
             log_error(f"Error editing task : {e}")
             db.session.rollback()
             return {"error": f"Error editing task : {e}"}, 500
+
+    def _get_workflow_steps(self, task_pk):
+        try:
+            steps = db.session.query(MdWorkflowStep) \
+                .filter(MdWorkflowStep.task_fk == task_pk) \
+                .order_by(MdWorkflowStep.rank) \
+                .all()
+            steps_json = []
+            for step in steps:
+                step_translations = db.session.query(MdWorkflowStepDisplayedData).filter(
+                    MdWorkflowStepDisplayedData.workflow_step_fk == step.workflow_step_pk).all()
+                step_displayed_data = [
+                    {
+                        "language_code": translation.language_code,
+                        "name_for_user": translation.name_for_user,
+                        "definition_for_user": translation.definition_for_user
+                    } for translation in step_translations]
+
+                steps_json.append({
+                    "step_pk": step.workflow_step_pk,
+                    "name_for_system": step.name_for_system,
+                    "rank": step.rank,
+                    "step_displayed_data": step_displayed_data
+                })
+            return steps_json
+        except Exception as e:
+            raise Exception(f"Error getting workflow steps : {e}")
 
 
     # Route to get json of a task
@@ -521,6 +632,7 @@ class Task(Resource):
             platforms = [platform.name for platform in platforms]
 
             task_json = {
+                "type": task.type,
                 "platforms": platforms,
                 "predefined_actions": predefined_actions,
                 "task_displayed_data": task_displayed_data,
@@ -532,6 +644,7 @@ class Task(Resource):
                 "output_type": output_type.name,
                 "icon": task.icon,
                 "infos_to_extract": task.infos_to_extract,
+                "steps": self._get_workflow_steps(task_pk)
                 }
 
             return task_json, 200

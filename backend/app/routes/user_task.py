@@ -12,6 +12,51 @@ class UserTask(Resource):
     def __init__(self):
         UserTask.method_decorators = [authenticate()]
 
+    def _get_workflow_steps_in_user_language(self, task_pk, user_id):
+        # Subquery for user_language_code
+        user_lang_subquery = (
+            db.session.query(
+                MdWorkflowStepDisplayedData.workflow_step_fk.label("workflow_step_fk"),
+                MdWorkflowStepDisplayedData.name_for_user.label("user_lang_name_for_user"),
+                MdWorkflowStepDisplayedData.definition_for_user.label("user_lang_definition_for_user"),
+            )
+            .join(MdUser, MdUser.user_id == user_id)
+            .filter(MdWorkflowStepDisplayedData.language_code == MdUser.language_code)
+            .subquery()
+        )
+
+        # Subquery for 'en'
+        en_subquery = (
+            db.session.query(
+                MdWorkflowStepDisplayedData.workflow_step_fk.label("workflow_step_fk"),
+                MdWorkflowStepDisplayedData.name_for_user.label("en_name_for_user"),
+                MdWorkflowStepDisplayedData.definition_for_user.label("en_definition_for_user"),
+            )
+            .filter(MdWorkflowStepDisplayedData.language_code == "en")
+            .subquery()
+        )
+
+        steps = db.session.query(MdWorkflowStep, coalesce(
+            user_lang_subquery.c.user_lang_name_for_user,
+            en_subquery.c.en_name_for_user).label(
+            "name_for_user"),
+                                 coalesce(
+                                     user_lang_subquery.c.user_lang_definition_for_user,
+                                     en_subquery.c.en_definition_for_user).label(
+                                     "definition_for_user")) \
+            .outerjoin(user_lang_subquery, MdWorkflowStep.workflow_step_pk == user_lang_subquery.c.workflow_step_fk) \
+            .outerjoin(en_subquery, MdWorkflowStep.workflow_step_pk == en_subquery.c.workflow_step_fk) \
+            .filter(MdWorkflowStep.task_fk == task_pk) \
+            .order_by(MdWorkflowStep.rank) \
+            .all()
+
+        return [{
+            'workflow_step_pk': step.workflow_step_pk,
+            'step_name_for_user': name_for_user,
+            'step_definition_for_user': definition_for_user
+        } for step, name_for_user, definition_for_user in steps
+        ]
+
     def get(self, user_id):
 
         try:
@@ -96,6 +141,8 @@ class UserTask(Resource):
                         "task_name": task_displayed_data.name_for_user,
                         "task_description": task_displayed_data.definition_for_user,
                         "task_icon": task.icon,
+                        "task_type": task.type,
+                        "steps": self._get_workflow_steps_in_user_language(task.task_pk, user_id),
                         "enabled": True
                         }, 200
 
@@ -168,6 +215,8 @@ class UserTask(Resource):
                         "task_name": name_for_user,
                         "task_description": description_for_user,
                         "task_icon": task.icon,
+                        "task_type": task.type,
+                        "steps": self._get_workflow_steps_in_user_language(task.task_pk, user_id),
                         "enabled": True
                         } for user_task, task, name_for_user, description_for_user in response]
             }
@@ -233,6 +282,8 @@ class UserTask(Resource):
                         "task_name": name_for_user,
                         "task_description": description_for_user,
                         "task_icon": task.icon,
+                        "task_type": task.type,
+                        "steps": self._get_workflow_steps_in_user_language(task.task_pk, user_id),
                         "enabled": False
                         } for task, user_task, name_for_user, description_for_user in disabled_tasks_query
                 ]

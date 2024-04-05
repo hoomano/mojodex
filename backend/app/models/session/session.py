@@ -1,11 +1,11 @@
 import os
 from app import db, server_socket, time_manager, socketio_message_sender, main_logger
 
-from models.produced_text_managers.task_produced_text_manager import TaskProducedTextManager
+from models.produced_text_managers.instruct_task_produced_text_manager import InstructTaskProducedTextManager
 from mojodex_core.logging_handler import log_error
 from models.session.assistant_message_generators.workflow_response_generator import WorkflowAssistantResponseGenerator
 from models.session.assistant_message_generators.general_chat_response_generator import GeneralChatResponseGenerator
-from models.session.assistant_message_generators.task_assistant_response_generator import TaskAssistantResponseGenerator
+from models.session.assistant_message_generators.instruct_task_assistant_response_generator import InstructTaskAssistantResponseGenerator
 from models.session.assistant_message_generators.assistant_message_generator import AssistantMessageGenerator
 from mojodex_core.entities import *
 from datetime import datetime
@@ -148,14 +148,14 @@ class Session:
     @token_stream_callback('draft_token')
     def _produced_text_stream_callback(self, partial_text):
         try:
-            title = AssistantMessageGenerator.remove_tags_from_text(partial_text.strip(), TaskProducedTextManager.title_start_tag,
-                                                    TaskProducedTextManager.title_end_tag)
-            production = AssistantMessageGenerator.remove_tags_from_text(partial_text.strip(), TaskProducedTextManager.draft_start_tag,
-                                                        TaskProducedTextManager.draft_end_tag)
+            title = AssistantMessageGenerator.remove_tags_from_text(partial_text.strip(), InstructTaskProducedTextManager.title_start_tag,
+                                                    InstructTaskProducedTextManager.title_end_tag)
+            production = AssistantMessageGenerator.remove_tags_from_text(partial_text.strip(), InstructTaskProducedTextManager.draft_start_tag,
+                                                        InstructTaskProducedTextManager.draft_end_tag)
             return {"produced_text_title": title,
                     "produced_text": production,
                     "session_id": self.id,
-                    "text": TaskProducedTextManager.remove_tags(partial_text)}
+                    "text": InstructTaskProducedTextManager.remove_tags(partial_text)}
         except Exception as e:
             raise Exception(f"_produced_text_stream_callback :: {e}")
 
@@ -231,9 +231,6 @@ class Session:
             # For now only task sessions
             user_task_execution_pk = message['user_task_execution_pk']
             return self.__manage_task_session(self.platform, user_task_execution_pk, use_message_placeholder, use_draft_placeholder)
-        elif 'user_workflow_execution_pk' in message and message['user_workflow_execution_pk'] is not None:
-            user_workflow_execution_pk = message['user_workflow_execution_pk']
-            return self.__manage_workflow_session(self.platform, user_workflow_execution_pk, use_message_placeholder, use_draft_placeholder)
         else:
             raise Exception("Unknown message origin")
 
@@ -253,7 +250,7 @@ class Session:
             function: The function that manages the task session.
         """
         self.platform = platform
-        return self.__manage_task_session(self.platform, user_task_execution_pk, use_message_placeholder=use_message_placeholder, use_draft_placeholder=use_draft_placeholder)
+        return self.__manage_instruct_task_session(self.platform, user_task_execution_pk, use_message_placeholder=use_message_placeholder, use_draft_placeholder=use_draft_placeholder)
 
     @user_inputs_processor
     def process_workflow_step_run_rejection(self, platform, user_workflow_execution_pk, use_message_placeholder=False, use_draft_placeholder=False):
@@ -331,6 +328,23 @@ class Session:
             raise Exception(f"__manage_home_chat_session :: {e}")
 
     def __manage_task_session(self, platform, user_task_execution_pk, use_message_placeholder=False, use_draft_placeholder=False):
+        try:
+            # What is the task type ?
+            db_task = db.session.query(MdTask)\
+                .join(MdUserTask, MdTask.task_pk == MdUserTask.task_fk)\
+                .join(MdUserTaskExecution, MdUserTaskExecution.user_task_fk == MdUserTask.user_task_pk)\
+                .filter(MdUserTaskExecution.user_task_execution_pk == user_task_execution_pk)\
+                .first()
+            if db_task is None:
+                raise Exception(f"Task of user_task_execution {user_task_execution_pk} not found")
+            if db_task.type == "instruct":
+                return self.__manage_instruct_task_session(platform, user_task_execution_pk, use_message_placeholder, use_draft_placeholder)
+            else:
+                return self.__manage_workflow_session(platform, user_task_execution_pk, use_message_placeholder, use_draft_placeholder)
+        except Exception as e:
+            raise Exception(f"__manage_task_session :: {e}")
+
+    def __manage_instruct_task_session(self, platform, user_task_execution_pk, use_message_placeholder=False, use_draft_placeholder=False):
         """
         Manages a task session.
 
@@ -348,7 +362,7 @@ class Session:
         """
         try:
             tag_proper_nouns = platform == "mobile"
-            task_assistant_response_generator = TaskAssistantResponseGenerator(mojo_message_token_stream_callback=self._mojo_message_stream_callback,
+            task_assistant_response_generator = InstructTaskAssistantResponseGenerator(mojo_message_token_stream_callback=self._mojo_message_stream_callback,
                                                                               draft_token_stream_callback=self._produced_text_stream_callback,
                                                                               use_message_placeholder=use_message_placeholder,
                                                                                use_draft_placeholder=use_draft_placeholder,
@@ -363,7 +377,6 @@ class Session:
             return response_message, response_language
         except Exception as e:
             raise Exception(f"__manage_task_session :: {e}")
-
 
     def __manage_workflow_session(self, platform, user_workflow_execution_pk, use_message_placeholder=False, use_draft_placeholder=False):
         """

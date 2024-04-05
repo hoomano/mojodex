@@ -3,10 +3,10 @@ from models.session.assistant_message_context.chat_context import ChatContext
 from models.session.assistant_message_state.general_chat_state import GeneralChatState
 from models.session.assistant_message_generators.assistant_message_generator import AssistantMessageGenerator
 from app import placeholder_generator
-from models.session.assistant_message_generators.task_enabled_assistant_response_generator import TaskEnabledAssistantResponseGenerator
+from models.session.assistant_message_generators.instruct_task_enabled_assistant_response_generator import InstructTaskEnabledAssistantResponseGenerator
 
 
-class GeneralChatResponseGenerator(TaskEnabledAssistantResponseGenerator):
+class GeneralChatResponseGenerator(InstructTaskEnabledAssistantResponseGenerator):
     logger_prefix = "GeneralChatResponseGenerator :: "
     # TODO: with @kelly check how to mpt-ize this
     prompt_template_path = "/data/prompts/home_chat/run.txt"

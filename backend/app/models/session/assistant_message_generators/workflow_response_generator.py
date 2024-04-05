@@ -2,10 +2,13 @@ from models.session.assistant_message_generators.assistant_message_generator imp
 from models.session.assistant_message_state.workflow_chat_state import WorkflowChatState
 from models.knowledge.knowledge_manager import KnowledgeManager
 from models.session.assistant_message_context.chat_context import ChatContext
-from models.session.assistant_message_generators.assistant_response_generator import AssistantResponseGenerator
 from app import placeholder_generator, server_socket
 
-class WorkflowAssistantResponseGenerator(AssistantResponseGenerator):
+from models.session.assistant_message_generators.task_enabled_assistant_response_generator import \
+    TaskEnabledAssistantResponseGenerator
+
+
+class WorkflowAssistantResponseGenerator(TaskEnabledAssistantResponseGenerator):
     prompt_template_path = "/data/prompts/workflows/run.txt"
     user_instruction_start_tag, user_instruction_end_tag = "<user_instruction>", "</user_instruction>"
     ask_for_clarification_start_tag, ask_for_clarification_end_tag = "<ask_for_clarification>", "</ask_for_clarification>"
@@ -13,11 +16,10 @@ class WorkflowAssistantResponseGenerator(AssistantResponseGenerator):
     no_go_explanation_start_tag, no_go_explanation_end_tag = "<no_go_explanation>", "</no_go_explanation>"
 
     def __init__(self, use_message_placeholder, tag_proper_nouns, mojo_message_token_stream_callback, user, session_id, user_messages_are_audio, running_user_workflow_execution_pk):
-        self.mojo_message_token_stream_callback = mojo_message_token_stream_callback
-        self.use_message_placeholder=use_message_placeholder
         chat_state = WorkflowChatState(running_user_workflow_execution_pk)
-        chat_context= ChatContext(user, session_id, user_messages_are_audio, chat_state)
-        super().__init__(self.prompt_template_path, chat_context, tag_proper_nouns, 0)
+        chat_context = ChatContext(user, session_id, user_messages_are_audio, chat_state)
+        super().__init__(self.prompt_template_path, mojo_message_token_stream_callback,
+                 use_message_placeholder, tag_proper_nouns, chat_context, llm_call_temperature=0)
 
 
     def _get_message_placeholder(self):
@@ -70,8 +72,6 @@ class WorkflowAssistantResponseGenerator(AssistantResponseGenerator):
         except Exception as e:
             raise Exception(f"_manage_response_task_tags :: {e}")
 
-
-
     def _render_prompt_from_template(self):
         try:
             mojo_knowledge = KnowledgeManager.get_mojo_knowledge()
@@ -83,7 +83,7 @@ class WorkflowAssistantResponseGenerator(AssistantResponseGenerator):
                                                     username=self.context.username,
                                                     user_company_knowledge=user_company_knowledge,
                                                     workflow=self.context.state.running_user_workflow_execution.workflow,
-                                                    user_workflow_inputs=self.context.state.running_user_workflow_execution.json_inputs,
+                                                    user_workflow_inputs=self._get_running_user_task_execution_inputs(),
                                                     audio_message=self.context.user_messages_are_audio,
                                                     tag_proper_nouns=self.tag_proper_nouns
                                                     )
@@ -91,21 +91,7 @@ class WorkflowAssistantResponseGenerator(AssistantResponseGenerator):
             raise Exception(f"{WorkflowAssistantResponseGenerator.logger_prefix} _render_prompt_from_template :: {e}")
 
 
-    def _token_callback(self, partial_text):
-        """
-        Token callback
-        """
-        partial_text = partial_text.strip()
-        if not partial_text.lower().startswith("<"):
-           self._stream_no_tag_text(partial_text)
-        else:            
-            self._stream_workflow_tokens(partial_text)
-
-    def _stream_no_tag_text(self, partial_text):
-        if self.mojo_message_token_stream_callback:
-            self.mojo_message_token_stream_callback(partial_text)
-
-    def _stream_workflow_tokens(self, partial_text):
+    def _stream_task_tokens(self, partial_text):
         text=None
         if WorkflowAssistantResponseGenerator.ask_for_clarification_start_tag in partial_text:
             text = AssistantMessageGenerator.remove_tags_from_text(partial_text, WorkflowAssistantResponseGenerator.ask_for_clarification_start_tag,

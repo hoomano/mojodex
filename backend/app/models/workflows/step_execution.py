@@ -96,7 +96,7 @@ class WorkflowStepExecution:
             previous_steps_execution = self.db_session.query(MdUserWorkflowStepExecution) \
                 .filter(MdUserWorkflowStepExecution.workflow_step_fk == self.db_object.workflow_step_fk) \
                 .filter(
-                MdUserWorkflowStepExecution.user_workflow_execution_fk == self.db_object.user_workflow_execution_fk) \
+                MdUserWorkflowStepExecution.user_task_execution_fk == self.db_object.user_task_execution_fk) \
                 .filter(
                 MdUserWorkflowStepExecution.user_workflow_step_execution_pk != self.db_object.user_workflow_step_execution_pk) \
                 .all()
@@ -129,8 +129,8 @@ class WorkflowStepExecution:
             return {
                 "user_workflow_step_execution_pk": self.db_object.user_workflow_step_execution_pk,
                 "workflow_step_pk": self.db_object.workflow_step_fk,
-                "step_name": self.name_for_user,
-                "step_definition": self.definition_for_user,
+                "step_name_for_user": self.name_for_user,
+                "step_definition_for_user": self.definition_for_user,
                 "validated": self.validated,
                 "parameter": self.parameter,
                 "result": self.result

@@ -189,7 +189,8 @@ class UserMessage(Resource):
             db_user_task_execution, db_task, db_home_chat = self._get_associated_user_task_execution(origin,
                                                                                                      session_id,
                                                                                                      user)
-            user_task_execution_pk, task_name_for_system = db_user_task_execution.user_task_execution_pk, db_task.name_for_system if db_task else None
+            user_task_execution_pk = db_user_task_execution.user_task_execution_pk if db_user_task_execution else None
+            task_name_for_system = db_task.name_for_system if db_task else None
 
             # If message is a written text
             if "text" in request.form:

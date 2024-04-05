@@ -271,3 +271,5 @@ class WorkflowExecution:
         # checkpoint_step learns from this failure
         checkpoint_step.learn_instruction(learned_instruction)
 ```
+
+![complete_user_workflow_execution_flow](../../images/workflow_execution/complete_user_workflow_execution_flow.png)

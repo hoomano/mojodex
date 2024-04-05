@@ -3,8 +3,8 @@ from mojodex_backend_logger import MojodexBackendLogger
 from app import db
 from mojodex_core.entities import MdProducedText
 
-class TaskProducedTextManager(ProducedTextManager):
-    logger_prefix = "📝 TaskProducedTextManager"
+class InstructTaskProducedTextManager(ProducedTextManager):
+    logger_prefix = "📝 InstructTaskProducedTextManager"
     
     title_start_tag, title_end_tag = "<title>", "</title>"
     draft_start_tag, draft_end_tag = "<draft>", "</draft>"
@@ -18,15 +18,15 @@ class TaskProducedTextManager(ProducedTextManager):
 
     @staticmethod
     def remove_tags(text):
-        return text.replace(TaskProducedTextManager.draft_start_tag, "").replace(TaskProducedTextManager.draft_end_tag, "") \
-            .replace(TaskProducedTextManager.title_start_tag, "").replace(TaskProducedTextManager.title_end_tag, "")
+        return text.replace(InstructTaskProducedTextManager.draft_start_tag, "").replace(InstructTaskProducedTextManager.draft_end_tag, "") \
+            .replace(InstructTaskProducedTextManager.title_start_tag, "").replace(InstructTaskProducedTextManager.title_end_tag, "")
 
 
     def _extract_produced_text_title_from_tagged_text(self, mojo_text):
         try:
-            if TaskProducedTextManager.title_start_tag and TaskProducedTextManager.title_end_tag in mojo_text:
-                start = mojo_text.find(TaskProducedTextManager.title_start_tag) + len(TaskProducedTextManager.title_start_tag)
-                end = mojo_text.find(TaskProducedTextManager.title_end_tag)
+            if InstructTaskProducedTextManager.title_start_tag and InstructTaskProducedTextManager.title_end_tag in mojo_text:
+                start = mojo_text.find(InstructTaskProducedTextManager.title_start_tag) + len(InstructTaskProducedTextManager.title_start_tag)
+                end = mojo_text.find(InstructTaskProducedTextManager.title_end_tag)
                 return mojo_text[start:end].strip()
             return None
         except Exception as e:
@@ -35,14 +35,14 @@ class TaskProducedTextManager(ProducedTextManager):
 
     def _extract_produced_text_production_from_tagged_text(self, mojo_text):
         try:
-            if TaskProducedTextManager.draft_start_tag and TaskProducedTextManager.draft_end_tag in mojo_text:
+            if InstructTaskProducedTextManager.draft_start_tag and InstructTaskProducedTextManager.draft_end_tag in mojo_text:
                 start = mojo_text.find(
-                    TaskProducedTextManager.draft_start_tag) + len(TaskProducedTextManager.draft_start_tag)
-                end = mojo_text.find(TaskProducedTextManager.draft_end_tag)
+                    InstructTaskProducedTextManager.draft_start_tag) + len(InstructTaskProducedTextManager.draft_start_tag)
+                end = mojo_text.find(InstructTaskProducedTextManager.draft_end_tag)
                 return mojo_text[start:end].strip()
-            return mojo_text.replace(TaskProducedTextManager.draft_start_tag, "").replace(
-                TaskProducedTextManager.draft_end_tag, "").replace(TaskProducedTextManager.title_start_tag, "").replace(
-                TaskProducedTextManager.title_end_tag, "").strip()
+            return mojo_text.replace(InstructTaskProducedTextManager.draft_start_tag, "").replace(
+                InstructTaskProducedTextManager.draft_end_tag, "").replace(InstructTaskProducedTextManager.title_start_tag, "").replace(
+                InstructTaskProducedTextManager.title_end_tag, "").strip()
         except Exception as e:
             raise Exception(
                 f"_extract_produced_text_production_from_tagged_text:: {e}")

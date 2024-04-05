@@ -5,7 +5,7 @@ from flask import request
 from flask_restful import Resource
 from app import db, authenticate, server_socket
 
-from models.produced_text_managers.task_produced_text_manager import TaskProducedTextManager
+from models.produced_text_managers.instruct_task_produced_text_manager import InstructTaskProducedTextManager
 from mojodex_core.logging_handler import log_error
 from mojodex_core.entities import *
 
@@ -155,10 +155,10 @@ class TextEditAction (Resource):
                 input_prompt = text_edit_action_prompt.render(
                     title=produced_text_version.title,
                     draft=produced_text_version.production,
-                    title_start_tag=TaskProducedTextManager.title_start_tag,
-                    title_end_tag=TaskProducedTextManager.title_end_tag,
-                    draft_start_tag=TaskProducedTextManager.draft_start_tag,
-                    draft_end_tag=TaskProducedTextManager.draft_end_tag
+                    title_start_tag=InstructTaskProducedTextManager.title_start_tag,
+                    title_end_tag=InstructTaskProducedTextManager.title_end_tag,
+                    draft_start_tag=InstructTaskProducedTextManager.draft_start_tag,
+                    draft_end_tag=InstructTaskProducedTextManager.draft_end_tag
                 )
 
             text_edit_action_manager = TextEditActionManager(

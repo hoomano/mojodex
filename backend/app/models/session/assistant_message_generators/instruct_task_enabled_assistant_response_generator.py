@@ -7,7 +7,7 @@ from models.session.assistant_message_generators.assistant_response_generator im
 from abc import ABC, abstractmethod
 from app import placeholder_generator, db, server_socket
 
-from models.produced_text_managers.task_produced_text_manager import TaskProducedTextManager
+from models.produced_text_managers.instruct_task_produced_text_manager import InstructTaskProducedTextManager
 
 from models.session.execution_manager import ExecutionManager
 from mojodex_core.entities import *
@@ -19,7 +19,7 @@ from models.tasks.task_tool_manager import TaskToolManager
 from jinja2 import Template
 
 
-class TaskEnabledAssistantResponseGenerator(AssistantResponseGenerator, ABC):
+class InstructTaskEnabledAssistantResponseGenerator(AssistantResponseGenerator, ABC):
     logger_prefix = "TaskEnabledAssistantResponseGenerator :: "
 
     # TODO: with @kelly check how to mpt-ize this
@@ -37,7 +37,7 @@ class TaskEnabledAssistantResponseGenerator(AssistantResponseGenerator, ABC):
             self.execution_manager = ExecutionManager(chat_context.session_id)
             self.task_executor = TaskExecutor(chat_context.session_id, chat_context.user_id)
         except Exception as e:
-            raise Exception(f"{TaskEnabledAssistantResponseGenerator.logger_prefix} __init__ :: {e}")
+            raise Exception(f"{InstructTaskEnabledAssistantResponseGenerator.logger_prefix} __init__ :: {e}")
 
     # getter for running_task
     @property
@@ -63,7 +63,7 @@ class TaskEnabledAssistantResponseGenerator(AssistantResponseGenerator, ABC):
                 placeholder_generator.stream(placeholder, self._token_callback)
                 return placeholder
         except Exception as e:
-            raise Exception(f"{TaskEnabledAssistantResponseGenerator.logger_prefix} _handle_placeholder :: {e}")
+            raise Exception(f"{InstructTaskEnabledAssistantResponseGenerator.logger_prefix} _handle_placeholder :: {e}")
         
 
     def _render_prompt_from_template(self):
@@ -88,7 +88,7 @@ class TaskEnabledAssistantResponseGenerator(AssistantResponseGenerator, ABC):
                                                     language=None
                                                     )
         except Exception as e:
-            raise Exception(f"{TaskEnabledAssistantResponseGenerator.logger_prefix} _render_prompt_from_template :: {e}")
+            raise Exception(f"{InstructTaskEnabledAssistantResponseGenerator.logger_prefix} _render_prompt_from_template :: {e}")
 
     def _manage_response_task_tags(self, response):
         try:
@@ -104,7 +104,8 @@ class TaskEnabledAssistantResponseGenerator(AssistantResponseGenerator, ABC):
 
     def _manage_execution_tags(self, response):
         try:
-            return self.execution_manager.manage_execution_text(response, self.running_task, self.running_task_displayed_data,
+            if ExecutionManager.execution_start_tag in response:
+                return self.execution_manager.manage_execution_text(response, self.running_task, self.running_task_displayed_data,
                                           self.running_user_task_execution, self.task_executor,
                                           use_draft_placeholder=self.use_draft_placeholder)
         except Exception as e:
@@ -143,13 +144,13 @@ class TaskEnabledAssistantResponseGenerator(AssistantResponseGenerator, ABC):
                 message['user_task_execution_pk'] = self.running_user_task_execution.user_task_execution_pk
             return message
         except Exception as e:
-            raise Exception(f"{TaskEnabledAssistantResponseGenerator.logger_prefix} generate_message :: {e}")
+            raise Exception(f"{InstructTaskEnabledAssistantResponseGenerator.logger_prefix} generate_message :: {e}")
 
     ### SPECIFIC METHODS FOR TASKS ###
     def _get_task_execution_placeholder(self):
         return f"{ExecutionManager.execution_start_tag}" \
-                        f"{TaskProducedTextManager.title_start_tag}{placeholder_generator.mojo_draft_title}{TaskProducedTextManager.title_end_tag}" \
-                        f"{TaskProducedTextManager.draft_start_tag}{placeholder_generator.mojo_draft_body}{TaskProducedTextManager.draft_end_tag}" \
+                        f"{InstructTaskProducedTextManager.title_start_tag}{placeholder_generator.mojo_draft_title}{InstructTaskProducedTextManager.title_end_tag}" \
+                        f"{InstructTaskProducedTextManager.draft_start_tag}{placeholder_generator.mojo_draft_body}{InstructTaskProducedTextManager.draft_end_tag}" \
                         f"{ExecutionManager.execution_end_tag}"
 
     def _get_task_input_placeholder(self):
@@ -175,10 +176,10 @@ class TaskEnabledAssistantResponseGenerator(AssistantResponseGenerator, ABC):
             with open(self.task_specific_instructions_prompt, "r") as f:
                 template = Template(f.read())
                 return template.render(task=task,
-                                    title_start_tag=TaskProducedTextManager.title_start_tag,
-                                    title_end_tag=TaskProducedTextManager.title_end_tag,
-                                    draft_start_tag=TaskProducedTextManager.draft_start_tag,
-                                    draft_end_tag=TaskProducedTextManager.draft_end_tag,
+                                    title_start_tag=InstructTaskProducedTextManager.title_start_tag,
+                                    title_end_tag=InstructTaskProducedTextManager.title_end_tag,
+                                    draft_start_tag=InstructTaskProducedTextManager.draft_start_tag,
+                                    draft_end_tag=InstructTaskProducedTextManager.draft_end_tag,
                                     task_tool_associations=self.__get_task_tools_json(task),
                                     user_task_inputs=self.__get_running_user_task_execution_inputs()
                                     )

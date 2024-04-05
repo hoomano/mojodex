@@ -2,7 +2,7 @@ import os
 from datetime import datetime
 from models.session.assistant_message_generators.assistant_message_generator import AssistantMessageGenerator
 
-from models.produced_text_managers.task_produced_text_manager import TaskProducedTextManager
+from models.produced_text_managers.instruct_task_produced_text_manager import InstructTaskProducedTextManager
 
 from models.session.execution_manager import ExecutionManager
 from mojodex_core.entities import *
@@ -152,8 +152,8 @@ class TextEditActionManager:
         try:
             return AssistantMessageGenerator.remove_tags_from_text(
                 text=edited_text.strip(),
-                start_tag=TaskProducedTextManager.title_start_tag,
-                end_tag=TaskProducedTextManager.title_end_tag
+                start_tag=InstructTaskProducedTextManager.title_start_tag,
+                end_tag=InstructTaskProducedTextManager.title_end_tag
             )
         except Exception as e:
             raise Exception(f"__get_title_without_tags :: {e}")
@@ -162,15 +162,15 @@ class TextEditActionManager:
         try:
             return AssistantMessageGenerator.remove_tags_from_text(
                 text=edited_text.strip(),
-                start_tag=TaskProducedTextManager.draft_start_tag,
-                end_tag=TaskProducedTextManager.draft_end_tag
+                start_tag=InstructTaskProducedTextManager.draft_start_tag,
+                end_tag=InstructTaskProducedTextManager.draft_end_tag
             )
         except Exception as e:
             raise Exception(f"__get_draft_without_tags :: {e}")
 
     def __get_text_without_tags(self, edited_text):
         try:
-            return TaskProducedTextManager.remove_tags(edited_text.strip())
+            return InstructTaskProducedTextManager.remove_tags(edited_text.strip())
         except Exception as e:
             raise Exception(f"__get_text_without_tags :: {e}")
 

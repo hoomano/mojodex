@@ -82,11 +82,13 @@ class UserAudioFileManager:
 
     def extract_text_and_duration(self, file, extension, user_id, session_id, message_type, message_id, user_task_execution_pk=None, task_name_for_system=None):
         try:
-            # backup_calls is for calling openai api in case default mode 'whisper azure'
             if file is not None:
                 audio_file_path = self.__store_audio_file(
                     file, extension, user_id, session_id, message_type, message_id)
             else:
+                # Else case is used to manage user_message management previous error:
+                # The audio_transcript has been correctly stored but has not been correctly set into db and sent back to user
+                # Therefore, we can find it using its message_id
                 audio_storage = self.__get_audio_storage_path(
                     user_id, session_id, message_type)
                 # find any file in this path that name without extension is message_id

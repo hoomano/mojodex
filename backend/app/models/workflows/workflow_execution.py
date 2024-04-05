@@ -127,7 +127,7 @@ class WorkflowExecution:
 
     @property
     def json_inputs(self):
-        return self.db_object.json_inputs
+        return self.db_object.json_input_values
 
     def run(self):
         try:
@@ -174,10 +174,7 @@ class WorkflowExecution:
 
             produced_text_manager = WorkflowProducedTextManager(self.db_object.session_id, self.user_id,
                                                                 self.db_object.user_task_execution_pk)
-            produced_text, produced_text_version = produced_text_manager.generate_title_and_save(production,
-                                                                                                 text_type_pk=self.workflow.db_object.output_text_type_fk,
-                                                                                                 workflow_name_for_system=self.workflow.name_for_system,
-                                                                                                 workflow_definition_for_system=self.workflow.definition_for_system)
+            produced_text, produced_text_version = produced_text_manager.save(production, text_type_pk=self.workflow.db_object.output_text_type_fk,)
             return produced_text, produced_text_version
 
         except Exception as e:

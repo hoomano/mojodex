@@ -18,13 +18,11 @@ class ProducedTextManager(ABC):
 
     def __init__(self, session_id, user_id=None, use_draft_placeholder=False, user_task_execution_pk=None,
                  task_name_for_system=None,
-                 user_workflow_execution_pk=None,
                  logger=None):
         self.session_id = session_id
         self.user_id = user_id
         self.use_draft_placeholder = use_draft_placeholder
         self.user_task_execution_pk, self.task_name_for_system = user_task_execution_pk, task_name_for_system
-        self.user_workflow_execution_pk = user_workflow_execution_pk
         self.logger = logger if logger else MojodexBackendLogger(
             f"{ProducedTextManager.logger_prefix} -- session {session_id}")
 
@@ -37,7 +35,6 @@ class ProducedTextManager(ABC):
                     MdProducedText.produced_text_pk == text_to_edit_pk).first()
             else:
                 produced_text = MdProducedText(user_task_execution_fk=self.user_task_execution_pk,
-                                               user_workflow_execution_fk=self.user_workflow_execution_pk,
                                                user_id=self.user_id, session_id=self.session_id)
                 db.session.add(produced_text)
                 db.session.flush()

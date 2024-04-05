@@ -56,7 +56,7 @@ from routes.integrations.hubspot import Hubspot
 #from routes.user_workflow_execution import UserWorkflowExecution
 #from routes.workflow import Workflow
 #from routes.user_workflow import UserWorkflow
-#from routes.user_workflow_step_execution import UserWorkflowStepExecution
+from routes.user_workflow_step_execution import UserWorkflowStepExecution
 #from routes.product_workflow_association import ProductWorkflowAssociation
 class HttpRouteManager:
     def __init__(self, api):
@@ -120,4 +120,4 @@ class HttpRouteManager:
         #api.add_resource(Workflow, "/workflow")
         #api.add_resource(UserWorkflow, "/user_workflow")
         #api.add_resource(ProductWorkflowAssociation, "/product_workflow_association")
-        #api.add_resource(UserWorkflowStepExecution, "/user_workflow_step_execution")
+        api.add_resource(UserWorkflowStepExecution, "/user_workflow_step_execution")

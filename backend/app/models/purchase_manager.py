@@ -160,59 +160,11 @@ class PurchaseManager:
                      "is_free_product": result["MdProduct"].free,
                      "product_n_tasks_limit": result["MdProduct"].n_tasks_limit,
                      "product_n_validity_days": result["MdProduct"].n_days_validity,
-                     "product_tasks": self.__get_product_tasks(result["MdProduct"], user_id),
-                     "product_workflows": self.__get_product_workflows(result["MdProduct"], user_id),
+                     "product_tasks": self.__get_product_tasks(result["MdProduct"], user_id)
                     } for result in results]
 
         except Exception as e:
             raise Exception(f"__user_active_purchases : {e}")
-
-    def __get_product_workflows(self, product, user_id):
-        try:
-            # Subquery to retrieve the workflows in the user_language_code
-            user_lang_subquery = (
-                db.session.query(
-                    MdWorkflowDisplayedData.workflow_fk.label("workflow_fk"),
-                    MdWorkflowDisplayedData.name_for_user.label("user_lang_name_for_user"),
-                )
-                .join(MdUser, MdUser.user_id == user_id)
-                .filter(MdWorkflowDisplayedData.language_code == MdUser.language_code)
-                .subquery()
-            )
-
-            # Subquery to retrieve the workflows in 'en'
-            en_subquery = (
-                db.session.query(
-                    MdWorkflowDisplayedData.workflow_fk.label("workflow_fk"),
-                    MdWorkflowDisplayedData.name_for_user.label("en_name_for_user"),
-                )
-                .filter(MdWorkflowDisplayedData.language_code == "en")
-                .subquery()
-            )
-
-            product_workflows = (
-                db.session.query(
-                    MdWorkflowDisplayedData.workflow_fk.label("workflow_fk"),
-                    coalesce(
-                        user_lang_subquery.c.user_lang_name_for_user,
-                        en_subquery.c.en_name_for_user
-                    ).label("name_for_user")
-                )
-                .outerjoin(user_lang_subquery, user_lang_subquery.c.workflow_fk == MdWorkflowDisplayedData.workflow_fk)
-                .outerjoin(en_subquery, en_subquery.c.workflow_fk == MdWorkflowDisplayedData.workflow_fk)
-                .join(MdWorkflow, MdWorkflow.workflow_pk == MdWorkflowDisplayedData.workflow_fk)
-                .join(MdProductWorkflow, MdProductWorkflow.workflow_fk == MdWorkflow.workflow_pk)
-                .filter(MdProductWorkflow.product_fk == product.product_pk)
-                .group_by(
-                    MdWorkflowDisplayedData.workflow_fk,
-                    user_lang_subquery.c.user_lang_name_for_user,
-                    en_subquery.c.en_name_for_user
-                )
-                .all())
-
-            return [product_workflow.name_for_user for product_workflow in product_workflows]
-        except Exception as e:
-            raise Exception(f"__get_product_workflows : {e}")
 
     def __get_product_tasks(self, product, user_id):
         try:
@@ -331,8 +283,7 @@ class PurchaseManager:
                      "n_tasks_limit": purchasable_product.n_tasks_limit,
                      "stripe_price": self.__get_stripe_price(
                          purchasable_product.product_stripe_id) if purchasable_product.product_stripe_id else None,
-                     "tasks": self.__get_product_tasks(purchasable_product, user_id),
-                        "workflows": self.__get_product_workflows(purchasable_product, user_id),
+                     "tasks": self.__get_product_tasks(purchasable_product, user_id)
                     } for purchasable_product, product_displayed_data in purchasable_products]
 
         except Exception as e:
@@ -432,7 +383,6 @@ class PurchaseManager:
                 last_expired_purchases.append({
                     "product_name": last_expired_package_product_name,
                     "tasks": self.__get_product_tasks(last_expired_package_product, user_id),
-                    "workflows": self.__get_product_workflows(last_expired_package_product, user_id),
                     "remaining_days": remaining_days,
                     "n_tasks_limit": last_expired_package_product.n_tasks_limit,
                     "n_days_validity": last_expired_package_product.n_days_validity,
@@ -447,7 +397,6 @@ class PurchaseManager:
                     last_expired_purchases.append({
                         "product_name": last_expired_subscription_product_name,
                         "tasks": self.__get_product_tasks(last_expired_subscription_product, user_id),
-                        "workflows": self.__get_product_workflows(last_expired_subscription_product, user_id),
                         "remaining_days": remaining_days,
                         "n_tasks_limit": last_expired_subscription_product.n_tasks_limit,
                         "n_days_validity": last_expired_subscription_product.n_days_validity,
@@ -584,28 +533,6 @@ class PurchaseManager:
                     user_task.enabled = True
                 db.session.flush()
 
-            # enable user workflows from this purchase
-            # Add workflows from product_workflow to user_workflow
-            workflows = db.session.query(MdWorkflow) \
-                .join(MdProductWorkflow, MdProductWorkflow.workflow_fk == MdWorkflow.workflow_pk) \
-                .filter(MdProductWorkflow.product_fk == purchase.product_fk).all()
-
-            for workflow in workflows:
-                # if workflow not already in user_workflow, add it, else, enable it
-                user_workflow = db.session.query(MdUserWorkflow) \
-                    .filter(MdUserWorkflow.user_id == purchase.user_id) \
-                    .filter(MdUserWorkflow.workflow_fk == workflow.workflow_pk).first()
-
-                if not user_workflow:
-                    user_workflow = MdUserWorkflow(
-                        user_id=purchase.user_id,
-                        workflow_fk=workflow.workflow_pk
-                    )
-                    db.session.add(user_workflow)
-                else:
-                    user_workflow.enabled = True
-                db.session.flush()
-
 
             purchase.active = True
 
@@ -653,26 +580,6 @@ class PurchaseManager:
 
             self.__deactivate_user_tasks(user_tasks_to_disable)
 
-            # same with workflows
-            to_keep_enabled_user_workflows = db.session.query(MdUserWorkflow.user_workflow_pk) \
-                .join(MdPurchase, MdPurchase.user_id == MdUserWorkflow.user_id) \
-                .filter(MdPurchase.active == True) \
-                .join(MdProduct, MdProduct.product_pk == MdPurchase.product_fk) \
-                .join(MdProductWorkflow, and_(MdProductWorkflow.product_fk == MdProduct.product_pk,
-                                            MdUserWorkflow.workflow_fk == MdProductWorkflow.workflow_fk)) \
-                .filter(MdPurchase.purchase_pk != purchase.purchase_pk) \
-                .filter(MdUserWorkflow.user_id == purchase.user_id) \
-                .all()
-            to_keep_enabled_user_workflows = [user_workflow[0] for user_workflow in to_keep_enabled_user_workflows]
-
-            user_workflows_to_disable = db.session.query(MdUserWorkflow) \
-                .filter(MdUserWorkflow.user_id == purchase.user_id) \
-                .filter(MdUserWorkflow.enabled == True) \
-                .filter(MdUserWorkflow.user_workflow_pk.notin_(to_keep_enabled_user_workflows)) \
-                .all()
-
-            self.__deactivate_user_workflows(user_workflows_to_disable)
-
             purchase.active = False
         except Exception as e:
             raise Exception(f"{PurchaseManager.logger_prefix} deactivate_purchase : {e}")
@@ -685,11 +592,3 @@ class PurchaseManager:
         except Exception as e:
             raise Exception(f"{PurchaseManager.logger_prefix} deactivate_user_tasks : {e}")
 
-
-    def __deactivate_user_workflows(self, user_workflows_to_disable):
-        try:
-            for user_workflow in user_workflows_to_disable:
-                user_workflow.enabled = False
-                db.session.flush()
-        except Exception as e:
-            raise Exception(f"{PurchaseManager.logger_prefix} deactivate_user_workflows : {e}")

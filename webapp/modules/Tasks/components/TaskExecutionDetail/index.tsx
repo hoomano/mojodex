@@ -252,7 +252,9 @@ const DraftDetail = () => {
   return (
     <div className="flex relative">
       <div className="flex-1 p-8 lg:p-16 h-[calc(100vh-72px)] lg:h-screen overflow-auto">
-        {!editorDetails?.text ? (
+        {newlyCreatedTaskInfo?.taskType == "workflow" ? 
+        (<p>Workflow</p>) : 
+        (!editorDetails?.text ? (
           <TaskLoader />
         ) : (
           <>
@@ -280,7 +282,9 @@ const DraftDetail = () => {
               notReadTodos={currentTask?.n_not_read_todos}
             />
           </>
-        )}
+        ))
+        }
+        
       </div>
       <div className="sticky top-0 left-0 h-[calc(100vh-72px)] lg:h-screen w-[345px] text-white">
         <Chat />

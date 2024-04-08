@@ -17,6 +17,7 @@ type Props = {
   enabled?: boolean;
   task?: TaskType;
   isListView?: boolean;
+  task_type: string;
 };
 
 const TaskCard = ({
@@ -28,6 +29,7 @@ const TaskCard = ({
   enabled=true,
   task,
   isListView,
+  task_type,
 }: Props) => {
   let containerClassName =
     "cursor-pointer rounded border p-[20px] border-gray-light group relative bg-white focus-within:ring-2 focus-within:ring-inset focus-within:ring-indigo-500 w-full max-w-[290px]";

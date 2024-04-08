@@ -10,6 +10,7 @@ import PrefSwitchGroup from "./PrefSwitchGroup";
 import { decryptId, encryptId } from "helpers/method";
 import Button from "components/Button";
 import useGetTask from "modules/Tasks/hooks/useGetTask";
+import { useTranslation } from "react-i18next";
 
 const CreateTaskForm = () => {
   const router = useRouter();
@@ -28,14 +29,18 @@ const CreateTaskForm = () => {
   const sessionId = taskConfigDetails?.session_id;
   const taskExecutionPK = taskConfigDetails?.user_task_execution_pk;
   const tasksForm = taskConfigDetails?.json_input || [];
+  const taskType = task?.task_type;
+
+  const { t } = useTranslation("dynamic");
 
   const generateAnswerHandler = () => {
-    if (inputArray.length == tasksForm.length && taskExecutionPK && sessionId) {
+    if (inputArray.length == tasksForm.length && taskExecutionPK && sessionId && taskType) {
       setGlobalState({
         newlyCreatedTaskInfo: {
           inputArray,
           sessionId,
           taskExecutionPK,
+          taskType,
         },
       });
 
@@ -47,6 +52,7 @@ const CreateTaskForm = () => {
     }
   };
 
+  let counter = 1;
   return (
     <div className="flex">
       <div className="flex-1">
@@ -86,6 +92,25 @@ const CreateTaskForm = () => {
                 )}
               </div>
             </div>
+
+            {task?.steps?.length ?? 0 > 0 ?
+              (<div className="py-6">
+                <p>
+                  <div className="text-h3">{t("startUserTaskStepExecution.stepsIntroduction")}</div>
+                </p>
+
+                {!isLoading && taskConfigDetails ?
+                  task?.steps.map((step) => (
+                    <p className="text-h5 text-gray-lighter p-2">
+                      {counter++}. {step.step_name_for_user}: {step.step_definition_for_user}
+                    </p>
+                  )) : (
+                    <p className="text-h5 text-gray-lighter">Loading...</p>
+                  )}
+              </div>) : null
+
+            }
+
 
             <div className="text-center">
               <Button

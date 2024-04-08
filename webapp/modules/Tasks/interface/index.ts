@@ -5,6 +5,14 @@ export interface UserTask {
   task_description: string;
   task_icon: string;
   enabled: boolean;
+  task_type: string;
+  steps:UserTaskStep[];
+}
+
+export interface UserTaskStep {
+  workflow_step_pk: number;
+  step_name_for_user: string;
+  step_definition_for_user: string;
 }
 
 export interface UserTasksAPIResponse {
@@ -41,6 +49,7 @@ export interface NewlyCreatedTaskInfo {
   taskExecutionPK: number;
   sessionId: string;
   inputArray: InputArrayProps[];
+  taskType: string;
 }
 
 export interface ExecuteTaskPayload {
@@ -71,6 +80,7 @@ export interface TaskType {
   produced_text_title: string;
   produced_text_production: string;
   task_name: string;
+  type: string;
   produced_text_pk: number;
   session_id: string;
   start_date: string;

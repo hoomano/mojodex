@@ -61,6 +61,7 @@ const TaskListModal = ({ tasks = [], isOpen, closed }: TaskListModalType) => {
                   task_description,
                   task_icon,
                   enabled,
+                  task_type
                 }) => (
                   <TaskCard
                     key={user_task_pk}
@@ -71,6 +72,7 @@ const TaskListModal = ({ tasks = [], isOpen, closed }: TaskListModalType) => {
                       router.push(`/tasks/create/${encryptId(user_task_pk)}`)
                     }
                     enabled={enabled}
+                    task_type={task_type}
                   />
                 )
               )}

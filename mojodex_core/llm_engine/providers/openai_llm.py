@@ -26,24 +26,23 @@ class OpenAILLM(LLM):
         :param max_retries: max_retries for openAI calls on rateLimit errors, unavailable... (default 3)
         """
         try:
-            self._name = llm_conf["model_name"]
+            self.model = llm_conf["model_name"]
             api_key = llm_conf["api_key"]
             api_base = llm_conf["api_base"] if "api_base" in llm_conf else None
             api_version = llm_conf["api_version"] if "api_version" in llm_conf else None
             api_type = llm_conf["api_type"] if "api_type" in llm_conf else "openai"
-            model = llm_conf["deployment_id"] if "deployment_id" in llm_conf else llm_conf["model"]
+            self.deployment = llm_conf["deployment_id"] if "deployment_id" in llm_conf else None
             # if dataset_dir does not exist, create it
             if not os.path.exists(self.dataset_dir):
                 os.mkdir(self.dataset_dir)
             if not os.path.exists(os.path.join(self.dataset_dir, "chat")):
                 os.mkdir(os.path.join(self.dataset_dir, "chat"))
 
-            self.model = model
             self.max_retries = max_retries
             self.client = AzureOpenAI(
                 api_version=api_version,
                 azure_endpoint=api_base,
-                azure_deployment=self.model,
+                azure_deployment=self.deployment,
                 api_key=api_key,
                 max_retries=0 if llm_backup_conf else self.max_retries
             ) if api_type == 'azure' else OpenAI(api_key=api_key)
@@ -53,7 +52,7 @@ class OpenAILLM(LLM):
                 self.client_backup = AzureOpenAI(
                     api_version=llm_backup_conf["api_version"] if "api_version" in llm_backup_conf else None,
                     azure_endpoint=llm_backup_conf["api_base"] if "api_base" in llm_backup_conf else None,
-                    azure_deployment=llm_backup_conf["deployment_id"] if "deployment_id" in llm_backup_conf else llm_backup_conf["model"],
+                    azure_deployment=llm_backup_conf["deployment_id"] if "deployment_id" in llm_backup_conf else None,
                     api_key=llm_backup_conf["api_key"],
                     max_retries=self.max_retries
                 ) if api_type == 'azure' else OpenAI(api_key=llm_backup_conf["api_key"])

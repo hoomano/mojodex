@@ -158,7 +158,7 @@ const DocumentDrafting = ({
         {isTask && (
           <div className="absolute right-7 top-3">
             {isLoading ? (
-              <BeatLoader color="#6366F1" />
+              <BeatLoader color="#3763E7" />
             ) : (
               <button
                 className={`${doneButtonColor} w-24 h-10 rounded-lg text-white hover:scale-105`}

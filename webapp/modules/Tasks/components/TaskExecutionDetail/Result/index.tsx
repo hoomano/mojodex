@@ -240,12 +240,12 @@ const Answer = ({
         <div className="mt-5 flex gap-2">
           {isLoading || !task.title ? (
             <Button className="min-w-[100px]" variant="outline" disabled>
-              <BeatLoader color="#6366F1" />
+              <BeatLoader color="#3763E7" />
             </Button>
           ) : (
             <>
               <ToolTip
-                tooltip={copied ? "copied!\nenjoy the paste 🎊" : "copy"}
+                tooltip={copied ? "copied!\n" : "copy"}
               >
                 <Button
                   variant="outline"

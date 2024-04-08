@@ -43,7 +43,7 @@ const Drafts = () => {
     >
       {isLoading ? (
         <div className="flex justify-center items-center h-screen w-full">
-          <BeatLoader color="#6366F1" />
+          <BeatLoader color="#3763E7" />
         </div>
       ) : (
         <ul role="list" className="grid-cols-1 mx-3 lg:mx-40  py-3 lg:py-10">

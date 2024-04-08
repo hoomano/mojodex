@@ -15,6 +15,7 @@ import useUpdateCategory from "./hooks/useUpdateCategory";
 import useAlert from "helpers/hooks/useAlert";
 import useOnboardingPresented from "./hooks/useOnboardingPresented";
 import { ProductCategory } from "./interface";
+import { useTranslation } from "react-i18next";
 
 declare let window: {
   chrome: any;
@@ -48,6 +49,7 @@ const Onboarding = () => {
   const updateBusinessGoal = useUpdateBusinessGoal();
   const updateCategory = useUpdateCategory();
   const router = useRouter();
+  const { t } = useTranslation("dynamic");
   const { update: updateAuthSession, data: session }: any = useSession();
   const [activeStep, setActiveStep] = useState<OnboardingSteps>(
     OnboardingSteps.PRODUCT_CATEGORIES
@@ -166,10 +168,9 @@ const Onboarding = () => {
 
   const steps: Record<OnboardingSteps, OnboardingStep> = {
     [OnboardingSteps.WELCOME]: {
-      title: "Welcome to Mojo!",
-      description:
-        "Tell us a bit about your yourself. This will help us assist you the best we can.",
-      icon: "👋",
+      title: t("onboarding.webUrlInputPage.title"),
+      description: t("onboarding.webUrlInputPage.body"),
+      icon: t("onboarding.webUrlInputPage.emoji"),
       children: (
         <Welcome
           onProfileSubmit={onProfileSubmit}
@@ -215,10 +216,10 @@ const Onboarding = () => {
       ),
     },*/
     [OnboardingSteps.PRODUCT_CATEGORIES]: {
-      title: "Hello from Mojodex!",
+      title: t("onboarding.categorySelection.title"),
       description:
-        "Ready to embark on an awesome journey? Let’s get personal!\nWho are you?",
-      icon: "👋",
+        `${t("onboarding.categorySelection.content")} ${t("onboarding.categorySelection.question")}`,
+      icon: t("onboarding.categorySelection.emoji"),
       children: (
         <ProductCategories
           onCategoryClick={onCategoryClick}

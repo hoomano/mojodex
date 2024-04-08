@@ -26,7 +26,7 @@ class OpenAILLM(LLM):
         :param max_retries: max_retries for openAI calls on rateLimit errors, unavailable... (default 3)
         """
         try:
-            self.model = llm_conf["model_name"]
+            self._name = llm_conf["model_name"]
             api_key = llm_conf["api_key"]
             api_base = llm_conf["api_base"] if "api_base" in llm_conf else None
             api_version = llm_conf["api_version"] if "api_version" in llm_conf else None
@@ -106,7 +106,7 @@ class OpenAILLM(LLM):
 
         completion = openai_client.chat.completions.create(
             messages=messages,
-            model=self.model,
+            model=self.name,
             temperature=temperature,
             max_tokens=max_tokens,
             frequency_penalty=frequency_penalty,
@@ -161,9 +161,9 @@ class OpenAILLM(LLM):
             # label is the filename without the file extension
             label = mpt.filepath.split('/')[-1].split('.')[0]
             
-            if self.model not in mpt.models:
+            if self.name not in mpt.models:
                 mojo_openai_logger.warning(
-                    f"{mpt} does not contain model: {self.model} in its dashbangs")
+                    f"{mpt} does not contain model: {self.name} in its dashbangs")
             messages = [{"role": "user", "content": mpt.prompt}]
             responses = self.recursive_invoke(messages, user_id, temperature, max_tokens, label=label,
                                            frequency_penalty=frequency_penalty, presence_penalty=presence_penalty,
@@ -176,7 +176,7 @@ class OpenAILLM(LLM):
             log_error(
                 f"Error in Mojodex OpenAI invoke for user_id: {user_id} - user_task_execution_pk: {user_task_execution_pk} - task_name_for_system: {task_name_for_system}: {e}", notify_admin=True)
             raise Exception(
-                f"🔴 Error in Mojodex OpenAI invoke: {e} - model: {self.model}"
+                f"🔴 Error in Mojodex OpenAI invoke: {e} - model: {self.name}"
                 )
 
     def invoke(self, messages: List, user_id, temperature, max_tokens, label,
@@ -228,7 +228,7 @@ class OpenAILLM(LLM):
                     [{'role': 'assistant', 'content': response}])
 
             self.tokens_costs_manager.on_tokens_counted(user_id, n_tokens_prompt, n_tokens_conversation, n_tokens_response,
-                                                        self.model, label, user_task_execution_pk, task_name_for_system)
+                                                        self.name, label, user_task_execution_pk, task_name_for_system)
             self._write_in_dataset({"temperature": temperature, "max_tokens": max_tokens, "n_responses": 1,
                                     "frequency_penalty": frequency_penalty, "presence_penalty": presence_penalty,
                                     "messages": messages, "responses": responses}, task_name_for_system, "chat", label=label)
@@ -237,4 +237,4 @@ class OpenAILLM(LLM):
             log_error(
                 f"Error in Mojodex OpenAI chat for user_id: {user_id} - label: {label} user_task_execution_pk: {user_task_execution_pk} - task_name_for_system: {task_name_for_system}: {e}", notify_admin=True)
             raise Exception(
-                f"🔴 Error in Mojodex OpenAI recursive_invoke() > label: {label} {e} - model: {self.model}")
+                f"🔴 Error in Mojodex OpenAI recursive_invoke() > label: {label} {e} - model: {self.name}")

@@ -227,8 +227,9 @@ class PurchaseManager:
 
     def get_purchasable_products(self, user_id):
         try:
+
             # Get user's current category
-            product_category_pk, user_language_code = (
+            result = (
                 db.session.query(
                     MdUser.product_category_fk,
                     MdUser.language_code
@@ -236,8 +237,10 @@ class PurchaseManager:
                 .filter(MdUser.user_id == user_id)
             ).first()
 
-            if product_category_pk is None:
+            if result is None:
                 return []
+            
+            product_category_pk, user_language_code = result
 
             # User can buy any product of the same category that is not free
             # If they already have a subscription (product.n_days_validity = None && product.n_tasks_limit = None, they can't buy another one
@@ -259,7 +262,6 @@ class PurchaseManager:
                     MdProductDisplayedData.product_fk
                 )
             )
-
             # Does user has an active subscription ?
             if self.user_has_active_subscription(user_id):
                 # filter out subscription products with n_days_validity
@@ -373,11 +375,6 @@ class PurchaseManager:
             last_expired_package = self.__get_last_expired_package(user_id)
             last_expired_subscription = self.__get_last_expired_subscription(user_id)
 
-            # get user language
-            user_language = db.session.query(MdUser.language_code) \
-                .filter(MdUser.user_id == user_id) \
-                .first()[0]
-
             if last_expired_package:
                 last_expired_package, last_expired_package_product, last_expired_package_product_name, remaining_days = last_expired_package
                 last_expired_purchases.append({
@@ -415,7 +412,8 @@ class PurchaseManager:
             )
 
             # Get last expired package
-            user_language_code = db.session.query(MdUser.language_code).filter(MdUser.user_id == user_id).first()[0]
+            user_language_code = db.session.query(MdUser.language_code).filter(MdUser.user_id == user_id).first()
+            user_language_code = user_language_code[0] if user_language_code else 'en'
             last_expired_package = (
                 db.session.query(
                     MdPurchase, 
@@ -456,7 +454,8 @@ class PurchaseManager:
                     func.now() - MdPurchase.creation_date) + timedelta(days=1)
             )
             # Get last expired subscription
-            user_language_code = db.session.query(MdUser.language_code).filter(MdUser.user_id == user_id).first()[0]
+            user_language_code = db.session.query(MdUser.language_code).filter(MdUser.user_id == user_id).first()
+            user_language_code = user_language_code[0] if user_language_code else 'en'
             last_expired_subscription = (
                 db.session.query(
                     MdPurchase, 

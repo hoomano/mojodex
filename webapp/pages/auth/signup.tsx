@@ -10,6 +10,7 @@ import Button from "components/Button";
 import AuthError from "components/Error/AuthError";
 import { useRouter } from "next/router";
 import AuthMobileView from "components/AuthMobileView";
+import useLanguageCode from "helpers/hooks/useLanguageCode";
 
 export default function SignIn({
   providers,
@@ -23,6 +24,7 @@ export default function SignIn({
   const [errorShow, setErrorShow] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const languageCode = useLanguageCode();
 
   const customSignIn = async (providerId: string) => {
     signIn(providerId, {
@@ -121,6 +123,10 @@ export default function SignIn({
           router.push(callbackUrl as string);
           return;
         }
+        const selectedLanguageCode: any = router.locale;
+        console.log("selectedLanguageCode", selectedLanguageCode);
+        languageCode.mutate({ language_code: selectedLanguageCode });
+        localStorage.setItem("language_code", selectedLanguageCode);
         router.push("/tasks");
       }
     } catch (error) {

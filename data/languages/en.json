@@ -24,6 +24,7 @@
 			"title": "Welcome!",
 			"IAgree": "I agree",
 			"defaultAgreement": "I agree to interact with the digital assistant in a respectful and courteous manner, recognizing the importance of kindness in our digital space.",
+			"defaultAgreementThankYou": "Your cooperation helps us maintain a positive environment for all users. Thank you for your understanding and support!",
 			"defaultModalContent": "Please take a moment to acknowledge our community guidelines.",
 			"termsModalContent": "Just before we start, have a look at our terms & conditions.",
 			"termsAndConditions": "terms & conditions",

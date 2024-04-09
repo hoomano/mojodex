@@ -37,7 +37,10 @@ const Layout = ({ children }: LayoutProps) => {
   const userLanguageCode = () => {
     const selectedLanguageCode: any = sessionData?.authorization?.language_code
       ? sessionData?.authorization?.language_code
-      : router.locale;
+      // try and get it from local storage
+      : localStorage.getItem("language_code")
+        ? localStorage.getItem("language_code")
+        : router.locale;
 
     languageCode.mutate({ language_code: selectedLanguageCode });
     localStorage.setItem("language_code", selectedLanguageCode);

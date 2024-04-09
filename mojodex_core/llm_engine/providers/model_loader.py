@@ -25,10 +25,10 @@ class ModelLoader:
 
     def __init__(self):
         self.providers = self._get_providers()
-        self.main_llm: LLM = self._get_main_llm_provider()
+        self.main_llm: LLM = self.get_main_llm_provider()
         self.embedding_provider: EmbeddingProvider = self._get_embedding_provider()
 
-    def _get_main_llm_provider(self):
+    def get_main_llm_provider(self):
         """
         Returns the first ModelLoader provider in the models.conf file
 

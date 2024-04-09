@@ -11,7 +11,6 @@ import AuthError from "components/Error/AuthError";
 import { useRouter } from "next/router";
 import AuthMobileView from "components/AuthMobileView";
 import useLanguageCode from "helpers/hooks/useLanguageCode";
-
 export default function SignIn({
   providers,
   callbackUrl,
@@ -108,6 +107,7 @@ export default function SignIn({
 
     try {
       setIsLoading(true);
+
       const signUpResponse = await signIn("email_password_signup", {
         ...formData,
         redirect: false,
@@ -124,9 +124,10 @@ export default function SignIn({
           return;
         }
         const selectedLanguageCode: any = router.locale;
-        console.log("selectedLanguageCode", selectedLanguageCode);
         languageCode.mutate({ language_code: selectedLanguageCode });
         localStorage.setItem("language_code", selectedLanguageCode);
+
+        // update session from here
         router.push("/tasks");
       }
     } catch (error) {

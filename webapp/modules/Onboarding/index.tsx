@@ -115,7 +115,7 @@ const Onboarding = () => {
         });
         setTimeout(() => {
           window.location.href =
-            router.query.extension === "true" ? "/extension" : "/tasks";
+            router.query.extension === "true" ? "/extension" : `/${router.locale}/tasks`;
         }, 500);
       },
       onError: (error: any) => {

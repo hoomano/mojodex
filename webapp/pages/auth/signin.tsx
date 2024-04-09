@@ -121,18 +121,20 @@ export default function SignIn({
 
     try {
       setIsLoading(true);
+
+      
       const signInResponse = await signIn("email_password_login", {
         ...formData,
         redirect: false,
       });
-
+      
       if (signInResponse?.error) {
         setIsLoading(false);
         setErrorShow(signInResponse.error);
       }
 
       if (!signInResponse?.error && signInResponse?.url) {
-
+        
         if (editorExtensionId && window?.chrome?.runtime?.sendMessage) {
           chrome.runtime.sendMessage(editorExtensionId, {
             message: {

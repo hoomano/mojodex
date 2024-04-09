@@ -168,7 +168,7 @@ class WorkflowExecution:
                 .order_by(MdUserWorkflowStepExecution.creation_date.desc())\
                 .all()
 
-            production = "\n\n".join([list(step.result[0].values())[0] for step in validated_last_step_executions])
+            production = "\n\n".join([list(step.result[0].values())[0] for step in validated_last_step_executions[::-1]])
 
             produced_text_manager = WorkflowProducedTextManager(self.db_object.session_id, self.user_id,
                                                                 self.db_object.user_task_execution_pk)

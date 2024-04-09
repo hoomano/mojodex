@@ -52,7 +52,7 @@ class User(Resource):
 
 
 
-    def register_user(self, email, app_version, name=None, password=None, google_id=None, microsoft_id=None, apple_id=None, language_code='en'):
+    def register_user(self, email, app_version, name=None, password=None, google_id=None, microsoft_id=None, apple_id=None):
         # create user
         user_id = generate_user_id(email)
 
@@ -60,7 +60,6 @@ class User(Resource):
                       email=email,
                       password=generate_password_hash(password) if password else None,
                       google_id=google_id, microsoft_id=microsoft_id, apple_id=apple_id,
-                      language_code=language_code,
                       creation_date=datetime.now())
 
         db.session.add(user)
@@ -87,7 +86,6 @@ class User(Resource):
             email = request.json["email"]
             login_method = request.json["login_method"]
             app_version = version.parse(request.json["version"]) if "version" in request.json else version.parse("0.0.0")
-            language_code = request.json["language_code"] if "language_code" in request.json else 'en'
             # ensure there is at least a password or a token
             if "password" not in request.json and "google_token" not in request.json and "microsoft_token" not in request.json and "apple_token" not in request.json:
                 log_error(f"Error logging user {email} : Missing password or google_token or microsoft_token or apple_token", notify_admin=True)
@@ -203,7 +201,7 @@ class User(Resource):
                     return {"error": User.wrong_email_or_password_error_message}, 400
 
                 user = self.register_user(email, app_version=app_version, name=name, google_id=google_id,
-                                          microsoft_id=microsoft_id, language_code=language_code)
+                                          microsoft_id=microsoft_id)
 
                 # create a directory in users_dir
                 os.mkdir(os.path.join(self.users_directory, user.user_id))
@@ -261,7 +259,6 @@ class User(Resource):
             name = request.json["name"]
             password = request.json["password"]
             app_version = version.parse(request.json["version"]) if "version" in request.json else version.parse("0.0.0")
-            language_code = request.json["language_code"] if "language_code" in request.json else 'en'
         except KeyError as e:
             log_error(f"Error logging user {email}: Missing field {e}", notify_admin=True)
             return {"error": User.general_backend_error_message}, 400
@@ -272,7 +269,7 @@ class User(Resource):
             if user is not None:
                 return {"error": User.error_email_already_exists}, 400
 
-            user = self.register_user(email, app_version=app_version, password=password, name=name, language_code=language_code)
+            user = self.register_user(email, app_version=app_version, password=password, name=name)
 
             # create a directory in users_dir
             os.mkdir(os.path.join(self.users_directory, user.user_id))

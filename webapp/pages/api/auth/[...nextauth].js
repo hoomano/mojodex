@@ -147,6 +147,7 @@ export const authOptions = {
           method: account.provider === "email_password_signup" ? "put" : "post",
           data: payload,
         });
+        
 
         user.authorization = data;
 

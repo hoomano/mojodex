@@ -217,8 +217,8 @@ const DraftDetail = () => {
 
 
       setWorkflowStepExecutions((prev: UserTaskExecutionStepExecution[]) => {
-        // find the step_execution with the same workflow_step_pk
-        const stepExecutionIndex = prev?.findIndex((step) => step.workflow_step_pk === msg.workflow_step_pk);
+        // find the step_execution with the same user_workflow_step_execution_pk
+        const stepExecutionIndex = prev?.findIndex((step) => step.user_workflow_step_execution_pk === msg.user_workflow_step_execution_pk);
         if (stepExecutionIndex !== -1) {
           // if found, update the step_execution with the new data
           const newStepExecutions = [...prev];
@@ -248,8 +248,8 @@ const DraftDetail = () => {
         result: msg.result
       }
       setWorkflowStepExecutions((prev: UserTaskExecutionStepExecution[]) => {
-        // find the step_execution with the same workflow_step_pk
-        const stepExecutionIndex = prev?.findIndex((step) => step.workflow_step_pk === msg.workflow_step_pk);
+        // find the step_execution with the same user_workflow_step_execution_pk
+        const stepExecutionIndex = prev?.findIndex((step) => step.user_workflow_step_execution_pk === msg.user_workflow_step_execution_pk);
         if (stepExecutionIndex !== -1) {
           // if found, update the step_execution with the new data
           const newStepExecutions = [...prev];

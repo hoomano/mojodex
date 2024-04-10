@@ -227,6 +227,8 @@ class WorkflowExecution:
                 MdUserWorkflowStepExecution.user_task_execution_fk == self.db_object.user_task_execution_pk) \
                 .order_by(MdUserWorkflowStepExecution.creation_date.desc()) \
                 .first()
+            if db_step_execution is None:
+                return None
             return WorkflowStepExecution(self.db_session, db_step_execution, self.user_id)
         except Exception as e:
             raise Exception(f"_last_step_execution :: {e}")
@@ -299,7 +301,7 @@ class WorkflowExecution:
         try:
             validated_steps_json = [step_execution.to_json() for step_execution in self.validated_steps_executions]
             last_step_execution = self._get_last_step_execution()
-            if last_step_execution.validated is None:
+            if last_step_execution and last_step_execution.validated is None:
                 validated_steps_json.append(last_step_execution.to_json())
             return validated_steps_json
         except Exception as e:

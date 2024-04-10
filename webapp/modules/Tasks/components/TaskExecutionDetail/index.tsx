@@ -174,9 +174,12 @@ const DraftDetail = () => {
       const sessionId =
         currentTask?.session_id || newlyCreatedTaskInfo?.sessionId;
 
-      socket.emit(socketEvents.START_SESSION, {
-        session_id: sessionId,
-        version: appVersion,
+      socket.on(socketEvents.CONNECT, () => {
+        console.log("🟢 TASK EXECUTION DETAIL Connected to socket");
+        socket.emit(socketEvents.START_SESSION, {
+          session_id: sessionId,
+          version: appVersion,
+        });
       });
 
       socket.on(socketEvents.DRAFT_TOKEN, ({ text }) => {
@@ -227,6 +230,13 @@ const DraftDetail = () => {
         }
       });
 
+      socket.on(socketEvents.WORKFLOW_STEP_EXECUTION_STARTED, (msg) => {
+        console.log("🟢 TASK EXECUTION DETAIL Workflow step execution started", msg);
+      });
+      socket.on(socketEvents.WORKFLOW_STEP_EXECUTION_ENDED, (msg) => {
+        console.log("🟢 TASK EXECUTION DETAIL Workflow step execution ended", msg);
+      });
+
       if (newlyCreatedTaskInfo) {
         const { inputArray, taskExecutionPK } = newlyCreatedTaskInfo;
 
@@ -249,13 +259,11 @@ const DraftDetail = () => {
       }
     }
   };
-
   return (
     <div className="flex relative">
       <div className="flex-1 p-8 lg:p-16 h-[calc(100vh-72px)] lg:h-screen overflow-auto">
-      <Workflow taskExecutionPK={taskExecutionPK ?? undefined} taskId={taskId ?? undefined} />
-        {/* {newlyCreatedTaskInfo?.taskType == "workflow" ?
-          (<Workflow taskExecutionPK={taskExecutionPK ?? undefined} taskId={taskId ?? undefined} />) :
+        {<Workflow taskExecutionPK={taskExecutionPK!} />}
+        { /*
           (!editorDetails?.text ? (
             <TaskLoader />
           ) : (
@@ -284,8 +292,8 @@ const DraftDetail = () => {
                 notReadTodos={currentTask?.n_not_read_todos}
               />
             </>
-          ))
-        } */}
+          ))*/
+        }
 
       </div>
       {newlyCreatedTaskInfo?.taskType !== "workflow" ?

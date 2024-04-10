@@ -1,7 +1,7 @@
 import {
   ArrowLeftIcon,
 } from "@heroicons/react/24/outline";
-import { UserTask, UserTaskStepExecution } from "modules/Tasks/interface";
+import { UserTask, UserTaskExecutionStepExecution, UserTaskExecution } from "modules/Tasks/interface";
 import { useRouter } from "next/router";
 import { useState, useContext, useEffect } from "react";
 
@@ -157,6 +157,7 @@ const StepProcessDetail: React.FC<StepProcessDetailProps> = ({
 
       const session: any = await getSession();
       const token = session?.authorization?.token || "";
+      console.log("token: ", token);
 
       const socket = io(envVariable.socketUrl as string, {
         transports: ["websocket"],
@@ -167,13 +168,16 @@ const StepProcessDetail: React.FC<StepProcessDetailProps> = ({
 
       const sessionId = newlyCreatedTaskInfo?.sessionId;
 
-      console.log("Current task execution steps: ", currentTaskExecution?.step_executions)
+      console.log("Current task execution steps: ", currentTaskExecution);
 
       socket.on(socketEvents.WORKFLOW_STEP_EXECUTION_STARTED, (msg) => {
         console.log("Workflow step execution started", msg);
 
-        const stepExecution : UserTaskStepExecution = {
+        const stepExecution: UserTaskExecutionStepExecution = {
           user_workflow_step_execution_pk: msg.user_workflow_step_execution_pk,
+          workflow_step_pk: msg.workflow_step_pk,
+          step_name_for_user: msg.step_name_for_user,
+          step_definition_for_user: msg.step_definition_for_user,
           validated: msg.validated,
           parameter: msg.parameter,
           result: msg.result
@@ -181,7 +185,11 @@ const StepProcessDetail: React.FC<StepProcessDetailProps> = ({
 
         console.log("new step execution: ", stepExecution)
 
-        setCurrentTaskExecution((prev: UserTaskStepExecution) => {
+        setCurrentTaskExecution((prev: UserTaskExecution | undefined) => {
+          if (!prev) {
+            // return a new UserTaskExecution object or undefined based on your requirements
+            return undefined;
+          }
           const newTaskExecution = { ...prev };
           newTaskExecution.step_executions?.push(stepExecution);
           return newTaskExecution;
@@ -192,14 +200,21 @@ const StepProcessDetail: React.FC<StepProcessDetailProps> = ({
 
       socket.on(socketEvents.WORKFLOW_STEP_EXECUTION_ENDED, (msg) => {
 
-        const stepExecution : UserTaskStepExecution = {
+        const stepExecution : UserTaskExecutionStepExecution = {
           user_workflow_step_execution_pk: msg.user_workflow_step_execution_pk,
+          workflow_step_pk: msg.workflow_step_pk,
+          step_name_for_user: msg.step_name_for_user,
+          step_definition_for_user: msg.step_definition_for_user,
           validated: msg.validated,
           parameter: msg.parameter,
           result: msg.result
         }
 
-        setCurrentTaskExecution((prev: UserTaskStepExecution) => {
+        setCurrentTaskExecution((prev: UserTaskExecution | undefined) => {
+          if (!prev) {
+            // return a new UserTaskExecution object or undefined based on your requirements
+            return undefined;
+          }
           const newTaskExecution = { ...prev };
           newTaskExecution.step_executions?.push(stepExecution);
           return newTaskExecution;

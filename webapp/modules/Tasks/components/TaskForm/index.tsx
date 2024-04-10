@@ -11,6 +11,7 @@ import { decryptId, encryptId } from "helpers/method";
 import Button from "components/Button";
 import useGetTask from "modules/Tasks/hooks/useGetTask";
 import { useTranslation } from "react-i18next";
+import usePostExecuteTask from "modules/Tasks/hooks/usePostExecuteTask";
 
 const CreateTaskForm = () => {
   const router = useRouter();
@@ -33,20 +34,26 @@ const CreateTaskForm = () => {
 
   const { t } = useTranslation("dynamic");
 
+  const { mutate: executeTaskMutation, isLoading: isPostExecuteTaskLoading } =
+    usePostExecuteTask();
+
   const generateAnswerHandler = () => {
     if (inputArray.length == tasksForm.length && taskExecutionPK && sessionId && taskType) {
-      setGlobalState({
-        newlyCreatedTaskInfo: {
-          inputArray,
-          sessionId,
-          taskExecutionPK,
-          taskType,
+      executeTaskMutation(
+        {
+          datetime: new Date().toISOString(),
+          user_task_execution_pk: taskExecutionPK,
+          inputs: inputArray,
         },
-      });
-
-      router.push(
-        `/tasks/${encryptId(taskExecutionPK)}?taskId=${query.taskId}`
+        {
+          onSuccess: () => {
+            router.push(
+              `/tasks/${encryptId(taskExecutionPK)}`
+            );
+          },
+        }
       );
+      
     } else {
       alert("Field missing");
     }

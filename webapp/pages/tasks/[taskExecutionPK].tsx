@@ -15,24 +15,14 @@ import { GetStaticPaths } from "next";
 const TaskDetailsPage = () => {
   const router = useRouter();
 
-  const {
-    globalState: { newlyCreatedTaskInfo },
-  } = useContext(globalContext) as GlobalContextType;
-
-  const taskId = router.query?.taskId
-    ? decryptId(router.query.taskId as string)
-    : null;
 
   const taskExecutionPK = router.query?.taskExecutionPK
     ? decryptId(router.query.taskExecutionPK as string)
     : null;
 
-  const { data: currentTaskInfo } = useGetExecuteTaskById(taskExecutionPK, {
-    enabled: !taskId && !!taskExecutionPK,
-  });
+  const { data: currentTaskInfo } = useGetExecuteTaskById(taskExecutionPK);
 
-  const taskSessionId =
-    currentTaskInfo?.session_id || newlyCreatedTaskInfo?.sessionId;
+  const taskSessionId = currentTaskInfo?.session_id;
 
   return (
     <Layout>

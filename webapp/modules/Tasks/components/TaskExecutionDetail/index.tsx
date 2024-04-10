@@ -35,9 +35,6 @@ const DraftDetail = () => {
     ChatContext
   ) as ChatContextType;
 
-  const taskId = router.query?.taskId
-    ? decryptId(router.query.taskId as string)
-    : null;
 
   const taskExecutionPK = router.query?.taskExecutionPK
     ? decryptId(router.query.taskExecutionPK as string)
@@ -56,21 +53,14 @@ const DraftDetail = () => {
     }
   }, [taskExecutionPK]);
 
-  const {
-    globalState: { newlyCreatedTaskInfo },
-    setGlobalState,
-  } = useContext(globalContext) as GlobalContextType;
 
-  const { data: taskDetail } = useGetTask(taskId);
-  const { data: currentTask } = useGetExecuteTaskById(taskExecutionPK, {
-    enabled: !taskId && !!taskExecutionPK,
-  });
+  const { data: currentTask } = useGetExecuteTaskById(taskExecutionPK);
+  
   const { data: draftDetails, isFetching: isDraftLoading } = useGetDraft(
-    taskId,
-    { enabled: !newlyCreatedTaskInfo && !!taskId }
+    currentTask?.produced_text_pk || null,
+    { enabled: !!currentTask?.produced_text_pk }
   );
-  const { mutate: executeTaskMutation, isLoading: isPostExecuteTaskLoading } =
-    usePostExecuteTask();
+
 
   const [isSocketLoaded, setIsSocketLoaded] = useState(false);
   const [isTask, setIsTask] = useState(false);
@@ -83,10 +73,6 @@ const DraftDetail = () => {
   const { t } = useTranslation("dynamic");
 
   useEffect(() => {
-    return () => setGlobalState({ newlyCreatedTaskInfo: null });
-  }, []);
-
-  useEffect(() => {
     let tabs = [
       {
         key: "result",
@@ -95,7 +81,7 @@ const DraftDetail = () => {
           <Result
             userTaskExecutionPk={taskExecutionPK as number}
             task={editorDetails}
-            isLoading={isPostExecuteTaskLoading || isDraftLoading}
+            isLoading={isDraftLoading}
             isTask={isTask}
           />
         ),
@@ -148,17 +134,14 @@ const DraftDetail = () => {
   // }, [newlyCreatedTaskInfo?.sessionId]);
 
   useEffect(() => {
-    if (!isSocketLoaded && (newlyCreatedTaskInfo || currentTask?.session_id)) {
+    if (!isSocketLoaded) {
       initializeSocket();
       setIsTask(true);
     }
-  }, [isSocketLoaded, currentTask?.session_id, newlyCreatedTaskInfo]);
+  }, [isSocketLoaded, currentTask?.session_id]);
 
   const initializeSocket = async () => {
-    if (
-      currentTask?.user_task_execution_pk ||
-      newlyCreatedTaskInfo?.sessionId
-    ) {
+
       setIsSocketLoaded(true);
 
       const session: any = await getSession();
@@ -171,8 +154,7 @@ const DraftDetail = () => {
         },
       });
 
-      const sessionId =
-        currentTask?.session_id || newlyCreatedTaskInfo?.sessionId;
+      const sessionId = currentTask?.session_id;
 
       socket.on(socketEvents.CONNECT, () => {
         console.log("🟢 TASK EXECUTION DETAIL Connected to socket");
@@ -237,33 +219,14 @@ const DraftDetail = () => {
         console.log("🟢 TASK EXECUTION DETAIL Workflow step execution ended", msg);
       });
 
-      if (newlyCreatedTaskInfo) {
-        const { inputArray, taskExecutionPK } = newlyCreatedTaskInfo;
-
-        executeTaskMutation(
-          {
-            datetime: new Date().toISOString(),
-            user_task_execution_pk: taskExecutionPK,
-            inputs: inputArray,
-          },
-          {
-            onSuccess: (data) => {
-              setEditorDetails({
-                text: data.produced_text,
-                title: data.produced_text_title,
-                textPk: data.produced_text_pk,
-              });
-            },
-          }
-        );
-      }
-    }
+   
+    
   };
   return (
     <div className="flex relative">
       <div className="flex-1 p-8 lg:p-16 h-[calc(100vh-72px)] lg:h-screen overflow-auto">
-        {<Workflow taskExecutionPK={taskExecutionPK!} />}
-        { /*
+        {/*<Workflow taskExecutionPK={taskExecutionPK!} />*/}
+        { 
           (!editorDetails?.text ? (
             <TaskLoader />
           ) : (
@@ -275,7 +238,7 @@ const DraftDetail = () => {
                 />
                 <div>
                   <div className="text-subtitle6 font-semibold text-gray-lighter">
-                    {taskDetail?.task_name || currentTask?.task_name}
+                    {currentTask?.task_name}
                   </div>
                   {!!streamTitle && (
                     <div className="text-h4 font-semibold text-gray-darker">
@@ -292,15 +255,15 @@ const DraftDetail = () => {
                 notReadTodos={currentTask?.n_not_read_todos}
               />
             </>
-          ))*/
+          ))
         }
 
       </div>
-      {newlyCreatedTaskInfo?.taskType !== "workflow" ?
+      {/*newlyCreatedTaskInfo?.taskType !== "workflow" ?
 
         (<div className="sticky top-0 left-0 h-[calc(100vh-72px)] lg:h-screen w-[345px] text-white">
           <Chat />
-        </div>) : null}
+      </div>) : null*/}
     </div>
   );
 };

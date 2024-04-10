@@ -300,7 +300,7 @@ class WorkflowExecution:
             validated_steps_json = [step_execution.to_json() for step_execution in self.validated_steps_executions]
             last_step_execution = self._get_last_step_execution()
             if last_step_execution.validated is None:
-                validated_steps_json.append(WorkflowStepExecution(self.db_session, last_step_execution, self.user_id).to_json())
+                validated_steps_json.append(last_step_execution.to_json())
             return validated_steps_json
         except Exception as e:
             raise Exception(f"{self.logger_prefix} get_steps_execution_json :: {e}")

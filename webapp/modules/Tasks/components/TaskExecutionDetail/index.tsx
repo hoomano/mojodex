@@ -225,8 +225,8 @@ const DraftDetail = () => {
   return (
     <div className="flex relative">
       <div className="flex-1 p-8 lg:p-16 h-[calc(100vh-72px)] lg:h-screen overflow-auto">
-        {/*<Workflow taskExecutionPK={taskExecutionPK!} />*/}
-        { 
+        {<Workflow currentTask={currentTask!} />}
+        { /*
           (!editorDetails?.text ? (
             <TaskLoader />
           ) : (
@@ -256,7 +256,7 @@ const DraftDetail = () => {
               />
             </>
           ))
-        }
+       */ }
 
       </div>
       {/*newlyCreatedTaskInfo?.taskType !== "workflow" ?

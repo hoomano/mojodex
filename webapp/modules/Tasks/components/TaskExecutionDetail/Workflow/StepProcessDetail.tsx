@@ -118,7 +118,6 @@ const StepProcessDetail: React.FC<StepProcessDetailProps> = ({
         parameter: msg.parameter,
         result: msg.result
       }
-      
       setCurrentTaskExecution((prev: UserTaskExecution) => {
         // find the step_execution with the same workflow_step_pk
         const stepExecutionIndex = prev.step_executions?.findIndex((step) => step.workflow_step_pk === msg.workflow_step_pk);

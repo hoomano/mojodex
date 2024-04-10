@@ -6,19 +6,15 @@ import { UserTaskExecution } from 'modules/Tasks/interface';
 
 
 interface WorkflowProps {
-    taskExecutionPK?: number;
+    currentTask: UserTaskExecution;
 }
 
-const Workflow: React.FC<WorkflowProps> = ({ taskExecutionPK }) => {
-    const { data: currentTask, isLoading } = useGetExecuteTaskById(taskExecutionPK);
+const Workflow: React.FC<WorkflowProps> = ({ currentTask }) => {
 
     return (
         <>
-            {currentTask ? (
-                <StepProcessDetail taskExecution={currentTask} />
-            ) : (
-                <div>Loading...</div>
-            )}
+             <StepProcessDetail taskExecution={currentTask} />
+            
         </>
     );
 };

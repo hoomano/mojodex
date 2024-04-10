@@ -15,6 +15,16 @@ export interface UserTaskStep {
   step_definition_for_user: string;
 }
 
+export interface UserTaskExecutionStepExecution {
+  workflow_step_pk: number;
+  step_name_for_user: string;
+  step_definition_for_user: string;
+  user_workflow_step_execution_pk: number;
+  validated: boolean;
+  parameter: any;
+  result: any[];
+}
+
 export interface UserTasksAPIResponse {
   user_tasks: UserTask[];
 }
@@ -69,7 +79,7 @@ export interface TaskDonePayload {
   user_task_execution_pk: number;
 }
 
-export interface TaskType {
+export interface UserTaskExecution {
   end_date: string;
   n_processes: number;
   summary: string;
@@ -87,6 +97,8 @@ export interface TaskType {
   working_on_todos: boolean;
   n_todos: number;
   n_not_read_todos: number;
+  steps: any;
+  step_executions: UserTaskExecutionStepExecution[];
 }
 
 export interface EditerDraft {

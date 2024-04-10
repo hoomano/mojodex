@@ -101,8 +101,8 @@ const CreateTaskForm = () => {
 
                 {!isLoading && taskConfigDetails ?
                   task?.steps.map((step) => (
-                    <p className="text-h5 text-gray-lighter p-2">
-                      {counter++}. {step.step_name_for_user}: {step.step_definition_for_user}
+                    <p className="text-h5 text-gray-lighter pt-1" key={"workflow_step_number_".concat(String(counter))}>
+                      {counter++}. {step.step_definition_for_user}
                     </p>
                   )) : (
                     <p className="text-h5 text-gray-lighter">Loading...</p>

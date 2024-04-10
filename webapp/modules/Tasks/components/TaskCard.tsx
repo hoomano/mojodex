@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { TaskType } from "../interface";
+import { UserTaskExecution } from "../interface";
 import useDeleteUserTaskExecution from "../hooks/useDeleteUserTaskExecution";
 import useAlert from "helpers/hooks/useAlert";
 import { invalidateQuery } from "services/config/queryClient";
@@ -15,7 +15,7 @@ type Props = {
   icon?: string;
   onClick?: () => void;
   enabled?: boolean;
-  task?: TaskType;
+  task?: UserTaskExecution;
   isListView?: boolean;
   task_type: string;
 };

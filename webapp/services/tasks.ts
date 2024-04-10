@@ -4,7 +4,7 @@ import {
   ExecuteTaskResponse,
   TaskConfigAPIResponse,
   TaskDonePayload,
-  TaskType,
+  UserTaskExecution,
   UserTask,
   UserTasksAPIResponse,
 } from "modules/Tasks/interface";
@@ -46,7 +46,7 @@ export const getUserTaskExecution = ({
   searchFilter,
   userTaskPks,
 }: any): Promise<{
-  user_task_executions: TaskType[];
+  user_task_executions: UserTaskExecution[];
 }> =>
   axiosClient.get(apiRoutes.userTaskExecution, {
     params: {
@@ -57,7 +57,7 @@ export const getUserTaskExecution = ({
     },
   });
 
-export const getExecuteTaskById = ({ queryKey }: any): Promise<TaskType> =>
+export const getExecuteTaskById = ({ queryKey }: any): Promise<UserTaskExecution> =>
   axiosClient.get(apiRoutes.userTaskExecution, {
     params: { user_task_execution_pk: queryKey[1] },
   });

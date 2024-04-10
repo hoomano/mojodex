@@ -22,6 +22,7 @@ import { ChatContextType } from "modules/Chat/interface/context";
 import TaskLoader from "./TaskLoader";
 import Todos from "./Todos";
 import { useTranslation } from "react-i18next";
+import Workflow from "./Workflow";
 
 const DraftDetail = () => {
   const [tabs, setTabs] = useState<TabType[]>([]);
@@ -252,43 +253,46 @@ const DraftDetail = () => {
   return (
     <div className="flex relative">
       <div className="flex-1 p-8 lg:p-16 h-[calc(100vh-72px)] lg:h-screen overflow-auto">
-        {newlyCreatedTaskInfo?.taskType == "workflow" ? 
-        (<p>Workflow</p>) : 
-        (!editorDetails?.text ? (
-          <TaskLoader />
-        ) : (
-          <>
-            <div className="flex items-center mb-5">
-              <ArrowLeftIcon
-                onClick={() => router.push(`/tasks`)}
-                className="w-[24px] h-[24px] text-gray-lighter cursor-pointer mr-2"
-              />
-              <div>
-                <div className="text-subtitle6 font-semibold text-gray-lighter">
-                  {taskDetail?.task_name || currentTask?.task_name}
-                </div>
-                {!!streamTitle && (
-                  <div className="text-h4 font-semibold text-gray-darker">
-                    {streamTitle}
+      <Workflow taskExecutionPK={taskExecutionPK ?? undefined} taskId={taskId ?? undefined} />
+        {/* {newlyCreatedTaskInfo?.taskType == "workflow" ?
+          (<Workflow taskExecutionPK={taskExecutionPK ?? undefined} taskId={taskId ?? undefined} />) :
+          (!editorDetails?.text ? (
+            <TaskLoader />
+          ) : (
+            <>
+              <div className="flex items-center mb-5">
+                <ArrowLeftIcon
+                  onClick={() => router.push(`/tasks`)}
+                  className="w-[24px] h-[24px] text-gray-lighter cursor-pointer mr-2"
+                />
+                <div>
+                  <div className="text-subtitle6 font-semibold text-gray-lighter">
+                    {taskDetail?.task_name || currentTask?.task_name}
                   </div>
-                )}
+                  {!!streamTitle && (
+                    <div className="text-h4 font-semibold text-gray-darker">
+                      {streamTitle}
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-            <Tab
-              selected={selectedTab}
-              onChangeTab={(key: string) => setSelectedTab(key)}
-              tabs={tabs}
-              isDisable={!currentTask?.produced_text_production ? true : false}
-              notReadTodos={currentTask?.n_not_read_todos}
-            />
-          </>
-        ))
-        }
-        
+              <Tab
+                selected={selectedTab}
+                onChangeTab={(key: string) => setSelectedTab(key)}
+                tabs={tabs}
+                isDisable={!currentTask?.produced_text_production ? true : false}
+                notReadTodos={currentTask?.n_not_read_todos}
+              />
+            </>
+          ))
+        } */}
+
       </div>
-      <div className="sticky top-0 left-0 h-[calc(100vh-72px)] lg:h-screen w-[345px] text-white">
-        <Chat />
-      </div>
+      {newlyCreatedTaskInfo?.taskType !== "workflow" ?
+
+        (<div className="sticky top-0 left-0 h-[calc(100vh-72px)] lg:h-screen w-[345px] text-white">
+          <Chat />
+        </div>) : null}
     </div>
   );
 };

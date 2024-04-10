@@ -1,7 +1,7 @@
 import Button from "components/Button";
 import Image from "next/image";
 import { useTranslation } from "react-i18next";
-import { TaskType } from "../interface";
+import { UserTaskExecution } from "../interface";
 
 interface EmptyStateType {
   startANewTaskHandler: () => void;

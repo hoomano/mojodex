@@ -1,17 +1,17 @@
-import { TaskType } from "modules/Tasks/interface";
+import { UserTaskExecution } from "modules/Tasks/interface";
 import TaskCard from "../TaskCard";
 import { useRouter } from "next/router";
 import { encryptId } from "helpers/method";
 
 interface TasksTypes {
-  tasks: TaskType[];
+  tasks: UserTaskExecution[];
   isListView?: boolean;
 }
 
 const TaskExecutions = ({ tasks, isListView }: TasksTypes) => {
   const router = useRouter();
 
-  const taskCardClickHandler = (task: TaskType) => {
+  const taskCardClickHandler = (task: UserTaskExecution) => {
     router.push(`/tasks/${encryptId(task.user_task_execution_pk)}`);
   };
 

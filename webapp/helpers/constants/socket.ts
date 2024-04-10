@@ -13,4 +13,8 @@ export const socketEvents = {
   DRAFT_TOKEN: "draft_token",
   DRAFT_MESSAGE: "draft_message",
   USER_TASK_EXECUTION_TITLE: "user_task_execution_title",
+  WORKFLOW_STEP_EXECUTION_STARTED: "workflow_step_execution_started",
+  WORKFLOW_STEP_EXECUTION_ENDED: "workflow_step_execution_ended",
+  WORKFLOW_EXECUTION_PRODUCED_TEXT: "workflow_execution_produced_text",
+  WORKFOW_STEP_EXECUTION_INVALIDATED: "workfow_step_execution_invalidated",
 };

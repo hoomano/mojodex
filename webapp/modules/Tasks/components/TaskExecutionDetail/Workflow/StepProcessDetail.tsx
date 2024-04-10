@@ -11,7 +11,7 @@ import { getSession } from "next-auth/react";
 import { envVariable } from "helpers/constants/env-vars";
 import { appVersion } from "helpers/constants";
 
-import { io } from "socket.io-client";
+import { Socket, io } from "socket.io-client";
 import { socketEvents } from "helpers/constants/socket";
 import usePostExecuteTask from "modules/Tasks/hooks/usePostExecuteTask";
 import useGetExecuteTaskById from "modules/Tasks/hooks/useGetExecuteTaskById";
@@ -23,119 +23,37 @@ function classNames(...classes: string[]) {
 }
 
 interface StepProcessDetailProps {
-  taskExecution: UserTaskExecution;
+  steps: any;
+  stepExecutions: UserTaskExecutionStepExecution[];
 }
 
 const StepProcessDetail: React.FC<StepProcessDetailProps> = ({
-  taskExecution,
+  steps,
+  stepExecutions,
 }) => {
   const router = useRouter();
 
   // // currentTaskExecution will be updated later with socketio event. We prepare the REACT state for it.
   // // initialize its value with the data from useGetExecuteTaskById
-  const [currentTaskExecution, setCurrentTaskExecution] = useState(taskExecution);
-  console.log("Current task execution: ", currentTaskExecution);
+  //const [currentTaskExecution, setCurrentTaskExecution] = useState(taskExecution);
+  //console.log("Current task execution: ", currentTaskExecution);
+  //const[stepExecutions, setStepExecutions] = useState(step_executions);
 
   const workflowStatus = "Ongoing";
 
-  const [isSocketLoaded, setIsSocketLoaded] = useState(false);
+  const [isSocketEventInitialized, setIsSocketEventInitialized] = useState(false);
 
 
 
   useEffect(() => {
-    if (!isSocketLoaded) {
-      initializeSocket();
+    if (!isSocketEventInitialized) {
+      initializeSocketEvents();
     }
-  }, [isSocketLoaded]);
+  }, [isSocketEventInitialized]);
 
 
-  const initializeSocket = async () => {
-    setIsSocketLoaded(true);
-
-    const session: any = await getSession();
-    const token = session?.authorization?.token || "";
-
-    const socket = io(envVariable.socketUrl as string, {
-      transports: ["websocket"],
-      auth: {
-        token,
-      },
-    });
-
-    const sessionId = currentTaskExecution?.session_id;
-    console.log("🔵 STEP PROCESS DETAIL initializeSocket sessionId ", sessionId);
-    socket.on(socketEvents.CONNECT, () => {
-      console.log("🔵 STEP PROCESS DETAIL Connected to socket")
-      socket.emit(socketEvents.START_SESSION, {
-        session_id: sessionId,
-        version: appVersion,
-      });
-    });
-
-    socket.on(socketEvents.WORKFLOW_STEP_EXECUTION_STARTED, (msg) => {
-      console.log("🔵 STEP PROCESS DETAIL Workflow step execution started", msg);
-
-       const stepExecution: UserTaskExecutionStepExecution = {
-         user_workflow_step_execution_pk: msg.user_workflow_step_execution_pk,
-         workflow_step_pk: msg.workflow_step_pk,
-         step_name_for_user: msg.step_name_for_user,
-         step_definition_for_user: msg.step_definition_for_user,
-         validated: msg.validated,
-         parameter: msg.parameter,
-         result: msg.result
-       }
-
-
-       setCurrentTaskExecution((prev: UserTaskExecution) => {
-         // find the step_execution with the same workflow_step_pk
-         const stepExecutionIndex = prev.step_executions?.findIndex((step) => step.workflow_step_pk === msg.workflow_step_pk);
-         if(stepExecutionIndex !== -1) {
-           // if found, update the step_execution with the new data
-           const newTaskExecution = { ...prev };
-           newTaskExecution.step_executions[stepExecutionIndex] = stepExecution;
-           return newTaskExecution;
-         } else {
-            // if not found, add the new step_execution to the list
-            const newTaskExecution = { ...prev };
-            newTaskExecution.step_executions?.push(stepExecution);
-            return newTaskExecution;
-          }
-       });
-       console.log("Current task execution: ", currentTaskExecution);
-
-
-    });
-
-    socket.on(socketEvents.WORKFLOW_STEP_EXECUTION_ENDED, (msg) => {
-      console.log("🔵 STEP PROCESS DETAIL Workflow step execution ended", msg);
-
-      const stepExecution: UserTaskExecutionStepExecution = {
-        user_workflow_step_execution_pk: msg.user_workflow_step_execution_pk,
-        workflow_step_pk: msg.workflow_step_pk,
-        step_name_for_user: msg.step_name_for_user,
-        step_definition_for_user: msg.step_definition_for_user,
-        validated: msg.validated,
-        parameter: msg.parameter,
-        result: msg.result
-      }
-      setCurrentTaskExecution((prev: UserTaskExecution) => {
-        // find the step_execution with the same workflow_step_pk
-        const stepExecutionIndex = prev.step_executions?.findIndex((step) => step.workflow_step_pk === msg.workflow_step_pk);
-        if (stepExecutionIndex !== -1) {
-          // if found, update the step_execution with the new data
-          const newTaskExecution = { ...prev };
-          newTaskExecution.step_executions[stepExecutionIndex] = stepExecution;
-          return newTaskExecution;
-        } else {
-          // if not found, add the new step_execution to the list
-          const newTaskExecution = { ...prev };
-          newTaskExecution.step_executions?.push(stepExecution);
-          return newTaskExecution;
-        }
-      });
-      console.log("Current task execution: ", currentTaskExecution);
-
-    });
+  const initializeSocketEvents = async () => {
+    setIsSocketEventInitialized(true);
 
 
   };
@@ -154,7 +72,7 @@ const StepProcessDetail: React.FC<StepProcessDetailProps> = ({
     <div className="p-[60px]">
         <div>
           <div className="text-h4 font-semibold text-gray-darker">
-            Workflow: {currentTaskExecution.user_task_execution_pk}
+            Workflow
           </div>
           <div className="text-subtitle6 font-semibold text-gray-lighter">
             {workflowStatus}
@@ -163,11 +81,11 @@ const StepProcessDetail: React.FC<StepProcessDetailProps> = ({
       </div>
 
       <ul role="list" className="space-y-6">
-        {currentTaskExecution?.step_executions?.map((stepItem, activityItemIdx) => (
+        {stepExecutions?.map((stepItem, activityItemIdx) => (
           <li key={stepItem.workflow_step_pk} className="relative flex gap-x-4">
             <div
               className={classNames(
-                activityItemIdx === currentTaskExecution?.step_executions.length - 1 ? 'h-6' : '-bottom-6',
+                activityItemIdx === stepExecutions.length - 1 ? 'h-6' : '-bottom-6',
                 'absolute left-0 top-0 flex w-6 justify-center'
               )}
             >

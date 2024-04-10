@@ -2,18 +2,20 @@ import React from 'react';
 
 import useGetExecuteTaskById from "modules/Tasks/hooks/useGetExecuteTaskById";
 import StepProcessDetail from './StepProcessDetail';
-import { UserTaskExecution } from 'modules/Tasks/interface';
+import { UserTaskExecution, UserTaskExecutionStepExecution } from 'modules/Tasks/interface';
+import { Socket } from 'socket.io-client';
 
 
 interface WorkflowProps {
-    currentTask: UserTaskExecution;
+    steps: any;
+    step_executions: UserTaskExecutionStepExecution[];
 }
 
-const Workflow: React.FC<WorkflowProps> = ({ currentTask }) => {
+const Workflow: React.FC<WorkflowProps> = ({ steps, step_executions}) => {
 
     return (
         <>
-             <StepProcessDetail taskExecution={currentTask} />
+            <StepProcessDetail steps={steps} stepExecutions={step_executions} />
             
         </>
     );

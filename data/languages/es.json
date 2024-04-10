@@ -24,6 +24,7 @@
             "title": "¡Bienvenido!",
             "IAgree": "Estoy de acuerdo",
             "defaultAgreement": "Estoy de acuerdo en interactuar con el asistente digital de forma respetuosa y cortés, reconociendo la importancia de la amabilidad en nuestro espacio digital.",
+            "defaultAgreementThankYou": "Su cooperación nos ayuda a mantener un entorno positivo para todos los usuarios. Gracias por su comprensión y apoyo.",
             "defaultModalContent": "Por favor, tómate un momento para reconocer nuestras directrices de la comunidad",
             "termsModalContent": "Justo antes de empezar, echa un vistazo a nuestros términos y condiciones",
             "termsAndConditions": "términos y condiciones",

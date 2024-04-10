@@ -15,37 +15,7 @@ import { io } from "socket.io-client";
 import { socketEvents } from "helpers/constants/socket";
 import usePostExecuteTask from "modules/Tasks/hooks/usePostExecuteTask";
 import useGetExecuteTaskById from "modules/Tasks/hooks/useGetExecuteTaskById";
-import Button from "components/Button";
 
-import { Fragment } from 'react'
-import { CheckCircleIcon } from '@heroicons/react/24/solid'
-import {
-  FaceFrownIcon,
-  FaceSmileIcon,
-  FireIcon,
-  HandThumbUpIcon,
-  HeartIcon,
-  PaperClipIcon,
-  XMarkIcon,
-} from '@heroicons/react/20/solid'
-import { Listbox, Transition } from '@headlessui/react'
-
-
-
-const activity = [
-  { id: 1, type: 'created', person: { name: 'Chelsea Hagon' }, date: '7d ago', dateTime: '2023-01-23T10:32' },
-  { id: 2, type: 'edited', person: { name: 'Chelsea Hagon' }, date: '6d ago', dateTime: '2023-01-23T11:03' },
-  {
-    id: 4,
-    type: 'finished',
-    person: {
-      name: 'Mojodex',
-    },
-    produced_text: "Topic of stanza 1: The moon's appearance in the spring sky",
-    date: '3d ago',
-    dateTime: '2023-01-23T15:56',
-  },
-]
 
 function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(' ')
@@ -80,7 +50,6 @@ const StepProcessDetail: React.FC<StepProcessDetailProps> = ({
   taskExecutionPK,
 }) => {
   const router = useRouter();
-  const [expanded, setExpanded] = useState<Record<string, string>>({});
 
   const {
     globalState: { newlyCreatedTaskInfo },
@@ -88,15 +57,13 @@ const StepProcessDetail: React.FC<StepProcessDetailProps> = ({
   } = useContext(globalContext) as GlobalContextType;
 
   const { data: initTaskExecution } = useGetExecuteTaskById(taskExecutionPK, {
-    enabled: !task?.user_task_pk && !!taskExecutionPK,
+    enabled: !!taskExecutionPK,
   });
 
-  // currentTaskExecution will be updated later with socketio event. We prepare the REACT state for it.
-  // initialize its value with the data from useGetExecuteTaskById
+  // // currentTaskExecution will be updated later with socketio event. We prepare the REACT state for it.
+  // // initialize its value with the data from useGetExecuteTaskById
   const [currentTaskExecution, setCurrentTaskExecution] = useState(initTaskExecution);
 
-
-  const onGoingProcessIndex = 0;
 
   const workflowStatus = "Ongoing";
 
@@ -104,38 +71,6 @@ const StepProcessDetail: React.FC<StepProcessDetailProps> = ({
 
   const { mutate: executeTaskMutation, isLoading: isPostExecuteTaskLoading } =
     usePostExecuteTask();
-  // Create a mock data of ProcessStepResponse with 2 steps:
-  // 1. step_pk: 1, description: "Step 1", assigned_to: "USER", placeholder: "Placeholder 1", delivery: "Delivery 1", achieved: false, delivery_date: "2022-10-10"
-  // 2. step_pk: 2, description: "Step 2", assigned_to: "USER", placeholder: "Placeholder 2", delivery: "Delivery 2", achieved: false, delivery_date: "2022-10-10"
-
-  const data = {
-    description: "Description",
-    launched: true,
-    achieved: false,
-    steps: [
-      {
-        step_pk: 1,
-        index: 0,
-        description: "Step 1",
-        assigned_to: "USER",
-        placeholder: "Placeholder 1",
-        delivery: "Delivery 1",
-        achieved: true,
-        delivery_date: "2022-10-10",
-      },
-      {
-        step_pk: 2,
-        index: 1,
-        description: "Step 2",
-        assigned_to: "USER",
-        placeholder: "Placeholder 2",
-        delivery: "Delivery 2",
-        achieved: false,
-        delivery_date: "2022-10-10",
-      },
-    ],
-    progress: 0,
-  };
 
   useEffect(() => {
     return () => setGlobalState({ newlyCreatedTaskInfo: null });
@@ -157,7 +92,6 @@ const StepProcessDetail: React.FC<StepProcessDetailProps> = ({
 
       const session: any = await getSession();
       const token = session?.authorization?.token || "";
-      console.log("token: ", token);
 
       const socket = io(envVariable.socketUrl as string, {
         transports: ["websocket"],
@@ -183,7 +117,6 @@ const StepProcessDetail: React.FC<StepProcessDetailProps> = ({
           result: msg.result
         }
 
-        console.log("new step execution: ", stepExecution)
 
         setCurrentTaskExecution((prev: UserTaskExecution | undefined) => {
           if (!prev) {
@@ -220,7 +153,7 @@ const StepProcessDetail: React.FC<StepProcessDetailProps> = ({
           return newTaskExecution;
         })
 
-        console.log("Current task execution: ", currentTaskExecution?.step_executions)
+        console.log("Current task execution: ", currentTaskExecution)
         
       });
 
@@ -280,7 +213,7 @@ const StepProcessDetail: React.FC<StepProcessDetailProps> = ({
           <li key={stepItem.workflow_step_pk} className="relative flex gap-x-4">
             <div
               className={classNames(
-                activityItemIdx === activity.length - 1 ? 'h-6' : '-bottom-6',
+                activityItemIdx === currentTaskExecution?.step_executions.length - 1 ? 'h-6' : '-bottom-6',
                 'absolute left-0 top-0 flex w-6 justify-center'
               )}
             >

@@ -5,7 +5,7 @@ import { Socket, io } from "socket.io-client";
 import { appVersion } from "helpers/constants";
 import { envVariable } from "helpers/constants/env-vars";
 import { decryptId } from "helpers/method";
-import useGetDraft from "modules/Drafts/hooks/useGetDraft";
+import useGetProducedText from "modules/ProducedTexts/hooks/useGetProducedText";
 import { EditerDraft, UserTaskExecutionStepExecution } from "modules/Tasks/interface";
 import { TabType } from "components/Tab";
 import Result from "./Result";
@@ -49,7 +49,7 @@ const DraftDetail = () => {
 
   const { data: currentTask } = useGetExecuteTaskById(taskExecutionPK);
 
-  const { data: draftDetails, isFetching: isDraftLoading } = useGetDraft(
+  const { data: draftDetails, isFetching: isDraftLoading } = useGetProducedText(
     currentTask?.produced_text_pk || null,
     { enabled: !!currentTask?.produced_text_pk }
   );

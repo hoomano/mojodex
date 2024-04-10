@@ -16,6 +16,8 @@ import { socketEvents } from "helpers/constants/socket";
 import usePostExecuteTask from "modules/Tasks/hooks/usePostExecuteTask";
 import useGetExecuteTaskById from "modules/Tasks/hooks/useGetExecuteTaskById";
 import Button from "components/Button";
+import useOnStepExecutionValidate from "modules/Tasks/hooks/useOnStepExecutionValidate";
+import useOnStepExecutionInvalidate from "modules/Tasks/hooks/useOnStepExecutionInvalidate";
 
 
 function classNames(...classes: string[]) {
@@ -42,6 +44,8 @@ const StepProcessDetail: React.FC<StepProcessDetailProps> = ({
   const workflowStatus = "Ongoing";
 
   const [isSocketEventInitialized, setIsSocketEventInitialized] = useState(false);
+  const onValidateStepExecution = useOnStepExecutionValidate();
+  const onInvalidateStepExecution = useOnStepExecutionInvalidate();
 
 
 
@@ -63,9 +67,10 @@ const StepProcessDetail: React.FC<StepProcessDetailProps> = ({
     console.log("Undo step");
   };
 
-  const onContinueStep = (event: React.MouseEvent<HTMLButtonElement>) => {
+  const onContinueStep = (user_workflow_step_execution_pk: number) => {
     //event.stopPropagation();
     console.log("Continue step");
+    onValidateStepExecution.mutate(user_workflow_step_execution_pk);
   };
 
   return (
@@ -113,7 +118,7 @@ const StepProcessDetail: React.FC<StepProcessDetailProps> = ({
                 Delete
               </Button>
 
-              <Button variant="primary" size="middle" onClick={onContinueStep}>
+              <Button variant="primary" size="middle" onClick={() => onContinueStep(stepItem.user_workflow_step_execution_pk)}>
                 Run
               </Button>
             </div> : null

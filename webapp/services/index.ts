@@ -13,12 +13,13 @@ const taskAPIRoutes = {
   userTaskExecution: "/api/task/user_task_execution",
   messageHistory: "/api/task/message",
   todos: "/api/todos",
+  userWorkflowStepExecution: "/api/user_workflow_step_execution",
 };
 
-const draftAPIRoutes = {
-  deleteDraft: "/api/produced_text",
-  saveDraft: "/api/produced_text",
-  drafts: "/api/produced_text",
+const producedTextAPIRoutes = {
+  deleteProducedText: "/api/produced_text",
+  saveProducedText: "/api/produced_text",
+  producedText: "/api/produced_text",
 };
 
 const authAPIRoutes = {
@@ -72,7 +73,7 @@ export const apiRoutes = {
   ...taskAPIRoutes,
 
   // Draft API's
-  ...draftAPIRoutes,
+  ...producedTextAPIRoutes,
 
   // Chat History API's
   ...chatHistoryAPIRoutes,

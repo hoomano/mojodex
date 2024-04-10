@@ -16,8 +16,8 @@ import UpdatePlugin from "./UpdatePlugin";
 
 // import { invalidateQuery } from "services/config/queryClient";
 // import cachedAPIName from "helpers/constants/cachedAPIName";
-import useDeleteDraft from "modules/Drafts/hooks/useDeleteDraft";
-import useSaveDraft from "modules/Drafts/hooks/useSaveDraft";
+import useDeleteProducedText from "modules/ProducedTexts/hooks/useDeleteProducedText";
+import useSaveDraft from "modules/ProducedTexts/hooks/useSaveProducedText";
 // import useOnTaskComplete from "modules/Tasks/hooks/useOnTaskComplete";
 import { EditerDraft } from "modules/Tasks/interface";
 // import globalContext, { GlobalContextType } from "helpers/GlobalContext";
@@ -46,7 +46,7 @@ const Answer = ({
   const [title, setTitle] = useState("");
   const [copied, setCopied] = useState(false);
 
-  const deleteDraft = useDeleteDraft();
+  const deleteDraft = useDeleteProducedText();
   const saveDraft = useSaveDraft();
   // const onTaskComplete = useOnTaskComplete();
 
@@ -121,7 +121,7 @@ const Answer = ({
         };
 
         saveDraft.mutate(payload, {
-          onSuccess: () => {},
+          onSuccess: () => { },
         });
       }
     },

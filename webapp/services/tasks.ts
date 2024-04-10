@@ -90,3 +90,15 @@ export const deleteTodo = (todoPk: number) =>
 
 export const onTodoComplete = (payload: TodoCompletePayload) =>
   axiosClient.post(apiRoutes.todos, payload);
+
+export const validateUserTaskExecutionStepExecution = (stepExecutionPk: number) =>
+  axiosClient.post(apiRoutes.userWorkflowStepExecution, {
+    user_workflow_step_execution_pk: stepExecutionPk,
+    validated: true
+  });
+
+export const invalidateUserTaskExecutionStepExecution = (stepExecutionPk: number) =>
+  axiosClient.post(apiRoutes.userWorkflowStepExecution, {
+    user_workflow_step_execution_pk: stepExecutionPk,
+    validated: false
+  });

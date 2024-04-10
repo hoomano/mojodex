@@ -28,7 +28,7 @@ const TaskExecutions = ({ tasks, isListView }: TasksTypes) => {
             onClick={() => taskCardClickHandler(task)}
             task={task}
             isListView={isListView}
-            task_type={task.type}
+            task_type={task.task_type}
           />
         );
       })}

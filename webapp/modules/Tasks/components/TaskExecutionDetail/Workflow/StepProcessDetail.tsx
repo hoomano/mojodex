@@ -31,11 +31,13 @@ function classNames(...classes: string[]) {
 interface StepProcessDetailProps {
   steps: any;
   stepExecutions: UserTaskExecutionStepExecution[];
+  onInvalidate: any;
 }
 
 const StepProcessDetail: React.FC<StepProcessDetailProps> = ({
   steps,
   stepExecutions,
+  onInvalidate
 }) => {
   const router = useRouter();
 
@@ -65,9 +67,10 @@ const StepProcessDetail: React.FC<StepProcessDetailProps> = ({
 
   };
 
-  const onUndoStep = (event: React.MouseEvent<HTMLButtonElement>) => {
+  const onUndoStep = () => {
     //event.stopPropagation();
     console.log("Undo step");
+    onInvalidate();
   };
 
   const onContinueStep = (user_workflow_step_execution_pk: number) => {

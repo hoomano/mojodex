@@ -30,6 +30,7 @@ const Chat = () => {
     chatUsedFrom,
     isNewSession,
   } = chatState;
+  console.log("🟠 chatState: ", chatState);
 
   useSocket();
   useGetMessageHistory();

@@ -6,7 +6,7 @@ export interface UserTask {
   task_icon: string;
   enabled: boolean;
   task_type: string;
-  steps:UserTaskStep[];
+  steps: UserTaskStep[];
 }
 
 export interface UserTaskStep {
@@ -90,7 +90,7 @@ export interface UserTaskExecution {
   produced_text_title: string;
   produced_text_production: string;
   task_name: string;
-  type: string;
+  task_type: string;
   produced_text_pk: number;
   session_id: string;
   start_date: string;

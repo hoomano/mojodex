@@ -23,13 +23,14 @@ const TaskDetailsPage = () => {
   const { data: currentTaskInfo } = useGetExecuteTaskById(taskExecutionPK);
 
   const taskSessionId = currentTaskInfo?.session_id;
+  console.log("👉 {currentTaskInfo.task_type === workflow}", currentTaskInfo?.task_type === "workflow");
 
   return (
     <Layout>
       {taskSessionId ? (
         <ChatProvider
           sessionId={taskSessionId}
-          chatUsedFrom={ChatUsedFrom.Task}
+          chatUsedFrom={currentTaskInfo?.task_type === "workflow" ? ChatUsedFrom.Workflow : ChatUsedFrom.Task}
         >
           <div className="sm:hidden">
             <MobileView />

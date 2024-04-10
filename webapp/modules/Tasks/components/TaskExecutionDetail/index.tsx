@@ -7,7 +7,7 @@ import { envVariable } from "helpers/constants/env-vars";
 import { decryptId } from "helpers/method";
 import useGetProducedText from "modules/ProducedTexts/hooks/useGetProducedText";
 import { EditerDraft, UserTaskExecutionStepExecution } from "modules/Tasks/interface";
-import { TabType } from "components/Tab";
+import Tab, { TabType } from "components/Tab";
 import Result from "./Result";
 import useGetExecuteTaskById from "modules/Tasks/hooks/useGetExecuteTaskById";
 import { socketEvents } from "helpers/constants/socket";
@@ -16,6 +16,9 @@ import { ChatContextType } from "modules/Chat/interface/context";
 import Todos from "./Todos";
 import { useTranslation } from "react-i18next";
 import StepProcessDetail from "./Workflow/StepProcessDetail";
+import Chat from "modules/Chat";
+import TaskLoader from "./TaskLoader";
+import { ArrowLeftIcon } from "@heroicons/react/24/outline";
 
 const DraftDetail = () => {
   const [tabs, setTabs] = useState<TabType[]>([]);
@@ -64,6 +67,8 @@ const DraftDetail = () => {
     textPk: null,
   });
   const [workflowStepExecutions, setWorkflowStepExecutions] = useState(currentTask!.step_executions);
+  const [chatIsVisible, setChatIsVisible] = useState(currentTask!.task_type !== "workflow");
+
   const { t } = useTranslation("dynamic");
 
   useEffect(() => {
@@ -200,8 +205,6 @@ const DraftDetail = () => {
       }
     });
 
-
-
     socket.on(socketEvents.WORKFLOW_STEP_EXECUTION_STARTED, (msg) => {
       console.log("🔵 STEP PROCESS DETAIL Workflow step execution started", msg);
 
@@ -265,14 +268,32 @@ const DraftDetail = () => {
 
     });
 
+    socket.on(socketEvents.WORKFOW_STEP_EXECUTION_INVALIDATED, (msg) => {
+      console.log("🔵 STEP PROCESS DETAIL Workflow step execution invalidated", msg);
+
+      setWorkflowStepExecutions((prev: UserTaskExecutionStepExecution[]) => {
+        // find the step_execution with the same user_workflow_step_execution_pk
+        const stepExecutionIndex = prev?.findIndex((step) => step.user_workflow_step_execution_pk === msg.user_workflow_step_execution_pk);
+        if (stepExecutionIndex !== -1) {
+          // if found, delete the step_execution from the list
+          const newStepExecutions = [...prev];
+          newStepExecutions.splice(stepExecutionIndex, 1);
+          return newStepExecutions;
+        } else {
+          return prev;
+        }
+      });
+      setChatIsVisible(false);
+    });
+
 
 
   };
   return (
     <div className="flex relative">
       <div className="flex-1 p-8 lg:p-16 h-[calc(100vh-72px)] lg:h-screen overflow-auto">
-        {<StepProcessDetail steps={currentTask!.steps!} stepExecutions={workflowStepExecutions!} />}
-        { /*
+        {currentTask!.task_type === "workflow" ? <StepProcessDetail steps={currentTask!.steps!} stepExecutions={workflowStepExecutions!} onInvalidate={()=>setChatIsVisible(true)} /> : null}
+        {currentTask!.task_type === "workflow" ? null :
           (!editorDetails?.text ? (
             <TaskLoader />
           ) : (
@@ -302,14 +323,13 @@ const DraftDetail = () => {
               />
             </>
           ))
-       */ }
+        }
 
       </div>
-      {/*newlyCreatedTaskInfo?.taskType !== "workflow" ?
-
+      {chatIsVisible ?
         (<div className="sticky top-0 left-0 h-[calc(100vh-72px)] lg:h-screen w-[345px] text-white">
           <Chat />
-      </div>) : null*/}
+      </div>) : null}
     </div>
   );
 };

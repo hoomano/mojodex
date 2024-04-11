@@ -19,6 +19,7 @@ export interface UserTaskExecutionStepExecution {
   workflow_step_pk: number;
   step_name_for_user: string;
   step_definition_for_user: string;
+  creation_date: string;
   user_workflow_step_execution_pk: number;
   validated: boolean;
   parameter: any;

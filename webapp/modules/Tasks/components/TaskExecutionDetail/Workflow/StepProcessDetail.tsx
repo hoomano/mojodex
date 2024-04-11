@@ -30,7 +30,37 @@ const StepProcessDetail: React.FC<StepProcessDetailProps> = ({
   const onValidateStepExecution = useOnStepExecutionValidate();
   const onInvalidateStepExecution = useOnStepExecutionInvalidate();
 
+  const calculateTimeAgo = (creationDate: string) => {
+    const providedDate: any = new Date(creationDate);
+    const currentDate: any = new Date();
+    const timeDifference = currentDate - providedDate;
 
+    // Calculate minutes, hours, and days
+    const minutes = Math.floor(timeDifference / (1000 * 60));
+    const hours = Math.floor(timeDifference / (1000 * 60 * 60));
+    const days = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
+
+    let time_ago;
+
+    if (minutes < 1) {
+      time_ago = "now";
+    } else if (hours < 1) {
+      time_ago = `${minutes}min ago`;
+    } else if (days < 1) {
+      time_ago = `${hours}h ago`;
+    } else if (days <= 7) {
+      const dayOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][providedDate.getDay()];
+      const timeString = `${dayOfWeek} ${providedDate.toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      })}`;
+      time_ago = timeString;
+    } else {
+      time_ago = providedDate.toISOString().slice(0, 10);
+    }
+
+    return time_ago;
+  };
 
   const onUndoStep = () => {
     //event.stopPropagation();
@@ -84,8 +114,8 @@ const StepProcessDetail: React.FC<StepProcessDetailProps> = ({
                     <div className="py-0.5 text-sm leading-5 text-gray-500">
                      {stepItem.step_name_for_user}: <span className="font-medium text-gray-900">{stepItem.step_definition_for_user}</span>
                     </div>
-                    <time dateTime="2024-04-10" className="flex-none py-0.5 text-xs leading-5 text-gray-500">
-                      TODO date
+                    <time dateTime={stepItem.creation_date} className="flex-none py-0.5 text-xs leading-5 text-gray-500">
+                      {calculateTimeAgo(stepItem.creation_date)}
                     </time>
                   </div>
                   <div className="flex-auto rounded-md p-3 ring-1 ring-inset ring-gray-200 w-full">

@@ -213,6 +213,7 @@ const DraftDetail = () => {
         workflow_step_pk: msg.workflow_step_pk,
         step_name_for_user: msg.step_name_for_user,
         step_definition_for_user: msg.step_definition_for_user,
+        creation_date: msg.creation_date,
         validated: msg.validated,
         parameter: msg.parameter,
         result: msg.result
@@ -246,6 +247,7 @@ const DraftDetail = () => {
         workflow_step_pk: msg.workflow_step_pk,
         step_name_for_user: msg.step_name_for_user,
         step_definition_for_user: msg.step_definition_for_user,
+        creation_date: msg.creation_date,
         validated: msg.validated,
         parameter: msg.parameter,
         result: msg.result

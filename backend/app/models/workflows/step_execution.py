@@ -1,10 +1,10 @@
 from app import server_socket
-from mojodex_core.entities import MdUserWorkflowStepExecution, MdWorkflowStep
+from mojodex_core.entities import MdUser, MdUserWorkflowStepExecution, MdWorkflowStep
 from typing import List
 from models.workflows.steps_library import steps_class
 from sqlalchemy.orm.attributes import flag_modified
-
-
+from app import time_manager
+import pytz
 class WorkflowStepExecution:
     logger_prefix = "WorkflowStepExecution"
 
@@ -108,6 +108,10 @@ class WorkflowStepExecution:
             raise Exception(f"{self.logger_prefix} :: get_learned_instructions :: {e}")
 
     @property
+    def creation_date(self):
+        return self.db_object.creation_date.astimezone(pytz.UTC)
+
+    @property
     def name_for_user(self):
         return self.workflow_step.get_name_for_user(self.db_session, self.user_id)
 
@@ -131,6 +135,7 @@ class WorkflowStepExecution:
                 "workflow_step_pk": self.db_object.workflow_step_fk,
                 "step_name_for_user": self.name_for_user,
                 "step_definition_for_user": self.definition_for_user,
+                "creation_date": self.creation_date.isoformat(),
                 "validated": self.validated,
                 "parameter": self.parameter,
                 "result": self.result

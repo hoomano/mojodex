@@ -51,7 +51,7 @@ const StepProcessDetail: React.FC<StepProcessDetailProps> = ({
   };
 
   return (
-    <div className="p-[60px]">
+    <div className="p-[60px] w-full">
       <div>
         <div className="text-h4 font-semibold text-gray-darker pb-4">
           Workflow
@@ -59,7 +59,7 @@ const StepProcessDetail: React.FC<StepProcessDetailProps> = ({
 
       </div>
 
-      <ul role="list" className="space-y-6">
+      <ul role="list" className="space-y-6 w-full">
         {stepExecutions?.map((stepItem, activityItemIdx) => (
           <li key={stepItem.workflow_step_pk} className="relative flex gap-x-4">
             <div
@@ -71,7 +71,7 @@ const StepProcessDetail: React.FC<StepProcessDetailProps> = ({
               <div className="w-px bg-gray-200" />
             </div>
             <>
-              <div className="flex flex-row">
+              <div className="flex flex-row w-full">
                 <div className="relative h-6 w-6 flex-none items-center justify-center bg-white">
                   {stepItem.validated === true ? (
                     <CheckCircleIcon className="h-6 w-6 text-primary-main" aria-hidden="true" />
@@ -79,7 +79,7 @@ const StepProcessDetail: React.FC<StepProcessDetailProps> = ({
                     <div className="mt-1.5 ml-2 h-1.5 w-1.5 rounded-full bg-gray-100 ring-1 ring-gray-300" />
                   )}
                 </div>
-                <div className="flex-col pl-3">
+                <div className="flex-col pl-3 w-full">
                   <div className="flex justify-between gap-x-4">
                     <div className="py-0.5 text-sm leading-5 text-gray-500">
                      {stepItem.step_name_for_user}: <span className="font-medium text-gray-900">{stepItem.step_definition_for_user}</span>
@@ -88,7 +88,7 @@ const StepProcessDetail: React.FC<StepProcessDetailProps> = ({
                       TODO date
                     </time>
                   </div>
-                  <div className="flex-auto rounded-md p-3 ring-1 ring-inset ring-gray-200">
+                  <div className="flex-auto rounded-md p-3 ring-1 ring-inset ring-gray-200 w-full">
 
                     {
                       Object.entries(stepItem.parameter).map(([key, value]) => (

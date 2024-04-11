@@ -69,6 +69,7 @@ class WorkflowStepExecution:
     def validate(self):
         try:
             self.db_object.validated = True
+            self.db_session.commit()
         except Exception as e:
             raise Exception(f"{self.logger_prefix} :: validate :: {e}")
 

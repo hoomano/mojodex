@@ -1,20 +1,7 @@
-import {
-  ArrowLeftIcon,
-} from "@heroicons/react/24/outline";
-import { UserTask, UserTaskExecutionStepExecution, UserTaskExecution } from "modules/Tasks/interface";
+
+import { UserTaskExecutionStepExecution } from "modules/Tasks/interface";
 import { useRouter } from "next/router";
-import { useState, useContext, useEffect } from "react";
-
-import globalContext from "helpers/GlobalContext";
-import { GlobalContextType } from "helpers/GlobalContext";
-import { getSession } from "next-auth/react";
-import { envVariable } from "helpers/constants/env-vars";
-import { appVersion } from "helpers/constants";
-
-import { Socket, io } from "socket.io-client";
-import { socketEvents } from "helpers/constants/socket";
-import usePostExecuteTask from "modules/Tasks/hooks/usePostExecuteTask";
-import useGetExecuteTaskById from "modules/Tasks/hooks/useGetExecuteTaskById";
+import { useState, useEffect } from "react";
 import Button from "components/Button";
 import useOnStepExecutionValidate from "modules/Tasks/hooks/useOnStepExecutionValidate";
 import useOnStepExecutionInvalidate from "modules/Tasks/hooks/useOnStepExecutionInvalidate";
@@ -29,54 +16,38 @@ function classNames(...classes: string[]) {
 }
 
 interface StepProcessDetailProps {
-  steps: any;
   stepExecutions: UserTaskExecutionStepExecution[];
   onInvalidate: any;
+  onValidate: any;
 }
 
 const StepProcessDetail: React.FC<StepProcessDetailProps> = ({
-  steps,
   stepExecutions,
-  onInvalidate
+  onInvalidate,
+  onValidate,
 }) => {
-  const router = useRouter();
 
-  // // currentTaskExecution will be updated later with socketio event. We prepare the REACT state for it.
-  // // initialize its value with the data from useGetExecuteTaskById
-  //const [currentTaskExecution, setCurrentTaskExecution] = useState(taskExecution);
-  //console.log("Current task execution: ", currentTaskExecution);
-  //const[stepExecutions, setStepExecutions] = useState(step_executions);
-
-
-  const [isSocketEventInitialized, setIsSocketEventInitialized] = useState(false);
   const onValidateStepExecution = useOnStepExecutionValidate();
   const onInvalidateStepExecution = useOnStepExecutionInvalidate();
 
 
 
-  useEffect(() => {
-    if (!isSocketEventInitialized) {
-      initializeSocketEvents();
-    }
-  }, [isSocketEventInitialized]);
-
-
-  const initializeSocketEvents = async () => {
-    setIsSocketEventInitialized(true);
-
-
-  };
-
   const onUndoStep = () => {
     //event.stopPropagation();
-    console.log("Undo step");
     onInvalidate();
   };
 
   const onContinueStep = (user_workflow_step_execution_pk: number) => {
     //event.stopPropagation();
-    console.log("Continue step");
-    onValidateStepExecution.mutate(user_workflow_step_execution_pk);
+    onValidateStepExecution.mutate(user_workflow_step_execution_pk, {
+      onSuccess: () => {
+        onValidate(user_workflow_step_execution_pk);
+      },
+      onError: (error) => {
+        console.log("Error validating step", error);
+      }
+    }
+    );
   };
 
   return (

@@ -286,13 +286,26 @@ const DraftDetail = () => {
       setChatIsVisible(false);
     });
 
-
-
   };
+
+  const onStepExecutionValidated = (user_workflow_step_execution_pk: number) => {
+    // find the step_execution with the same user_workflow_step_execution_pk
+  
+    const stepExecutionIndex = workflowStepExecutions?.findIndex((step) => step.user_workflow_step_execution_pk === user_workflow_step_execution_pk);
+    if (stepExecutionIndex !== -1) {
+      // if found, update the step_execution with the new data
+      const newStepExecutions = [...workflowStepExecutions];
+      newStepExecutions[stepExecutionIndex].validated = true;
+      setWorkflowStepExecutions(newStepExecutions);
+    }
+    
+  }
+
+
   return (
     <div className="flex relative">
       <div className="flex-1 p-8 lg:p-16 h-[calc(100vh-72px)] lg:h-screen overflow-auto">
-        {currentTask!.task_type === "workflow" ? <StepProcessDetail steps={currentTask!.steps!} stepExecutions={workflowStepExecutions!} onInvalidate={()=>setChatIsVisible(true)} /> : null}
+        {currentTask!.task_type === "workflow" ? <StepProcessDetail stepExecutions={workflowStepExecutions!} onInvalidate={() => setChatIsVisible(true)}   onValidate={(stepExecutionPk: number) => onStepExecutionValidated(stepExecutionPk)}  /> : null}
         {currentTask!.task_type === "workflow" ? null :
           (!editorDetails?.text ? (
             <TaskLoader />

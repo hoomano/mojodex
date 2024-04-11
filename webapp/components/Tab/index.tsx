@@ -23,6 +23,7 @@ const TabComponent = ({
   isDisable,
   notReadTodos,
 }: TabComponentType) => {
+  console.log("🔴 TAB");
   const selectedIndex = useMemo(() => {
     return tabs.findIndex((tab) => tab.key === selected);
   }, [selected, tabs]);

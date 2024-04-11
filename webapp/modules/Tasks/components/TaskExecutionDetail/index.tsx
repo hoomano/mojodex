@@ -72,40 +72,61 @@ const DraftDetail = () => {
   const { t } = useTranslation("dynamic");
 
   useEffect(() => {
-    let tabs = [
-      {
-        key: "result",
-        title: `${t("userTaskExecution.resultTab.title")}`,
-        component: (
-          <Result
-            userTaskExecutionPk={taskExecutionPK as number}
-            task={editorDetails}
-            isLoading={isDraftLoading}
-            isTask={isTask}
-          />
-        ),
-      },
-      {
-        key: "todos",
-        title: `${t("userTaskExecution.todosTab.title")}`,
-        component: (
-          <Todos
-            taskExecutionPK={taskExecutionPK as number}
-            workingOnTodos={currentTask?.working_on_todos}
-            nTodos={currentTask?.n_todos}
-          />
-        ),
-      },
-    ];
+
+    let resultTab = {
+      key: "result",
+      title: `${t("userTaskExecution.resultTab.title")}`,
+      component: (
+        <Result
+          userTaskExecutionPk={taskExecutionPK as number}
+          task={editorDetails}
+          isLoading={isDraftLoading}
+          isTask={isTask}
+        />
+      ),
+    }
+
+    let todosTab = {
+      key: "todos",
+      title: `${t("userTaskExecution.todosTab.title")}`,
+      component: (
+        <Todos
+          taskExecutionPK={taskExecutionPK as number}
+          workingOnTodos={currentTask?.working_on_todos}
+          nTodos={currentTask?.n_todos}
+        />
+      ),
+    }
+
+    let processTab = {
+      key: "process",
+      title: `Process`,
+      component: (
+        <StepProcessDetail stepExecutions={workflowStepExecutions!} onInvalidate={() => setChatIsVisible(true)} onValidate={(stepExecutionPk: number) => onStepExecutionValidated(stepExecutionPk)} />
+      ),
+    };
+
+    
+    let tabs = [];
+    // if currentTask.task_type !== "workflow" add todos tab
+    if (currentTask?.task_type === "workflow") {
+      tabs = [processTab, resultTab];
+    } else {
+      tabs = [resultTab, todosTab];
+    }
 
     setTabs(tabs);
 
     if (router.query.tab === "todos") {
       setSelectedTab("todos");
     } else {
-      setSelectedTab("result");
+      if (currentTask?.task_type !== "workflow") {
+        setSelectedTab("result");
+      } else {
+        setSelectedTab("process");
+      }
     }
-  }, [editorDetails, isTask, router.query.tab]);
+  }, [workflowStepExecutions, editorDetails, isTask, router.query.tab]);
 
   useEffect(() => {
     if (draftDetails) {
@@ -303,13 +324,12 @@ const DraftDetail = () => {
     
   }
 
-
   return (
     <div className="flex relative">
       <div className="flex-1 p-8 lg:p-16 h-[calc(100vh-72px)] lg:h-screen overflow-auto">
-        {currentTask!.task_type === "workflow" ? <StepProcessDetail stepExecutions={workflowStepExecutions!} onInvalidate={() => setChatIsVisible(true)}   onValidate={(stepExecutionPk: number) => onStepExecutionValidated(stepExecutionPk)}  /> : null}
-        {currentTask!.task_type === "workflow" ? null :
-          (!editorDetails?.text ? (
+        {/*currentTask!.task_type === "workflow" ? <StepProcessDetail stepExecutions={workflowStepExecutions!} onInvalidate={() => setChatIsVisible(true)}   onValidate={(stepExecutionPk: number) => onStepExecutionValidated(stepExecutionPk)}  /> : null*/}
+        {/*currentTask!.task_type === "workflow" ? null :*/
+          (currentTask!.task_type !== "workflow" && !editorDetails?.text ? (
             <TaskLoader />
           ) : (
             <>

@@ -6,13 +6,13 @@ export interface TabType {
   key: string;
   title: string;
   component: React.ReactNode;
+  disabled: boolean;
 }
 
 interface TabComponentType {
   tabs: TabType[];
   selected: string;
   onChangeTab: (key: string) => void;
-  isDisable?: boolean;
   notReadTodos?: number;
 }
 
@@ -20,16 +20,14 @@ const TabComponent = ({
   tabs = [],
   selected,
   onChangeTab,
-  isDisable,
   notReadTodos,
 }: TabComponentType) => {
-  console.log("🔴 TAB");
   const selectedIndex = useMemo(() => {
     return tabs.findIndex((tab) => tab.key === selected);
   }, [selected, tabs]);
 
   const onChangeTabHandler = (index: number) => {
-    if (isDisable) {
+    if (tabs[index].disabled) {
       return;
     }
     onChangeTab(tabs[index].key);
@@ -50,7 +48,7 @@ const TabComponent = ({
                   classNames(
                     "outline-0 px-3 relative",
                     selected ? "text-gray-darker" : "text-gray-lighter",
-                    isDisable ? "cursor-not-allowed" : ""
+                    tab.disabled ? "cursor-not-allowed" : ""
                   )
                 }
               >

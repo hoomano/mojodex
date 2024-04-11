@@ -6,7 +6,7 @@ import { appVersion } from "helpers/constants";
 import { envVariable } from "helpers/constants/env-vars";
 import { decryptId } from "helpers/method";
 import useGetProducedText from "modules/ProducedTexts/hooks/useGetProducedText";
-import { EditerDraft, UserTaskExecutionStepExecution } from "modules/Tasks/interface";
+import { EditerProducedText, UserTaskExecutionStepExecution } from "modules/Tasks/interface";
 import Tab, { TabType } from "components/Tab";
 import Result from "./Result";
 import useGetExecuteTaskById from "modules/Tasks/hooks/useGetExecuteTaskById";
@@ -54,17 +54,17 @@ const DraftDetail = () => {
 
   const { data: draftDetails, isFetching: isDraftLoading } = useGetProducedText(
     currentTask?.produced_text_pk || null,
-    { enabled: !!currentTask?.produced_text_pk }
+    { enabled: !!currentTask?.produced_text_pk } // enable the query only if currentTask has produced_text_pk
   );
 
 
   const [isSocketLoaded, setIsSocketLoaded] = useState(false);
   const [isTask, setIsTask] = useState(false);
   const [streamTitle, setStreamTitle] = useState<string | null>(null);
-  const [editorDetails, setEditorDetails] = useState<EditerDraft>({
+  const [editorDetails, setEditorDetails] = useState<EditerProducedText>({
     text: "",
     title: "",
-    textPk: null,
+    producedTextPk: null,
   });
   const [workflowStepExecutions, setWorkflowStepExecutions] = useState(currentTask!.step_executions);
   const [chatIsVisible, setChatIsVisible] = useState(currentTask!.task_type !== "workflow");
@@ -79,11 +79,12 @@ const DraftDetail = () => {
       component: (
         <Result
           userTaskExecutionPk={taskExecutionPK as number}
-          task={editorDetails}
+          producedText={editorDetails}
           isLoading={isDraftLoading}
-          isTask={isTask}
         />
       ),
+      // disabled if editorDetails.textPk is null
+      disabled: !editorDetails.producedTextPk ? true : false
     }
 
     let todosTab = {
@@ -96,6 +97,8 @@ const DraftDetail = () => {
           nTodos={currentTask?.n_todos}
         />
       ),
+      // disabled if currentTask has no produced_text_pk
+      disabled: !currentTask?.produced_text_pk ? true : false
     }
 
     let processTab = {
@@ -104,9 +107,10 @@ const DraftDetail = () => {
       component: (
         <StepProcessDetail stepExecutions={workflowStepExecutions!} onInvalidate={() => setChatIsVisible(true)} onValidate={(stepExecutionPk: number) => onStepExecutionValidated(stepExecutionPk)} />
       ),
+      disabled: false
     };
 
-    
+
     let tabs = [];
     // if currentTask.task_type !== "workflow" add todos tab
     if (currentTask?.task_type === "workflow") {
@@ -123,7 +127,11 @@ const DraftDetail = () => {
       if (currentTask?.task_type !== "workflow") {
         setSelectedTab("result");
       } else {
-        setSelectedTab("process");
+        if (editorDetails.producedTextPk) {
+          setSelectedTab("result");
+        } else {
+          setSelectedTab("process");
+        }
       }
     }
   }, [workflowStepExecutions, editorDetails, isTask, router.query.tab]);
@@ -133,7 +141,7 @@ const DraftDetail = () => {
       setEditorDetails({
         text: draftDetails?.production,
         title: draftDetails?.title,
-        textPk: draftDetails?.produced_text_pk,
+        producedTextPk: draftDetails?.produced_text_pk,
       });
     }
 
@@ -141,7 +149,7 @@ const DraftDetail = () => {
       setEditorDetails({
         text: currentTask.produced_text_production,
         title: currentTask?.produced_text_title,
-        textPk: currentTask?.produced_text_pk,
+        producedTextPk: currentTask?.produced_text_pk,
       });
     }
   }, [draftDetails, currentTask]);
@@ -203,7 +211,7 @@ const DraftDetail = () => {
       setEditorDetails({
         text: produced_text,
         title: produced_text_title,
-        textPk: produced_text_pk,
+        producedTextPk: produced_text_pk,
       });
 
       setChatState({
@@ -309,11 +317,22 @@ const DraftDetail = () => {
       setChatIsVisible(false);
     });
 
+    socket.on(socketEvents.WORKFLOW_EXECUTION_PRODUCED_TEXT, (msg) => {
+      console.log("🔵 STEP PROCESS DETAIL Workflow execution produced text", msg);
+
+      setEditorDetails({
+        text: msg.produced_text,
+        title: msg.produced_text_title,
+        producedTextPk: msg.produced_text_pk,
+      });
+
+    });
+
   };
 
   const onStepExecutionValidated = (user_workflow_step_execution_pk: number) => {
     // find the step_execution with the same user_workflow_step_execution_pk
-  
+
     const stepExecutionIndex = workflowStepExecutions?.findIndex((step) => step.user_workflow_step_execution_pk === user_workflow_step_execution_pk);
     if (stepExecutionIndex !== -1) {
       // if found, update the step_execution with the new data
@@ -321,7 +340,7 @@ const DraftDetail = () => {
       newStepExecutions[stepExecutionIndex].validated = true;
       setWorkflowStepExecutions(newStepExecutions);
     }
-    
+
   }
 
   return (
@@ -353,7 +372,6 @@ const DraftDetail = () => {
                 selected={selectedTab}
                 onChangeTab={(key: string) => setSelectedTab(key)}
                 tabs={tabs}
-                isDisable={!currentTask?.produced_text_production ? true : false}
                 notReadTodos={currentTask?.n_not_read_todos}
               />
             </>
@@ -364,7 +382,7 @@ const DraftDetail = () => {
       {chatIsVisible ?
         (<div className="sticky top-0 left-0 h-[calc(100vh-72px)] lg:h-screen w-[345px] text-white">
           <Chat />
-      </div>) : null}
+        </div>) : null}
     </div>
   );
 };

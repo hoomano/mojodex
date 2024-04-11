@@ -102,8 +102,8 @@ export interface UserTaskExecution {
   step_executions: UserTaskExecutionStepExecution[];
 }
 
-export interface EditerDraft {
+export interface EditerProducedText {
   text: string;
   title: string;
-  textPk: number | null;
+  producedTextPk: number | null;
 }

@@ -5,6 +5,7 @@ import { getExecuteTaskById } from "services/tasks";
 const useGetExecuteTaskById = (taskId?: number | null, options: any = {}) =>
   useQuery([cachedAPIName.GET_EXECUTE_TASK_BY_ID, taskId], getExecuteTaskById, {
     ...options,
+    cacheTime: 0,
   });
 
 export default useGetExecuteTaskById;

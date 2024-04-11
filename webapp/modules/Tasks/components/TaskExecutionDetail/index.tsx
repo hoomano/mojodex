@@ -103,7 +103,7 @@ const DraftDetail = () => {
 
     let processTab = {
       key: "process",
-      title: `Process`,
+      title: `${t("userTaskExecution.processTab.title")}`,
       component: (
         <StepProcessDetail stepExecutions={workflowStepExecutions!}
           onInvalidate={() => setChatIsVisible(true)}
@@ -183,7 +183,6 @@ const DraftDetail = () => {
     const sessionId = currentTask?.session_id;
 
     socket.on(socketEvents.CONNECT, () => {
-      console.log("🟢 TASK EXECUTION DETAIL Connected to socket");
       socket.emit(socketEvents.START_SESSION, {
         session_id: sessionId,
         version: appVersion,
@@ -239,7 +238,6 @@ const DraftDetail = () => {
     });
 
     socket.on(socketEvents.WORKFLOW_STEP_EXECUTION_STARTED, (msg) => {
-      console.log("🔵 STEP PROCESS DETAIL Workflow step execution started", msg);
 
       const stepExecution: UserTaskExecutionStepExecution = {
         user_workflow_step_execution_pk: msg.user_workflow_step_execution_pk,
@@ -274,7 +272,6 @@ const DraftDetail = () => {
     });
 
     socket.on(socketEvents.WORKFLOW_STEP_EXECUTION_ENDED, (msg) => {
-      console.log("🔵 STEP PROCESS DETAIL Workflow step execution ended", msg);
 
       const stepExecution: UserTaskExecutionStepExecution = {
         user_workflow_step_execution_pk: msg.user_workflow_step_execution_pk,
@@ -306,7 +303,6 @@ const DraftDetail = () => {
     });
 
     socket.on(socketEvents.WORKFOW_STEP_EXECUTION_INVALIDATED, (msg) => {
-      console.log("🔵 STEP PROCESS DETAIL Workflow step execution invalidated", msg);
 
       setWorkflowStepExecutions((prev: UserTaskExecutionStepExecution[]) => {
         // find the step_execution with the same user_workflow_step_execution_pk
@@ -324,7 +320,6 @@ const DraftDetail = () => {
     });
 
     socket.on(socketEvents.WORKFLOW_EXECUTION_PRODUCED_TEXT, (msg) => {
-      console.log("🔵 STEP PROCESS DETAIL Workflow execution produced text", msg);
 
       setEditorDetails({
         text: msg.produced_text,

@@ -9,6 +9,7 @@ import useOnStepExecutionRelaunch from "modules/Tasks/hooks/useOnStepExecutionRe
 
 import { CheckCircleIcon, ExclamationCircleIcon } from '@heroicons/react/24/solid'
 import BeatLoader from "react-spinners/BeatLoader";
+import { useTranslation } from "next-i18next";
 
 
 function classNames(...classes: string[]) {
@@ -28,6 +29,7 @@ const StepProcessDetail: React.FC<StepProcessDetailProps> = ({
   onValidate,
   onStepRelaunched
 }) => {
+  const { t } = useTranslation('dynamic');
   const onValidateStepExecution = useOnStepExecutionValidate();
   const onInvalidateStepExecution = useOnStepExecutionInvalidate();
   const onStepExecutionRelaunch = useOnStepExecutionRelaunch();
@@ -145,7 +147,7 @@ const StepProcessDetail: React.FC<StepProcessDetailProps> = ({
                     {
                       Object.entries(stepItem.parameter).map(([key, value]) => (
                         <p className="flex-auto text-xs leading-5 text-gray-500 italic">
-                          <span className="font-medium text-gray-400">Parameters:</span><br />
+                          <span className="font-medium text-gray-400">{t("userTaskExecution.processTab.stepExecutionParameters")}:</span><br />
                           {key}: {value?.toString()}
                         </p>
                       ))
@@ -157,12 +159,12 @@ const StepProcessDetail: React.FC<StepProcessDetailProps> = ({
                             <div className="w-full border-t border-gray-300" />
                           </div>
                           <div className="relative flex justify-center">
-                            <span className="bg-white px-2 text-xs text-gray-400">Results</span>
+                            <span className="bg-white px-2 text-xs text-gray-400">{t("userTaskExecution.processTab.stepExecutionResults")}</span>
                           </div>
                         </div> : (stepItem.error_status === null ? <BeatLoader color="#3763E7" /> :
                           <div className="relative">
-                            <p className="text-primary-main text-sm leading-5">Oops. I couldn't finish.</p>
-                            <p className="text-gray-dark text-sm leading-5">You can try to relaunch the step or contact support.</p>
+                            <p className="text-primary-main text-sm leading-5"> {t("userTaskExecution.processTab.stepExecutionError")}</p>
+                            <p className="text-gray-dark text-sm leading-5">{t("userTaskExecution.processTab.stepExecutionErrorInstruction")}</p>
                           </div>
                         )
                     }
@@ -184,11 +186,11 @@ const StepProcessDetail: React.FC<StepProcessDetailProps> = ({
                           onClick={() => onReviewStep(stepItem.user_workflow_step_execution_pk)}
                           className="mr-2"
                         >
-                          Review
+                          {t("userTaskExecution.processTab.invalidateButton")}
                         </Button>
 
                         <Button variant="primary" size="middle" onClick={() => onContinueStep(stepItem.user_workflow_step_execution_pk)}>
-                          Validate
+                          {t("userTaskExecution.processTab.validateButton")}
                         </Button>
                       </div> : null
                     }
@@ -200,7 +202,7 @@ const StepProcessDetail: React.FC<StepProcessDetailProps> = ({
                           onClick={() => onRelaunchStep(stepItem.user_workflow_step_execution_pk)}
                           className="mr-2"
                         >
-                          Retry
+                          {t("userTaskExecution.processTab.relaunchButton")}
                         </Button>
                       </div> : null
                     }

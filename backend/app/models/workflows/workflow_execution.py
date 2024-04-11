@@ -1,3 +1,6 @@
+from datetime import datetime
+import requests
+import os
 from app import server_socket, socketio_message_sender
 from models.workflows.step_execution import WorkflowStepExecution
 from models.workflows.workflow import Workflow
@@ -7,6 +10,8 @@ from mojodex_core.entities import MdUserTaskExecution, MdUserTask, MdWorkflowSte
     MdUserWorkflowStepExecution
 from mojodex_core.db import engine, Session
 from typing import List
+
+from mojodex_core.logging_handler import log_error
 
 class WorkflowExecution:
     logger_prefix = "WorkflowExecution :: "
@@ -34,6 +39,10 @@ class WorkflowExecution:
             return db_workflow_execution
         except Exception as e:
             raise Exception(f"_get_db_object :: {e}")
+        
+    @property
+    def title(self):
+        return self.db_object.title
 
     @property
     def _db_validated_step_executions(self):
@@ -128,8 +137,24 @@ class WorkflowExecution:
     def json_inputs(self):
         return self.db_object.json_input_values
 
+    def __give_task_execution_title_and_summary(self, user_task_execution_pk):
+        try:
+            # call background backend /end_user_task_execution to update user task execution title and summary
+            uri = f"{os.environ['BACKGROUND_BACKEND_URI']}/user_task_execution_title_and_summary"
+            pload = {'datetime': datetime.now().isoformat(),
+                     'user_task_execution_pk': user_task_execution_pk}
+            internal_request = requests.post(uri, json=pload)
+            if internal_request.status_code != 200:
+                log_error(
+                    f"Error while calling background user_task_execution_title_and_summary : {internal_request.json()}")
+        except Exception as e:
+            print(f"🔴 __give_title_and_summary_task_execution :: {e}")
+
     def run(self):
         try:
+            if not self.title:
+                server_socket.start_background_task(self.__give_task_execution_title_and_summary,
+                                                    self.db_object.user_task_execution_pk)
             if not self._get_next_step_execution_to_run():
                 self.end_workflow_execution()
                 return

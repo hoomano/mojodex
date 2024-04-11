@@ -5,9 +5,9 @@ import { useState, useEffect } from "react";
 import Button from "components/Button";
 import useOnStepExecutionValidate from "modules/Tasks/hooks/useOnStepExecutionValidate";
 import useOnStepExecutionInvalidate from "modules/Tasks/hooks/useOnStepExecutionInvalidate";
+import useOnStepExecutionRelaunch from "modules/Tasks/hooks/useOnStepExecutionRelaunch";
 
-
-import { CheckCircleIcon } from '@heroicons/react/24/solid'
+import { CheckCircleIcon, ExclamationCircleIcon } from '@heroicons/react/24/solid'
 import BeatLoader from "react-spinners/BeatLoader";
 
 
@@ -19,15 +19,18 @@ interface StepProcessDetailProps {
   stepExecutions: UserTaskExecutionStepExecution[];
   onInvalidate: any;
   onValidate: any;
+  onStepRelaunched: any;
 }
 
 const StepProcessDetail: React.FC<StepProcessDetailProps> = ({
   stepExecutions,
   onInvalidate,
   onValidate,
+  onStepRelaunched
 }) => {
   const onValidateStepExecution = useOnStepExecutionValidate();
   const onInvalidateStepExecution = useOnStepExecutionInvalidate();
+  const onStepExecutionRelaunch = useOnStepExecutionRelaunch();
 
   const calculateTimeAgo = (creationDate: string) => {
     const providedDate: any = new Date(creationDate);
@@ -61,13 +64,31 @@ const StepProcessDetail: React.FC<StepProcessDetailProps> = ({
     return time_ago;
   };
 
-  const onUndoStep = () => {
-    //event.stopPropagation();
-    onInvalidate();
+  const onReviewStep = (user_workflow_step_execution_pk: number) => {
+    onInvalidateStepExecution.mutate(user_workflow_step_execution_pk, {
+      onSuccess: () => {
+        onInvalidate();
+      },
+      onError: (error) => {
+        console.log("Error invalidating step", error);
+      }
+    }
+    );
+  };
+
+  const onRelaunchStep = (user_workflow_step_execution_pk: number) => {
+    onStepExecutionRelaunch.mutate(user_workflow_step_execution_pk, {
+      onSuccess: () => {
+        onStepRelaunched(user_workflow_step_execution_pk);
+      },
+      onError: (error) => {
+        console.log("Error relaunching step", error);
+      }
+    }
+    );
   };
 
   const onContinueStep = (user_workflow_step_execution_pk: number) => {
-    //event.stopPropagation();
     onValidateStepExecution.mutate(user_workflow_step_execution_pk, {
       onSuccess: () => {
         onValidate(user_workflow_step_execution_pk);
@@ -104,6 +125,8 @@ const StepProcessDetail: React.FC<StepProcessDetailProps> = ({
                 <div className="relative h-6 w-6 flex-none items-center justify-center bg-white">
                   {stepItem.validated === true ? (
                     <CheckCircleIcon className="h-6 w-6 text-primary-main" aria-hidden="true" />
+                  ) : stepItem.error_status != null ? (
+                    <ExclamationCircleIcon className="h-6 w-6 text-red-500" aria-hidden="true" />
                   ) : (
                     <div className="mt-1.5 ml-2 h-1.5 w-1.5 rounded-full bg-gray-100 ring-1 ring-gray-300" />
                   )}
@@ -111,7 +134,7 @@ const StepProcessDetail: React.FC<StepProcessDetailProps> = ({
                 <div className="flex-col pl-3 w-full">
                   <div className="flex justify-between gap-x-4">
                     <div className="py-0.5 text-sm leading-5 text-gray-500">
-                     {stepItem.step_name_for_user}: <span className="font-medium text-gray-900">{stepItem.step_definition_for_user}</span>
+                      {stepItem.step_name_for_user}: <span className="font-medium text-gray-900">{stepItem.step_definition_for_user}</span>
                     </div>
                     <time dateTime={stepItem.creation_date} className="flex-none py-0.5 text-xs leading-5 text-gray-500">
                       {calculateTimeAgo(stepItem.creation_date)}
@@ -136,7 +159,12 @@ const StepProcessDetail: React.FC<StepProcessDetailProps> = ({
                           <div className="relative flex justify-center">
                             <span className="bg-white px-2 text-xs text-gray-400">Results</span>
                           </div>
-                        </div> : <BeatLoader color="#3763E7" />
+                        </div> : (stepItem.error_status === null ? <BeatLoader color="#3763E7" /> :
+                          <div className="relative">
+                            <p className="text-primary-main text-sm leading-5">Oops. I couldn't finish.</p>
+                            <p className="text-gray-dark text-sm leading-5">You can try to relaunch the step or contact support.</p>
+                          </div>
+                        )
                     }
                     {
                       // we want to iterate on each result that is a JSON object and display key value pairs
@@ -153,7 +181,7 @@ const StepProcessDetail: React.FC<StepProcessDetailProps> = ({
                         <Button
                           variant="outline"
                           size="middle"
-                          onClick={onUndoStep}
+                          onClick={() => onReviewStep(stepItem.user_workflow_step_execution_pk)}
                           className="mr-2"
                         >
                           Review
@@ -161,6 +189,18 @@ const StepProcessDetail: React.FC<StepProcessDetailProps> = ({
 
                         <Button variant="primary" size="middle" onClick={() => onContinueStep(stepItem.user_workflow_step_execution_pk)}>
                           Validate
+                        </Button>
+                      </div> : null
+                    }
+                    {stepItem.error_status != null ?
+                      <div className="text-end pt-2">
+                        <Button
+                          variant="outline"
+                          size="middle"
+                          onClick={() => onRelaunchStep(stepItem.user_workflow_step_execution_pk)}
+                          className="mr-2"
+                        >
+                          Retry
                         </Button>
                       </div> : null
                     }

@@ -102,3 +102,8 @@ export const invalidateUserTaskExecutionStepExecution = (stepExecutionPk: number
     user_workflow_step_execution_pk: stepExecutionPk,
     validated: false
   });
+
+export const relaunchStepExecution = (stepExecutionPk: number) =>
+  axiosClient.put(apiRoutes.userWorkflowStepExecution, {
+    user_workflow_step_execution_pk: stepExecutionPk,
+  });

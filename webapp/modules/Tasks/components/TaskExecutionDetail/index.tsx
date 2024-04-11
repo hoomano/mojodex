@@ -105,7 +105,11 @@ const DraftDetail = () => {
       key: "process",
       title: `Process`,
       component: (
-        <StepProcessDetail stepExecutions={workflowStepExecutions!} onInvalidate={() => setChatIsVisible(true)} onValidate={(stepExecutionPk: number) => onStepExecutionValidated(stepExecutionPk)} />
+        <StepProcessDetail stepExecutions={workflowStepExecutions!}
+          onInvalidate={() => setChatIsVisible(true)}
+          onValidate={(stepExecutionPk: number) => onStepExecutionValidated(stepExecutionPk)}
+          onStepRelaunched={(stepExecutionPk: number) => onStepRelaunched(stepExecutionPk)}
+          />
       ),
       disabled: false
     };
@@ -245,7 +249,8 @@ const DraftDetail = () => {
         creation_date: msg.creation_date,
         validated: msg.validated,
         parameter: msg.parameter,
-        result: msg.result
+        result: msg.result,
+        error_status: msg.error_status
       }
 
 
@@ -279,7 +284,8 @@ const DraftDetail = () => {
         creation_date: msg.creation_date,
         validated: msg.validated,
         parameter: msg.parameter,
-        result: msg.result
+        result: msg.result,
+        error_status: msg.error_status
       }
       setWorkflowStepExecutions((prev: UserTaskExecutionStepExecution[]) => {
         // find the step_execution with the same user_workflow_step_execution_pk
@@ -343,11 +349,21 @@ const DraftDetail = () => {
 
   }
 
+  const onStepRelaunched = (user_workflow_step_execution_pk: number) => {
+    // find the step_execution with the same user_workflow_step_execution_pk and remove it
+    const stepExecutionIndex = workflowStepExecutions?.findIndex((step) => step.user_workflow_step_execution_pk === user_workflow_step_execution_pk);
+    if (stepExecutionIndex !== -1) {
+      // if found, delete the step_execution from the list
+      const newStepExecutions = [...workflowStepExecutions];
+      newStepExecutions.splice(stepExecutionIndex, 1);
+      setWorkflowStepExecutions(newStepExecutions);
+    }
+  }
+
   return (
     <div className="flex relative">
       <div className="flex-1 p-8 lg:p-16 h-[calc(100vh-72px)] lg:h-screen overflow-auto">
-        {/*currentTask!.task_type === "workflow" ? <StepProcessDetail stepExecutions={workflowStepExecutions!} onInvalidate={() => setChatIsVisible(true)}   onValidate={(stepExecutionPk: number) => onStepExecutionValidated(stepExecutionPk)}  /> : null*/}
-        {/*currentTask!.task_type === "workflow" ? null :*/
+       {
           (currentTask!.task_type !== "workflow" && !editorDetails?.text ? (
             <TaskLoader />
           ) : (

@@ -1308,7 +1308,8 @@ CREATE TABLE public.md_user_workflow_step_execution (
     parameter json NOT NULL,
     result json,
     validated boolean not null default false,
-    learned_instruction text
+    learned_instruction text,
+    error_status json
 );
 
 

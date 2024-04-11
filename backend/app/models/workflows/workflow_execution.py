@@ -42,6 +42,7 @@ class WorkflowExecution:
                 .filter(
                 MdUserWorkflowStepExecution.user_task_execution_fk == self.db_object.user_task_execution_pk) \
                 .filter(MdUserWorkflowStepExecution.validated == True) \
+                .order_by(MdUserWorkflowStepExecution.creation_date.asc()) \
                 .all()
         except Exception as e:
             raise Exception(f"_db_step_executions :: {e}")

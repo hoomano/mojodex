@@ -12,7 +12,6 @@ class WorkflowAssistantResponseGenerator(TaskEnabledAssistantResponseGenerator):
     prompt_template_path = "/data/prompts/workflows/run.txt"
     user_instruction_start_tag, user_instruction_end_tag = "<user_instruction>", "</user_instruction>"
     ask_for_clarification_start_tag, ask_for_clarification_end_tag = "<ask_for_clarification>", "</ask_for_clarification>"
-    inform_user_start_tag, inform_user_end_tag = "<inform_user>", "</inform_user>"
     no_go_explanation_start_tag, no_go_explanation_end_tag = "<no_go_explanation>", "</no_go_explanation>"
 
     def __init__(self, use_message_placeholder, tag_proper_nouns, mojo_message_token_stream_callback, user, session_id, user_messages_are_audio, running_user_workflow_execution_pk):
@@ -57,12 +56,7 @@ class WorkflowAssistantResponseGenerator(TaskEnabledAssistantResponseGenerator):
                                                         WorkflowAssistantResponseGenerator.user_instruction_end_tag)
                 self.context.state.running_user_workflow_execution.invalidate_current_step(instruction)
                 server_socket.start_background_task(self.context.state.running_user_workflow_execution.run)
-                if WorkflowAssistantResponseGenerator.inform_user_start_tag in response:
-                    return {"text": AssistantMessageGenerator.remove_tags_from_text(response, WorkflowAssistantResponseGenerator.inform_user_start_tag,
-                                                        WorkflowAssistantResponseGenerator.inform_user_end_tag), 
-                                                        "text_with_tags": response}
-                else:
-                    return {"text": "Ok", "text_with_tags": response}
+                return None
             
             elif WorkflowAssistantResponseGenerator.no_go_explanation_start_tag in response:
                 return {"text": AssistantMessageGenerator.remove_tags_from_text(response, WorkflowAssistantResponseGenerator.no_go_explanation_start_tag,
@@ -96,9 +90,6 @@ class WorkflowAssistantResponseGenerator(TaskEnabledAssistantResponseGenerator):
         if WorkflowAssistantResponseGenerator.ask_for_clarification_start_tag in partial_text:
             text = AssistantMessageGenerator.remove_tags_from_text(partial_text, WorkflowAssistantResponseGenerator.ask_for_clarification_start_tag,
                                                         WorkflowAssistantResponseGenerator.ask_for_clarification_end_tag)
-        elif WorkflowAssistantResponseGenerator.inform_user_start_tag in partial_text:
-            text = AssistantMessageGenerator.remove_tags_from_text(partial_text, WorkflowAssistantResponseGenerator.inform_user_start_tag,
-                                                        WorkflowAssistantResponseGenerator.inform_user_end_tag)
         elif WorkflowAssistantResponseGenerator.no_go_explanation_start_tag in partial_text:
             text = AssistantMessageGenerator.remove_tags_from_text(partial_text, WorkflowAssistantResponseGenerator.no_go_explanation_start_tag,
                                                         WorkflowAssistantResponseGenerator.no_go_explanation_end_tag)

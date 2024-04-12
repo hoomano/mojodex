@@ -1,7 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
 import { updateTaskMessageFormat } from "helpers/method";
 import ChatContext from "modules/Chat/helpers/ChatContext";
-import { ChatContextType, ChatStateType } from "modules/Chat/interface/context";
+import { ChatContextType, ChatStateType, ChatUsedFrom } from "modules/Chat/interface/context";
 import { useContext, useEffect } from "react";
 import { getMessageHistory } from "services/tasks";
 
@@ -25,7 +25,7 @@ const useGetMessageHistory = () => {
 
           let buildChatState: ChatStateType = {
             messages: [...formattedOldMessages],
-            inputDisabled: !formattedOldMessages.length,
+            inputDisabled: !formattedOldMessages.length && chatUsedFrom !== ChatUsedFrom.Workflow, // todo: only if current task is not a workflow
           };
 
           if (formattedOldMessages.length) {

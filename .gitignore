@@ -18,3 +18,5 @@ venv/
 *.egg-info
 
 workbook.ipynb
+node_modules
+.next

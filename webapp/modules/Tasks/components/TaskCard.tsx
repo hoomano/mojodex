@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { TaskType } from "../interface";
+import { UserTaskExecution } from "../interface";
 import useDeleteUserTaskExecution from "../hooks/useDeleteUserTaskExecution";
 import useAlert from "helpers/hooks/useAlert";
 import { invalidateQuery } from "services/config/queryClient";
@@ -15,8 +15,9 @@ type Props = {
   icon?: string;
   onClick?: () => void;
   enabled?: boolean;
-  task?: TaskType;
+  task?: UserTaskExecution;
   isListView?: boolean;
+  task_type: string;
 };
 
 const TaskCard = ({
@@ -28,6 +29,7 @@ const TaskCard = ({
   enabled=true,
   task,
   isListView,
+  task_type,
 }: Props) => {
   let containerClassName =
     "cursor-pointer rounded border p-[20px] border-gray-light group relative bg-white focus-within:ring-2 focus-within:ring-inset focus-within:ring-indigo-500 w-full max-w-[290px]";

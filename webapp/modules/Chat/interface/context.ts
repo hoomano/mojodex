@@ -3,6 +3,7 @@
 export enum ChatUsedFrom {
   Chat = "Chat",
   Task = "Task",
+  Workflow = "Workflow"
 }
 
 export interface ChatStateType {

@@ -15,8 +15,8 @@ import { useRouter } from "next/router";
 import { invalidateQuery } from "services/config/queryClient";
 import cachedAPIName from "helpers/constants/cachedAPIName";
 import UpdatePlugin from "./UpdatePlugin";
-import useDeleteDraft from "modules/Drafts/hooks/useDeleteDraft";
-import useSaveDraft from "modules/Drafts/hooks/useSaveDraft";
+import useDeleteProducedText from "modules/ProducedTexts/hooks/useDeleteProducedText";
+import useSaveDraft from "modules/ProducedTexts/hooks/useSaveProducedText";
 import useOnTaskComplete from "modules/Tasks/hooks/useOnTaskComplete";
 
 type Props = {
@@ -42,7 +42,7 @@ const DocumentDrafting = ({
     "bg-indigo-500 hover:bg-indigo-300"
   );
 
-  const deleteDraft = useDeleteDraft();
+  const deleteDraft = useDeleteProducedText();
   const saveDraft = useSaveDraft();
   const onTaskComplete = useOnTaskComplete();
 
@@ -71,7 +71,7 @@ const DocumentDrafting = ({
         onSuccess: () => {
           callback && callback()
           router.push("/drafts");
-          invalidateQuery([cachedAPIName.DRAFTS]);
+          invalidateQuery([cachedAPIName.PRODUCED_TEXT]);
         },
       });
     }
@@ -82,7 +82,7 @@ const DocumentDrafting = ({
       deleteDraft.mutate(task.textPk, {
         onSuccess: () => {
           router.push("/drafts");
-          invalidateQuery([cachedAPIName.DRAFTS]);
+          invalidateQuery([cachedAPIName.PRODUCED_TEXT]);
         },
       });
     }
@@ -158,7 +158,7 @@ const DocumentDrafting = ({
         {isTask && (
           <div className="absolute right-7 top-3">
             {isLoading ? (
-              <BeatLoader color="#6366F1" />
+              <BeatLoader color="#3763E7" />
             ) : (
               <button
                 className={`${doneButtonColor} w-24 h-10 rounded-lg text-white hover:scale-105`}

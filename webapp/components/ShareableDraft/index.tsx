@@ -62,7 +62,7 @@ const ShareableDraft = ({ message, isMobile }: ShareableDraftType) => {
         </div>
         <div className="flex-none mt-1 mr-1">
           {!isMobile ? (
-            <ToolTip tooltip={copied ? "copied!\nenjoy the paste 🎊" : "copy"}>
+            <ToolTip tooltip={copied ? "copied!" : "copy"}>
               {copied ? (
                 <FaCheck
                   className="text-gray-500 hover:text-white"

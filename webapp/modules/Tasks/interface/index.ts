@@ -5,6 +5,25 @@ export interface UserTask {
   task_description: string;
   task_icon: string;
   enabled: boolean;
+  task_type: string;
+  steps: UserTaskStep[];
+}
+
+export interface UserTaskStep {
+  workflow_step_pk: number;
+  step_name_for_user: string;
+  step_definition_for_user: string;
+}
+
+export interface UserTaskExecutionStepExecution {
+  workflow_step_pk: number;
+  step_name_for_user: string;
+  step_definition_for_user: string;
+  creation_date: string;
+  user_workflow_step_execution_pk: number;
+  validated: boolean;
+  parameter: any;
+  result: any[];
 }
 
 export interface UserTasksAPIResponse {
@@ -41,6 +60,7 @@ export interface NewlyCreatedTaskInfo {
   taskExecutionPK: number;
   sessionId: string;
   inputArray: InputArrayProps[];
+  taskType: string;
 }
 
 export interface ExecuteTaskPayload {
@@ -60,7 +80,7 @@ export interface TaskDonePayload {
   user_task_execution_pk: number;
 }
 
-export interface TaskType {
+export interface UserTaskExecution {
   end_date: string;
   n_processes: number;
   summary: string;
@@ -71,12 +91,15 @@ export interface TaskType {
   produced_text_title: string;
   produced_text_production: string;
   task_name: string;
+  task_type: string;
   produced_text_pk: number;
   session_id: string;
   start_date: string;
   working_on_todos: boolean;
   n_todos: number;
   n_not_read_todos: number;
+  steps: any;
+  step_executions: UserTaskExecutionStepExecution[];
 }
 
 export interface EditerDraft {

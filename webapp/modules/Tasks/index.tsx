@@ -16,7 +16,7 @@ import TaskDoneModal from "./components/TaskDoneModal";
 import { debounce } from "helpers/method";
 import { useTranslation } from "react-i18next";
 import { useDebounce } from "use-debounce";
-import { TaskType, UserTask } from "./interface";
+import { UserTaskExecution, UserTask } from "./interface";
 
 const Tasks = () => {
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
@@ -24,7 +24,7 @@ const Tasks = () => {
   const [userTasksSuggestions, setUserTasksSuggestions] = useState<number[]>(
     []
   );
-  const [userTaskExecutions, setUserTaskExecutions] = useState<TaskType[]>([]);
+  const [userTaskExecutions, setUserTaskExecutions] = useState<UserTaskExecution[]>([]);
   const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
   const [isListView, setIsListView] = useState(false);
   const { data: taskList } = useGetAllTasks();

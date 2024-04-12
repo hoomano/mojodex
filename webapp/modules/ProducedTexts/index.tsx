@@ -3,7 +3,7 @@ import moment from "moment";
 import { useRouter } from "next/router";
 import DraftCard from "components/DraftCard";
 import { BeatLoader } from "react-spinners";
-import useGetAllDrafts from "./hooks/useGetAllDrafts";
+import useGetAllProducedTexts from "./hooks/useGetAllProducedTexts";
 import { debounce, encryptId } from "helpers/method";
 import globalContext, { GlobalContextType } from "helpers/GlobalContext";
 
@@ -19,7 +19,7 @@ const Drafts = () => {
     data: draftResponse,
     isLoading,
     isFetching,
-  } = useGetAllDrafts();
+  } = useGetAllProducedTexts();
 
   const drafts =
     draftResponse?.pages?.flatMap((data) => data.produced_texts) || [];
@@ -43,7 +43,7 @@ const Drafts = () => {
     >
       {isLoading ? (
         <div className="flex justify-center items-center h-screen w-full">
-          <BeatLoader color="#6366F1" />
+          <BeatLoader color="#3763E7" />
         </div>
       ) : (
         <ul role="list" className="grid-cols-1 mx-3 lg:mx-40  py-3 lg:py-10">

@@ -51,11 +51,11 @@ const ChatProvider = ({
 }: {
   chatUsedFrom?: ChatUsedFrom;
   children: React.ReactNode;
-  sessionId?: string | null | undefined;
+    sessionId?: string | null | undefined;
 }) => {
   const [chatState, dispatch] = useReducer(reducer, {
     ...initialState,
-    chatUsedFrom,
+    chatUsedFrom
   });
 
   useEffect(() => {

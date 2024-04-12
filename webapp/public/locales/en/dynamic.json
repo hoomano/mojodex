@@ -81,6 +81,9 @@
     "title": "🎯\nWhat would you like to do today?",
     "selectBusinessTasks": "Select one of the business tasks you would like to achieve with Mojo"
   },
+  "startUserTaskStepExecution":{
+    "stepsIntroduction": "The following steps will be executed for this task:"
+  },
   "resources": {
     "resourcesTitle": "Resources",
     "addButton": "Add",

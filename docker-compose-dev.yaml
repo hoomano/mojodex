@@ -1,0 +1,86 @@
+version: '3'
+
+services:
+
+  mojodex-db:
+    build: 
+      context: ./pgsql
+    image: mojodex/db
+    container_name: mojodex_db
+    volumes:
+      - ./data/postgresql:/var/lib/postgresql/data 
+    env_file:
+      - .env
+    ports:
+      - "5432:5432"
+
+  mojodex-backend:
+    build: 
+      context: .
+      dockerfile: ./backend/Dockerfile
+    image: mojodex/backend
+    container_name: mojodex_backend
+    env_file:
+      - .env
+    ports:
+      - "5001:5000"
+    volumes:
+      - ./data:/data
+    depends_on:
+      - mojodex-db
+
+  mojodex-scheduler:
+    build: 
+      context: ./scheduler
+    image: mojodex/scheduler
+    container_name: mojodex_scheduler
+    env_file:
+      - .env
+    volumes:
+      - ./data:/data
+    depends_on:
+      - mojodex-backend
+
+  mojodex-background:
+    build: 
+      context: .
+      dockerfile: ./background/Dockerfile
+    image: mojodex/background
+    container_name: mojodex_background
+    env_file:
+      - .env
+    ports:
+      - "5002:5000"
+    volumes:
+      - ./data:/data
+    depends_on:
+      - mojodex-db
+
+  mojodex-webapp-dev:
+    container_name: mojodex_webapp_dev
+    build:
+      context: ./webapp
+      dockerfile: Dockerfile.dev
+      args:
+          - SOCKETIO_URI=http://localhost:5001 # use defaut for local execution
+          - TERMS_URI= # optional
+          - PRIVACY_URI= # optional
+          - CHROME_EXTENSION_ID= # optional
+    env_file:
+      - .env
+    ports:
+      - "3000:3000"
+    depends_on:
+      - mojodex-backend
+    volumes:
+      - ./.next:/app/.next
+      - ./webapp:/app
+      - ./node_modules:/app/node_modules
+
+  mojodex-ollama:
+    image: ollama/ollama
+    container_name: mojodex_ollama
+    volumes:
+      - ~/.ollama:/root/.ollama
+    ports:
+      - 11434:11434

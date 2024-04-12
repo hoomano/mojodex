@@ -10,6 +10,8 @@ import PrefSwitchGroup from "./PrefSwitchGroup";
 import { decryptId, encryptId } from "helpers/method";
 import Button from "components/Button";
 import useGetTask from "modules/Tasks/hooks/useGetTask";
+import { useTranslation } from "react-i18next";
+import usePostExecuteTask from "modules/Tasks/hooks/usePostExecuteTask";
 
 const CreateTaskForm = () => {
   const router = useRouter();
@@ -28,25 +30,36 @@ const CreateTaskForm = () => {
   const sessionId = taskConfigDetails?.session_id;
   const taskExecutionPK = taskConfigDetails?.user_task_execution_pk;
   const tasksForm = taskConfigDetails?.json_input || [];
+  const taskType = task?.task_type;
+
+  const { t } = useTranslation("dynamic");
+
+  const { mutate: executeTaskMutation, isLoading: isPostExecuteTaskLoading } =
+    usePostExecuteTask();
 
   const generateAnswerHandler = () => {
-    if (inputArray.length == tasksForm.length && taskExecutionPK && sessionId) {
-      setGlobalState({
-        newlyCreatedTaskInfo: {
-          inputArray,
-          sessionId,
-          taskExecutionPK,
+    if (inputArray.length == tasksForm.length && taskExecutionPK && sessionId && taskType) {
+      executeTaskMutation(
+        {
+          datetime: new Date().toISOString(),
+          user_task_execution_pk: taskExecutionPK,
+          inputs: inputArray,
         },
-      });
-
-      router.push(
-        `/tasks/${encryptId(taskExecutionPK)}?taskId=${query.taskId}`
+        {
+          onSuccess: () => {
+            router.push(
+              `/tasks/${encryptId(taskExecutionPK)}`
+            );
+          },
+        }
       );
+      
     } else {
       alert("Field missing");
     }
   };
 
+  let counter = 1;
   return (
     <div className="flex">
       <div className="flex-1">
@@ -86,6 +99,25 @@ const CreateTaskForm = () => {
                 )}
               </div>
             </div>
+
+            {task?.steps?.length ?? 0 > 0 ?
+              (<div className="py-6">
+                <p>
+                  <div className="text-h3">{t("startUserTaskStepExecution.stepsIntroduction")}</div>
+                </p>
+
+                {!isLoading && taskConfigDetails ?
+                  task?.steps.map((step) => (
+                    <p className="text-h5 text-gray-lighter pt-1" key={"workflow_step_number_".concat(String(counter))}>
+                      {counter++}. {step.step_definition_for_user}
+                    </p>
+                  )) : (
+                    <p className="text-h5 text-gray-lighter">Loading...</p>
+                  )}
+              </div>) : null
+
+            }
+
 
             <div className="text-center">
               <Button

@@ -731,8 +731,8 @@ class MdUserWorkflowStepExecution(Base):
     workflow_step_fk = Column(Integer, nullable=False)
     creation_date = Column(DateTime, nullable=False, server_default=text('now()'))
     parameter = Column(JSON, nullable=False)
-    validated = Column(Boolean, nullable=False, server_default=text('false'))
     result = Column(JSON)
+    validated = Column(Boolean)
     learned_instruction = Column(Text)
 
     md_user_task_execution = relationship('MdUserTaskExecution', back_populates='md_user_workflow_step_execution')

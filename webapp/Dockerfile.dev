@@ -1,0 +1,42 @@
+# from https://github.com/vercel/next.js/blob/canary/examples/with-docker/Dockerfile
+FROM node:20-alpine AS base
+
+# Install dependencies only when needed
+FROM base AS deps
+# Check https://github.com/nodejs/docker-node/tree/b4117f9333da4138b03a546ec926ef50a31506c3#nodealpine to understand why libc6-compat might be needed.
+RUN apk add --no-cache libc6-compat
+WORKDIR /app
+
+
+# To pass client-side environment variables to Next.js, we have to set them with 'NEXT_PUBLIC_' prefix
+# Set the environment variable to the socket.io server
+ARG SOCKETIO_URI
+ENV NEXT_PUBLIC_SOCKETIO_URI=$SOCKETIO_URI
+
+# Optional: Chrome Extension ID used to communicate with the extension
+ARG CHROME_EXTENSION_ID
+ENV NEXT_PUBLIC_EDITOR_EXTENSION_ID=$CHROME_EXTENSION_ID
+
+# Optional: Link to the data policys
+ARG PRIVACY_URI
+ENV NEXT_PUBLIC_DATA_POLICY_LINK=$PRIVACY_URI
+
+# Optional: Link to the terms of use
+ARG TERMS_URI
+ENV NEXT_PUBLIC_TERMS_OF_USE_LINK=$TERMS_URI
+
+ENV NODE_ENV development
+
+
+COPY package*.json ./
+RUN npm install
+
+EXPOSE 3000
+
+ENV PORT 3000
+# set hostname to localhost
+ENV HOSTNAME "0.0.0.0"
+
+
+CMD ["npm", "run", "dev"]
+#CMD ["tail", "-f", "/dev/null"]

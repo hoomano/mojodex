@@ -4,7 +4,7 @@ import {
   ExecuteTaskResponse,
   TaskConfigAPIResponse,
   TaskDonePayload,
-  TaskType,
+  UserTaskExecution,
   UserTask,
   UserTasksAPIResponse,
 } from "modules/Tasks/interface";
@@ -46,7 +46,7 @@ export const getUserTaskExecution = ({
   searchFilter,
   userTaskPks,
 }: any): Promise<{
-  user_task_executions: TaskType[];
+  user_task_executions: UserTaskExecution[];
 }> =>
   axiosClient.get(apiRoutes.userTaskExecution, {
     params: {
@@ -57,7 +57,7 @@ export const getUserTaskExecution = ({
     },
   });
 
-export const getExecuteTaskById = ({ queryKey }: any): Promise<TaskType> =>
+export const getExecuteTaskById = ({ queryKey }: any): Promise<UserTaskExecution> =>
   axiosClient.get(apiRoutes.userTaskExecution, {
     params: { user_task_execution_pk: queryKey[1] },
   });
@@ -90,3 +90,15 @@ export const deleteTodo = (todoPk: number) =>
 
 export const onTodoComplete = (payload: TodoCompletePayload) =>
   axiosClient.post(apiRoutes.todos, payload);
+
+export const validateUserTaskExecutionStepExecution = (stepExecutionPk: number) =>
+  axiosClient.post(apiRoutes.userWorkflowStepExecution, {
+    user_workflow_step_execution_pk: stepExecutionPk,
+    validated: true
+  });
+
+export const invalidateUserTaskExecutionStepExecution = (stepExecutionPk: number) =>
+  axiosClient.post(apiRoutes.userWorkflowStepExecution, {
+    user_workflow_step_execution_pk: stepExecutionPk,
+    validated: false
+  });

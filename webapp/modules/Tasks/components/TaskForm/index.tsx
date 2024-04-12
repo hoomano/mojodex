@@ -100,24 +100,6 @@ const CreateTaskForm = () => {
               </div>
             </div>
 
-            {task?.steps?.length ?? 0 > 0 ?
-              (<div className="py-6">
-                <p>
-                  <div className="text-h3">{t("startUserTaskStepExecution.stepsIntroduction")}</div>
-                </p>
-
-                {!isLoading && taskConfigDetails ?
-                  task?.steps.map((step) => (
-                    <p className="text-h5 text-gray-lighter pt-1" key={"workflow_step_number_".concat(String(counter))}>
-                      {counter++}. {step.step_definition_for_user}
-                    </p>
-                  )) : (
-                    <p className="text-h5 text-gray-lighter">Loading...</p>
-                  )}
-              </div>) : null
-
-            }
-
 
             <div className="text-center">
               <Button

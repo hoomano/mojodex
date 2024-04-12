@@ -13,7 +13,7 @@ import useGetExecuteTaskById from "modules/Tasks/hooks/useGetExecuteTaskById";
 import { socketEvents } from "helpers/constants/socket";
 import ChatContext from "modules/Chat/helpers/ChatContext";
 import { ChatContextType } from "modules/Chat/interface/context";
-import Todos from "./Todos";
+import TodosView from "./Todos";
 import { useTranslation } from "react-i18next";
 import StepProcessDetail from "./Workflow/StepProcessDetail";
 import Chat from "modules/Chat";
@@ -91,7 +91,7 @@ const DraftDetail = () => {
       key: "todos",
       title: `${t("userTaskExecution.todosTab.title")}`,
       component: (
-        <Todos
+        <TodosView
           taskExecutionPK={taskExecutionPK as number}
           workingOnTodos={currentTask?.working_on_todos}
           nTodos={currentTask?.n_todos}
@@ -109,7 +109,7 @@ const DraftDetail = () => {
           onInvalidate={() => setChatIsVisible(true)}
           onValidate={(stepExecutionPk: number) => onStepExecutionValidated(stepExecutionPk)}
           onStepRelaunched={(stepExecutionPk: number) => onStepRelaunched(stepExecutionPk)}
-          />
+        />
       ),
       disabled: false
     };
@@ -245,6 +245,7 @@ const DraftDetail = () => {
         step_name_for_user: msg.step_name_for_user,
         step_definition_for_user: msg.step_definition_for_user,
         creation_date: msg.creation_date,
+        user_validation_required: msg.user_validation_required,
         validated: msg.validated,
         parameter: msg.parameter,
         result: msg.result,
@@ -279,6 +280,7 @@ const DraftDetail = () => {
         step_name_for_user: msg.step_name_for_user,
         step_definition_for_user: msg.step_definition_for_user,
         creation_date: msg.creation_date,
+        user_validation_required: msg.user_validation_required,
         validated: msg.validated,
         parameter: msg.parameter,
         result: msg.result,
@@ -358,7 +360,7 @@ const DraftDetail = () => {
   return (
     <div className="flex relative">
       <div className="flex-1 p-8 lg:p-16 h-[calc(100vh-72px)] lg:h-screen overflow-auto">
-       {
+        {
           (currentTask!.task_type !== "workflow" && !editorDetails?.text ? (
             <TaskLoader />
           ) : (

@@ -10,8 +10,8 @@ from mojodex_core.entities import MdUserTaskExecution, MdUserTask, MdWorkflowSte
     MdUserWorkflowStepExecution
 from mojodex_core.db import engine, Session
 from typing import List
-
 from mojodex_core.logging_handler import log_error
+from sqlalchemy import case, and_
 
 class WorkflowExecution:
     logger_prefix = "WorkflowExecution :: "
@@ -25,8 +25,8 @@ class WorkflowExecution:
             self.db_object = self._get_db_object(workflow_execution_pk)
             self.user_id = self._db_user_workflow.user_id
             self.workflow = Workflow(self._db_workflow, self.db_session)
-            self.validated_steps_executions = [WorkflowStepExecution(self.db_session, db_validated_step_execution, self.user_id) for
-                                               db_validated_step_execution in self._db_validated_step_executions]
+            self.past_accepted_steps_executions = [WorkflowStepExecution(self.db_session, db_past_accepted_step_execution, self.user_id) for
+                                                   db_past_accepted_step_execution in self._db_past_accepted_step_executions]
             self._current_step = None
         except Exception as e:
             raise Exception(f"{self.logger_prefix} :: __init__ :: {e}")
@@ -45,14 +45,25 @@ class WorkflowExecution:
         return self.db_object.title
 
     @property
-    def _db_validated_step_executions(self):
+    def _db_past_accepted_step_executions(self):
         try:
             return self.db_session.query(MdUserWorkflowStepExecution) \
+                .join(MdWorkflowStep, MdUserWorkflowStepExecution.workflow_step_fk == MdWorkflowStep.workflow_step_pk) \
                 .filter(
-                MdUserWorkflowStepExecution.user_task_execution_fk == self.db_object.user_task_execution_pk) \
-                .filter(MdUserWorkflowStepExecution.validated == True) \
+                    case(
+                        # When `MdWorkflowStep.user_validation_required` is `True`, we check that `MdUserWorkflowStepExecution.validated` is also `True`
+                        [
+                            (MdWorkflowStep.user_validation_required == True, MdUserWorkflowStepExecution.validated == True),
+                        ],
+                        # if `user_validation_required` is `False`, we don't care about the `validated` status, and the `MdUserWorkflowStepExecution` will be included in the results regardless of its `validated` value.
+                        else_=True
+                    )
+                ) \
+                .filter(MdUserWorkflowStepExecution.user_task_execution_fk == self.db_object.user_task_execution_pk) \
+                .filter(MdUserWorkflowStepExecution.error_status.is_(None)) \
                 .order_by(MdUserWorkflowStepExecution.creation_date.asc()) \
                 .all()
+
         except Exception as e:
             raise Exception(f"_db_step_executions :: {e}")
 
@@ -71,14 +82,12 @@ class WorkflowExecution:
 
     def _get_next_step_execution_to_run(self):
         try:
-            if self._current_step:
-                return self._current_step
-            if not self.validated_steps_executions:  # no step validated yet
+            if not self.past_accepted_steps_executions:  # no step validated yet
                 self._current_step = self._generate_new_step_execution(self.workflow.db_steps[0],
                                                                        self.initial_parameters)  # of first step
                 return self._current_step
-            last_validated_step_execution = self.validated_steps_executions[-1]
-            if len(self.validated_steps_executions) > 1:  # no dependency as it was the first step
+            last_validated_step_execution = self.past_accepted_steps_executions[-1]
+            if len(self.past_accepted_steps_executions) > 1:  # no dependency as it was the first step
                 db_dependency_step = self.db_session.query(MdWorkflowStep) \
                     .join(MdUserTask, MdUserTask.task_fk == MdWorkflowStep.task_fk) \
                     .filter(MdUserTask.user_task_pk == self.db_object.user_task_fk) \
@@ -95,11 +104,21 @@ class WorkflowExecution:
 
                 # load all validated step executions of current step:
                 current_step_executions_count = self.db_session.query(MdUserWorkflowStepExecution) \
+                    .join(MdWorkflowStep, MdUserWorkflowStepExecution.workflow_step_fk == MdWorkflowStep.workflow_step_pk) \
                     .filter(
                     MdUserWorkflowStepExecution.user_task_execution_fk == self.db_object.user_task_execution_pk) \
                     .filter(
                     MdUserWorkflowStepExecution.workflow_step_fk == last_validated_step_execution.workflow_step.workflow_step_pk) \
-                    .filter(MdUserWorkflowStepExecution.validated == True) \
+                    .filter(
+                        case(
+                            # When `MdWorkflowStep.user_validation_required` is `True`, we check that `MdUserWorkflowStepExecution.validated` is also `True`
+                            [
+                                (MdWorkflowStep.user_validation_required == True, MdUserWorkflowStepExecution.validated == True),
+                            ],
+                            # if `user_validation_required` is `False`, we don't care about the `validated` status, and the `MdUserWorkflowStepExecution` will be included in the results regardless of its `validated` value.
+                            else_=True
+                        )) \
+                    .filter(MdUserWorkflowStepExecution.error_status.is_(None)) \
                     .count()
 
                 # have all parameters been executed and validated?
@@ -155,13 +174,18 @@ class WorkflowExecution:
             if not self.title:
                 server_socket.start_background_task(self.__give_task_execution_title_and_summary,
                                                     self.db_object.user_task_execution_pk)
-            if not self._get_next_step_execution_to_run():
+            next_step_execution_to_run = self._get_next_step_execution_to_run()
+            if not next_step_execution_to_run:
                 self.end_workflow_execution()
                 return
-            self._get_next_step_execution_to_run().execute(self.initial_parameters, self._past_validated_steps_results,
+            next_step_execution_to_run.execute(self.initial_parameters, self._past_validated_steps_results,
                                              self.db_object.session_id)
 
-            self._ask_for_validation()
+            self._send_ended_step_event()
+            if not next_step_execution_to_run.workflow_step.user_validation_required and next_step_execution_to_run.error_status is None:
+                # add previous step to past_accepted_steps_executions
+                self.past_accepted_steps_executions.append(next_step_execution_to_run)
+                self.run()
         except Exception as e:
             print(f"🔴 {self.logger_prefix} - run :: {e}")
             socketio_message_sender.send_error(f"Error during workflow run: {e}", self.db_object.session_id,
@@ -190,7 +214,17 @@ class WorkflowExecution:
                 MdUserWorkflowStepExecution.user_task_execution_fk == self.db_object.user_task_execution_pk) \
                 .filter(
                 MdUserWorkflowStepExecution.workflow_step_fk == last_step.workflow_step_pk) \
-                .filter(MdUserWorkflowStepExecution.validated == True) \
+               .filter(
+                    case(
+                        # When `MdWorkflowStep.user_validation_required` is `True`, we check that `MdUserWorkflowStepExecution.validated` is also `True`
+                        [
+                            (MdWorkflowStep.user_validation_required == True, MdUserWorkflowStepExecution.validated == True),
+                        ],
+                        # if `user_validation_required` is `False`, we don't care about the `validated` status, and the `MdUserWorkflowStepExecution` will be included in the results regardless of its `validated` value.
+                        else_=True
+                    )
+                ) \
+                .filter(MdUserWorkflowStepExecution.error_status.is_(None)) \
                 .order_by(MdUserWorkflowStepExecution.creation_date.desc())\
                 .all()
 
@@ -211,17 +245,17 @@ class WorkflowExecution:
                 'step_name': step.name_for_system,
                 'parameter': step.parameter,
                 'result': step.result
-            } for step in self.validated_steps_executions]
+            } for step in self.past_accepted_steps_executions]
         except Exception as e:
             raise Exception(f"_past_validated_steps_results :: {e}")
 
-    def _ask_for_validation(self):
+    def _send_ended_step_event(self):
         try:
             step_execution_json = self._current_step.to_json()
             step_execution_json["session_id"] = self.db_object.session_id
             server_socket.emit('workflow_step_execution_ended', step_execution_json, to=self.db_object.session_id)
         except Exception as e:
-            raise Exception(f"_ask_for_validation :: {e}")
+            raise Exception(f"_send_ended_step_event :: {e}")
 
     def get_step_execution_from_pk(self, step_execution_pk: int) -> WorkflowStepExecution:
         try:
@@ -236,12 +270,12 @@ class WorkflowExecution:
         try:
             step_execution = self.get_step_execution_from_pk(step_execution_pk)
             step_execution.validate()
-            self.validated_steps_executions.append(step_execution)
+            self.past_accepted_steps_executions.append(step_execution)
         except Exception as e:
             raise Exception(f"validate_step_execution :: {e}")
 
     def _find_checkpoint_step(self):
-        for step in reversed(self.validated_steps_executions):
+        for step in reversed(self.past_accepted_steps_executions):
             if step.is_checkpoint:
                 return step
         return None
@@ -270,11 +304,11 @@ class WorkflowExecution:
             # find checkpoint step
             checkpoint_step = self._find_checkpoint_step()
             # for all step in self.validated_steps_executions after checkpoint_step, invalidate them
-            checkpoint_step_index = self.validated_steps_executions.index(checkpoint_step)
-            for validated_step in self.validated_steps_executions[checkpoint_step_index:]:
+            checkpoint_step_index = self.past_accepted_steps_executions.index(checkpoint_step)
+            for validated_step in self.past_accepted_steps_executions[checkpoint_step_index:]:
                 validated_step.invalidate(self.db_object.session_id)
                 # remove from validated_steps_executions
-                self.validated_steps_executions.remove(validated_step)
+                self.past_accepted_steps_executions.remove(validated_step)
             checkpoint_step.learn_instruction(learned_instruction)
         except Exception as e:
             raise Exception(f"invalidate_current_step :: {e}")
@@ -301,12 +335,12 @@ class WorkflowExecution:
     def get_before_checkpoint_validated_steps_executions(self, current_step_in_validation: WorkflowStepExecution) -> List[WorkflowStepExecution]:
         try:
             if current_step_in_validation.workflow_step.is_checkpoint:
-                return self.validated_steps_executions
+                return self.past_accepted_steps_executions
             checkpoint_step = self._find_checkpoint_step()
             if not checkpoint_step:
                 return []
-            checkpoint_step_index = self.validated_steps_executions.index(checkpoint_step)
-            return self.validated_steps_executions[:checkpoint_step_index]
+            checkpoint_step_index = self.past_accepted_steps_executions.index(checkpoint_step)
+            return self.past_accepted_steps_executions[:checkpoint_step_index]
         except Exception as e:
             raise Exception(f"before_checkpoint_steps_executions :: {e}")
 
@@ -316,18 +350,18 @@ class WorkflowExecution:
                 return []
             checkpoint_step = self._find_checkpoint_step()
             if not checkpoint_step:
-                return self.validated_steps_executions
-            checkpoint_step_index = self.validated_steps_executions.index(checkpoint_step)
-            return self.validated_steps_executions[checkpoint_step_index:]
+                return self.past_accepted_steps_executions
+            checkpoint_step_index = self.past_accepted_steps_executions.index(checkpoint_step)
+            return self.past_accepted_steps_executions[checkpoint_step_index:]
         except Exception as e:
             raise Exception(f"after_checkpoint_to_current_steps_executions :: {e}")
 
 
     def get_steps_execution_json(self):
         try:
-            validated_steps_json = [step_execution.to_json() for step_execution in self.validated_steps_executions]
+            validated_steps_json = [step_execution.to_json() for step_execution in self.past_accepted_steps_executions]
             last_step_execution = self._get_last_step_execution()
-            if last_step_execution and last_step_execution.validated is None:
+            if last_step_execution and last_step_execution.validated is None and last_step_execution.workflow_step.user_validation_required:
                 validated_steps_json.append(last_step_execution.to_json())
             return validated_steps_json
         except Exception as e:

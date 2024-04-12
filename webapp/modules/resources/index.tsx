@@ -85,6 +85,7 @@ const Resources = () => {
           handleRefetchOnScrollEnd={handleRefetchOnScrollEnd}
         />
       ),
+      disabled: false,
     },
     {
       key: ResourceTab.LearnedByMojo,
@@ -97,6 +98,7 @@ const Resources = () => {
           handleRefetchOnScrollEnd={handleRefetchOnScrollEnd}
         />
       ),
+      disabled: false,
     },
   ];
 

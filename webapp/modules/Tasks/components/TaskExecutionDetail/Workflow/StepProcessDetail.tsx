@@ -26,7 +26,6 @@ const StepProcessDetail: React.FC<StepProcessDetailProps> = ({
   onInvalidate,
   onValidate,
 }) => {
-
   const onValidateStepExecution = useOnStepExecutionValidate();
   const onInvalidateStepExecution = useOnStepExecutionInvalidate();
 

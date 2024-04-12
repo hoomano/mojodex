@@ -19,7 +19,7 @@ import UpdatePlugin from "./UpdatePlugin";
 import useDeleteProducedText from "modules/ProducedTexts/hooks/useDeleteProducedText";
 import useSaveDraft from "modules/ProducedTexts/hooks/useSaveProducedText";
 // import useOnTaskComplete from "modules/Tasks/hooks/useOnTaskComplete";
-import { EditerDraft } from "modules/Tasks/interface";
+import { EditerProducedText } from "modules/Tasks/interface";
 // import globalContext, { GlobalContextType } from "helpers/GlobalContext";
 import { FaCopy } from "react-icons/fa";
 import ToolTip from "components/Tooltip";
@@ -27,20 +27,16 @@ import { debounce } from "helpers/method";
 
 type Props = {
   userTaskExecutionPk: number | undefined;
-  task: EditerDraft;
+  producedText: EditerProducedText;
   isLoading: boolean;
-  isTask: boolean;
 };
 
 const Answer = ({
   userTaskExecutionPk,
-  task,
+  producedText: producedText,
   isLoading = false,
-  isTask = false,
 }: Props) => {
   const router = useRouter();
-
-  // const { setGlobalState } = useContext(globalContext) as GlobalContextType;
 
   const [text, setText] = useState("");
   const [title, setTitle] = useState("");
@@ -48,12 +44,11 @@ const Answer = ({
 
   const deleteDraft = useDeleteProducedText();
   const saveDraft = useSaveDraft();
-  // const onTaskComplete = useOnTaskComplete();
 
   useEffect(() => {
-    setText(task.text);
-    setTitle(task.title);
-  }, [task]);
+    setText(producedText.text);
+    setTitle(producedText.title);
+  }, [producedText]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -107,7 +102,7 @@ const Answer = ({
         text: string;
       } | null = null
     ) => {
-      if (task?.textPk) {
+      if (producedText?.producedTextPk) {
         const newText = updatedData?.text || text;
         const newTitle = updatedData?.title || title;
 
@@ -115,7 +110,7 @@ const Answer = ({
 
         const payload = {
           datetime: new Date().toISOString(),
-          produced_text_pk: task?.textPk || null,
+          produced_text_pk: producedText?.producedTextPk || null,
           production: newText,
           title: newTitle,
         };
@@ -125,14 +120,14 @@ const Answer = ({
         });
       }
     },
-    [task, title, text, userTaskExecutionPk]
+    [producedText, title, text, userTaskExecutionPk]
   );
 
-  const debouncedSaveDraft = useCallback(debounce(onSaveDraft, 500), [task]);
+  const debouncedSaveDraft = useCallback(debounce(onSaveDraft, 500), [producedText]);
 
   const onDeleteDraft = () => {
-    if (task?.textPk) {
-      deleteDraft.mutate(task.textPk, {
+    if (producedText?.producedTextPk) {
+      deleteDraft.mutate(producedText.producedTextPk, {
         onSuccess: () => {
           router.push("/tasks");
         },
@@ -140,24 +135,8 @@ const Answer = ({
     }
   };
 
-  // const onSaveAndSuggestFollowUp = () => {
-  //   onSaveDraft();
-  //   onTaskComplete.mutate(
-  //     {
-  //       datetime: new Date().toISOString(),
-  //       user_task_execution_pk: userTaskExecutionPk as number,
-  //     },
-  //     {
-  //       onSuccess: () => {
-  //         router.push("/tasks");
-  //         setGlobalState({ showTaskDoneModal: true });
-  //       },
-  //     }
-  //   );
-  // };
-
   const copyProducedTextHandler = () => {
-    navigator.clipboard.writeText(task?.text);
+    navigator.clipboard.writeText(producedText?.text);
     setCopied(true);
   };
 
@@ -191,7 +170,7 @@ const Answer = ({
             <OnChangePlugin onChange={onChangeTitle} />
 
             <UpdatePlugin
-              text={task?.title?.replace(properNounRegex, "$1") || ""}
+              text={producedText?.title?.replace(properNounRegex, "$1") || ""}
             />
           </LexicalComposer>
         </div>
@@ -232,13 +211,13 @@ const Answer = ({
           <OnChangePlugin onChange={onChangeText} />
           <HistoryPlugin />
           <UpdatePlugin
-            text={task?.text?.replace(properNounRegex, "$1") || ""}
+            text={producedText?.text?.replace(properNounRegex, "$1") || ""}
           />
         </LexicalComposer>
       </div>
-      {isTask && (
+      {(
         <div className="mt-5 flex gap-2">
-          {isLoading || !task.title ? (
+          {isLoading || !producedText.producedTextPk ? (
             <Button className="min-w-[100px]" variant="outline" disabled>
               <BeatLoader color="#3763E7" />
             </Button>
@@ -255,9 +234,6 @@ const Answer = ({
                   <FaCopy className="text-gray-dark" /> Copy
                 </Button>
               </ToolTip>
-              {/* <Button onClick={onSaveAndSuggestFollowUp}>
-                Suggest Follow-up
-              </Button> */}
             </>
           )}
         </div>

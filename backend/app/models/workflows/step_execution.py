@@ -153,6 +153,7 @@ class WorkflowStepExecution:
                 "step_name_for_user": self.name_for_user,
                 "step_definition_for_user": self.definition_for_user,
                 "creation_date": self.creation_date.isoformat(),
+                "user_validation_required": self.workflow_step.user_validation_required,
                 "validated": self.validated,
                 "parameter": self.parameter,
                 "result": self.result,

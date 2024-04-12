@@ -68,6 +68,10 @@ class WorkflowStep(ABC):
         return self.db_object.workflow_step_pk
 
     @property
+    def user_validation_required(self) -> bool:
+        return self.db_object.user_validation_required
+
+    @property
     def is_checkpoint(self):
         return True
 

@@ -1331,7 +1331,8 @@ CREATE TABLE public.md_workflow_step (
     workflow_step_pk integer DEFAULT nextval('public.md_workflow_step_seq'::regclass) NOT NULL,
     task_fk integer NOT NULL,
     name_for_system character varying(255) NOT NULL,
-    rank integer NOT NULL
+    rank integer NOT NULL,
+    user_validation_required boolean not null default true
 );
 
 --

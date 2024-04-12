@@ -6,14 +6,8 @@ export interface UserTask {
   task_icon: string;
   enabled: boolean;
   task_type: string;
-  steps: UserTaskStep[];
 }
 
-export interface UserTaskStep {
-  workflow_step_pk: number;
-  step_name_for_user: string;
-  step_definition_for_user: string;
-}
 
 export interface UserTaskExecutionStepExecution {
   workflow_step_pk: number;
@@ -21,6 +15,7 @@ export interface UserTaskExecutionStepExecution {
   step_definition_for_user: string;
   creation_date: string;
   user_workflow_step_execution_pk: number;
+  user_validation_required: boolean;
   validated: boolean;
   parameter: any;
   result: any[];

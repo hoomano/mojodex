@@ -483,6 +483,7 @@ class MdWorkflowStep(Base):
     task_fk = Column(Integer, nullable=False)
     name_for_system = Column(String(255), nullable=False)
     rank = Column(Integer, nullable=False)
+    user_validation_required = Column(Boolean, nullable=False, server_default=text('true'))
 
     md_task = relationship('MdTask', back_populates='md_workflow_step')
     md_workflow_step_displayed_data = relationship('MdWorkflowStepDisplayedData', back_populates='md_workflow_step')

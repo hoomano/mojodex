@@ -104,12 +104,7 @@ const StepProcessDetail: React.FC<StepProcessDetailProps> = ({
 
   return (
     <div className="p-[60px] w-full">
-      <div>
-        <div className="text-h4 font-semibold text-gray-darker pb-4">
-          Workflow
-        </div>
 
-      </div>
 
       <ul role="list" className="space-y-6 w-full">
         {stepExecutions?.map((stepItem, activityItemIdx) => (
@@ -178,7 +173,7 @@ const StepProcessDetail: React.FC<StepProcessDetailProps> = ({
                         ))
                       ))
                     }
-                    {stepItem.validated === null && stepItem.result != null ?
+                    {stepItem.user_validation_required && stepItem.validated === null && stepItem.result != null ?
                       <div className="text-end pt-2">
                         <Button
                           variant="outline"

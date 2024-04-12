@@ -24,7 +24,7 @@ interface TodosType {
   nTodos: number | undefined;
 }
 
-const Todos = ({ taskExecutionPK, workingOnTodos, nTodos }: TodosType) => {
+const TodosView = ({ taskExecutionPK, workingOnTodos, nTodos }: TodosType) => {
   const [todoCompletionStates, setTodoCompletionStates] = useState<{
     [key: number]: boolean;
   }>({});
@@ -193,4 +193,4 @@ const Todos = ({ taskExecutionPK, workingOnTodos, nTodos }: TodosType) => {
   );
 };
 
-export default Todos;
+export default TodosView;

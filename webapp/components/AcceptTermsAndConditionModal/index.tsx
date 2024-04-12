@@ -6,12 +6,14 @@ import Modal from "components/Modal";
 import useAcceptTermAndCondition from "helpers/hooks/useAcceptTermAndCondition";
 import { useRouter } from "next/router";
 import useUpdatePurchaseInSession from "helpers/hooks/useUpdatePurchaseInSession";
+import { useTranslation } from "react-i18next";
 
 const AcceptTermsAndConditionModal = () => {
   useUpdatePurchaseInSession();
   const [accepted, setAccepted] = useState(false);
   const [isTermsModalOpen, setIsTermsModalOpen] = useState(false);
   const router = useRouter();
+  const { t } = useTranslation("dynamic");
 
   // read if there is a link to the terms of use from an environment variable
   const termsOfUseLink = process.env.NEXT_PUBLIC_TERMS_OF_USE_LINK;
@@ -49,9 +51,9 @@ const AcceptTermsAndConditionModal = () => {
     if (!termsOfUseLink) {
       return (
         <>
-          <div className="text-h3">Welcome! 😉</div>
+          <div className="text-h3">{t("onboarding.termsAndConditions.title")}{" "}{t("onboarding.termsAndConditions.emoji")}</div>
           <div className="text-subtitle5 text-gray-lighter mt-2 mb-6">
-            Please take a moment to acknowledge our community guidelines:
+            {t("onboarding.termsAndConditions.defaultModalContent")}
           </div>
           <div className="text-gray-lighter mt-5">
             <input
@@ -60,19 +62,19 @@ const AcceptTermsAndConditionModal = () => {
               onChange={(e) => setAccepted(e.target.checked)}
               className="cursor-pointer outline-0 mr-2"
             />
-            I agree to interact with the digital assistant in a respectful and courteous manner, recognizing the importance of kindness in our digital space.
+            {t("onboarding.termsAndConditions.defaultAgreement")}
           </div>
           <div className="text-gray-lighter mt-2">
-            Your cooperation helps us maintain a positive environment for all users. Thank you for your understanding and support!
+            {t("onboarding.termsAndConditions.defaultAgreementThankYou")}
           </div>
         </>
       );
     } else {
       return (
         <>
-          <div className="text-h3">Welcome! 😉</div>
+          <div className="text-h3">{t("onboarding.termsAndConditions.title")}{" "}{t("onboarding.termsAndConditions.emoji")}</div>
           <div className="text-subtitle5 text-gray-lighter mt-2 mb-6">
-            Just before we start, have a look at our terms & conditions.
+            {t("onboarding.termsAndConditions.defaultModalContent")}
           </div>
           <div className="flex items-center justify-center text-gray-lighter mt-5">
             <input
@@ -81,9 +83,9 @@ const AcceptTermsAndConditionModal = () => {
               onChange={(e) => setAccepted(e.target.checked)}
               className="cursor-pointer outline-0 mr-2"
             />
-            I accept the{" "}
+            {t("onboarding.termsAndConditions.IAgree")}{" "}
             <Link href={termsOfUseLink as string} target="_blank" className="ml-1">
-              terms & conditions
+              {t("onboarding.termsAndConditions.termsAndConditions")}
             </Link>
           </div>
         </>
@@ -102,7 +104,7 @@ const AcceptTermsAndConditionModal = () => {
         {renderContent()}
         <div className="mt-6">
           <Button disabled={!accepted} onClick={acceptTermsAndConditionHandler}>
-            Let’s start
+            {t("onboarding.termsAndConditions.acceptButtonText")}
           </Button>
         </div>
       </div>

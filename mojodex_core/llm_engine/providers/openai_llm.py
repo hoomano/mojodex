@@ -31,19 +31,18 @@ class OpenAILLM(LLM):
             api_base = llm_conf["api_base"] if "api_base" in llm_conf else None
             api_version = llm_conf["api_version"] if "api_version" in llm_conf else None
             api_type = llm_conf["api_type"] if "api_type" in llm_conf else "openai"
-            model = llm_conf["deployment_id"] if "deployment_id" in llm_conf else llm_conf["model"]
+            self.deployment = llm_conf["deployment_id"] if "deployment_id" in llm_conf else None
             # if dataset_dir does not exist, create it
             if not os.path.exists(self.dataset_dir):
                 os.mkdir(self.dataset_dir)
             if not os.path.exists(os.path.join(self.dataset_dir, "chat")):
                 os.mkdir(os.path.join(self.dataset_dir, "chat"))
 
-            self.model = model
             self.max_retries = max_retries
             self.client = AzureOpenAI(
                 api_version=api_version,
                 azure_endpoint=api_base,
-                azure_deployment=self.model,
+                azure_deployment=self.deployment,
                 api_key=api_key,
                 max_retries=0 if llm_backup_conf else self.max_retries
             ) if api_type == 'azure' else OpenAI(api_key=api_key)
@@ -53,7 +52,7 @@ class OpenAILLM(LLM):
                 self.client_backup = AzureOpenAI(
                     api_version=llm_backup_conf["api_version"] if "api_version" in llm_backup_conf else None,
                     azure_endpoint=llm_backup_conf["api_base"] if "api_base" in llm_backup_conf else None,
-                    azure_deployment=llm_backup_conf["deployment_id"] if "deployment_id" in llm_backup_conf else llm_backup_conf["model"],
+                    azure_deployment=llm_backup_conf["deployment_id"] if "deployment_id" in llm_backup_conf else None,
                     api_key=llm_backup_conf["api_key"],
                     max_retries=self.max_retries
                 ) if api_type == 'azure' else OpenAI(api_key=llm_backup_conf["api_key"])
@@ -107,7 +106,7 @@ class OpenAILLM(LLM):
 
         completion = openai_client.chat.completions.create(
             messages=messages,
-            model=self.model,
+            model=self.name,
             temperature=temperature,
             max_tokens=max_tokens,
             frequency_penalty=frequency_penalty,
@@ -162,9 +161,9 @@ class OpenAILLM(LLM):
             # label is the filename without the file extension
             label = mpt.filepath.split('/')[-1].split('.')[0]
             
-            if self.model not in mpt.models:
+            if self.name not in mpt.models:
                 mojo_openai_logger.warning(
-                    f"{mpt} does not contain model: {self.model} in its dashbangs")
+                    f"{mpt} does not contain model: {self.name} in its dashbangs")
             messages = [{"role": "user", "content": mpt.prompt}]
             responses = self.recursive_invoke(messages, user_id, temperature, max_tokens, label=label,
                                            frequency_penalty=frequency_penalty, presence_penalty=presence_penalty,
@@ -177,7 +176,7 @@ class OpenAILLM(LLM):
             log_error(
                 f"Error in Mojodex OpenAI invoke for user_id: {user_id} - user_task_execution_pk: {user_task_execution_pk} - task_name_for_system: {task_name_for_system}: {e}", notify_admin=True)
             raise Exception(
-                f"🔴 Error in Mojodex OpenAI invoke: {e} - model: {self.model}"
+                f"🔴 Error in Mojodex OpenAI invoke: {e} - model: {self.name}"
                 )
 
     def invoke(self, messages: List, user_id, temperature, max_tokens, label,
@@ -229,7 +228,7 @@ class OpenAILLM(LLM):
                     [{'role': 'assistant', 'content': response}])
 
             self.tokens_costs_manager.on_tokens_counted(user_id, n_tokens_prompt, n_tokens_conversation, n_tokens_response,
-                                                        self.model, label, user_task_execution_pk, task_name_for_system)
+                                                        self.name, label, user_task_execution_pk, task_name_for_system)
             self._write_in_dataset({"temperature": temperature, "max_tokens": max_tokens, "n_responses": 1,
                                     "frequency_penalty": frequency_penalty, "presence_penalty": presence_penalty,
                                     "messages": messages, "responses": responses}, task_name_for_system, "chat", label=label)
@@ -238,4 +237,4 @@ class OpenAILLM(LLM):
             log_error(
                 f"Error in Mojodex OpenAI chat for user_id: {user_id} - label: {label} user_task_execution_pk: {user_task_execution_pk} - task_name_for_system: {task_name_for_system}: {e}", notify_admin=True)
             raise Exception(
-                f"🔴 Error in Mojodex OpenAI recursive_invoke() > label: {label} {e} - model: {self.model}")
+                f"🔴 Error in Mojodex OpenAI recursive_invoke() > label: {label} {e} - model: {self.name}")

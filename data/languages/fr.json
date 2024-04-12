@@ -24,6 +24,7 @@
             "title": "Bienvenue !",
             "IAgree": "J'accepte",
             "defaultAgreement": "J'accepte d'interagir avec l'assistant numérique de manière respectueuse et courtoise, en reconnaissant l'importance de la gentillesse dans notre espace numérique",
+            "defaultAgreementThankYou": "Votre coopération nous aide à maintenir un environnement positif pour tous les utilisateurs. Merci de votre compréhension et de votre soutien !",
             "defaultModalContent": "Veuillez prendre un moment pour prendre connaissance de nos lignes directrices communautaires",
             "termsModalContent": "Juste avant de commencer, jetez un coup d'œil à nos conditions générales",
             "termsAndConditions": "les conditions générales",

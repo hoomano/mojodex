@@ -124,7 +124,7 @@ class ModelLoader:
                 conf = {
                     "api_key": provider_conf["openai_api_key"],
                     "api_type": provider_name,
-                    "model": model_name
+                    "model_name": model_name
                 }
                 if model_name == OpenAIEmbedding.default_embedding_model:
                     provider = OpenAIEmbedding(conf)

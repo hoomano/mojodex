@@ -82,7 +82,6 @@ class WorkflowExecution:
 
     def _get_next_step_execution_to_run(self):
         try:
-            print("🟠 _get_next_step_execution_to_run")
             if not self.past_accepted_steps_executions:  # no step validated yet
                 self._current_step = self._generate_new_step_execution(self.workflow.db_steps[0],
                                                                        self.initial_parameters)  # of first step
@@ -172,7 +171,6 @@ class WorkflowExecution:
 
     def run(self):
         try:
-            print("🟠 RUN")
             if not self.title:
                 server_socket.start_background_task(self.__give_task_execution_title_and_summary,
                                                     self.db_object.user_task_execution_pk)

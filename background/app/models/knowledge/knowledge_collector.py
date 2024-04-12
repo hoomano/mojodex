@@ -8,7 +8,7 @@ class KnowledgeCollector:
 
     def __init__(self, user_name, user_timezone_offset, user_summary, user_company_knowledge, user_business_goal):
         self.mojo_knowledge = self.get_mojo_knowledge()
-        self.global_context = self.get_global_context_knowledge(user_timezone_offset)
+        self.global_context = self.get_global_context_knowledge(user_timezone_offset if user_timezone_offset else 0)
         self.user_timezone_offset = user_timezone_offset
         self.user_name = user_name
         self.user_summary = user_summary
@@ -42,7 +42,8 @@ class KnowledgeCollector:
     def localized_context(self):
         try:
             timestamp = datetime.utcnow()
-            timestamp -= timedelta(minutes=self.user_timezone_offset)
+            if self.user_timezone_offset:
+                timestamp -= timedelta(minutes=self.user_timezone_offset)
             return MPT("mojodex_core/instructions/global_context.mpt",
                                 weekday=timestamp.strftime("%A"),
                                     datetime=timestamp.strftime("%d %B %Y"),

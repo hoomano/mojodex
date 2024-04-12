@@ -31,10 +31,8 @@ Answer in following format:
 <user_language><2 letters language code></user_language>
 {if user asked for USER INPUTS or ACHIEVED WORKFLOW STEPS changes}<no_go_explanation><Explain the user that you can't change USER INPUTS or ACHIEVED WORKFLOW STEPS.></no_go_explanation>
 {else}
-<user_instruction><User's instruction for re-executing the step if provided else None></user_instruction>
+<user_instruction><User's instruction for re-executing the step - reformulated to be clear and straight to the point - if provided else None.></user_instruction>
 {if user_instruction is None}<ask_for_clarification><Ask the user for clarification about their rejection reason and what instruction they want you to take into account for re-executing the step.></ask_for_clarification>
-{else}<inform_user><Inform the user that you will re-execute the step with the provided instruction.></inform_user>{endif}
-{endif}
 {%if tag_proper_nouns%}Tag EVERY proper noun with '*': *PROPER NOUN*. Also tag EVERY word that may have been misunderstood by the transcription system and could be a proper noun with the same '*' tag.{%endif%}
 Speak same language as the user.
 Ensure you include all tags required by answer format.

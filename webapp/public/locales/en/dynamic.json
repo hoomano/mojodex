@@ -136,6 +136,17 @@
       "workingOnTodosBodyMessage": "You will find the to-do list here when I'm done",
       "notWorkingOnTodosTitleMessage": "No explicit next steps found.",
       "notWorkingOnTodosBodyMessage": ""
+    },
+    "processTab":{
+      "title": "Process",
+      "relaunchButton": "Retry",
+      "validateButton": "Validate",
+      "invalidateButton": "Review",
+      "stepExecutionParameters": "Parameters",
+      "stepExecutionResults": "Results",
+      "stepExecutionError": "Oops. I couldn't finish.",
+      "stepExecutionErrorInstruction":"You can try to relaunch the step or contact support."
+
     }
   },
   "todos": {

@@ -734,6 +734,7 @@ class MdUserWorkflowStepExecution(Base):
     result = Column(JSON)
     validated = Column(Boolean)
     learned_instruction = Column(Text)
+    error_status = Column(JSON)
 
     md_user_task_execution = relationship('MdUserTaskExecution', back_populates='md_user_workflow_step_execution')
     md_workflow_step = relationship('MdWorkflowStep', back_populates='md_user_workflow_step_execution')

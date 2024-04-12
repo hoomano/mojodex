@@ -24,6 +24,7 @@ export interface UserTaskExecutionStepExecution {
   validated: boolean;
   parameter: any;
   result: any[];
+  error_status: any;
 }
 
 export interface UserTasksAPIResponse {

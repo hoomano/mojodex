@@ -136,6 +136,16 @@
       "workingOnTodosBodyMessage": "Encontrarás la lista de pendientes aquí cuando termine",
       "notWorkingOnTodosTitleMessage": "No se encontraron pasos siguientes explícitos.",
       "notWorkingOnTodosBodyMessage": ""
+    },
+    "processTab": {
+      "title": "Proceso",
+      "relaunchButton": "reintentar",
+      "validateButton": "Validate",
+      "invalidateButton": "Revisar",
+      "stepExecutionParameters": "Parámetros",
+      "stepExecutionResults": "Resultados",
+      "stepExecutionError": "Ups. No he podido terminar",
+      "stepExecutionErrorInstruction": "Puedes intentar relanzar el paso o ponerte en contacto con soporte."
     }
   },
   "todos": {

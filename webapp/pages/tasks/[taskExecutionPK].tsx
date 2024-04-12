@@ -20,8 +20,9 @@ const TaskDetailsPage = () => {
     ? decryptId(router.query.taskExecutionPK as string)
     : null;
 
+  
   const { data: currentTaskInfo } = useGetExecuteTaskById(taskExecutionPK);
-
+  
   const taskSessionId = currentTaskInfo?.session_id;
  
   return (

@@ -136,6 +136,16 @@
       "workingOnTodosBodyMessage": "Vous trouverez la liste de todos ici quand j'aurai terminé",
       "notWorkingOnTodosTitleMessage": "Aucune étape suivante explicite trouvée.",
       "notWorkingOnTodosBodyMessage": ""
+    },
+    "processTab": {
+      "title": "Processus",
+      "relaunchButton": "Réessayer",
+      "validateButton": "Valider",
+      "invalidateButton": "Revoir",
+      "stepExecutionParameters": "Paramètres",
+      "stepExecutionResults": "Resultats",
+      "stepExecutionError": "Oops. Je n'ai pas pu terminer",
+      "stepExecutionErrorInstruction": "Vous pouvez essayer de relancer l'étape ou contacter l'assistance."
     }
   },
   "todos": {

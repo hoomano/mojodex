@@ -5,9 +5,9 @@
         "m4aFileInvalid": "Oops, I did it again!"
     },
     "validationWidget": {
-		"okButton": "OK",
-		"noButton": "Non"
-	},
+        "okButton": "OK",
+        "noButton": "Non"
+    },
     "appDrawer": {
         "title": "Mojodex",
         "newTaskButton": "Nouvelle tâche",
@@ -16,7 +16,7 @@
         "resourcesButton": "Ressources"
     },
     "nextButton": "Suivant",
-	"previousButton": "Précédent",
+    "previousButton": "Précédent",
     "skipContainerButton": "Passer",
     "onboarding": {
         "termsAndConditions": {
@@ -67,39 +67,39 @@
             ]
         }
     },
-    "startNewTask" : {
-    	"noTasksStarted" : "Vous n'avez commencé aucune tâche",
-    	"getStartedMessage" : "Commencez votre première tâche !",
-    	"startNewTaskButton" : "Démarrer une nouvelle tâche"
-  },
+    "startNewTask": {
+        "noTasksStarted": "Vous n'avez commencé aucune tâche",
+        "getStartedMessage": "Commencez votre première tâche !",
+        "startNewTaskButton": "Démarrer une nouvelle tâche"
+    },
     "userTaskExecutionList": {
-		"appBarTitle": "Tâches",
+        "appBarTitle": "Tâches",
         "taskNotFound": "🤔\nIl semble qu'il n'y ait rien de tel dans l'historique de vos tâches..."
-	},
+    },
     "newUserTaskExecution": {
-		"appBarTitle": "Tâches",
+        "appBarTitle": "Tâches",
         "title": "🎯\nQue voulez-vous faire aujourd'hui?",
-        "selectBusinessTasks" : "Sélectionnez la tâche que vous souhaitez réaliser avec Mojo"
-	},
-    "startUserTaskStepExecution":{
-      "stepsIntroduction": "Les étapes suivantes vont être exécutées pour cette tâche:"
+        "selectBusinessTasks": "Sélectionnez la tâche que vous souhaitez réaliser avec Mojo"
     },
-    "resources" : {
-    "resourcesTitle" : "Ressources",
-    "addButton" : "Ajouter",
-    "addedByUserTabTitle" : "Ajouté par",
-    "learnedByMojoTabTitle" : "Appris par Mojo",
-    "learnedByUserTableHeader" : {
-      "document" : "Document",
-      "addedBy" : "Ajouté par",
-      "updatedAt" : "Mis à jour le"
+    "startUserTaskStepExecution": {
+        "stepsIntroduction": "Les étapes suivantes vont être exécutées pour cette tâche:"
     },
-    "learnedByMojoTableHeader" : {
-      "document" : "Document",
-      "conversationWith" : "Conversation avec",
-      "updatedAt" : "Mis à jour le"
-    }
-  },
+    "resources": {
+        "resourcesTitle": "Ressources",
+        "addButton": "Ajouter",
+        "addedByUserTabTitle": "Ajouté par",
+        "learnedByMojoTabTitle": "Appris par Mojo",
+        "learnedByUserTableHeader": {
+            "document": "Document",
+            "addedBy": "Ajouté par",
+            "updatedAt": "Mis à jour le"
+        },
+        "learnedByMojoTableHeader": {
+            "document": "Document",
+            "conversationWith": "Conversation avec",
+            "updatedAt": "Mis à jour le"
+        }
+    },
     "userTaskExecution": {
         "chatTab": {
             "title": "Chat",
@@ -136,11 +136,21 @@
         "todosTab": {
             "title": "Todos",
             "workingOnTodosEmoji": "💬",
-			"notWorkingOnTodosEmoji": "✅",
+            "notWorkingOnTodosEmoji": "✅",
             "workingOnTodosTitleMessage": "J'organise ce qu'il faut faire pour cette tâche",
             "workingOnTodosBodyMessage": "Vous trouverez la liste de todos ici quand j'aurai terminé",
             "notWorkingOnTodosTitleMessage": "Aucune étape suivante explicite trouvée.",
             "notWorkingOnTodosBodyMessage": ""
+        },
+        "processTab": {
+            "title": "Processus",
+            "relaunchButton": "Réessayer",
+            "validateButton": "Valider",
+            "invalidateButton": "Revoir",
+            "stepExecutionParameters": "Paramètres",
+            "stepExecutionResults": "Resultats",
+            "stepExecutionError": "Oops. Je n'ai pas pu terminer",
+            "stepExecutionErrorInstruction": "Vous pouvez essayer de relancer l'étape ou contacter l'assistance."
         }
     },
     "todos": {
@@ -159,42 +169,42 @@
         "termsOfUseButton": "Conditions d'utilisation",
         "privacyPolicyButton": "Politique de confidentialité",
         "darkModeButton": "Mode sombre",
-        "autoPlayVocalMessage":"Lecture automatique des messages vocaux",
+        "autoPlayVocalMessage": "Lecture automatique des messages vocaux",
         "languageButton": "Langue",
         "languageName": "Français"
     },
-	"calendar": {
-		"appBarTitle": "Calendrier",
-		"hasAccess": "Accès de Mojodex aux calendriers:",
-		"noAccess": "\uD83D\uDE14\uFE0F\\nIl semble que Mojodex n'ait pas encore accès à votre calendrier.",
-		"grantAccessButton": "Donner l'accès",
+    "calendar": {
+        "appBarTitle": "Calendrier",
+        "hasAccess": "Accès de Mojodex aux calendriers:",
+        "noAccess": "\uD83D\uDE14\uFE0F\\nIl semble que Mojodex n'ait pas encore accès à votre calendrier.",
+        "grantAccessButton": "Donner l'accès",
         "statusBarAskAccess": "Je peux vous aider encore mieux avec l'accès au calendrier! 📆",
-        "accessDenied" : "Pas de soucis ! Vous avez le contrôle. Je suis là pour vous aider, avec ou sans calendrier. 😊",
+        "accessDenied": "Pas de soucis ! Vous avez le contrôle. Je suis là pour vous aider, avec ou sans calendrier. 😊",
         "statusBarGrantButton": "Donner l'accès"
-	},
+    },
     "plan": {
         "appBarTitle": "Plan",
         "title": "Gérer les plans",
-        "currentPlans" : "Plans actuels: ",
+        "currentPlans": "Plans actuels: ",
         "updatePlan": "Mise à jour: ",
-        "productCard":{
-			"usageLimitTitle" : "Limite d'utilisation jusqu'à :",
-			"nValidityDaysSuffix" : "jours",
-			"nTasksLimitSuffix" : "tâches",
+        "productCard": {
+            "usageLimitTitle": "Limite d'utilisation jusqu'à :",
+            "nValidityDaysSuffix": "jours",
+            "nTasksLimitSuffix": "tâches",
             "nTasksPerMonth": "80 tâches par mois",
-      "includedTasks": "Tâches inclues:",
-      "customerSupportByEmail": "Assistance client par Email",
-      "customPlanCallToAction": "Ou, si vous souhaitez un plan personnalisé",
-      "getQuoteCallToAction": "Les personnes nous contactent généralement pour obtenir un devis",
-      "contactUsButton": "Nous contacter"
-		},
-        "purchaseUsageCard":{
-			"title" : "Détails d'utilisation:",
-            "remainingDaysSuffix" : "jours restants",
-            "nTasksConsumedSuffix" : "tâches utilisées",
-            "nTaskDone" : "Tâches effectuées :",
-      		"nDaysLeft" : "Jours restants :"
-		},
+            "includedTasks": "Tâches inclues:",
+            "customerSupportByEmail": "Assistance client par Email",
+            "customPlanCallToAction": "Ou, si vous souhaitez un plan personnalisé",
+            "getQuoteCallToAction": "Les personnes nous contactent généralement pour obtenir un devis",
+            "contactUsButton": "Nous contacter"
+        },
+        "purchaseUsageCard": {
+            "title": "Détails d'utilisation:",
+            "remainingDaysSuffix": "jours restants",
+            "nTasksConsumedSuffix": "tâches utilisées",
+            "nTaskDone": "Tâches effectuées :",
+            "nDaysLeft": "Jours restants :"
+        },
         "purchaseMessages": {
             "success": {
                 "emoji": "🎉",
@@ -211,7 +221,7 @@
                 "title": "OUPS ! Quelque chose s'est mal passé avec votre achat.",
                 "body": "Nous allons vous aider par email!"
             }
-		},
+        },
         "purchaseBadge": {
             "activeState": "Actif",
             "expiredState": "Expiré"

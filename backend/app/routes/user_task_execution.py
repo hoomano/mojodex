@@ -508,11 +508,16 @@ class UserTaskExecution(Resource):
                                                               'produced_text_version_pk'),
                                                           func.row_number().over(
                                                               partition_by=MdProducedText.user_task_execution_fk,
-                                                              order_by=MdProducedTextVersion.creation_date.desc()).label(
+                                                              order_by=MdProducedTextVersion.creation_date.asc()).label(
                                                               'row_number')) \
                     .join(MdProducedTextVersion,
                           MdProducedTextVersion.produced_text_fk == MdProducedText.produced_text_pk) \
                     .subquery()
+                
+                highest_row_number_subquery = db.session.query(
+                    produced_text_subquery.c.user_task_execution_fk,
+                    func.max(produced_text_subquery.c.row_number).label('max_row_number')
+                ).group_by(produced_text_subquery.c.user_task_execution_fk).subquery()
 
                 result =( db.session.query(
                         MdUserTaskExecution,
@@ -522,17 +527,21 @@ class UserTaskExecution(Resource):
                         produced_text_subquery.c.produced_text_title.label("produced_text_title"),
                         produced_text_subquery.c.produced_text_production.label("produced_text_production"),
                         produced_text_subquery.c.produced_text_version_pk.label("produced_text_version_pk"),
+                        produced_text_subquery.c.row_number.label("produced_text_version_index"),
                         MdUser.timezone_offset,
                         MdUser.language_code
                     ).join(MdUserTask, MdUserTask.user_task_pk == MdUserTaskExecution.user_task_fk)
                     .join(MdUser, MdUser.user_id == MdUserTask.user_id)
                     .join(MdTask, MdTask.task_pk == MdUserTask.task_fk)
                     .join(MdTaskDisplayedData, MdTaskDisplayedData.task_fk == MdTask.task_pk)
+                    .outerjoin(highest_row_number_subquery,
+                        highest_row_number_subquery.c.user_task_execution_fk == MdUserTaskExecution.user_task_execution_pk)
                     .outerjoin(produced_text_subquery,
-                               and_(
-                                   produced_text_subquery.c.user_task_execution_fk == MdUserTaskExecution.user_task_execution_pk,
-                                   produced_text_subquery.c.row_number == 1))
+                            and_(
+                                produced_text_subquery.c.user_task_execution_fk == MdUserTaskExecution.user_task_execution_pk,
+                                produced_text_subquery.c.row_number == highest_row_number_subquery.c.max_row_number))
                     .filter(MdUserTaskExecution.user_task_execution_pk == user_task_execution_pk)
+                    .filter(MdUser.user_id == user_id)
                     .filter(
                         or_(
                             MdTaskDisplayedData.language_code == MdUser.language_code,
@@ -548,6 +557,7 @@ class UserTaskExecution(Resource):
                               produced_text_subquery.c.produced_text_pk, produced_text_subquery.c.produced_text_title,
                               produced_text_subquery.c.produced_text_production,
                               produced_text_subquery.c.produced_text_version_pk,
+                              produced_text_subquery.c.row_number,
                               MdUser.timezone_offset,
                               MdUser.language_code
                               )
@@ -584,6 +594,7 @@ class UserTaskExecution(Resource):
                     "produced_text_title": result["produced_text_title"],
                     "produced_text_production": result["produced_text_production"],
                     "produced_text_version_pk": result["produced_text_version_pk"],
+                    "produced_text_version_index": result["produced_text_version_index"],
                     "task_tool_executions": get_task_tool_executions(
                         result["MdUserTaskExecution"].user_task_execution_pk),
                     "text_edit_actions": recover_text_edit_actions(
@@ -607,11 +618,16 @@ class UserTaskExecution(Resource):
                                                       MdProducedTextVersion.produced_text_version_pk.label(
                                                           'produced_text_version_pk'),
                                                       func.row_number().over(
-                                                          partition_by=MdProducedText.user_task_execution_fk,
-                                                          order_by=MdProducedTextVersion.creation_date.desc()).label(
-                                                          'row_number')) \
+                                                              partition_by=MdProducedText.user_task_execution_fk,
+                                                              order_by=MdProducedTextVersion.creation_date.asc()).label(
+                                                              'row_number')) \
                 .join(MdProducedTextVersion, MdProducedTextVersion.produced_text_fk == MdProducedText.produced_text_pk) \
                 .subquery()
+            
+            highest_row_number_subquery = db.session.query(
+                    produced_text_subquery.c.user_task_execution_fk,
+                    func.max(produced_text_subquery.c.row_number).label('max_row_number')
+                ).group_by(produced_text_subquery.c.user_task_execution_fk).subquery()
 
 
             # Subquery to retrieve the tasks in the user_language_code
@@ -647,6 +663,7 @@ class UserTaskExecution(Resource):
                     produced_text_subquery.c.produced_text_title.label("produced_text_title"),
                     produced_text_subquery.c.produced_text_production.label("produced_text_production"),
                     produced_text_subquery.c.produced_text_version_pk.label("produced_text_version_pk"),
+                    produced_text_subquery.c.row_number.label("produced_text_version_index"),
                     MdUser.timezone_offset,
                     MdUser.language_code
                 )
@@ -656,9 +673,12 @@ class UserTaskExecution(Resource):
                 .join(MdTask, MdTask.task_pk == MdUserTask.task_fk)
                 .outerjoin(user_lang_subquery, MdTask.task_pk == user_lang_subquery.c.task_fk)
                 .outerjoin(en_subquery, MdTask.task_pk == en_subquery.c.task_fk)
-                .outerjoin(produced_text_subquery, and_(
-                    produced_text_subquery.c.user_task_execution_fk == MdUserTaskExecution.user_task_execution_pk,
-                    produced_text_subquery.c.row_number == 1))
+                 .outerjoin(highest_row_number_subquery,
+                        highest_row_number_subquery.c.user_task_execution_fk == MdUserTaskExecution.user_task_execution_pk)
+                    .outerjoin(produced_text_subquery,
+                            and_(
+                                produced_text_subquery.c.user_task_execution_fk == MdUserTaskExecution.user_task_execution_pk,
+                                produced_text_subquery.c.row_number == highest_row_number_subquery.c.max_row_number))
                 .filter(MdUserTask.user_id == user_id)
                 .filter(MdUserTaskExecution.start_date.isnot(None))
                 .filter(MdUserTaskExecution.deleted_by_user.is_(None)))
@@ -683,6 +703,7 @@ class UserTaskExecution(Resource):
                                       produced_text_subquery.c.produced_text_title,
                                       produced_text_subquery.c.produced_text_production,
                                       produced_text_subquery.c.produced_text_version_pk,
+                                        produced_text_subquery.c.row_number,
                                       MdUser.timezone_offset,
                                       MdUser.language_code
                                       )
@@ -726,6 +747,7 @@ class UserTaskExecution(Resource):
                 "produced_text_title": row["produced_text_title"],
                 "produced_text_production": row["produced_text_production"],
                 "produced_text_version_pk": row["produced_text_version_pk"],
+                "produced_text_version_index": row["produced_text_version_index"],
                 "task_tool_executions": get_task_tool_executions(row["MdUserTaskExecution"].user_task_execution_pk),
                 "text_edit_actions": recover_text_edit_actions(row["MdUserTaskExecution"].user_task_fk),
                 "working_on_todos": row["MdUserTaskExecution"].todos_extracted is None,

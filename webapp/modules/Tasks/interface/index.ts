@@ -38,6 +38,7 @@ export interface TaskJsonInput {
   description_for_system: string;
   placeholder: string;
   type: string;
+  value: string | undefined;
 }
 
 export interface TaskConfigAPIResponse {
@@ -90,6 +91,7 @@ export interface UserTaskExecution {
   task_type: string;
   produced_text_pk: number;
   session_id: string;
+  json_inputs_values: TaskJsonInput[];
   start_date: string;
   working_on_todos: boolean;
   n_todos: number;

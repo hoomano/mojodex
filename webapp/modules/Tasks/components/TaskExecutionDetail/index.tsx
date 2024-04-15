@@ -19,6 +19,8 @@ import StepProcessDetail from "./Workflow/StepProcessDetail";
 import Chat from "modules/Chat";
 import TaskLoader from "./TaskLoader";
 import { ArrowLeftIcon } from "@heroicons/react/24/outline";
+import ExpandableCard from "components/ExpandableCard";
+import TaskInputs from "./TaskInputs";
 
 const DraftDetail = () => {
   const [tabs, setTabs] = useState<TabType[]>([]);
@@ -114,27 +116,39 @@ const DraftDetail = () => {
       disabled: false
     };
 
+    let inputsTab = {
+      key: "inputs",
+      title: `${t("userTaskExecution.inputsTab.title")}`,
+      component: (
+        <TaskInputs inputs={currentTask!.json_inputs_values} />
+      ),
+      disabled: false
+    };
+
 
     let tabs = [];
     // if currentTask.task_type !== "workflow" add todos tab
     if (currentTask?.task_type === "workflow") {
-      tabs = [processTab, resultTab];
+      tabs = [inputsTab, processTab, resultTab];
     } else {
-      tabs = [resultTab, todosTab];
+      tabs = [inputsTab, resultTab, todosTab];
     }
 
     setTabs(tabs);
 
-    if (router.query.tab === "todos") {
-      setSelectedTab("todos");
-    } else {
-      if (currentTask?.task_type !== "workflow") {
-        setSelectedTab("result");
+    // if selectedTab is null
+    if (selectedTab === null) {
+      if (router.query.tab === "todos") {
+        setSelectedTab("todos");
       } else {
-        if (editorDetails.producedTextPk) {
+        if (currentTask?.task_type !== "workflow") {
           setSelectedTab("result");
         } else {
-          setSelectedTab("process");
+          if (editorDetails.producedTextPk) {
+            setSelectedTab("result");
+          } else {
+            setSelectedTab("process");
+          }
         }
       }
     }
@@ -380,7 +394,10 @@ const DraftDetail = () => {
                     </div>
                   )}
                 </div>
-              </div>
+                </div>
+                {/*<ExpandableCard headerText={t("userTaskExecution.inputsTab.title")}>
+                  <TaskInputs inputs={currentTask!.json_inputs_values}/>
+                </ExpandableCard>*/}
               <Tab
                 selected={selectedTab}
                 onChangeTab={(key: string) => setSelectedTab(key)}

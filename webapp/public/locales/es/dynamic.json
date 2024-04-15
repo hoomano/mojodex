@@ -101,6 +101,9 @@
     }
   },
   "userTaskExecution": {
+    "inputsTab": {
+      "title": "Entradas iniciales"
+    },
     "chatTab": {
       "title": "Chat",
       "notificationValidation": {

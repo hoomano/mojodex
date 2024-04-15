@@ -126,12 +126,18 @@ const DraftDetail = () => {
     };
 
 
-    let tabs = [];
+    let tabs: { key: string, title: string, component: JSX.Element, disabled: boolean }[] = [];
+    // if currentTask.json_inputs_values != null, add inputs tab to the tabs
+    if (!!currentTask?.json_inputs_values) {
+      tabs.push(inputsTab);
+    }
     // if currentTask.task_type !== "workflow" add todos tab
     if (currentTask?.task_type === "workflow") {
-      tabs = [inputsTab, processTab, resultTab];
+      tabs.push(processTab);
+      tabs.push(resultTab);
     } else {
-      tabs = [inputsTab, resultTab, todosTab];
+      tabs.push(resultTab);
+      tabs.push(todosTab);
     }
 
     setTabs(tabs);

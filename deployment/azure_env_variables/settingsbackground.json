@@ -1,0 +1,22 @@
+[
+    {
+        "name": "ENVIRONMENT",
+        "value": "prod",
+        "slotSetting": false
+    },
+    {
+        "name": "FLASK_SECRET_KEY",
+        "value": "flask_secret_key",
+        "slotSetting": false
+    },
+    {
+        "name": "LOG_LEVEL",
+        "value": "INFO",
+        "slotSetting": false
+    },
+    {
+        "name": "MOJODEX_BACKGROUND_SECRET",
+        "value": "background_secret",
+        "slotSetting": false
+    }
+]

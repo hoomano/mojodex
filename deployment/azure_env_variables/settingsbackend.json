@@ -1,0 +1,73 @@
+[
+    
+    {
+        "name": "BACKOFFICE_SECRET",
+        "value": "backoffice_secret",
+        "slotSetting": false
+    },
+    {
+        "name": "DAILY_EMAIL_TIME",
+        "value": "17",
+        "slotSetting": false
+    },
+    {
+        "name": "DAILY_NOTIF_TIME",
+        "value": "14",
+        "slotSetting": false
+    },
+    {
+        "name": "DAILY_TODO_EMAIL_TIME",
+        "value": "8",
+        "slotSetting": false
+    },
+    {
+        "name": "ENCODING_ALGORITHM",
+        "value": "HS256",
+        "slotSetting": false
+    },
+    {
+        "name": "ENVIRONMENT",
+        "value": "prod",
+        "slotSetting": false
+    },
+    {
+        "name": "FLASK_SECRET_KEY",
+        "value": "flask_secret_key",
+        "slotSetting": false
+    },
+    {
+        "name": "JWT_SECRET",
+        "value": "jwt_secret",
+        "slotSetting": false
+    },
+    {
+        "name": "LOG_LEVEL",
+        "value": "INFO",
+        "slotSetting": false
+    },
+    {
+        "name": "MOJODEX_BACKGROUND_SECRET",
+        "value": "background_secret",
+        "slotSetting": false
+    },
+    {
+        "name": "PURCHASE_UPDATER_SOCKETIO_SECRET",
+        "value": "purchase_updater_socketio_secret",
+        "slotSetting": false
+    },
+    {
+        "name": "RESET_PASSWORD_JWT_SECRET",
+        "value": "reset_password_jwt_secret",
+        "slotSetting": false
+    },
+    {
+        "name": "RESET_PASSWORD_SECRET_KEY",
+        "value": "reset_password_secret_key",
+        "slotSetting": false
+    },
+    {
+        "name": "TOKEN_SECRET_SPLITTER",
+        "value": "__mojodex__",
+        "slotSetting": false
+    }
+]

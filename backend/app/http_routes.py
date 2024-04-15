@@ -54,6 +54,7 @@ from routes.task_tool import TaskTool
 from routes.task_json import TaskJson
 from routes.integrations.hubspot import Hubspot
 from routes.user_workflow_step_execution import UserWorkflowStepExecution
+from routes.user_task_execution_produced_text import UserTaskExecutionProducedText
 class HttpRouteManager:
     def __init__(self, api):
         api.add_resource(Purchase, '/purchase')
@@ -113,3 +114,4 @@ class HttpRouteManager:
         api.add_resource(TaskJson, "/task_json")
         api.add_resource(Hubspot, "/integrations/hubspot")
         api.add_resource(UserWorkflowStepExecution, "/user_workflow_step_execution")
+        api.add_resource(UserTaskExecutionProducedText, "/user_task_execution_produced_text")

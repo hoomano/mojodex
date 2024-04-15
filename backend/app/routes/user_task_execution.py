@@ -287,7 +287,7 @@ class UserTaskExecution(Resource):
         try:
             timestamp = request.args["datetime"]
         except KeyError as e:
-            log_error(f"Error getting followups : Missing field {e}")
+            log_error(f"Error getting user_task_executions : Missing field {e}")
             return {"error": f"Missing field {e}"}, 400
 
         try:

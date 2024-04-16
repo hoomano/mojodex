@@ -24,9 +24,9 @@ class Profile(Resource):
 
         try:
             timestamp = request.json["datetime"]
-            profile_label = request.json["product_label"]
+            profile_label = request.json["profile_label"]
             displayed_data = request.json["displayed_data"]
-            profile_category_pk = request.json["product_category_pk"]
+            profile_category_pk = request.json["profile_category_pk"]
             product_stripe_id = request.json["product_stripe_id"] if "product_stripe_id" in request.json else None
             product_apple_id = request.json["product_apple_id"] if "product_apple_id" in request.json else None
             is_free = request.json["is_free"]
@@ -94,7 +94,7 @@ class Profile(Resource):
                 db.session.add(profile_displayed_data)
 
             db.session.commit()
-            return {"product_pk": profile.profile_pk}, 200
+            return {"profile_pk": profile.profile_pk}, 200
         except Exception as e:
             return {"error": f"Error while creating profile: {e}"}, 500
 
@@ -115,7 +115,7 @@ class Profile(Resource):
 
         try:
             timestamp = request.json["datetime"]
-            profile_pk = request.json["product_pk"]
+            profile_pk = request.json["profile_pk"]
         except KeyError as e:
             return {"error": f"Missing field {e}"}, 400
 
@@ -131,7 +131,7 @@ class Profile(Resource):
                 profile.label = profile_label
 
             if "profile_category_fk" in request.json:
-                profile_category_fk = request.json["product_category_fk"]
+                profile_category_fk = request.json["profile_category_fk"]
                 # Check if profile category exists
                 profile_category = db.session.query(MdProfileCategory).filter(MdProfileCategory.profile_category_pk == profile_category_fk).first()
                 if profile_category is None:
@@ -216,7 +216,7 @@ class Profile(Resource):
                 profile.n_tasks_limit = n_tasks_limit
 
             db.session.commit()
-            return {"product_pk": profile_pk}, 200
+            return {"profile_pk": profile_pk}, 200
         except Exception as e:
             db.session.rollback()
             return {"error": f"Error while updating profile: {e}"}, 500

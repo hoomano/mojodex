@@ -18,6 +18,7 @@ from mojodex_core.mail import send_admin_email
 class ExpiredRolesChecker(Resource):
 
     # checking for expired roles
+    # Route used only by Scheduler
     def post(self):
         error_message = "Error checking for expired roles"
         if not request.is_json:
@@ -35,7 +36,7 @@ class ExpiredRolesChecker(Resource):
 
         try:
             timestamp = request.json['datetime']
-            n_roles = min(50, int(request.args["n_purchases"])) if "n_purchases" in request.args else 50
+            n_roles = min(50, int(request.args["n_roles"])) if "n_roles" in request.args else 50
         except KeyError:
             log_error(f"{error_message} : Missing datetime in body", notify_admin=True)
             return {"error": f"Missing datetime in body"}, 400
@@ -57,7 +58,7 @@ class ExpiredRolesChecker(Resource):
                 .all()
 
             if result is None:
-                return {"purchase_pks": []}, 200
+                return {"role_pks": []}, 200
 
             for expired_active_role, user in result:
                 role_manager = RoleManager()
@@ -73,7 +74,7 @@ class ExpiredRolesChecker(Resource):
 
             db.session.commit()
 
-            return {"purchase_pks": [role.role_pk for role, user in result]}, 200
+            return {"role_pks": [role.role_pk for role, user in result]}, 200
         except Exception as e:
             db.session.rollback()
             log_error(f"{error_message} request.json: {request.json}: {e}", notify_admin=True)

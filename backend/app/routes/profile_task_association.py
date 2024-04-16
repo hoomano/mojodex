@@ -25,7 +25,7 @@ class ProfileTaskAssociation(Resource):
 
         try:
             timestamp = request.json["datetime"]
-            profile_pk = request.json["product_pk"]
+            profile_pk = request.json["profile_pk"]
             task_pk = request.json["task_pk"]
         except KeyError as e:
             return {"error": f"Missing field {e}"}, 400
@@ -75,6 +75,6 @@ class ProfileTaskAssociation(Resource):
 
 
             db.session.commit()
-            return {"product_task_association_pk": profile_task_association.profile_task_pk}, 200
+            return {"profile_task_association_pk": profile_task_association.profile_task_pk}, 200
         except Exception as e:
             return {"error": f"Error while creating profile_task_association: {e}"}, 500

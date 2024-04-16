@@ -29,7 +29,7 @@ class ManualRole(Resource):
             timestamp = request.json["datetime"]
             # user_id or user_email
 
-            profile_pk = request.json["product_pk"]
+            profile_pk = request.json["profile_pk"]
         except KeyError as e:
             return {"error": f"Missing field {e}"}, 400
 
@@ -56,9 +56,9 @@ class ManualRole(Resource):
             )
 
             if profile.free == False:
-                if "custom_purchase_id" not in request.json or request.json["custom_purchase_id"] is None:
-                    return {"error": "Missing field custom_purchase_id"}, 400
-                role.custom_role_id = request.json["custom_purchase_id"]
+                if "custom_role_id" not in request.json or request.json["custom_role_id"] is None:
+                    return {"error": "Missing field custom_role_id"}, 400
+                role.custom_role_id = request.json["custom_role_id"]
 
             # If user has no category, associate user's goal and profile category
             user = db.session.query(MdUser).filter(MdUser.user_id == user_id).first()
@@ -78,7 +78,7 @@ class ManualRole(Resource):
 
             db.session.commit()
 
-            return {"purchase_pk": role.role_pk}, 200
+            return {"role_pk": role.role_pk}, 200
         except Exception as e:
             db.session.rollback()
             return {"error": f"Error while creating role: {e}"}, 500
@@ -101,7 +101,7 @@ class ManualRole(Resource):
 
         try:
             timestamp = request.json["datetime"]
-            role_pk = request.json["purchase_pk"]
+            role_pk = request.json["role_pk"]
         except KeyError as e:
             return {"error": f"Missing field {e}"}, 400
 

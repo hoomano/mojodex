@@ -80,7 +80,7 @@ class ProfileCategory(Resource):
                 db.session.flush()
 
             db.session.commit()
-            return {"product_category_pk": profile_category.profile_category_pk}, 200
+            return {"profile_category_pk": profile_category.profile_category_pk}, 200
         except Exception as e:
             db.session.rollback()
             return {"error": f"Error while creating profile category: {e}"}, 500
@@ -101,7 +101,7 @@ class ProfileCategory(Resource):
 
         try:
             timestamp = request.json["datetime"]
-            profile_category_pk = request.json["product_category_pk"]
+            profile_category_pk = request.json["profile_category_pk"]
         except KeyError as e:
             return {"error": f"Missing field {e}"}, 400
 
@@ -180,7 +180,7 @@ class ProfileCategory(Resource):
 
 
             db.session.commit()
-            return {"product_category_pk": profile_category.profile_category_pk}, 200
+            return {"profile_category_pk": profile_category.profile_category_pk}, 200
         except Exception as e:
             db.session.rollback()
             return {"error": f"Error while updating profile category: {e}"}, 500

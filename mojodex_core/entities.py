@@ -34,21 +34,21 @@ class MdPlatform(Base):
     md_task_platform_association = relationship('MdTaskPlatformAssociation', back_populates='md_platform')
 
 
-class MdProductCategory(Base):
-    __tablename__ = 'md_product_category'
+class MdProfileCategory(Base):
+    __tablename__ = 'md_profile_category'
     __table_args__ = (
-        PrimaryKeyConstraint('product_category_pk', name='md_product_category_pkey'),
+        PrimaryKeyConstraint('profile_category_pk', name='md_profile_category_pkey'),
     )
 
-    product_category_pk = Column(Integer, Sequence('md_product_category_pk_seq'), primary_key=True)
+    profile_category_pk = Column(Integer, Sequence('md_profile_category_pk_seq'), primary_key=True)
     label = Column(String(255), nullable=False)
     emoji = Column(String(255), nullable=False)
     implicit_goal = Column(String(255), nullable=False)
     visible = Column(Boolean, nullable=False, server_default=text('false'))
 
-    md_product = relationship('MdProduct', back_populates='md_product_category')
-    md_product_category_displayed_data = relationship('MdProductCategoryDisplayedData', back_populates='md_product_category')
-    md_user = relationship('MdUser', back_populates='md_product_category')
+    md_profile = relationship('MdProfile', back_populates='md_profile_category')
+    md_profile_category_displayed_data = relationship('MdProfileCategoryDisplayedData', back_populates='md_profile_category')
+    md_user = relationship('MdUser', back_populates='md_profile_category')
 
 
 class MdTextEditAction(Base):
@@ -92,44 +92,44 @@ class MdTool(Base):
     md_task_tool_association = relationship('MdTaskToolAssociation', back_populates='md_tool')
 
 
-class MdProduct(Base):
-    __tablename__ = 'md_product'
+class MdProfile(Base):
+    __tablename__ = 'md_profile'
     __table_args__ = (
-        ForeignKeyConstraint(['product_category_fk'], ['md_product_category.product_category_pk'], name='md_product_category_fk'),
-        PrimaryKeyConstraint('product_pk', name='product_pkey'),
-        UniqueConstraint('label', name='product_label_key')
+        ForeignKeyConstraint(['profile_category_fk'], ['md_profile_category.profile_category_pk'], name='md_profile_category_fkey'),
+        PrimaryKeyConstraint('profile_pk', name='md_profile_pkey'),
+        UniqueConstraint('label', name='profile_label_key')
     )
 
-    product_pk = Column(Integer, Sequence('md_product_seq'), primary_key=True)
-    status = Column(Enum('active', 'inactive', name='md_product_status_'), nullable=False)
+    profile_pk = Column(Integer, Sequence('md_profile_seq'), primary_key=True)
+    status = Column(Enum('active', 'inactive', name='md_profile_status_'), nullable=False)
     free = Column(Boolean, nullable=False)
     product_stripe_id = Column(String(255))
-    product_category_fk = Column(Integer)
+    profile_category_fk = Column(Integer)
     n_days_validity = Column(Integer)
     product_apple_id = Column(String(255))
     n_tasks_limit = Column(Integer)
     label = Column(String(255))
 
-    md_product_category = relationship('MdProductCategory', back_populates='md_product')
-    md_product_displayed_data = relationship('MdProductDisplayedData', back_populates='md_product')
-    md_product_task = relationship('MdProductTask', back_populates='md_product')
-    md_purchase = relationship('MdPurchase', back_populates='md_product')
+    md_profile_category = relationship('MdProfileCategory', back_populates='md_profile')
+    md_profile_displayed_data = relationship('MdProfileDisplayedData', back_populates='md_profile')
+    md_profile_task = relationship('MdProfileTask', back_populates='md_profile')
+    md_role = relationship('MdRole', back_populates='md_profile')
 
 
-class MdProductCategoryDisplayedData(Base):
-    __tablename__ = 'md_product_category_displayed_data'
+class MdProfileCategoryDisplayedData(Base):
+    __tablename__ = 'md_profile_category_displayed_data'
     __table_args__ = (
-        ForeignKeyConstraint(['product_category_fk'], ['md_product_category.product_category_pk'], name='md_product_category_fkey'),
-        PrimaryKeyConstraint('product_category_displayed_data_pk', name='md_product_category_displayed_data_pkey')
+        ForeignKeyConstraint(['profile_category_fk'], ['md_profile_category.profile_category_pk'], name='md_profile_category_fkey'),
+        PrimaryKeyConstraint('profile_category_displayed_data_pk', name='md_profile_category_displayed_data_pkey')
     )
 
-    product_category_displayed_data_pk = Column(Integer, Sequence('md_product_category_displayed_data_seq'), primary_key=True)
-    product_category_fk = Column(Integer, nullable=False)
+    profile_category_displayed_data_pk = Column(Integer, Sequence('md_profile_category_displayed_data_seq'), primary_key=True)
+    profile_category_fk = Column(Integer, nullable=False)
     language_code = Column(String(2), nullable=False)
     name_for_user = Column(String(255), nullable=False)
     description_for_user = Column(String(255), nullable=False)
 
-    md_product_category = relationship('MdProductCategory', back_populates='md_product_category_displayed_data')
+    md_profile_category = relationship('MdProfileCategory', back_populates='md_profile_category_displayed_data')
 
 
 class MdTask(Base):
@@ -152,7 +152,7 @@ class MdTask(Base):
     infos_to_extract = Column(JSON)
 
     md_text_type = relationship('MdTextType', back_populates='md_task')
-    md_product_task = relationship('MdProductTask', back_populates='md_task')
+    md_profile_task = relationship('MdProfileTask', back_populates='md_task')
     md_task_displayed_data = relationship('MdTaskDisplayedData', back_populates='md_task')
     md_task_platform_association = relationship('MdTaskPlatformAssociation', back_populates='md_task')
     md_task_predefined_action_association = relationship('MdTaskPredefinedActionAssociation', foreign_keys='[MdTaskPredefinedActionAssociation.predefined_action_fk]', back_populates='md_task')
@@ -199,7 +199,7 @@ class MdUser(Base):
     __tablename__ = 'md_user'
     __table_args__ = (
         ForeignKeyConstraint(['company_fk'], ['md_company.company_pk'], name='md_user_company_fk'),
-        ForeignKeyConstraint(['product_category_fk'], ['md_product_category.product_category_pk'], name='user_product_category_fkey'),
+        ForeignKeyConstraint(['profile_category_fk'], ['md_profile_category.profile_category_pk'], name='user_profile_category_fkey'),
         PrimaryKeyConstraint('user_id', name='user_pkey')
     )
 
@@ -222,14 +222,14 @@ class MdUser(Base):
     goal = Column(Text)
     timezone_offset = Column(Integer)
     onboarding_presented = Column(DateTime(True))
-    product_category_fk = Column(Integer)
+    profile_category_fk = Column(Integer)
 
     md_company = relationship('MdCompany', back_populates='md_user')
-    md_product_category = relationship('MdProductCategory', back_populates='md_user')
+    md_profile_category = relationship('MdProfileCategory', back_populates='md_user')
     md_device = relationship('MdDevice', back_populates='user')
     md_document = relationship('MdDocument', back_populates='author_user')
     md_event = relationship('MdEvent', back_populates='user')
-    md_purchase = relationship('MdPurchase', back_populates='user')
+    md_role = relationship('MdRole', back_populates='user')
     md_session = relationship('MdSession', back_populates='user')
     md_user_task = relationship('MdUserTask', back_populates='user')
     md_user_vocabulary = relationship('MdUserVocabulary', back_populates='user')
@@ -289,47 +289,47 @@ class MdEvent(Base):
     user = relationship('MdUser', back_populates='md_event')
 
 
-class MdProductDisplayedData(Base):
-    __tablename__ = 'md_product_displayed_data'
+class MdProfileDisplayedData(Base):
+    __tablename__ = 'md_profile_displayed_data'
     __table_args__ = (
-        ForeignKeyConstraint(['product_fk'], ['md_product.product_pk'], name='md_product_fkey'),
-        PrimaryKeyConstraint('product_displayed_data_pk', name='md_product_displayed_data_pkey')
+        ForeignKeyConstraint(['profile_fk'], ['md_profile.profile_pk'], name='md_profile_fkey'),
+        PrimaryKeyConstraint('profile_displayed_data_pk', name='md_profile_displayed_data_pkey')
     )
 
-    product_displayed_data_pk = Column(Integer, Sequence('md_product_displayed_data_seq'), primary_key=True)
-    product_fk = Column(Integer, nullable=False)
+    profile_displayed_data_pk = Column(Integer, Sequence('md_profile_displayed_data_seq'), primary_key=True)
+    profile_fk = Column(Integer, nullable=False)
     language_code = Column(String(2), nullable=False)
     name = Column(String(255), nullable=False)
 
-    md_product = relationship('MdProduct', back_populates='md_product_displayed_data')
+    md_profile = relationship('MdProfile', back_populates='md_profile_displayed_data')
 
 
-class MdProductTask(Base):
-    __tablename__ = 'md_product_task'
+class MdProfileTask(Base):
+    __tablename__ = 'md_profile_task'
     __table_args__ = (
-        ForeignKeyConstraint(['product_fk'], ['md_product.product_pk'], name='product_task_product_fk_fkey'),
-        ForeignKeyConstraint(['task_fk'], ['md_task.task_pk'], name='product_task_task_fk_fkey'),
-        PrimaryKeyConstraint('product_task_pk', name='product_task_pkey')
+        ForeignKeyConstraint(['profile_fk'], ['md_profile.profile_pk'], name='profile_task_profile_fk_fkey'),
+        ForeignKeyConstraint(['task_fk'], ['md_task.task_pk'], name='profile_task_task_fk_fkey'),
+        PrimaryKeyConstraint('profile_task_pk', name='md_profile_task_pkey')
     )
 
-    product_task_pk = Column(Integer, Sequence('md_product_task_seq'), primary_key=True)
-    product_fk = Column(Integer, nullable=False)
+    profile_task_pk = Column(Integer, Sequence('md_profile_task_seq'), primary_key=True)
+    profile_fk = Column(Integer, nullable=False)
     task_fk = Column(Integer, nullable=False)
 
-    md_product = relationship('MdProduct', back_populates='md_product_task')
-    md_task = relationship('MdTask', back_populates='md_product_task')
+    md_profile = relationship('MdProfile', back_populates='md_profile_task')
+    md_task = relationship('MdTask', back_populates='md_profile_task')
 
 
-class MdPurchase(Base):
-    __tablename__ = 'md_purchase'
+class MdRole(Base):
+    __tablename__ = 'md_role'
     __table_args__ = (
-        ForeignKeyConstraint(['product_fk'], ['md_product.product_pk'], name='purchase_product_fk_fkey'),
-        ForeignKeyConstraint(['user_id'], ['md_user.user_id'], name='purchase_user_id_fkey'),
-        PrimaryKeyConstraint('purchase_pk', name='purchase_pkey')
+        ForeignKeyConstraint(['profile_fk'], ['md_profile.profile_pk'], name='role_profile_fk_fkey'),
+        ForeignKeyConstraint(['user_id'], ['md_user.user_id'], name='role_user_id_fkey'),
+        PrimaryKeyConstraint('role_pk', name='role_pkey')
     )
 
-    purchase_pk = Column(Integer, Sequence('md_purchase_seq'), primary_key=True)
-    product_fk = Column(Integer, nullable=False)
+    role_pk = Column(Integer, Sequence('md_role_seq'), primary_key=True)
+    profile_fk = Column(Integer, nullable=False)
     creation_date = Column(DateTime(True), nullable=False)
     active = Column(Boolean, nullable=False, server_default=text('false'))
     user_id = Column(String(255))
@@ -339,11 +339,11 @@ class MdPurchase(Base):
     completed_date = Column(DateTime(True))
     apple_transaction_id = Column(String(255))
     apple_original_transaction_id = Column(String(255))
-    custom_purchase_id = Column(String(255))
+    custom_role_id = Column(String(255))
 
-    md_product = relationship('MdProduct', back_populates='md_purchase')
-    user = relationship('MdUser', back_populates='md_purchase')
-    md_user_task_execution = relationship('MdUserTaskExecution', back_populates='md_purchase')
+    md_profile = relationship('MdProfile', back_populates='md_role')
+    user = relationship('MdUser', back_populates='md_role')
+    md_user_task_execution = relationship('MdUserTaskExecution', back_populates='md_role')
 
 
 class MdSession(Base):
@@ -580,7 +580,7 @@ class MdUserTaskExecution(Base):
     __tablename__ = 'md_user_task_execution'
     __table_args__ = (
         ForeignKeyConstraint(['predefined_action_from_user_task_execution_fk'], ['md_user_task_execution.user_task_execution_pk'], name='user_task_execution_user_task_execution_fk_fkey'),
-        ForeignKeyConstraint(['purchase_fk'], ['md_purchase.purchase_pk'], name='user_task_execution_purchase_fkey'),
+        ForeignKeyConstraint(['role_fk'], ['md_role.role_pk'], name='user_task_execution_role_fkey'),
         ForeignKeyConstraint(['session_id'], ['md_session.session_id'], name='user_task_execution_session_id_fkey'),
         ForeignKeyConstraint(['user_task_fk'], ['md_user_task.user_task_pk'], name='user_task_execution_user_task_fk_fkey'),
         PrimaryKeyConstraint('user_task_execution_pk', name='user_task_execution_pkey')
@@ -598,11 +598,11 @@ class MdUserTaskExecution(Base):
     predefined_action_from_user_task_execution_fk = Column(Integer)
     todos_extracted = Column(DateTime(True))
     deleted_by_user = Column(DateTime(True))
-    purchase_fk = Column(Integer)
+    role_fk = Column(Integer)
 
     md_user_task_execution = relationship('MdUserTaskExecution', remote_side=[user_task_execution_pk], back_populates='md_user_task_execution_reverse')
     md_user_task_execution_reverse = relationship('MdUserTaskExecution', remote_side=[predefined_action_from_user_task_execution_fk], back_populates='md_user_task_execution')
-    md_purchase = relationship('MdPurchase', back_populates='md_user_task_execution')
+    md_role = relationship('MdRole', back_populates='md_user_task_execution')
     session = relationship('MdSession', back_populates='md_user_task_execution')
     md_user_task = relationship('MdUserTask', back_populates='md_user_task_execution')
     md_calendar_suggestion = relationship('MdCalendarSuggestion', back_populates='md_user_task_execution')
@@ -732,8 +732,8 @@ class MdUserWorkflowStepExecution(Base):
     workflow_step_fk = Column(Integer, nullable=False)
     creation_date = Column(DateTime, nullable=False, server_default=text('now()'))
     parameter = Column(JSON, nullable=False)
+    validated = Column(Boolean, nullable=False, server_default=text('false'))
     result = Column(JSON)
-    validated = Column(Boolean)
     learned_instruction = Column(Text)
     error_status = Column(JSON)
 

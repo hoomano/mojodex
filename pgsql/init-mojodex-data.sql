@@ -23,17 +23,17 @@ SET row_security = off;
 
 
 --
--- Data for Name: md_product_category; Type: TABLE DATA; Schema: public; Owner: assistant_db_user
+-- Data for Name: md_profile_category; Type: TABLE DATA; Schema: public; Owner: assistant_db_user
 --
 
-INSERT INTO public.md_product_category VALUES (1, 'demo', '🪄', 'Explore Mojodex''s capabilities to enhance productivity and uncover innovative solutions for various tasks', true);
+INSERT INTO public.md_profile_category VALUES (1, 'demo', '🪄', 'Explore Mojodex''s capabilities to enhance productivity and uncover innovative solutions for various tasks', true);
 
 
 --
--- Data for Name: md_product; Type: TABLE DATA; Schema: public; Owner: assistant_db_user
+-- Data for Name: md_profile; Type: TABLE DATA; Schema: public; Owner: assistant_db_user
 --
 
-INSERT INTO public.md_product VALUES (1, NULL, 'active', 1, true, 999, NULL, NULL, 'professional_digital_assistant');
+INSERT INTO public.md_profile VALUES (1, NULL, 'active', 1, true, 999, NULL, NULL, 'professional_digital_assistant');
 
 
 --
@@ -44,10 +44,10 @@ INSERT INTO public.md_user VALUES ('14f919cf95a70935c6c70f4a89ef5fec', 'Demo Use
 
 
 --
--- Data for Name: md_purchase; Type: TABLE DATA; Schema: public; Owner: assistant_db_user
+-- Data for Name: md_role; Type: TABLE DATA; Schema: public; Owner: assistant_db_user
 --
 
-INSERT INTO public.md_purchase VALUES (3, '14f919cf95a70935c6c70f4a89ef5fec', 1, NULL, '2024-02-06 16:04:52.902031+00', NULL, NULL, NULL, NULL, true, NULL, NULL);
+INSERT INTO public.md_role VALUES (3, '14f919cf95a70935c6c70f4a89ef5fec', 1, NULL, '2024-02-06 16:04:52.902031+00', NULL, NULL, NULL, NULL, true, NULL, NULL);
 
 
 --
@@ -177,29 +177,29 @@ INSERT INTO public.md_platform VALUES (2, 'webapp');
 
 
 --
--- Data for Name: md_product_category_displayed_data; Type: TABLE DATA; Schema: public; Owner: assistant_db_user
+-- Data for Name: md_profile_category_displayed_data; Type: TABLE DATA; Schema: public; Owner: assistant_db_user
 --
 
-INSERT INTO public.md_product_category_displayed_data VALUES (1, 1, 'en', 'Digital Assistant Demo', 'Your digital assistant excels at meeting recaps, follow-up emails, LinkedIn posts and can learn how to help you out over time.');
-
-
---
--- Data for Name: md_product_displayed_data; Type: TABLE DATA; Schema: public; Owner: assistant_db_user
---
-
-INSERT INTO public.md_product_displayed_data VALUES (1, 1, 'en', 'Pro Digital Assistant');
+INSERT INTO public.md_profile_category_displayed_data VALUES (1, 1, 'en', 'Digital Assistant Demo', 'Your digital assistant excels at meeting recaps, follow-up emails, LinkedIn posts and can learn how to help you out over time.');
 
 
 --
--- Data for Name: md_product_task; Type: TABLE DATA; Schema: public; Owner: assistant_db_user
+-- Data for Name: md_profile_displayed_data; Type: TABLE DATA; Schema: public; Owner: assistant_db_user
 --
 
-INSERT INTO public.md_product_task VALUES (1, 1, 1);
-INSERT INTO public.md_product_task VALUES (2, 1, 2);
-INSERT INTO public.md_product_task VALUES (3, 1, 3);
-INSERT INTO public.md_product_task VALUES (4, 1, 4);
-INSERT INTO public.md_product_task VALUES (5, 1, 5);
-INSERT INTO public.md_product_task VALUES (6, 1, 6);
+INSERT INTO public.md_profile_displayed_data VALUES (1, 1, 'en', 'Pro Digital Assistant');
+
+
+--
+-- Data for Name: md_profile_task; Type: TABLE DATA; Schema: public; Owner: assistant_db_user
+--
+
+INSERT INTO public.md_profile_task VALUES (1, 1, 1);
+INSERT INTO public.md_profile_task VALUES (2, 1, 2);
+INSERT INTO public.md_profile_task VALUES (3, 1, 3);
+INSERT INTO public.md_profile_task VALUES (4, 1, 4);
+INSERT INTO public.md_profile_task VALUES (5, 1, 5);
+INSERT INTO public.md_profile_task VALUES (6, 1, 6);
 
 
 --
@@ -372,27 +372,6 @@ SELECT pg_catalog.setval('public.md_event_seq', 1, false);
 
 
 --
--- Name: md_feedback_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
---
-
-SELECT pg_catalog.setval('public.md_feedback_seq', 1, false);
-
-
---
--- Name: md_follow_up_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
---
-
-SELECT pg_catalog.setval('public.md_follow_up_seq', 1, false);
-
-
---
--- Name: md_idea_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
---
-
-SELECT pg_catalog.setval('public.md_idea_seq', 1, false);
-
-
---
 -- Name: md_message_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
 --
 
@@ -414,20 +393,6 @@ SELECT pg_catalog.setval('public.md_predefined_action_displayed_data_seq', 1, fa
 
 
 --
--- Name: md_process_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
---
-
-SELECT pg_catalog.setval('public.md_process_seq', 1, false);
-
-
---
--- Name: md_process_step_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
---
-
-SELECT pg_catalog.setval('public.md_process_step_seq', 1, false);
-
-
---
 -- Name: md_produced_text_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
 --
 
@@ -442,59 +407,45 @@ SELECT pg_catalog.setval('public.md_produced_text_version_seq', 1, false);
 
 
 --
--- Name: md_product_category_displayed_data_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
+-- Name: md_profile_category_displayed_data_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
 --
 
-SELECT pg_catalog.setval('public.md_product_category_displayed_data_seq', 1, true);
-
-
---
--- Name: md_product_category_pk_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
---
-
-SELECT pg_catalog.setval('public.md_product_category_pk_seq', 1, true);
+SELECT pg_catalog.setval('public.md_profile_category_displayed_data_seq', 1, true);
 
 
 --
--- Name: md_product_displayed_data_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
+-- Name: md_profile_category_pk_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
 --
 
-SELECT pg_catalog.setval('public.md_product_displayed_data_seq', 1, true);
-
-
---
--- Name: md_product_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
---
-
-SELECT pg_catalog.setval('public.md_product_seq', 1, true);
+SELECT pg_catalog.setval('public.md_profile_category_pk_seq', 1, true);
 
 
 --
--- Name: md_product_task_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
+-- Name: md_profile_displayed_data_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
 --
 
-SELECT pg_catalog.setval('public.md_product_task_seq', 6, true);
-
-
---
--- Name: md_purchase_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
---
-
-SELECT pg_catalog.setval('public.md_purchase_seq', 3, true);
+SELECT pg_catalog.setval('public.md_profile_displayed_data_seq', 1, true);
 
 
 --
--- Name: md_relationship_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
+-- Name: md_profile_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
 --
 
-SELECT pg_catalog.setval('public.md_relationship_seq', 1, false);
+SELECT pg_catalog.setval('public.md_profile_seq', 1, true);
 
 
 --
--- Name: md_task_category_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
+-- Name: md_profile_task_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
 --
 
-SELECT pg_catalog.setval('public.md_task_category_seq', 1, false);
+SELECT pg_catalog.setval('public.md_profile_task_seq', 6, true);
+
+
+--
+-- Name: md_role_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
+--
+
+SELECT pg_catalog.setval('public.md_role_seq', 3, true);
 
 
 --
@@ -607,13 +558,6 @@ SELECT pg_catalog.setval('public.md_tool_seq', 2, false);
 --
 
 SELECT pg_catalog.setval('public.md_user_task_execution_seq', 1, false);
-
-
---
--- Name: md_user_task_preference_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
---
-
-SELECT pg_catalog.setval('public.md_user_task_preference_seq', 1, false);
 
 
 --

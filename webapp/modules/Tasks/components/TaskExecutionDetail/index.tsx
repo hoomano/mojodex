@@ -5,7 +5,6 @@ import { Socket, io } from "socket.io-client";
 import { appVersion } from "helpers/constants";
 import { envVariable } from "helpers/constants/env-vars";
 import { decryptId } from "helpers/method";
-import useGetProducedText from "modules/ProducedTexts/hooks/useGetProducedText";
 import { EditerProducedText, UserTaskExecutionProducedTextResponse, UserTaskExecutionStepExecution } from "modules/Tasks/interface";
 import Tab, { TabType } from "components/Tab";
 import Result from "./Result";
@@ -19,13 +18,9 @@ import StepProcessDetail from "./Workflow/StepProcessDetail";
 import Chat from "modules/Chat";
 import TaskLoader from "./TaskLoader";
 import { ArrowLeftIcon } from "@heroicons/react/24/outline";
-import ExpandableCard from "components/ExpandableCard";
 import TaskInputs from "./TaskInputs";
-import useGetUserTaskExecutionProducedText from "modules/Tasks/hooks/useGetUserTaskExecutionProducedText";
-import { on } from "events";
 import { getUserTaskExecutionProducedText } from "services/tasks";
 import { useQueryClient } from "@tanstack/react-query";
-import { AxiosResponse } from "axios";
 
 const DraftDetail = () => {
   const [tabs, setTabs] = useState<TabType[]>([]);
@@ -59,12 +54,14 @@ const DraftDetail = () => {
 
   const { data: currentTask } = useGetExecuteTaskById(taskExecutionPK);
   const [producedTextIndex, setProducedTextIndex] = useState(currentTask!.produced_text_version_index || 0);
+  const [numberOfProducedTextVersions, setNumberOfProducedTextVersions] = useState(currentTask!.produced_text_version_index || 0);
+  const [isDraftStreaming, setIsDraftStreaming] = useState(!currentTask?.produced_text_pk);
 
 
   const queryClient = useQueryClient();
 
   const onGetProducedTextIndex = (index: number) => {
-    setProducedTextIndex(index);
+    setProducedTextIndex(prevIndex => index);
     queryClient.fetchQuery(
       ["getUserTaskExecutionProducedText", index, taskExecutionPK],
       () => getUserTaskExecutionProducedText(index, taskExecutionPK!)
@@ -73,7 +70,7 @@ const DraftDetail = () => {
       setEditorDetails({
         text: newData!.produced_text_production,
         title: newData!.produced_text_title,
-        producedTextPk: currentTask!.produced_text_pk,
+        producedTextPk: newData!.produced_text_pk,
       });
     }).catch(error => {
       console.error("Error fetching previous produced text: ", error);
@@ -95,7 +92,6 @@ const DraftDetail = () => {
   const { t } = useTranslation("dynamic");
 
   useEffect(() => {
-
     let resultTab = {
       key: "result",
       title: `${t("userTaskExecution.resultTab.title")}`,
@@ -103,11 +99,11 @@ const DraftDetail = () => {
         <Result
           userTaskExecutionPk={taskExecutionPK as number}
           producedText={editorDetails}
-          isLoading={false}
+          isLoading={isDraftStreaming}
           onGetPreviousProducedText={() => onGetProducedTextIndex(producedTextIndex - 1)}
           onGetNextProducedText={() => onGetProducedTextIndex(producedTextIndex + 1)}
-          showPreviousButton={producedTextIndex > 0}
-          showNextButton={producedTextIndex < currentTask!.produced_text_version_index}
+          showPreviousButton={producedTextIndex > 1}
+          showNextButton={producedTextIndex < numberOfProducedTextVersions}
         />
       ),
       // disabled if editorDetails.textPk is null
@@ -183,8 +179,9 @@ const DraftDetail = () => {
         }
       }
     }
-  }, [workflowStepExecutions, editorDetails, isTask, router.query.tab, producedTextIndex]);
+  }, [workflowStepExecutions, editorDetails, isTask, router.query.tab, producedTextIndex, isDraftStreaming]);
 
+  
   useEffect(() => {
     if (currentTask?.produced_text_pk) {
       setEditorDetails({
@@ -229,6 +226,7 @@ const DraftDetail = () => {
 
     socket.on(socketEvents.DRAFT_TOKEN, ({ text }) => {
       setEditorDetails((prev) => ({ ...prev, text }));
+      setIsDraftStreaming(prev => true);
     });
 
     socket.on(socketEvents.USER_TASK_EXECUTION_TITLE, ({ title }) => {
@@ -236,6 +234,7 @@ const DraftDetail = () => {
     });
 
     socket.on(socketEvents.DRAFT_MESSAGE, (message: any, ack) => {
+      console.log("🟢 DRAFT MESSAGE");
       if (messagePkRef.current.includes(message?.message_pk)) {
         return;
       } else {
@@ -254,6 +253,10 @@ const DraftDetail = () => {
         title: produced_text_title,
         producedTextPk: produced_text_pk,
       });
+      setIsDraftStreaming(prev => false);
+      setProducedTextIndex(prevIndex => prevIndex + 1);
+      setNumberOfProducedTextVersions(prevVersions => prevVersions + 1);
+     
 
       setChatState({
         currentTaskInfo: {
@@ -267,9 +270,12 @@ const DraftDetail = () => {
       });
 
       if (ack) {
+        console.log("Has ack");
+        console.log("session_id", sessionId);
+        console.log("message_pk", message?.message_pk);
+        console.log("produced_text_version_pk", message?.produced_text_version_pk);
         ack({
           session_id: sessionId,
-          message_pk: message?.message_pk,
           produced_text_version_pk: message?.produced_text_version_pk,
         });
       }

@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import BeatLoader from "react-spinners/BeatLoader";
 import { $getRoot, EditorState } from "lexical";
@@ -13,18 +13,12 @@ import { ArrowLongLeftIcon, ArrowLongRightIcon } from '@heroicons/react/20/solid
 import Button from "components/Button";
 import Toolbar from "./Toolbar";
 import UpdatePlugin from "./UpdatePlugin";
-
-// import { invalidateQuery } from "services/config/queryClient";
-// import cachedAPIName from "helpers/constants/cachedAPIName";
 import useDeleteProducedText from "modules/ProducedTexts/hooks/useDeleteProducedText";
 import useSaveDraft from "modules/ProducedTexts/hooks/useSaveProducedText";
-// import useOnTaskComplete from "modules/Tasks/hooks/useOnTaskComplete";
 import { EditerProducedText } from "modules/Tasks/interface";
-// import globalContext, { GlobalContextType } from "helpers/GlobalContext";
 import { FaCopy } from "react-icons/fa";
 import ToolTip from "components/Tooltip";
 import { debounce } from "helpers/method";
-import { on } from "events";
 
 type Props = {
   userTaskExecutionPk: number | undefined;
@@ -111,7 +105,7 @@ const Answer = ({
         text: string;
       } | null = null
     ) => {
-      if (producedText?.producedTextPk) {
+      if (!isLoading && producedText?.producedTextPk) {
         const newText = updatedData?.text || text;
         const newTitle = updatedData?.title || title;
 
@@ -123,7 +117,7 @@ const Answer = ({
           production: newText,
           title: newTitle,
         };
-
+        console.log("🔵 save draft");
         saveDraft.mutate(payload, {
           onSuccess: () => { },
         });
@@ -224,7 +218,7 @@ const Answer = ({
           />
         </LexicalComposer>
       </div>
-      <nav className="flex items-center justify-between border-t border-gray-200 px-4 sm:px-0">
+      {isLoading ? null : <nav className="flex items-center justify-between border-t border-gray-200 px-4 sm:px-0">
         {showPreviousButton ? <div className="-mt-px flex w-0 flex-1">
           <a
             //href="#" => used to navigate to a certain query maybe useful ?
@@ -245,7 +239,7 @@ const Answer = ({
             <ArrowLongRightIcon className="ml-3 h-5 w-5 text-gray-400" aria-hidden="true" />
           </a>
         </div> : null}
-      </nav>
+      </nav>}
       {(
         <div className="mt-5 flex gap-2">
           {isLoading || !producedText.producedTextPk ? (

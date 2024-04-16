@@ -90,6 +90,8 @@ export interface UserTaskExecution {
   task_name: string;
   task_type: string;
   produced_text_pk: number;
+  produced_text_version_pk: number;
+  produced_text_version_index: number;
   session_id: string;
   json_inputs_values: TaskJsonInput[];
   start_date: string;
@@ -98,6 +100,14 @@ export interface UserTaskExecution {
   n_not_read_todos: number;
   steps: any;
   step_executions: UserTaskExecutionStepExecution[];
+}
+
+export interface UserTaskExecutionProducedTextResponse {
+  produced_text_production: string;
+  produced_text_title: string;
+  produced_text_version_index: number;
+  produced_text_pk: number;
+  produced_text_version_pk: number;
 }
 
 export interface EditerProducedText {

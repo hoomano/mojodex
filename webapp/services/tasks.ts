@@ -5,6 +5,7 @@ import {
   TaskConfigAPIResponse,
   TaskDonePayload,
   UserTaskExecution,
+  UserTaskExecutionProducedTextResponse,
   UserTask,
   UserTasksAPIResponse,
 } from "modules/Tasks/interface";
@@ -62,6 +63,14 @@ export const getExecuteTaskById = ({ queryKey }: any): Promise<UserTaskExecution
     params: { user_task_execution_pk: queryKey[1] },
   });
 
+export const getUserTaskExecutionProducedText = (producedTextIndex: number, userTaskExecutionPk: number): Promise<UserTaskExecutionProducedTextResponse> =>
+  axiosClient.get(apiRoutes.userTaskExecutionProducedText, {
+    params: {
+      produced_text_version_index: producedTextIndex,
+      user_task_execution_pk: userTaskExecutionPk,
+     },
+  });  //.then(response => response.data)
+
 
 export const getMessageHistory = (
   sessionId: string
@@ -107,3 +116,5 @@ export const relaunchStepExecution = (stepExecutionPk: number) =>
   axiosClient.put(apiRoutes.userWorkflowStepExecution, {
     user_workflow_step_execution_pk: stepExecutionPk,
   });
+
+  

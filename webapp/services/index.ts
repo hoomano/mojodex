@@ -11,6 +11,7 @@ const taskAPIRoutes = {
   taskConfigs: "/api/user_task_execution",
   executeTask: "/api/user_task_execution_run",
   userTaskExecution: "/api/task/user_task_execution",
+  userTaskExecutionProducedText: "/api/task/user_task_execution_produced_text",
   messageHistory: "/api/task/message",
   todos: "/api/todos",
   userWorkflowStepExecution: "/api/user_workflow_step_execution",

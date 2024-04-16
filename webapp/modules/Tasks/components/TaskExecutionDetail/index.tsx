@@ -6,7 +6,7 @@ import { appVersion } from "helpers/constants";
 import { envVariable } from "helpers/constants/env-vars";
 import { decryptId } from "helpers/method";
 import useGetProducedText from "modules/ProducedTexts/hooks/useGetProducedText";
-import { EditerProducedText, UserTaskExecutionStepExecution } from "modules/Tasks/interface";
+import { EditerProducedText, UserTaskExecutionProducedTextResponse, UserTaskExecutionStepExecution } from "modules/Tasks/interface";
 import Tab, { TabType } from "components/Tab";
 import Result from "./Result";
 import useGetExecuteTaskById from "modules/Tasks/hooks/useGetExecuteTaskById";
@@ -21,6 +21,11 @@ import TaskLoader from "./TaskLoader";
 import { ArrowLeftIcon } from "@heroicons/react/24/outline";
 import ExpandableCard from "components/ExpandableCard";
 import TaskInputs from "./TaskInputs";
+import useGetUserTaskExecutionProducedText from "modules/Tasks/hooks/useGetUserTaskExecutionProducedText";
+import { on } from "events";
+import { getUserTaskExecutionProducedText } from "services/tasks";
+import { useQueryClient } from "@tanstack/react-query";
+import { AxiosResponse } from "axios";
 
 const DraftDetail = () => {
   const [tabs, setTabs] = useState<TabType[]>([]);
@@ -53,11 +58,27 @@ const DraftDetail = () => {
 
 
   const { data: currentTask } = useGetExecuteTaskById(taskExecutionPK);
+  const [producedTextIndex, setProducedTextIndex] = useState(currentTask!.produced_text_version_index || 0);
 
-  const { data: draftDetails, isFetching: isDraftLoading } = useGetProducedText(
-    currentTask?.produced_text_pk || null,
-    { enabled: !!currentTask?.produced_text_pk } // enable the query only if currentTask has produced_text_pk
-  );
+
+  const queryClient = useQueryClient();
+
+  const onGetProducedTextIndex = (index: number) => {
+    setProducedTextIndex(index);
+    queryClient.fetchQuery(
+      ["getUserTaskExecutionProducedText", index, taskExecutionPK],
+      () => getUserTaskExecutionProducedText(index, taskExecutionPK!)
+    ).then((newData: UserTaskExecutionProducedTextResponse) => {
+      // Update state with the new data
+      setEditorDetails({
+        text: newData!.produced_text_production,
+        title: newData!.produced_text_title,
+        producedTextPk: currentTask!.produced_text_pk,
+      });
+    }).catch(error => {
+      console.error("Error fetching previous produced text: ", error);
+    });
+  };
 
 
   const [isSocketLoaded, setIsSocketLoaded] = useState(false);
@@ -82,7 +103,11 @@ const DraftDetail = () => {
         <Result
           userTaskExecutionPk={taskExecutionPK as number}
           producedText={editorDetails}
-          isLoading={isDraftLoading}
+          isLoading={false}
+          onGetPreviousProducedText={() => onGetProducedTextIndex(producedTextIndex - 1)}
+          onGetNextProducedText={() => onGetProducedTextIndex(producedTextIndex + 1)}
+          showPreviousButton={producedTextIndex > 0}
+          showNextButton={producedTextIndex < currentTask!.produced_text_version_index}
         />
       ),
       // disabled if editorDetails.textPk is null
@@ -158,25 +183,17 @@ const DraftDetail = () => {
         }
       }
     }
-  }, [workflowStepExecutions, editorDetails, isTask, router.query.tab]);
+  }, [workflowStepExecutions, editorDetails, isTask, router.query.tab, producedTextIndex]);
 
   useEffect(() => {
-    if (draftDetails) {
+    if (currentTask?.produced_text_pk) {
       setEditorDetails({
-        text: draftDetails?.production,
-        title: draftDetails?.title,
-        producedTextPk: draftDetails?.produced_text_pk,
-      });
-    }
-
-    if (currentTask) {
-      setEditorDetails({
-        text: currentTask.produced_text_production,
+        text: currentTask?.produced_text_production,
         title: currentTask?.produced_text_title,
         producedTextPk: currentTask?.produced_text_pk,
       });
     }
-  }, [draftDetails, currentTask]);
+  }, [currentTask]);
 
 
   useEffect(() => {
@@ -192,6 +209,7 @@ const DraftDetail = () => {
 
     const session: any = await getSession();
     const token = session?.authorization?.token || "";
+
 
     const socket = io(envVariable.socketUrl as string, {
       transports: ["websocket"],
@@ -400,8 +418,8 @@ const DraftDetail = () => {
                     </div>
                   )}
                 </div>
-                </div>
-                {/*<ExpandableCard headerText={t("userTaskExecution.inputsTab.title")}>
+              </div>
+              {/*<ExpandableCard headerText={t("userTaskExecution.inputsTab.title")}>
                   <TaskInputs inputs={currentTask!.json_inputs_values}/>
                 </ExpandableCard>*/}
               <Tab

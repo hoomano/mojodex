@@ -172,7 +172,7 @@ const Toolbar = ({ onSaveDraft, onDeleteDraft, text }: Props) => {
 
       <span className="w-[1px] bg-gray-600 block h-full"></span>
 
-      <button
+      {/*<button
         className={clsx(
           "px-1 bg-transparent hover:bg-gray-700 transition-colors duration-100 ease-in"
         )}
@@ -193,8 +193,8 @@ const Toolbar = ({ onSaveDraft, onDeleteDraft, text }: Props) => {
           icon={faRotateRight}
           className="text-white w-3.5 h-3.5"
         />
-      </button>
-      <button
+      </button>*/}
+      {/*<button
         className={clsx(
           "px-1 bg-transparent hover:bg-gray-700 transition-colors duration-100 ease-in"
         )}
@@ -203,9 +203,9 @@ const Toolbar = ({ onSaveDraft, onDeleteDraft, text }: Props) => {
         title="Save the draft"
       >
         <FontAwesomeIcon icon={faSave} className="text-white w-3.5 h-3.5" />
-      </button>
+      </button>*/}
 
-      <button
+      {/*<button
         className={clsx(
           "px-1 bg-transparent hover:bg-gray-700 transition-colors duration-100 ease-in"
         )}
@@ -214,7 +214,7 @@ const Toolbar = ({ onSaveDraft, onDeleteDraft, text }: Props) => {
         title="Delete the draft"
       >
         <FontAwesomeIcon icon={faTrashCan} className="text-white w-3.5 h-3.5" />
-      </button>
+      </button>*/}
 
       <ShareButton message={text} />
     </div>

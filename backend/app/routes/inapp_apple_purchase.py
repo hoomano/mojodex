@@ -8,7 +8,7 @@ from flask_restful import Resource
 from datetime import datetime
 from app import authenticate, db
 from mojodex_core.entities import *
-from models.purchase_manager import PurchaseManager
+from models.role_manager import RoleManager
 from mojodex_backend_logger import MojodexBackendLogger
 from appstoreserverlibrary.models.Environment import Environment
 
@@ -58,7 +58,7 @@ class InAppApplePurchase(Resource):
     def post(self):
         try:
             if not request.is_json:
-                log_error(f"Error adding purchase : Request must be JSON", notify_admin=True)
+                log_error(f"Error adding role : Request must be JSON", notify_admin=True)
                 return {"error": "Request must be JSON"}, 400
         except Exception as e:
             log_error(f"Error on apple purchase webhook : Request must be JSON", notify_admin=True)
@@ -72,7 +72,7 @@ class InAppApplePurchase(Resource):
 
         notificationType, notificationSubType = None, None
         transactionId, originalTransactionId = None, None
-        purchase, user = None, None
+        role, user = None, None
         try:
             decoded_jws = self._decode_apple_jws(signed_payload)
             # decoded_jws keys: ['notificationType', 'subtype', 'notificationUUID', 'data', 'version', 'signedDate']
@@ -89,7 +89,7 @@ class InAppApplePurchase(Resource):
                 log_error(
                     f"Received apple purchase webhook with no transactionId")
                 send_admin_email("🚨 URGENT: Apple purchase callback with no transactionId",
-                                 PurchaseManager.purchases_email_receivers,
+                                 RoleManager.roles_email_receivers,
                                  f"signed_transaction_info : {signed_transaction_info}"
                                  f"\nEvent: NOTIFICATION_TYPE: {notificationType} - Subtype: {notificationSubType} - originalTransactionId: {originalTransactionId}")
                 return {
@@ -101,69 +101,69 @@ class InAppApplePurchase(Resource):
             self.logger.debug(f"transactionReason: {transactionReason}")
             self.logger.debug(f"productId: {productId}")
 
-            purchase_manager = PurchaseManager()
+            role_manager = RoleManager()
 
             # Manage notificationType
             if (notificationType == "SUBSCRIBED" and notificationSubType in ["INITIAL_BUY", "RESUBSCRIBE"]) or notificationType == "DID_RENEW":
-                    # Create purchase
-                    # check purchase with this transactionId does not already exist => If yes, do nothing
-                    purchase = db.session.query(MdPurchase).filter(MdPurchase.apple_transaction_id == transactionId).first()
-                    if purchase is not None:
+                    # Create role
+                    # check role with this transactionId does not already exist => If yes, do nothing
+                    role = db.session.query(MdRole).filter(MdRole.apple_transaction_id == transactionId).first()
+                    if role is not None:
                         return {}, 200
-                    self.logger.debug(f'Create purchase with transactionId: {transactionId} - originalTransactionId: {originalTransactionId}')
-                    product = db.session.query(MdProduct).filter(MdProduct.product_apple_id == productId).first()
-                    purchase = MdPurchase(
+                    self.logger.debug(f'Create role with transactionId: {transactionId} - originalTransactionId: {originalTransactionId}')
+                    product = db.session.query(MdProfile).filter(MdProfile.product_apple_id == productId).first()
+                    role = MdRole(
                         product_fk=product.product_pk,
                         creation_date=datetime.now(),
                         apple_transaction_id=transactionId,
                         apple_original_transaction_id=originalTransactionId,
                         active=False
                     )
-                    db.session.add(purchase)
+                    db.session.add(role)
                     db.session.flush()
                     if notificationSubType == "BILLING_RECOVERY":
                         # The expired subscription that previously failed to renew has successfully renewed
-                        # If last purchase is not active, activate it again
+                        # If last role is not active, activate it again
                         self.logger.debug('The expired subscription that previously failed to renew has successfully renewed')
                         send_admin_email( "Subscription renewed after billing recovery",
-                                             PurchaseManager.purchases_email_receivers,
+                                             RoleManager.roles_email_receivers,
                             f"Subscription with originalTransactionId {originalTransactionId} and transactionId {transactionId} that previously failed to renew has successfully renewed."
                                       f"It has been re-activated")
                     elif notificationType == "DID_RENEW":
                         # just automatic renew
                         self.logger.debug('Automatic renew')
             else:
-                # Be sure we have a purchase and a user associated to the originalTransactionId
-                purchase = db.session.query(MdPurchase).filter(
-                    MdPurchase.apple_transaction_id == originalTransactionId).first()
-                if purchase is None:
+                # Be sure we have a role and a user associated to the originalTransactionId
+                role = db.session.query(MdRole).filter(
+                    MdRole.apple_transaction_id == originalTransactionId).first()
+                if role is None:
                     log_error(
-                        f"Purchase with transactionId {originalTransactionId} does not exist in mojodex db")
+                        f"Role with transactionId {originalTransactionId} does not exist in mojodex db")
                     send_admin_email("🚨 URGENT: Subscription error",
-                                     PurchaseManager.purchases_email_receivers,
-                                        f"Apple originalTransactionId {originalTransactionId} subscription event but associated purchase was not found in db."
+                                     RoleManager.roles_email_receivers,
+                                        f"Apple originalTransactionId {originalTransactionId} subscription event but associated role was not found in db."
                                         f"\nEvent: NOTIFICATION_TYPE: {notificationType} - Subtype: {notificationSubType} - TransactionID: {transactionId}")
                     return {
-                        "error": f"Purchase with apple_transaction_id {originalTransactionId} does not exist in mojodex db"}, 400
+                        "error": f"Role with apple_transaction_id {originalTransactionId} does not exist in mojodex db"}, 400
 
-                if purchase.user_id is None:
-                    log_error(f"Purchase with apple_transaction_id {originalTransactionId} has no user associated")
+                if role.user_id is None:
+                    log_error(f"Role with apple_transaction_id {originalTransactionId} has no user associated")
                     send_admin_email("🚨 URGENT: Subscription error",
-                                     PurchaseManager.purchases_email_receivers,
-                                        f"Apple originalTransactionId {originalTransactionId} - purchase_pk: {purchase.purchase_pk} - subscription event but associated purchase has no user associated."
+                                     RoleManager.roles_email_receivers,
+                                        f"Apple originalTransactionId {originalTransactionId} - role_pk: {role.role_pk} - subscription event but associated role has no user associated."
                                         f"\nEvent: NOTIFICATION_TYPE: {notificationType} - Subtype: {notificationSubType} - TransactionID: {transactionId}")
                     return {
-                        "error": f"Purchase with originalTransactionId {originalTransactionId} has no user associated"}, 400
+                        "error": f"Role with originalTransactionId {originalTransactionId} has no user associated"}, 400
 
-                user = db.session.query(MdUser).filter(MdUser.user_id == purchase.user_id).first()
+                user = db.session.query(MdUser).filter(MdUser.user_id == role.user_id).first()
                 if user is None:
-                    log_error(f"Purchase with apple_transaction_id {originalTransactionId} has unknown user associated")
+                    log_error(f"Role with apple_transaction_id {originalTransactionId} has unknown user associated")
                     send_admin_email("🚨 URGENT: Subscription error",
-                                     PurchaseManager.purchases_email_receivers,
-                                        f"Apple originalTransactionId {originalTransactionId} - purchase_pk: {purchase.purchase_pk} - subscription event but associated purchase has unknown user associated."
+                                     RoleManager.roles_email_receivers,
+                                        f"Apple originalTransactionId {originalTransactionId} - role_pk: {role.role_pk} - subscription event but associated role has unknown user associated."
                                         f"\nEvent: NOTIFICATION_TYPE: {notificationType} - Subtype: {notificationSubType} - TransactionID: {transactionId}")
                     return {
-                        "error": f"Purchase with apple_transaction_id {originalTransactionId} has unknown user associated"}, 400
+                        "error": f"Role with apple_transaction_id {originalTransactionId} has unknown user associated"}, 400
 
 
                     # else, it's just a renew, do nothing
@@ -175,17 +175,17 @@ class InAppApplePurchase(Resource):
                         self.logger.debug('The subscription enters the billing retry period')
                         # Send email to admins
                         send_admin_email("Subscription entering billing retry period",
-                                            PurchaseManager.purchases_email_receivers,
+                                            RoleManager.roles_email_receivers,
                             f"Subscription of user {user.email} enters the billing retry period."
                                       f"We should inform them that there may be an issue with their billing information.\n"
-                                      f"Access to purchase {purchase.purchase_pk} is still allowed.")
+                                      f"Access to role {role.role_pk} is still allowed.")
                     else:
                         # Stop access to service
                         self.logger.debug('Stop access to service')
-                        purchase_manager.deactivate_purchase(purchase)
+                        role_manager.deactivate_role(role)
                         # Send email to admins
                         send_admin_email("Subscription ended",
-                                         PurchaseManager.purchases_email_receivers,
+                                         RoleManager.roles_email_receivers,
                             f"Subscription of user {user.email} ended")
 
 
@@ -193,20 +193,20 @@ class InAppApplePurchase(Resource):
                     # Stop access to service
                     self.logger.debug('Stop access to service')
                     # Send email to Admin with subtype to understand why
-                    purchase_manager.deactivate_purchase(purchase)
+                    role_manager.deactivate_role(role)
                     # Send email to admins
                     send_admin_email(
                         "Subscription ended",
-                        PurchaseManager.purchases_email_receivers,
+                        RoleManager.roles_email_receivers,
                         f"Subscription of user {user.email} ended. notificationType=EXPIRED - Subtype: {notificationSubType}")
                 else:
                     # Many possible causes, just send email to admin for manual check
                     self.logger.debug('Many possible causes, just send email to Admin for manual check')
                     send_admin_email(
-                        "🚨 URGENT: Something unexpected happened on a purchase",
-                        PurchaseManager.purchases_email_receivers,
+                        "🚨 URGENT: Something unexpected happened on a role",
+                        RoleManager.roles_email_receivers,
                         f"notificationType={notificationType} - Subtype: {notificationSubType} - TransactionID: {transactionId} "
-                        f"- OriginalTransactionID: {originalTransactionId} - purchase_pk: {purchase.purchase_pk} - user_email: {user.email}")
+                        f"- OriginalTransactionID: {originalTransactionId} - role_pk: {role.role_pk} - user_email: {user.email}")
 
             db.session.commit()
             return {}, 200
@@ -214,10 +214,10 @@ class InAppApplePurchase(Resource):
             db.session.rollback()
             log_error(f"Error on apple purchase webhook : {e}")
             send_admin_email(
-                "🚨 URGENT: Error happened on a purchase",
-                PurchaseManager.purchases_email_receivers,
+                "🚨 URGENT: Error happened on a role",
+                RoleManager.roles_email_receivers,
                 f"notificationType={notificationType} - Subtype: {notificationSubType} - TransactionID: {transactionId} "
-                f"- OriginalTransactionID: {originalTransactionId} - purchase_pk: {purchase.purchase_pk} - user_email: {user.email}")
+                f"- OriginalTransactionID: {originalTransactionId} - role_pk: {role.role_pk} - user_email: {user.email}")
             return {"error": f"Error on apple purchase webhook : {e}"}, 400
 
 
@@ -247,7 +247,7 @@ class InAppApplePurchase(Resource):
             raise Exception(f"get_transaction_from_id : {e}")
 
 
-    # Associate user_id to purchase = verify transaction
+    # Associate user_id to role = verify transaction
     def put(self, user_id):
         if not request.is_json:
             log_error(f"Error adding apple purchase : Request must be JSON", notify_admin=True)
@@ -264,15 +264,15 @@ class InAppApplePurchase(Resource):
             user = db.session.query(MdUser).filter(MdUser.user_id == user_id).first()
             if not user:
                 log_error(f"Error adding purchase : Unknown user {user_id}")
-                send_admin_email("🚨 URGENT: New client purchase error",
-                                    PurchaseManager.purchases_email_receivers,
-                                    f"Trying to associate user to a purchase but user {user_id} not found in mojodex db")
+                send_admin_email("🚨 URGENT: New client role error",
+                                    RoleManager.roles_email_receivers,
+                                    f"Trying to associate user to a role but user {user_id} not found in mojodex db")
                 return {"error": f"Unknown user {user_id}"}, 400
 
 
-            result = db.session.query(MdPurchase, MdProduct)\
-                .join(MdProduct, MdProduct.product_pk == MdPurchase.product_fk)\
-                .filter(MdPurchase.apple_transaction_id == transaction_id).first()
+            result = db.session.query(MdRole, MdProfile)\
+                .join(MdProfile, MdProfile.product_pk == MdRole.product_fk)\
+                .filter(MdRole.apple_transaction_id == transaction_id).first()
 
             if not result:
                 signed_transaction_info = self.get_transaction_from_id(transaction_id)
@@ -280,59 +280,59 @@ class InAppApplePurchase(Resource):
                     signed_transaction_info)
                 if transactionId is None:
                     log_error(
-                        f"Error adding purchase : transaction with no transactionId")
-                    send_admin_email("🚨 URGENT: New client purchase error",
-                                     PurchaseManager.purchases_email_receivers,
+                        f"Error adding role : transaction with no transactionId")
+                    send_admin_email("🚨 URGENT: New client role error",
+                                     RoleManager.roles_email_receivers,
                                      f"PUT /purchase signed_transaction_info : {signed_transaction_info}")
                     return {
-                        "error": f"Error adding purchase : transaction with no transactionId"}, 400
+                        "error": f"Error adding role : transaction with no transactionId"}, 400
                 # if it is
-                # create purchase
-                product = db.session.query(MdProduct).filter(MdProduct.product_apple_id == productId).first()
-                purchase = MdPurchase(
+                # create role
+                product = db.session.query(MdProfile).filter(MdProfile.product_apple_id == productId).first()
+                role = MdRole(
                     product_fk=product.product_pk,
                     creation_date=datetime.now(),
                     apple_transaction_id=transactionId,
                     apple_original_transaction_id=originalTransactionId,
                     active=False
                 )
-                db.session.add(purchase)
+                db.session.add(role)
                 db.session.flush()
             else:
-                purchase, product = result
+                role, product = result
 
-            if purchase.user_id is not None:
-                if purchase.user_id != user_id:
-                    log_error(f"Error adding purchase : Purchase with apple_transaction_id {transaction_id} already has a different user associated")
-                    send_admin_email("🚨 URGENT: New client purchase error",
-                                        PurchaseManager.purchases_email_receivers,
-                                        f"Trying to associate user to a purchase but purchase with apple_transaction_id {transaction_id} already has a different user associated")
-                    return {"error": f"Purchase with apple_transaction_id {transaction_id} already has a different user associated"}, 400
+            if role.user_id is not None:
+                if role.user_id != user_id:
+                    log_error(f"Error adding role : Role with apple_transaction_id {transaction_id} already has a different user associated")
+                    send_admin_email("🚨 URGENT: New client role error",
+                                        RoleManager.roles_email_receivers,
+                                        f"Trying to associate user to a role but role with apple_transaction_id {transaction_id} already has a different user associated")
+                    return {"error": f"Role with apple_transaction_id {transaction_id} already has a different user associated"}, 400
                 else:
-                    self.logger.debug(f"Purchase with apple_transaction_id {transaction_id} already has a user but same one")
+                    self.logger.debug(f"Role with apple_transaction_id {transaction_id} already has a user but same one")
                     return {}, 200
 
-            purchase_manager = PurchaseManager()
+            role_manager = RoleManager()
             if not product.n_days_validity: # product is a subscription
-                if purchase_manager.user_has_active_subscription(user_id):
+                if role_manager.user_has_active_subscription(user_id):
                     return {"error": f"User already has an active subscription"}, 400
 
-            purchase.user_id = user_id
+            role.user_id = user_id
 
-            purchase.completed_date = datetime.now()
-            if purchase.apple_original_transaction_id == purchase.apple_transaction_id: # NEW PURCHASE
-                send_admin_email(subject="🥳 New client purchase",
-                                 recipients=PurchaseManager.purchases_email_receivers,
+            role.completed_date = datetime.now()
+            if role.apple_original_transaction_id == role.apple_transaction_id: # NEW ROLE
+                send_admin_email(subject="🥳 New client role",
+                                 recipients=RoleManager.roles_email_receivers,
                                  text=f"🎉 Congratulations ! {user.email} just bought {product.label} !")
-            # Activate purchase
-            purchase_manager.activate_purchase(purchase)
+            # Activate role
+            role_manager.activate_role(role)
 
             db.session.commit()
             return {}, 200
         except Exception as e:
             db.session.rollback()
-            log_error(f"Error adding apple purchase - transactionId: {transaction_id}: {e}", notify_admin=True)
-            return {"error": f"Error adding purchase: {e}"}, 400
+            log_error(f"Error adding apple role - transactionId: {transaction_id}: {e}", notify_admin=True)
+            return {"error": f"Error adding role: {e}"}, 400
 
 
 

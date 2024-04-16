@@ -37,19 +37,19 @@ class Product(Resource):
 
         try:
             # Check if label already exists
-            product = db.session.query(MdProduct).filter(MdProduct.label == product_label).first()
+            product = db.session.query(MdProfile).filter(MdProfile.label == product_label).first()
             if product is not None:
                 return {"error": f"Product label {product_label} already exists"}, 400
 
             # Check if stripe_id already exists
             if product_stripe_id:
-                product = db.session.query(MdProduct).filter(MdProduct.product_stripe_id == product_stripe_id).first()
+                product = db.session.query(MdProfile).filter(MdProfile.product_stripe_id == product_stripe_id).first()
                 if product is not None:
                     return {"error": f"Product stripe_id {product_stripe_id} already exists"}, 400
 
 
             # ensure it exists in db
-            product_category = db.session.query(MdProductCategory).filter(MdProductCategory.product_category_pk == product_category_pk).first()
+            product_category = db.session.query(MdProfileCategory).filter(MdProfileCategory.product_category_pk == product_category_pk).first()
             if product_category is None:
                 return {"error": f"Product category {product_category_pk} does not exist"}, 400
 
@@ -68,7 +68,7 @@ class Product(Resource):
                     return {"error": f"Missing name in translation"}, 400
 
 
-            product = MdProduct(
+            product = MdProfile(
                 label=product_label,
                 product_stripe_id=product_stripe_id,
                 product_apple_id=product_apple_id, 
@@ -86,7 +86,7 @@ class Product(Resource):
             for translation in displayed_data:
                 language_code = translation["language_code"]
                 product_name = translation["name"]
-                product_displayed_data = MdProductDisplayedData(
+                product_displayed_data = MdProfileDisplayedData(
                     product_fk=product.product_pk,
                     language_code=language_code,
                     name=product_name
@@ -121,7 +121,7 @@ class Product(Resource):
 
         try:
             # Check if product exists
-            product = db.session.query(MdProduct).filter(MdProduct.product_pk == product_pk).first()
+            product = db.session.query(MdProfile).filter(MdProfile.product_pk == product_pk).first()
             if product is None:
                 return {"error": f"Product {product_pk} does not exists"}, 400
 
@@ -133,7 +133,7 @@ class Product(Resource):
             if "product_category_fk" in request.json:
                 product_category_fk = request.json["product_category_fk"]
                 # Check if product category exists
-                product_category = db.session.query(MdProductCategory).filter(MdProductCategory.product_category_pk == product_category_fk).first()
+                product_category = db.session.query(MdProfileCategory).filter(MdProfileCategory.product_category_pk == product_category_fk).first()
                 if product_category is None:
                     return {"error": f"Product category {product_category_fk} does not exists"}, 400
                 # Update product category
@@ -156,13 +156,13 @@ class Product(Resource):
                         return {"error": f"Missing name in displayed_data for language_code: {language_code}"}, 400
 
                     # Check if product displayed data exists for this language_code
-                    product_displayed_data = db.session.query(MdProductDisplayedData)\
-                        .filter(MdProductDisplayedData.product_fk == product_pk)\
-                        .filter(MdProductDisplayedData.language_code == language_code)\
+                    product_displayed_data = db.session.query(MdProfileDisplayedData)\
+                        .filter(MdProfileDisplayedData.product_fk == product_pk)\
+                        .filter(MdProfileDisplayedData.language_code == language_code)\
                         .first()
                     if product_displayed_data is None:
                         # Create product displayed data
-                        product_displayed_data = MdProductDisplayedData(
+                        product_displayed_data = MdProfileDisplayedData(
                             product_fk=product_pk,
                             language_code=language_code,
                             name=translation["name"]
@@ -178,9 +178,9 @@ class Product(Resource):
                 product_stripe_id = request.json["product_stripe_id"]
                 # Check if stripe_id already exists
                 if product_stripe_id is not None:
-                    other_product = db.session.query(MdProduct)\
-                        .filter(MdProduct.product_stripe_id == product_stripe_id)\
-                        .filter(MdProduct.product_pk != product_pk)\
+                    other_product = db.session.query(MdProfile)\
+                        .filter(MdProfile.product_stripe_id == product_stripe_id)\
+                        .filter(MdProfile.product_pk != product_pk)\
                         .first()
                     if other_product is not None:
                         return {"error": f"Product stripe_id {product_stripe_id} already exists"}, 400
@@ -191,9 +191,9 @@ class Product(Resource):
                 product_apple_id = request.json["product_apple_id"]
                 # Check if apple_id already exists
                 if product_apple_id is not None:
-                    other_product = db.session.query(MdProduct)\
-                        .filter(MdProduct.product_apple_id == product_apple_id)\
-                        .filter(MdProduct.product_pk != product_pk)\
+                    other_product = db.session.query(MdProfile)\
+                        .filter(MdProfile.product_apple_id == product_apple_id)\
+                        .filter(MdProfile.product_pk != product_pk)\
                         .first()
                     if other_product is not None:
                         return {"error": f"Product apple_id {product_apple_id} already exists"}, 400

@@ -10,7 +10,7 @@ from mojodex_core.logging_handler import log_error
 
 from mojodex_backend_logger import MojodexBackendLogger
 
-from models.purchase_manager import PurchaseManager
+from models.role_manager import RoleManager
 
 
 class PurchaseEndStripeWebHook(Resource):
@@ -45,39 +45,39 @@ class PurchaseEndStripeWebHook(Resource):
             data = event['data']
             subscription_id = data['object']['id']
 
-            # find associated purchase in db:
-            purchase = db.session.query(MdPurchase).filter(MdPurchase.subscription_stripe_id == subscription_id).first()
-            if purchase is None:
+            # find associated role in db:
+            role = db.session.query(MdRole).filter(MdRole.subscription_stripe_id == subscription_id).first()
+            if role is None:
                 log_error(f"Purchase with subscription_stripe_id {subscription_id} does not exist in mojodex db")
-                message = f"Subscription id {subscription_id} ended but associated purchase was not found in db"
+                message = f"Subscription id {subscription_id} ended but associated role was not found in db"
                 send_admin_email(subject="URGENT: Subscription end error",
-                                           recipients=PurchaseManager.purchases_email_receivers,
+                                           recipients=RoleManager.roles_email_receivers,
                                            text=message)
 
-                return {"error": f"Purchase with subscription_stripe_id {subscription_id} does not exist in mojodex db"}, 400
+                return {"error": f"Role with subscription_stripe_id {subscription_id} does not exist in mojodex db"}, 400
 
-            # deactivate purchase
-            purchase_manager = PurchaseManager()
-            purchase_manager.deactivate_purchase(purchase)
+            # deactivate role
+            role_manager = RoleManager()
+            role_manager.deactivate_role(role)
 
 
-            user_email = db.session.query(MdUser.email).filter(MdUser.user_id == purchase.user_id).first()[0]
+            user_email = db.session.query(MdUser.email).filter(MdUser.user_id == role.user_id).first()[0]
             try:
                 message = f"Subscription of user {user_email} ended"
                 send_admin_email(subject="A client subscription ended",
-                                           recipients=PurchaseManager.purchases_email_receivers,
+                                           recipients=RoleManager.roles_email_receivers,
                                            text=message)
             except Exception as e:
                 log_error(f"Error sending mail : {e}")
 
             db.session.commit()
-            return {"purchase_pk": purchase.purchase_pk}, 200
+            return {"purchase_pk": role.role_pk}, 200
 
         except Exception as e:
-            log_error(f"Error in stripe webhook ending purchase: {e}")
+            log_error(f"Error in stripe webhook ending role: {e}")
             message = f"A subscription end error occurred : {e}\n See [https://dashboard.stripe.com/] for more details"
             send_admin_email(subject="URGENT: End of subscription error",
-                                       recipients=PurchaseManager.purchases_email_receivers,
+                                       recipients=RoleManager.roles_email_receivers,
                                        text=message)
             return {"error": f"Error in stripe webhook ending purchase: {e}"}, 409
 

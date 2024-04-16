@@ -7,12 +7,12 @@ from mojodex_backend_logger import MojodexBackendLogger
 import requests
 
 
-class UserTaskExecutionPurchaseUpdater:
-    logger_prefix = "UserTaskExecutionPurchaseUpdater:: "
+class UserTaskExecutionRoleUpdater:
+    logger_prefix = "UserTaskExecutionRoleUpdater:: "
 
     def __init__(self):
         try:
-            self.logger = MojodexBackendLogger(UserTaskExecutionPurchaseUpdater.logger_prefix)
+            self.logger = MojodexBackendLogger(UserTaskExecutionRoleUpdater.logger_prefix)
             self.sio = socketio.Client()
             self.__is_connected = False
             self.__connecting = False
@@ -22,7 +22,7 @@ class UserTaskExecutionPurchaseUpdater:
             self.sio.on('mojo_message', self.mojo_message_callback)
             self.secret = os.environ["PURCHASE_UPDATER_SOCKETIO_SECRET"]
         except Exception as e:
-            log_error(f"🔴 {self.logger_prefix} Error initializing purchase updater : {e}", notify_admin=True)
+            log_error(f"🔴 {self.logger_prefix} Error initializing role updater : {e}", notify_admin=True)
 
     # get is_connected
     @property
@@ -79,12 +79,12 @@ class UserTaskExecutionPurchaseUpdater:
                 "user_task_execution_pk": user_task_execution_pk}
             response = requests.post(url, json=data, headers=headers)
             if response.status_code != 200:
-                log_error(f"🔴 {self.logger_prefix} Error while associating purchase to user_task_execution : {response.text}",
+                log_error(f"🔴 {self.logger_prefix} Error while associating role to user_task_execution : {response.text}",
                           notify_admin=True)
             return {'backend_event_manager': True}, # Do not remove the "," => important for socketio callback receiver
 
         except Exception as e:
-            log_error(f"🔴 {self.logger_prefix} Error while associating purchase to user_task_execution : {e}",
+            log_error(f"🔴 {self.logger_prefix} Error while associating role to user_task_execution : {e}",
                       notify_admin=True)
             return {'backend_event_manager': True}, # Do not remove the "," => important for socketio callback receiver
 

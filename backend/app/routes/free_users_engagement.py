@@ -13,7 +13,7 @@ from mojodex_backend_logger import MojodexBackendLogger
 
 from mojodex_core.mail import send_admin_email
 
-from models.purchase_manager import PurchaseManager
+from models.role_manager import RoleManager
 
 
 class FreeUsersEngagementChecker(Resource):
@@ -70,10 +70,10 @@ class FreeUsersEngagementChecker(Resource):
             start_date_cutoff = self.calculate_previous_working_day(today)
 
             # Query for users with active free and limited products and MdUser.creation_date before the start_date_cutoff
-            purchases_query = db.session.query(MdUser). \
-                join(MdPurchase, MdUser.user_id == MdPurchase.user_id). \
-                join(MdProduct, MdPurchase.product_fk == MdProduct.product_pk). \
-                filter(and_(MdPurchase.active == True, MdProduct.free == True, MdProduct.n_days_validity.isnot(None),
+            roles_query = db.session.query(MdUser). \
+                join(MdRole, MdUser.user_id == MdRole.user_id). \
+                join(MdProfile, MdRole.product_fk == MdProfile.product_pk). \
+                filter(and_(MdRole.active == True, MdProfile.free == True, MdProfile.n_days_validity.isnot(None),
                             MdUser.creation_date < start_date_cutoff))
 
             # Query for users with any user_task_execution within the last 2 working days
@@ -85,7 +85,7 @@ class FreeUsersEngagementChecker(Resource):
 
             # Combine queries to get users with active free limited products and no recent user_task_execution
             # `except_` in SQLAlchemy is used to filter the results from the first query by excluding the results that are also present in the second query
-            result_query = purchases_query.except_(working_days_query)
+            result_query = roles_query.except_(working_days_query)
 
             # Execute the query and fetch the results
             users = result_query.limit(n_disengaged_users).offset(offset).all()
@@ -95,7 +95,7 @@ class FreeUsersEngagementChecker(Resource):
                 try:
                     message = f"User {user.user_id} - {user.email} currently in free trial is disengaged => They have done nothing in the last 2 working days (and nothing yet today)"
                     send_admin_email(subject="Disengaged free trial user",
-                                     recipients=PurchaseManager.purchases_email_receivers,
+                                     recipients=RoleManager.roles_email_receivers,
                                      text=message)
                 except Exception as e:
                     log_error(f"Error sending mail : {e}")

@@ -6,8 +6,8 @@ from flask import request
 from flask_restful import Resource
 from app import authenticate, db
 from mojodex_core.logging_handler import log_error
-from mojodex_core.entities import MdPurchase, MdProduct, MdProductCategory, MdUser, MdEvent
-from models.purchase_manager import PurchaseManager
+from mojodex_core.entities import MdRole, MdProfile, MdProfileCategory, MdUser, MdEvent
+from models.role_manager import RoleManager
 
 from mojodex_core.mail import send_admin_email
 from sqlalchemy import or_
@@ -15,21 +15,21 @@ from sqlalchemy import or_
 from mojodex_core.mail import mojo_mail_client
 
 
-class FreeProductAssociation(Resource):
+class FreeProfileAssociation(Resource):
     welcome_email_dir = "/data/mails/welcome"
 
     def __init__(self):
-        FreeProductAssociation.method_decorators = [authenticate()]
+        FreeProfileAssociation.method_decorators = [authenticate()]
 
     def put(self, user_id):
-        error_message = "Error associating free product"
+        error_message = "Error associating free profile"
         if not request.is_json:
             log_error(f"{error_message}: Request must be JSON", notify_admin=True)
             return {"error": "Request must be JSON"}, 400
 
         try:
             timestamp = request.json["datetime"]
-            product_category_pk = request.json["product_category_pk"]
+            profile_category_pk = request.json["product_category_pk"]
         except KeyError as e:
             log_error(f"{error_message} - request.json: {request.json}: Missing field {e}", notify_admin=True)
             return {"error": f"Missing field {e}"}, 400
@@ -40,67 +40,67 @@ class FreeProductAssociation(Resource):
                 log_error(f"{error_message} user_id {user_id} does not exist", notify_admin=True)
                 return {"error": f"user_id {user_id} does not exist"}, 400
 
-            # Check user never had any purchase (even expired)
-            user_free_purchase = db.session.query(MdPurchase)\
-                .filter(MdPurchase.user_id == user_id)\
+            # Check user never had any role (even expired)
+            user_free_role = db.session.query(MdRole)\
+                .filter(MdRole.user_id == user_id)\
                 .first()
-            if user_free_purchase is not None:
-                log_error(f"{error_message} user_id {user_id} asked for a free plan but already had a purchase", notify_admin=True)
-                return {"error": f"user_id {user_id} already had a purchase"}, 400
+            if user_free_role is not None:
+                log_error(f"{error_message} user_id {user_id} asked for a free plan but already had a role", notify_admin=True)
+                return {"error": f"user_id {user_id} already had a role"}, 400
 
-            # Check product_category exists
-            product_category = db.session.query(MdProductCategory).filter(MdProductCategory.product_category_pk == product_category_pk).first()
-            if product_category is None:
-                log_error(f"{error_message} user_id {user_id} - product_category_pk {product_category_pk} does not exist", notify_admin=True)
-                return {"error": f"product_category_pk {product_category_pk} does not exist"}, 400
+            # Check profile_category exists
+            profile_category = db.session.query(MdProfileCategory).filter(MdProfileCategory.profile_category_pk == profile_category_pk).first()
+            if profile_category is None:
+                log_error(f"{error_message} user_id {user_id} - profile_category_pk {profile_category_pk} does not exist", notify_admin=True)
+                return {"error": f"profile_category_pk {profile_category_pk} does not exist"}, 400
 
             # Associate category to user
-            user.product_category_fk = product_category_pk
+            user.profile_category_fk = profile_category_pk
             # Associate category goal to user
-            user.goal = product_category.implicit_goal
+            user.goal = profile_category.implicit_goal
 
 
-            # Find limited free product associated with product_category
-            product = db.session.query(MdProduct)\
-                .filter(MdProduct.product_category_fk == product_category_pk)\
-                .filter(MdProduct.free == True) \
-                .filter(or_(MdProduct.n_days_validity.isnot(None), MdProduct.n_tasks_limit.isnot(None))) \
+            # Find limited free profile associated with profile_category
+            profile = db.session.query(MdProfile)\
+                .filter(MdProfile.profile_category_fk == profile_category_pk)\
+                .filter(MdProfile.free == True) \
+                .filter(or_(MdProfile.n_days_validity.isnot(None), MdProfile.n_tasks_limit.isnot(None))) \
                 .first()
 
-            if product is None:
-                log_error(f"{error_message} user_id: {user_id} email: {user.email} - product_category_pk {product_category_pk} has no limited free product associated", notify_admin=True)
-                return {"error": f"product_category_pk {product_category_pk} has no limited free product associated"}, 400
+            if profile is None:
+                log_error(f"{error_message} user_id: {user_id} email: {user.email} - profile_category_pk {profile_category_pk} has no limited free profile associated", notify_admin=True)
+                return {"error": f"profile_category_pk {profile_category_pk} has no limited free profile associated"}, 400
 
-            # Create purchase
-            purchase = MdPurchase(
+            # Create role
+            role = MdRole(
                 user_id=user_id,
-                product_fk=product.product_pk,
+                profile_fk=profile.profile_pk,
                 creation_date=datetime.now()
             )
-            db.session.add(purchase)
+            db.session.add(role)
             db.session.flush()
 
-            # Activate purchase
-            purchase_manager = PurchaseManager()
-            purchase_manager.activate_purchase(purchase)
+            # Activate role
+            role_manager = RoleManager()
+            role_manager.activate_role(role)
 
             db.session.commit()
 
             try:
-                message = f"Free product {product.label} associated for user user_id: {user_id} email: {user.email}"
-                send_admin_email(subject="Free product associated",
-                                 recipients=PurchaseManager.purchases_email_receivers,
+                message = f"Free profile {profile.label} associated for user user_id: {user_id} email: {user.email}"
+                send_admin_email(subject="Free profile associated",
+                                 recipients=RoleManager.roles_email_receivers,
                                  text=message)
             except Exception as e:
                 log_error(f"Error sending mail : {e}")
 
-            current_purchases = purchase_manager.check_user_active_purchases(user_id)
-            purchasable_products = purchase_manager.get_purchasable_products(user_id)
+            current_roles = role_manager.check_user_active_roles(user_id)
+            purchasable_profiles = role_manager.get_purchasable_products(user_id)
 
             try:
                 # Now, let's send a welcome email to the user !
                 email_language = user.language_code if user.language_code else "en"
-                category = product_category.label
+                category = profile_category.label
                 email_file = os.path.join(self.welcome_email_dir, email_language, category + ".html")
 
                 # check if email file exists
@@ -137,8 +137,8 @@ class FreeProductAssociation(Resource):
 
 
             return {
-                "purchasable_products": purchasable_products,
-                "current_purchases": current_purchases
+                "purchasable_products": purchasable_profiles,
+                "current_purchases": current_roles
             }, 200
         except Exception as e:
             db.session.rollback()

@@ -1,5 +1,5 @@
 from routes.user import User
-from routes.purchase import Purchase
+from routes.role import Role
 from routes.company import Company
 from routes.session import Session
 from routes.error import Error
@@ -22,7 +22,7 @@ from routes.message import Message
 from routes.resource import MojoResource
 from routes.goal import Goal
 from routes.purchase_end_stripe_webhook import PurchaseEndStripeWebHook
-from routes.check_expired_purchases import ExpiredPurchasesChecker
+from routes.check_expired_purchases import ExpiredRolesChecker
 from routes.device import Device
 from routes.daily_notifications import DailyNotifications
 from routes.daily_emails import DailyEmails
@@ -33,7 +33,7 @@ from routes.language import Language
 from routes.timezone import Timezone
 from routes.product import Product
 from routes.product_task_association import ProductTaskAssociation
-from routes.manual_purchase import ManualPurchase
+from routes.manual_role import ManualRole
 from routes.task_tool_execution import TaskToolExecution
 from routes.mojo_message import MojoMessage
 from routes.inapp_apple_purchase import InAppApplePurchase
@@ -43,8 +43,8 @@ from routes.todo_scheduling import TodosScheduling
 from routes.todo_daily_emails import TodoDailyEmails
 from routes.task_tool_query import TaskToolQuery
 from routes.vocabulary import Vocabulary
-from routes.product_category import ProductCategory
-from routes.associate_free_product import FreeProductAssociation
+from routes.profile_category import ProfileCategory
+from routes.associate_free_profile import FreeProfileAssociation
 from routes.free_users_engagement import FreeUsersEngagementChecker
 from routes.retrieve_produced_text import RetrieveProducedText
 from routes.calendar_suggestion_notification import CalendarSuggestionNotifications
@@ -57,7 +57,7 @@ from routes.user_workflow_step_execution import UserWorkflowStepExecution
 from routes.user_task_execution_produced_text import UserTaskExecutionProducedText
 class HttpRouteManager:
     def __init__(self, api):
-        api.add_resource(Purchase, '/purchase')
+        api.add_resource(Role, '/purchase')
         api.add_resource(Session, '/session')
         api.add_resource(User, '/user')
         api.add_resource(Company, '/company')
@@ -82,7 +82,7 @@ class HttpRouteManager:
         api.add_resource(MojoResource, "/resource")
         api.add_resource(Goal, "/goal")
         api.add_resource(PurchaseEndStripeWebHook, "/subscription_end")
-        api.add_resource(ExpiredPurchasesChecker, "/check_expired_purchases")
+        api.add_resource(ExpiredRolesChecker, "/check_expired_purchases")
         api.add_resource(Device, "/device")
         api.add_resource(DailyNotifications, "/send_daily_notifications")
         api.add_resource(DailyEmails, "/send_daily_emails")
@@ -93,7 +93,7 @@ class HttpRouteManager:
         api.add_resource(Timezone, "/timezone")
         api.add_resource(Product, "/product")
         api.add_resource(ProductTaskAssociation, "/product_task_association")
-        api.add_resource(ManualPurchase, "/manual_purchase")
+        api.add_resource(ManualRole, "/manual_purchase")
         api.add_resource(TaskToolExecution, "/task_tool_execution")
         api.add_resource(MojoMessage, "/mojo_message")
         api.add_resource(InAppApplePurchase, "/in_app_apple_purchase")
@@ -103,8 +103,8 @@ class HttpRouteManager:
         api.add_resource(TodoDailyEmails, "/todo_daily_emails")
         api.add_resource(TaskToolQuery, "/task_tool_query")
         api.add_resource(Vocabulary, "/vocabulary")
-        api.add_resource(ProductCategory, "/product_category")
-        api.add_resource(FreeProductAssociation, "/associate_free_product")
+        api.add_resource(ProfileCategory, "/product_category")
+        api.add_resource(FreeProfileAssociation, "/associate_free_product")
         api.add_resource(FreeUsersEngagementChecker, "/check_disengaged_free_trial_users")
         api.add_resource(RetrieveProducedText, "/retrieve_produced_text")
         api.add_resource(CalendarSuggestionNotifications, "/calendar_suggestion_notifications")

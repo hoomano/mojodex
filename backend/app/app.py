@@ -134,9 +134,9 @@ HttpRouteManager(api)
 
 from models.session.session import Session as SessionModel
 
-from user_task_execution_purchase_updater import UserTaskExecutionPurchaseUpdater
+from user_task_execution_role_updater import UserTaskExecutionRoleUpdater
 
-userTaskExecutionPurchaseUpdater = UserTaskExecutionPurchaseUpdater()
+userTaskExecutionRoleUpdater = UserTaskExecutionRoleUpdater()
 
 from mojodex_core.logging_handler import log_error
 
@@ -154,7 +154,7 @@ def resume_session(session_id):
         emit('error', f"Session {session_id} not found")
         return
     join_room(session_id)
-    userTaskExecutionPurchaseUpdater.join_room(session_id)
+    userTaskExecutionRoleUpdater.join_room(session_id)
     session = SessionModel(session_id)
 
     return session
@@ -171,8 +171,8 @@ def handle_message(data):
         if payload_split:
             user_id = payload_split[0]
             join_room(f"mojo_events_{user_id}")
-        if not userTaskExecutionPurchaseUpdater.is_connected and not userTaskExecutionPurchaseUpdater.connecting:
-            userTaskExecutionPurchaseUpdater.connect()
+        if not userTaskExecutionRoleUpdater.is_connected and not userTaskExecutionRoleUpdater.connecting:
+            userTaskExecutionRoleUpdater.connect()
     except KeyError as e:
         main_logger.error(f'Someone tried to connect without a token : {e}')
         raise ConnectionRefusedError("Missing token")

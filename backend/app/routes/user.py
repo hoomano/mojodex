@@ -17,7 +17,7 @@ from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
 from cryptography.hazmat.primitives.asymmetric import rsa
 
-from models.purchase_manager import PurchaseManager
+from models.role_manager import RoleManager
 
 from mojodex_core.mail import send_admin_email
 from packaging import version
@@ -47,10 +47,6 @@ class User(Resource):
     error_user_not_registered_with_password="User is not registered with password."
     error_email_already_exists = "Email already exists."
 
-    def __init__(self):
-        self.purchase_manager = PurchaseManager()
-
-
 
     def register_user(self, email, app_version, name=None, password=None, google_id=None, microsoft_id=None, apple_id=None):
         # create user
@@ -68,7 +64,7 @@ class User(Resource):
         try:
             message = f"New user registered : \nuser_id: {user_id} \nemail: {email} \nname: {name} \napp_version: {app_version}"
             send_admin_email(subject="🎉 New user registered",
-                             recipients=PurchaseManager.purchases_email_receivers,
+                             recipients=RoleManager.roles_email_receivers,
                              text=message)
         except Exception as e:
             log_error(f"Error sending mail : {e}")

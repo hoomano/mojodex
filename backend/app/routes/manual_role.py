@@ -5,13 +5,13 @@ from flask_restful import Resource
 from app import db
 from mojodex_core.entities import *
 from datetime import datetime
-from models.purchase_manager import PurchaseManager
+from models.role_manager import RoleManager
 
 
-class ManualPurchase(Resource):
+class ManualRole(Resource):
     active_status = "active"
 
-    # Route to create manually a new purchase for a user
+    # Route to create manually a new role for a user
     # Route used only by Backoffice
     # Protected by a secret
     def put(self):
@@ -46,10 +46,10 @@ class ManualPurchase(Resource):
                 user = db.session.query(MdUser).filter(MdUser.email == user_email).first()
                 user_id = user.user_id
                 
-            product = db.session.query(MdProduct).filter(MdProduct.product_pk == product_pk).first()
-            purchase_manager = PurchaseManager()
+            product = db.session.query(MdProfile).filter(MdProfile.product_pk == product_pk).first()
+            role_manager = RoleManager()
 
-            purchase = MdPurchase(
+            role = MdRole(
                 user_id=user_id,
                 product_fk=product.product_pk,
                 creation_date=datetime.now()
@@ -58,34 +58,34 @@ class ManualPurchase(Resource):
             if product.free == False:
                 if "custom_purchase_id" not in request.json or request.json["custom_purchase_id"] is None:
                     return {"error": "Missing field custom_purchase_id"}, 400
-                purchase.custom_purchase_id = request.json["custom_purchase_id"]
+                role.custom_role_id = request.json["custom_purchase_id"]
 
             # If user has no category, associate user's goal and product category
             user = db.session.query(MdUser).filter(MdUser.user_id == user_id).first()
             if not user.product_category_fk:
-                product_category = db.session.query(MdProductCategory) \
-                    .join(MdProduct, MdProduct.product_category_fk == MdProductCategory.product_category_pk) \
-                    .filter(MdProduct.product_pk == product_pk).first()
+                product_category = db.session.query(MdProfileCategory) \
+                    .join(MdProfile, MdProfile.product_category_fk == MdProfileCategory.product_category_pk) \
+                    .filter(MdProfile.product_pk == product_pk).first()
                 user.product_category_fk = product_category.product_category_pk
                 user.goal = product_category.implicit_goal
                 db.session.flush()
 
-            db.session.add(purchase)
+            db.session.add(role)
             db.session.flush()
 
 
-            purchase_manager.activate_purchase(purchase)
+            role_manager.activate_role(role)
 
             db.session.commit()
 
-            return {"purchase_pk": purchase.purchase_pk}, 200
+            return {"purchase_pk": role.role_pk}, 200
         except Exception as e:
             db.session.rollback()
-            return {"error": f"Error while creating purchase: {e}"}, 500
+            return {"error": f"Error while creating role: {e}"}, 500
 
 
 
-    # Route to deactivate manually a purchase for a user
+    # Route to deactivate manually a role for a user
     # Route used only by Backoffice
     # Protected by a secret
     def post(self):
@@ -101,17 +101,17 @@ class ManualPurchase(Resource):
 
         try:
             timestamp = request.json["datetime"]
-            purchase_pk = request.json["purchase_pk"]
+            role_pk = request.json["purchase_pk"]
         except KeyError as e:
             return {"error": f"Missing field {e}"}, 400
 
         try:
-            purchase = db.session.query(MdPurchase).filter(MdPurchase.purchase_pk == purchase_pk).first()
-            purchase_manager = PurchaseManager()
-            purchase_manager.deactivate_purchase(purchase)
+            role = db.session.query(MdRole).filter(MdRole.role_pk == role_pk).first()
+            role_manager = RoleManager()
+            role_manager.deactivate_role(role)
             db.session.commit()
             return {}, 200
         except Exception as e:
             db.session.rollback()
-            return {"error": f"Error while deactivating purchase: {e}"}, 500
+            return {"error": f"Error while deactivating role: {e}"}, 500
 

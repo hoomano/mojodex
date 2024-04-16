@@ -32,7 +32,7 @@ class ProductTaskAssociation(Resource):
 
         try:
             # Check if product_pk exists
-            product = db.session.query(MdProduct).filter(MdProduct.product_pk == product_pk).first()
+            product = db.session.query(MdProfile).filter(MdProfile.product_pk == product_pk).first()
             if product is None:
                 return {"error": f"Product pk {product_pk} does not exist"}, 400
 
@@ -42,30 +42,30 @@ class ProductTaskAssociation(Resource):
                 return {"error": f"Task pk {task_pk} does not exist"}, 400
 
             # Check if product_task_association already exists
-            product_task_association = db.session.query(MdProductTask)\
-                .filter(MdProductTask.product_fk == product_pk, MdProductTask.task_fk == task_pk).first()
+            product_task_association = db.session.query(MdProfileTask)\
+                .filter(MdProfileTask.product_fk == product_pk, MdProfileTask.task_fk == task_pk).first()
             if product_task_association is not None:
                 return {"error": f"Product task association already exists"}, 400
 
             # Create product_task_association
-            product_task_association = MdProductTask(product_fk=product_pk, task_fk=task_pk)
+            product_task_association = MdProfileTask(product_fk=product_pk, task_fk=task_pk)
             db.session.add(product_task_association)
             db.session.flush()
 
-            # Enable user tasks to all users which active purchase is linked to this product
-            # Get all active purchases linked to this product
-            purchases = db.session.query(MdPurchase)\
-                .filter(MdPurchase.product_fk == product_pk, MdPurchase.active == True).all()
+            # Enable user tasks to all users which active role is linked to this product
+            # Get all active roles linked to this product
+            roles = db.session.query(MdRole)\
+                .filter(MdRole.product_fk == product_pk, MdRole.active == True).all()
 
-            for purchase in purchases:
+            for role in roles:
                 # if task not already in user_task, add it, else, enable it
                 user_task = db.session.query(MdUserTask) \
-                    .filter(MdUserTask.user_id == purchase.user_id) \
+                    .filter(MdUserTask.user_id == role.user_id) \
                     .filter(MdUserTask.task_fk == task.task_pk).first()
 
                 if not user_task:
                     user_task = MdUserTask(
-                        user_id=purchase.user_id,
+                        user_id=role.user_id,
                         task_fk=task.task_pk
                     )
                     db.session.add(user_task)

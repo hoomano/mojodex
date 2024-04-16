@@ -11,7 +11,7 @@ from models.session_creator import SessionCreator
 from sqlalchemy import func, and_, or_, text
 from sqlalchemy.sql.functions import coalesce
 
-from models.purchase_manager import PurchaseManager
+from models.role_manager import RoleManager
 
 
 class UserTaskExecution(Resource):
@@ -19,7 +19,6 @@ class UserTaskExecution(Resource):
     def __init__(self):
         UserTaskExecution.method_decorators = [authenticate(methods=["PUT", "GET", "DELETE"])]
         self.session_creator = SessionCreator()
-        self.purchase_manager = PurchaseManager()
 
     def put(self, user_id):
         if not request.is_json:
@@ -38,9 +37,9 @@ class UserTaskExecution(Resource):
         # Logic
         try:
             # Check if user has enough credits to create this task
-            purchase_manager = PurchaseManager()
-            purchase = purchase_manager.purchase_for_new_task(user_task_pk)
-            if purchase is None:
+            role_manager = RoleManager()
+            role = role_manager.role_for_new_task(user_task_pk)
+            if role is None:
                 return {"error": "no_purchase"}, 402
 
             session_creation = self.session_creator.create_session(user_id, platform, "form")
@@ -269,12 +268,12 @@ class UserTaskExecution(Resource):
 
             user_task_execution.end_date = datetime.now()
 
-            purchase = self.purchase_manager.associate_purchase_to_user_task_execution(user_task_execution_pk)
-            if purchase:
-                # check if purchase is all consumed
-                consumed = self.purchase_manager.purchase_is_all_consumed(purchase.purchase_pk)
+            role = self.role_manager.associate_role_to_user_task_execution(user_task_execution_pk)
+            if role:
+                # check if role is all consumed
+                consumed = self.role_manager.role_is_all_consumed(role.role_pk)
                 if consumed:
-                    self.purchase_manager.deactivate_purchase(purchase)
+                    self.role_manager.deactivate_role(role)
             db.session.commit()
             return {"user_task_execution_pk": user_task_execution_pk}, 200
         except Exception as e:

@@ -41,18 +41,18 @@ class ExpiredRolesChecker(Resource):
             return {"error": f"Missing datetime in body"}, 400
 
         try:
-            # Find all active roles with < 0 number of remaining days on products that are limited in time
+            # Find all active roles with < 0 number of remaining days on profiles that are limited in time
             # Get current time with timezone
             utc = pytz.UTC
             current_time = datetime.now(utc)
 
             result = db.session.query(MdRole, MdUser)\
-                .join(MdProfile, MdProfile.product_pk == MdRole.product_fk) \
+                .join(MdProfile, MdProfile.profile_pk == MdRole.profile_fk) \
                 .join(MdUser, MdUser.user_id == MdRole.user_id) \
                 .filter(MdRole.active == True) \
                 .filter(MdProfile.n_days_validity.isnot(None)) \
                 .filter(current_time - func.date(MdRole.creation_date) > text(
-                f'md_product.n_days_validity * interval \'1 day\'')) \
+                f'md_profile.n_days_validity * interval \'1 day\'')) \
                 .limit(n_roles) \
                 .all()
 

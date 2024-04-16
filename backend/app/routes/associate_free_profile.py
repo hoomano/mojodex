@@ -95,7 +95,7 @@ class FreeProfileAssociation(Resource):
                 log_error(f"Error sending mail : {e}")
 
             current_roles = role_manager.check_user_active_roles(user_id)
-            purchasable_profiles = role_manager.get_purchasable_products(user_id)
+            purchasable_profiles = role_manager.get_purchasable_profiles(user_id)
 
             try:
                 # Now, let's send a welcome email to the user !

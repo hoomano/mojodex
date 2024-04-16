@@ -69,10 +69,10 @@ class FreeUsersEngagementChecker(Resource):
             today = datetime.utcnow().date() - timedelta(days=3)
             start_date_cutoff = self.calculate_previous_working_day(today)
 
-            # Query for users with active free and limited products and MdUser.creation_date before the start_date_cutoff
+            # Query for users with active free and limited profiles and MdUser.creation_date before the start_date_cutoff
             roles_query = db.session.query(MdUser). \
                 join(MdRole, MdUser.user_id == MdRole.user_id). \
-                join(MdProfile, MdRole.product_fk == MdProfile.product_pk). \
+                join(MdProfile, MdRole.profile_fk == MdProfile.profile_pk). \
                 filter(and_(MdRole.active == True, MdProfile.free == True, MdProfile.n_days_validity.isnot(None),
                             MdUser.creation_date < start_date_cutoff))
 
@@ -83,7 +83,7 @@ class FreeUsersEngagementChecker(Resource):
                 .filter((func.timezone(text(f'md_user.timezone_offset * interval \'1 minute\''),
                                        MdUserTaskExecution.start_date) >= start_date_cutoff))
 
-            # Combine queries to get users with active free limited products and no recent user_task_execution
+            # Combine queries to get users with active free limited profiles and no recent user_task_execution
             # `except_` in SQLAlchemy is used to filter the results from the first query by excluding the results that are also present in the second query
             result_query = roles_query.except_(working_days_query)
 

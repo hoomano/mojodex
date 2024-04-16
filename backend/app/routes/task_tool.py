@@ -55,7 +55,7 @@ class TaskTool(Resource):
             db.session.rollback()
             return {"error": f"Error while creating task tool association: {e}"}, 500
 
-    # Route to update a product category
+
     # Route used only by Backoffice
     # Protected by a secret
     def post(self):

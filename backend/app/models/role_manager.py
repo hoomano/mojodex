@@ -32,7 +32,7 @@ class RoleManager:
 
     def check_user_active_roles(self, user_id):
         """
-        Returns whether user has an active role the name of the product the user has roled, and the number of remaining days of free trial if applicable
+        Returns whether user has an active role the name of the profile the user has roled, and the number of remaining days of free trial if applicable
         :param user_id:
         :return:
         """
@@ -44,8 +44,8 @@ class RoleManager:
                 current_roles = []
                 for user_active_role in user_active_roles:
                     # check role validity
-                    if user_active_role["is_free_product"]:  # Product is free
-                        self.logger.info("Product is free")
+                    if user_active_role["is_free_product"]:  # Profile is free
+                        self.logger.info("Profile is free")
                     elif user_active_role["custom_purchase_id"]:
                         # the role is managed by Backoffice
                         self.logger.info("Role managed by Backoffice")
@@ -124,7 +124,7 @@ class RoleManager:
                     func.json_object_agg(
                         MdProfileDisplayedData.language_code,
                         MdProfileDisplayedData.name
-                    ).label("product_displayed_data"),
+                    ).label("profile_displayed_data"),
                     MdProfileCategory, 
                     remaining_days.label("remaining_days")
                 ) \
@@ -154,19 +154,19 @@ class RoleManager:
                      "custom_purchase_id": result["MdRole"].custom_role_id,
                      "purchase_remaining_days": result["remaining_days"].days if result["remaining_days"] else None,
                      "n_tasks_consumed": self.__role_tasks_consumption(result["MdRole"].role_pk),
-                     "product_name": result["product_displayed_data"][user_language_code]
-                        if user_language_code in result["product_displayed_data"]
-                        else result["product_displayed_data"]["en"],
+                     "product_name": result["profile_displayed_data"][user_language_code]
+                        if user_language_code in result["profile_displayed_data"]
+                        else result["profile_displayed_data"]["en"],
                      "is_free_product": result["MdProfile"].free,
                      "product_n_tasks_limit": result["MdProfile"].n_tasks_limit,
                      "product_n_validity_days": result["MdProfile"].n_days_validity,
-                     "product_tasks": self.__get_product_tasks(result["MdProfile"], user_id)
+                     "product_tasks": self.__get_profile_tasks(result["MdProfile"], user_id)
                     } for result in results]
 
         except Exception as e:
             raise Exception(f"__user_active_roles : {e}")
 
-    def __get_product_tasks(self, product, user_id):
+    def __get_profile_tasks(self, profile, user_id):
         try:
             # Subquery to retrieve the tasks in the user_language_code
             user_lang_subquery = (
@@ -189,7 +189,7 @@ class RoleManager:
                 .subquery()
             )
                 
-            product_tasks = (
+            profile_tasks = (
                 db.session.query(
                     MdTaskDisplayedData.task_fk.label("task_fk"),
                     coalesce(
@@ -201,7 +201,7 @@ class RoleManager:
                 .outerjoin(en_subquery, en_subquery.c.task_fk == MdTaskDisplayedData.task_fk)
                 .join(MdTask, MdTask.task_pk == MdTaskDisplayedData.task_fk)
                 .join(MdProfileTask, MdProfileTask.task_fk == MdTask.task_pk)
-                .filter(MdProfileTask.profile_fk == product.profile_pk)
+                .filter(MdProfileTask.profile_fk == profile.profile_pk)
                 .group_by(
                     MdTaskDisplayedData.task_fk,
                     user_lang_subquery.c.user_lang_name_for_user,
@@ -209,9 +209,9 @@ class RoleManager:
                 )
                 .all())
         
-            return [product_task.name_for_user for product_task in product_tasks]
+            return [profile_task.name_for_user for profile_task in profile_tasks]
         except Exception as e:
-            raise Exception(f"__get_product_tasks : {e}")
+            raise Exception(f"__get_profile_tasks : {e}")
 
     def user_has_active_subscription(self, user_id):
         try:
@@ -225,7 +225,7 @@ class RoleManager:
         except Exception as e:
             raise Exception(f"user_has_active_subscription : {e}")
 
-    def get_purchasable_products(self, user_id):
+    def get_purchasable_profiles(self, user_id):
         try:
 
             # Get user's current category
@@ -242,16 +242,16 @@ class RoleManager:
             
             profile_category_pk, user_language_code = result
 
-            # User can buy any product of the same category that is not free
-            # If they already have a subscription (product.n_days_validity = None && product.n_tasks_limit = None, they can't buy another one
-            # All not free products of same category
-            purchasable_products = (
+            # User can buy any profile of the same category that is not free
+            # If they already have a subscription (profile.n_days_validity = None && profile.n_tasks_limit = None, they can't buy another one
+            # All not free profiles of same category
+            purchasable_profiles = (
                 db.session.query(
                     MdProfile,
                     func.json_object_agg(
                         MdProfileDisplayedData.language_code,
                         MdProfileDisplayedData.name
-                    ).label("product_displayed_data"),
+                    ).label("profile_displayed_data"),
                 )
                 .join(MdProfileDisplayedData, MdProfileDisplayedData.profile_fk == MdProfile.profile_pk)
                 .filter(MdProfile.profile_category_fk == profile_category_pk)
@@ -264,10 +264,10 @@ class RoleManager:
             )
             # Does user has an active subscription ?
             if self.user_has_active_subscription(user_id):
-                # filter out subscription products with n_days_validity
-                purchasable_products = purchasable_products.filter(or_(MdProfile.n_days_validity.isnot(None), MdProfile.n_tasks_limit.isnot(None)))
+                # filter out subscription profiles with n_days_validity
+                purchasable_profiles = purchasable_profiles.filter(or_(MdProfile.n_days_validity.isnot(None), MdProfile.n_tasks_limit.isnot(None)))
 
-            purchasable_products = purchasable_products.all()
+            purchasable_profiles = purchasable_profiles.all()
 
             # get user language
             user_language = db.session.query(MdUser.language_code) \
@@ -275,21 +275,21 @@ class RoleManager:
                 .first()
             user_language = user_language[0] if user_language else "en"
 
-            return [{"product_pk": purchasable_product.profile_pk,
-                     "name": product_displayed_data[user_language_code]
-                        if user_language_code in product_displayed_data 
-                        else product_displayed_data["en"],
-                     "product_stripe_id": purchasable_product.product_stripe_id,
-                     "product_apple_id": purchasable_product.product_apple_id,
-                     "n_days_validity": purchasable_product.n_days_validity,
-                     "n_tasks_limit": purchasable_product.n_tasks_limit,
+            return [{"product_pk": purchasable_profile.profile_pk,
+                     "name": profile_displayed_data[user_language_code]
+                        if user_language_code in profile_displayed_data 
+                        else profile_displayed_data["en"],
+                     "product_stripe_id": purchasable_profile.product_stripe_id,
+                     "product_apple_id": purchasable_profile.product_apple_id,
+                     "n_days_validity": purchasable_profile.n_days_validity,
+                     "n_tasks_limit": purchasable_profile.n_tasks_limit,
                      "stripe_price": self.__get_stripe_price(
-                         purchasable_product.product_stripe_id) if purchasable_product.product_stripe_id else None,
-                     "tasks": self.__get_product_tasks(purchasable_product, user_id)
-                    } for purchasable_product, product_displayed_data in purchasable_products]
+                         purchasable_profile.product_stripe_id) if purchasable_profile.product_stripe_id else None,
+                     "tasks": self.__get_profile_tasks(purchasable_profile, user_id)
+                    } for purchasable_profile, profile_displayed_data in purchasable_profiles]
 
         except Exception as e:
-            raise Exception(f"__get_purchasable_products : {e}")
+            raise Exception(f"__get_purchasable_profiles : {e}")
 
     def role_for_new_task(self, user_task_pk):
         try:
@@ -360,12 +360,12 @@ class RoleManager:
             # count how many user_task_execution are associated to this role
             count_user_task_execution = self.__role_tasks_consumption(role_pk)
 
-            product_n_tasks_limit = db.session.query(MdProfile.n_tasks_limit) \
+            profile_n_tasks_limit = db.session.query(MdProfile.n_tasks_limit) \
                 .join(MdRole, MdRole.profile_fk == MdProfile.profile_pk) \
                 .filter(MdRole.role_pk == role_pk) \
                 .first()[0]
 
-            return count_user_task_execution >= product_n_tasks_limit if product_n_tasks_limit else False
+            return count_user_task_execution >= profile_n_tasks_limit if profile_n_tasks_limit else False
         except Exception as e:
             raise Exception(f"{self.logger_prefix} :: role_is_all_consumed - role {role_pk}: {e}")
 
@@ -376,28 +376,28 @@ class RoleManager:
             last_expired_subscription = self.__get_last_expired_subscription(user_id)
 
             if last_expired_package:
-                last_expired_package, last_expired_package_product, last_expired_package_product_name, remaining_days = last_expired_package
+                last_expired_package, last_expired_package_profile, last_expired_package_profile_name, remaining_days = last_expired_package
                 last_expired_roles.append({
-                    "product_name": last_expired_package_product_name,
-                    "tasks": self.__get_product_tasks(last_expired_package_product, user_id),
+                    "product_name": last_expired_package_profile_name,
+                    "tasks": self.__get_profile_tasks(last_expired_package_profile, user_id),
                     "remaining_days": remaining_days,
-                    "n_tasks_limit": last_expired_package_product.n_tasks_limit,
-                    "n_days_validity": last_expired_package_product.n_days_validity,
-                    "is_free_product": last_expired_package_product.free,
+                    "n_tasks_limit": last_expired_package_profile.n_tasks_limit,
+                    "n_days_validity": last_expired_package_profile.n_days_validity,
+                    "is_free_product": last_expired_package_profile.free,
                     "n_tasks_consumed": self.__role_tasks_consumption(last_expired_package.role_pk),
                 })
 
             if last_expired_subscription:
-                last_expired_subscription, last_expired_subscription_product, last_expired_subscription_product_name, remaining_days = last_expired_subscription
+                last_expired_subscription, last_expired_subscription_profile, last_expired_subscription_profile_name, remaining_days = last_expired_subscription
                 if not last_expired_package or (
                         last_expired_package and last_expired_subscription.role_pk != last_expired_package.role_pk):
                     last_expired_roles.append({
-                        "product_name": last_expired_subscription_product_name,
-                        "tasks": self.__get_product_tasks(last_expired_subscription_product, user_id),
+                        "product_name": last_expired_subscription_profile_name,
+                        "tasks": self.__get_profile_tasks(last_expired_subscription_profile, user_id),
                         "remaining_days": remaining_days,
-                        "n_tasks_limit": last_expired_subscription_product.n_tasks_limit,
-                        "n_days_validity": last_expired_subscription_product.n_days_validity,
-                        "is_free_product": last_expired_subscription_product.free,
+                        "n_tasks_limit": last_expired_subscription_profile.n_tasks_limit,
+                        "n_days_validity": last_expired_subscription_profile.n_days_validity,
+                        "is_free_product": last_expired_subscription_profile.free,
                         "n_tasks_consumed": self.__role_tasks_consumption(last_expired_subscription.role_pk),
                     })
             return last_expired_roles
@@ -418,7 +418,7 @@ class RoleManager:
                 db.session.query(
                     MdRole, 
                     MdProfile,
-                    MdProfileDisplayedData.name.label("product_name"),
+                    MdProfileDisplayedData.name.label("profile_name"),
                     remaining_days.label("remaining_days")
                 )
                 .join(MdProfile, MdProfile.profile_pk == MdRole.profile_fk)
@@ -442,7 +442,7 @@ class RoleManager:
                 return None
             else:
                 last_expired_package = last_expired_package._asdict()
-            return last_expired_package["MdRole"], last_expired_package["MdProfile"], last_expired_package["product_name"], \
+            return last_expired_package["MdRole"], last_expired_package["MdProfile"], last_expired_package["profile_name"], \
                 last_expired_package["remaining_days"].days if last_expired_package["remaining_days"] else None
         except Exception as e:
             raise Exception(f"{self.logger_prefix} :: __get_last_expired_package - user {user_id}: {e}")
@@ -460,7 +460,7 @@ class RoleManager:
                 db.session.query(
                     MdRole, 
                     MdProfile, 
-                    MdProfileDisplayedData.name.label("product_name"),
+                    MdProfileDisplayedData.name.label("profile_name"),
                     remaining_days.label("remaining_days")
                 )
                 .join(MdProfile, MdProfile.profile_pk == MdRole.profile_fk)
@@ -484,7 +484,7 @@ class RoleManager:
                 return None
             else:
                 last_expired_subscription = last_expired_subscription._asdict()
-            return last_expired_subscription["MdRole"], last_expired_subscription["MdProfile"], last_expired_subscription["product_name"], \
+            return last_expired_subscription["MdRole"], last_expired_subscription["MdProfile"], last_expired_subscription["profile_name"], \
                 last_expired_subscription["remaining_days"].days if last_expired_subscription["remaining_days"] else None
         except Exception as e:
             raise Exception(f"{self.logger_prefix} :: __get_last_expired_subscription - user {user_id}: {e}")
@@ -494,11 +494,11 @@ class RoleManager:
 
             # if role is subscription  or free trial and user has active subscription, deactivate it
             # also deactivate free trial
-            role_product = db.session.query(MdProfile).filter(MdProfile.profile_pk == role.profile_fk).first()
-            product_is_free_trial = role_product.free and (
-                        role_product.n_days_validity or role_product.n_tasks_limit)
-            product_is_subscription = not role_product.n_days_validity and not role_product.n_tasks_limit
-            if product_is_free_trial or product_is_subscription:
+            role_profile = db.session.query(MdProfile).filter(MdProfile.profile_pk == role.profile_fk).first()
+            profile_is_free_trial = role_profile.free and (
+                        role_profile.n_days_validity or role_profile.n_tasks_limit)
+            profile_is_subscription = not role_profile.n_days_validity and not role_profile.n_tasks_limit
+            if profile_is_free_trial or profile_is_subscription:
                 user_active_subscription = db.session.query(MdRole) \
                     .join(MdProfile, MdProfile.profile_pk == MdRole.profile_fk) \
                     .filter(MdRole.user_id == role.user_id) \
@@ -511,7 +511,7 @@ class RoleManager:
                     self.deactivate_role(user_active_subscription)
 
             # enable user tasks from this role
-            # Add tasks from product_task to user_task
+            # Add tasks from profile_task to user_task
             tasks = db.session.query(MdTask) \
                 .join(MdProfileTask, MdProfileTask.task_fk == MdTask.task_pk) \
                 .filter(MdProfileTask.profile_fk == role.profile_fk).all()
@@ -535,15 +535,15 @@ class RoleManager:
 
             role.active = True
 
-            # If user has no goal, associate the implicit_goal of corresponding product
+            # If user has no goal, associate the implicit_goal of corresponding profile
             try:
                 user = db.session.query(MdUser).filter(MdUser.user_id == role.user_id).first()
                 if not user.goal:
-                    implicit_product_goal = db.session.query(MdProfileCategory.implicit_goal) \
+                    implicit_profile_goal = db.session.query(MdProfileCategory.implicit_goal) \
                         .join(MdProfile, MdProfile.profile_category_fk == MdProfileCategory.profile_category_pk) \
                         .filter(MdProfile.profile_pk == role.profile_fk).first()
-                    if implicit_product_goal:
-                        user.goal = implicit_product_goal[0]
+                    if implicit_profile_goal:
+                        user.goal = implicit_profile_goal[0]
             except Exception as e:
                 log_error(f"Error while associating implicit goal to user: {e}")
         except Exception as e:

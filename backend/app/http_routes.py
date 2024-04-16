@@ -31,8 +31,8 @@ from routes.text_type import TextType
 from routes.text_edit_action import TextEditAction
 from routes.language import Language
 from routes.timezone import Timezone
-from routes.product import Product
-from routes.product_task_association import ProductTaskAssociation
+from routes.profile import Profile
+from routes.profile_task_association import ProfileTaskAssociation
 from routes.manual_role import ManualRole
 from routes.task_tool_execution import TaskToolExecution
 from routes.mojo_message import MojoMessage
@@ -91,8 +91,8 @@ class HttpRouteManager:
         api.add_resource(TextEditAction, "/text_edit_action")
         api.add_resource(Language, "/language")
         api.add_resource(Timezone, "/timezone")
-        api.add_resource(Product, "/product")
-        api.add_resource(ProductTaskAssociation, "/product_task_association")
+        api.add_resource(Profile, "/product")
+        api.add_resource(ProfileTaskAssociation, "/product_task_association")
         api.add_resource(ManualRole, "/manual_purchase")
         api.add_resource(TaskToolExecution, "/task_tool_execution")
         api.add_resource(MojoMessage, "/mojo_message")

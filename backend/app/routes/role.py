@@ -43,19 +43,19 @@ class Role(Resource):
         try:
 
             product_stripe_id = request.json["product_stripe_id"]
-            product = db.session.query(MdProfile).filter(MdProfile.product_stripe_id == product_stripe_id).first()
-            if product is None:
+            profile = db.session.query(MdProfile).filter(MdProfile.product_stripe_id == product_stripe_id).first()
+            if profile is None:
                 log_error(f"Error adding role : product_stripe_id {product_stripe_id} does not exist")
                 return {"error": f"product_stripe_id {product_stripe_id} does not exist"}, 400
 
             role_manager = RoleManager()
-            if not product.n_days_validity: # product is a subscription
+            if not profile.n_days_validity: # profile is a subscription
                 if role_manager.user_has_active_subscription(user_id):
                     return {"error": f"User already has an active subscription"}, 400
             role = MdRole(
                 user_id=user_id,
                 session_stripe_id=stripe_session_id,
-                product_fk=product.product_pk,
+                profile_fk=profile.profile_pk,
                 creation_date=datetime.now(),
                 active=False
             )
@@ -110,7 +110,7 @@ class Role(Resource):
 
                 return {"error": f"Role with session_stripe_id {session_id} does not exist in mojodex db"}, 400
 
-            self.logger.debug(f"User trying to buy product: {Role.default_product_name}")
+            self.logger.debug(f"User trying to buy profile: {Role.default_profile_name}")
 
 
             role.customer_stripe_id = customer_id
@@ -125,9 +125,9 @@ class Role(Resource):
             db.session.commit()
             user_email = db.session.query(MdUser.email).filter(MdUser.user_id == role.user_id).first()[0]
 
-            product = db.session.query(MdProfile).filter(MdProfile.product_pk == role.product_fk).first()
+            profile = db.session.query(MdProfile).filter(MdProfile.profile_pk == role.profile_fk).first()
             try:
-                message = f"🎉 Congratulations ! {user_email} just bought {product.name} !"
+                message = f"🎉 Congratulations ! {user_email} just bought {profile.name} !"
                 send_admin_email(subject="🥳 New client role",
                                            recipients=RoleManager.roles_email_receivers,
                                            text=message)
@@ -158,10 +158,10 @@ class Role(Resource):
         try:
             role_manager = RoleManager()
             current_roles = role_manager.check_user_active_roles(user_id)
-            purchasable_products = role_manager.get_purchasable_products(user_id)
+            purchasable_profiles = role_manager.get_purchasable_profiles(user_id)
 
             return {
-                "purchasable_products": purchasable_products,
+                "purchasable_products": purchasable_profiles,
                 "current_purchases": current_roles,
                 "last_expired_purchase": role_manager.get_last_expired_roles(user_id),
             }, 200

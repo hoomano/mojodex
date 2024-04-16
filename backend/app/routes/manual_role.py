@@ -29,7 +29,7 @@ class ManualRole(Resource):
             timestamp = request.json["datetime"]
             # user_id or user_email
 
-            product_pk = request.json["product_pk"]
+            profile_pk = request.json["product_pk"]
         except KeyError as e:
             return {"error": f"Missing field {e}"}, 400
 
@@ -46,28 +46,28 @@ class ManualRole(Resource):
                 user = db.session.query(MdUser).filter(MdUser.email == user_email).first()
                 user_id = user.user_id
                 
-            product = db.session.query(MdProfile).filter(MdProfile.product_pk == product_pk).first()
+            profile = db.session.query(MdProfile).filter(MdProfile.profile_pk == profile_pk).first()
             role_manager = RoleManager()
 
             role = MdRole(
                 user_id=user_id,
-                product_fk=product.product_pk,
+                profile_fk=profile.profile_pk,
                 creation_date=datetime.now()
             )
 
-            if product.free == False:
+            if profile.free == False:
                 if "custom_purchase_id" not in request.json or request.json["custom_purchase_id"] is None:
                     return {"error": "Missing field custom_purchase_id"}, 400
                 role.custom_role_id = request.json["custom_purchase_id"]
 
-            # If user has no category, associate user's goal and product category
+            # If user has no category, associate user's goal and profile category
             user = db.session.query(MdUser).filter(MdUser.user_id == user_id).first()
-            if not user.product_category_fk:
-                product_category = db.session.query(MdProfileCategory) \
-                    .join(MdProfile, MdProfile.product_category_fk == MdProfileCategory.product_category_pk) \
-                    .filter(MdProfile.product_pk == product_pk).first()
-                user.product_category_fk = product_category.product_category_pk
-                user.goal = product_category.implicit_goal
+            if not user.profile_category_fk:
+                profile_category = db.session.query(MdProfileCategory) \
+                    .join(MdProfile, MdProfile.profile_category_fk == MdProfileCategory.profile_category_pk) \
+                    .filter(MdProfile.profile_pk == profile_pk).first()
+                user.profile_category_fk = profile_category.profile_category_pk
+                user.goal = profile_category.implicit_goal
                 db.session.flush()
 
             db.session.add(role)

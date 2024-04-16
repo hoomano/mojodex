@@ -111,9 +111,9 @@ class InAppApplePurchase(Resource):
                     if role is not None:
                         return {}, 200
                     self.logger.debug(f'Create role with transactionId: {transactionId} - originalTransactionId: {originalTransactionId}')
-                    product = db.session.query(MdProfile).filter(MdProfile.product_apple_id == productId).first()
+                    profile = db.session.query(MdProfile).filter(MdProfile.product_apple_id == productId).first()
                     role = MdRole(
-                        product_fk=product.product_pk,
+                        profile_fk=profile.profile_pk,
                         creation_date=datetime.now(),
                         apple_transaction_id=transactionId,
                         apple_original_transaction_id=originalTransactionId,
@@ -271,7 +271,7 @@ class InAppApplePurchase(Resource):
 
 
             result = db.session.query(MdRole, MdProfile)\
-                .join(MdProfile, MdProfile.product_pk == MdRole.product_fk)\
+                .join(MdProfile, MdProfile.profile_pk == MdRole.profile_fk)\
                 .filter(MdRole.apple_transaction_id == transaction_id).first()
 
             if not result:
@@ -288,9 +288,9 @@ class InAppApplePurchase(Resource):
                         "error": f"Error adding role : transaction with no transactionId"}, 400
                 # if it is
                 # create role
-                product = db.session.query(MdProfile).filter(MdProfile.product_apple_id == productId).first()
+                profile = db.session.query(MdProfile).filter(MdProfile.product_apple_id == productId).first()
                 role = MdRole(
-                    product_fk=product.product_pk,
+                    profile_fk=profile.profile_pk,
                     creation_date=datetime.now(),
                     apple_transaction_id=transactionId,
                     apple_original_transaction_id=originalTransactionId,
@@ -299,7 +299,7 @@ class InAppApplePurchase(Resource):
                 db.session.add(role)
                 db.session.flush()
             else:
-                role, product = result
+                role, profile = result
 
             if role.user_id is not None:
                 if role.user_id != user_id:
@@ -313,7 +313,7 @@ class InAppApplePurchase(Resource):
                     return {}, 200
 
             role_manager = RoleManager()
-            if not product.n_days_validity: # product is a subscription
+            if not profile.n_days_validity: # profile is a subscription
                 if role_manager.user_has_active_subscription(user_id):
                     return {"error": f"User already has an active subscription"}, 400
 
@@ -323,7 +323,7 @@ class InAppApplePurchase(Resource):
             if role.apple_original_transaction_id == role.apple_transaction_id: # NEW ROLE
                 send_admin_email(subject="🥳 New client role",
                                  recipients=RoleManager.roles_email_receivers,
-                                 text=f"🎉 Congratulations ! {user.email} just bought {product.label} !")
+                                 text=f"🎉 Congratulations ! {user.email} just bought {profile.label} !")
             # Activate role
             role_manager.activate_role(role)
 

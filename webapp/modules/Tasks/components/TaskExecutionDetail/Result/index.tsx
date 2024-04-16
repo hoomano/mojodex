@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/router";
 import BeatLoader from "react-spinners/BeatLoader";
 import { $getRoot, EditorState } from "lexical";
@@ -48,9 +48,20 @@ const Answer = ({
   const deleteDraft = useDeleteProducedText();
   const saveDraft = useSaveDraft();
 
+  // ref to keep track of user action
+  const isUserActionRef = useRef(true);
+
+  // By using a ref, you ensure that the flag's value is consistent across all renders and does not get caught up in the asynchronous state update batching. The `setTimeout` in the `useEffect` is used to push the re-enabling of the user action flag to the end of the call stack, ensuring that any `onChange` events triggered by the `setText` and `setTitle` calls are ignored.
+// Please note that using `setTimeout` with a delay of `0` is a common technique to defer an operation until after the current call stack has cleared, which can be useful in cases like this where you want to wait for all the synchronous code to execute before changing the ref value.
+
   useEffect(() => {
+    isUserActionRef.current = false; // Disable user action flag
     setText(producedText.text);
     setTitle(producedText.title);
+    // Re-enable user action flag after a delay to ensure onChange events are ignored
+    setTimeout(() => {
+      isUserActionRef.current = true;
+    }, 0);
   }, [producedText]);
 
   useEffect(() => {
@@ -72,6 +83,7 @@ const Answer = ({
   }, []);
 
   const onChangeText = async (state: EditorState) => {
+    //console.log("🔵 change text");
     const newUpdatedText: string = await new Promise((res) => {
       state.read(() => {
         const updatedText = $getRoot().getTextContent();
@@ -79,7 +91,7 @@ const Answer = ({
       });
     });
 
-    if (text !== newUpdatedText) {
+    if (isUserActionRef.current && text !== newUpdatedText) {
       setText(newUpdatedText);
       debouncedSaveDraft({ title, text: newUpdatedText });
     }
@@ -93,7 +105,7 @@ const Answer = ({
       });
     });
 
-    if (updatedTitle !== title) {
+    if (isUserActionRef.current && updatedTitle !== title) {
       setTitle(updatedTitle);
       debouncedSaveDraft({ title: updatedTitle, text });
     }
@@ -211,7 +223,9 @@ const Answer = ({
             placeholder={null}
             ErrorBoundary={LexicalErrorBoundary}
           />
-          <OnChangePlugin onChange={onChangeText} />
+          <OnChangePlugin onChange={(state) => {
+            onChangeText(state)
+          }} />
           <HistoryPlugin />
           <UpdatePlugin
             text={producedText?.text?.replace(properNounRegex, "$1") || ""}

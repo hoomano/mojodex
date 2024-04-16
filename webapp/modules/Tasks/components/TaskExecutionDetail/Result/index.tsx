@@ -28,6 +28,7 @@ type Props = {
   onGetNextProducedText: () => void;
   showPreviousButton: boolean;
   showNextButton: boolean;
+  onSaveNewProducedTextVersion: () => void;
 };
 
 const Answer = ({
@@ -38,6 +39,7 @@ const Answer = ({
   onGetNextProducedText,
   showPreviousButton,
   showNextButton,
+  onSaveNewProducedTextVersion
 }: Props) => {
   const router = useRouter();
 
@@ -52,7 +54,7 @@ const Answer = ({
   const isUserActionRef = useRef(true);
 
   // By using a ref, you ensure that the flag's value is consistent across all renders and does not get caught up in the asynchronous state update batching. The `setTimeout` in the `useEffect` is used to push the re-enabling of the user action flag to the end of the call stack, ensuring that any `onChange` events triggered by the `setText` and `setTitle` calls are ignored.
-// Please note that using `setTimeout` with a delay of `0` is a common technique to defer an operation until after the current call stack has cleared, which can be useful in cases like this where you want to wait for all the synchronous code to execute before changing the ref value.
+  // Please note that using `setTimeout` with a delay of `0` is a common technique to defer an operation until after the current call stack has cleared, which can be useful in cases like this where you want to wait for all the synchronous code to execute before changing the ref value.
 
   useEffect(() => {
     isUserActionRef.current = false; // Disable user action flag
@@ -83,7 +85,6 @@ const Answer = ({
   }, []);
 
   const onChangeText = async (state: EditorState) => {
-    //console.log("🔵 change text");
     const newUpdatedText: string = await new Promise((res) => {
       state.read(() => {
         const updatedText = $getRoot().getTextContent();
@@ -129,16 +130,15 @@ const Answer = ({
           production: newText,
           title: newTitle,
         };
-        console.log("🔵 save draft");
         saveDraft.mutate(payload, {
-          onSuccess: () => { },
+          onSuccess: () => { onSaveNewProducedTextVersion(); },
         });
       }
     },
     [producedText, title, text, userTaskExecutionPk]
   );
 
-  const debouncedSaveDraft = useCallback(debounce(onSaveDraft, 500), [producedText]);
+  const debouncedSaveDraft = useCallback(debounce(onSaveDraft, 1000), [producedText]);
 
   const onDeleteDraft = () => {
     if (producedText?.producedTextPk) {

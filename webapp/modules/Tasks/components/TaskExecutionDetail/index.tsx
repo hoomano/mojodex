@@ -104,6 +104,10 @@ const DraftDetail = () => {
           onGetNextProducedText={() => onGetProducedTextIndex(producedTextIndex + 1)}
           showPreviousButton={producedTextIndex > 1}
           showNextButton={producedTextIndex < numberOfProducedTextVersions}
+          onSaveNewProducedTextVersion={() => {
+            setProducedTextIndex(prevIndex => prevIndex + 1);
+            setNumberOfProducedTextVersions(prevVersions => prevVersions + 1);
+          }}
         />
       ),
       // disabled if editorDetails.textPk is null
@@ -234,7 +238,6 @@ const DraftDetail = () => {
     });
 
     socket.on(socketEvents.DRAFT_MESSAGE, (message: any, ack) => {
-      console.log("🟢 DRAFT MESSAGE");
       if (messagePkRef.current.includes(message?.message_pk)) {
         return;
       } else {
@@ -270,10 +273,6 @@ const DraftDetail = () => {
       });
 
       if (ack) {
-        console.log("Has ack");
-        console.log("session_id", sessionId);
-        console.log("message_pk", message?.message_pk);
-        console.log("produced_text_version_pk", message?.produced_text_version_pk);
         ack({
           session_id: sessionId,
           produced_text_version_pk: message?.produced_text_version_pk,

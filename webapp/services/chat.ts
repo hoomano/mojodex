@@ -17,6 +17,22 @@ export const deleteChat = (session_id: string) =>
     params: { session_id: session_id },
   });
 
-export const sendUserMessage = (payload: UserMessagePayload) =>
-  axiosClient.put(apiRoutes.sendUserMessage, payload);
+export const sendUserMessage = (payload: UserMessagePayload) => {
+  const formData = new FormData();
+  (Object.keys(payload) as Array<keyof UserMessagePayload>).forEach(key => {
+    const value = payload[key];
+    if (value !== undefined) {
+      formData.append(key, value.toString()); // Assuming all values can be safely converted to strings
+    }
+  });
+
+  const config = {
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }
+  };
+
+  // Send the form data using axios PUT request
+  return axiosClient.put(apiRoutes.sendUserMessage, formData, config);
+};
 

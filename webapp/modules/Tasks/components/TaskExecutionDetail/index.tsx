@@ -38,20 +38,6 @@ const DraftDetail = () => {
     ? decryptId(router.query.taskExecutionPK as string)
     : null;
 
-  useEffect(() => {
-    if (taskExecutionPK) {
-      setChatState({
-        currentTaskInfo: {
-          taskExecutionPK,
-          text: chatState?.currentTaskInfo?.text || "",
-          textPk: chatState?.currentTaskInfo?.textPk || null,
-          title: chatState?.currentTaskInfo?.title || "",
-        },
-      });
-    }
-  }, [taskExecutionPK]);
-
-
   const { data: currentTask } = useGetExecuteTaskById(taskExecutionPK);
   const [producedTextIndex, setProducedTextIndex] = useState(currentTask!.produced_text_version_index || 0);
   const [numberOfProducedTextVersions, setNumberOfProducedTextVersions] = useState(currentTask!.produced_text_version_index || 0);

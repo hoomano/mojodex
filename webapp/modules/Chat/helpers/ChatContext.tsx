@@ -46,16 +46,19 @@ const reducer = (
 // If sessionId is falsy value then it will consider as fresh chat session
 const ChatProvider = ({
   chatUsedFrom = ChatUsedFrom.Chat,
+  currentTaskInfo,
   children,
   sessionId,
 }: {
   chatUsedFrom?: ChatUsedFrom;
-  children: React.ReactNode;
+    children: React.ReactNode;
+    currentTaskInfo?: any;
     sessionId?: string | null | undefined;
 }) => {
   const [chatState, dispatch] = useReducer(reducer, {
     ...initialState,
-    chatUsedFrom
+    chatUsedFrom,
+    currentTaskInfo
   });
 
   useEffect(() => {

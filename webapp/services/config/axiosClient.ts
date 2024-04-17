@@ -17,6 +17,7 @@ axiosClient.interceptors.request.use(async (request) => {
 
   request.headers.version = appVersion;
   request.headers.platform = appPlatform;
+ 
 
   if (request.method === "get" || request.method === "delete") {
     request.params = {
@@ -25,13 +26,17 @@ axiosClient.interceptors.request.use(async (request) => {
       version: appVersion,
       platform: appPlatform
     };
-  } else {
+  } else if(!(request.data instanceof FormData)) {
     request.data = {
       ...request.data,
       datetime: new Date().toISOString(),
       version: appVersion,
       platform: appPlatform
     };
+  } else {
+    request.data.append("datetime", new Date().toISOString());
+    request.data.append("version", appVersion);
+    request.data.append("platform", appPlatform);
   }
 
   return request;

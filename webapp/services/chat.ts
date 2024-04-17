@@ -26,13 +26,7 @@ export const sendUserMessage = (payload: UserMessagePayload) => {
     }
   });
 
-  const config = {
-    headers: {
-      'Content-Type': 'multipart/form-data'
-    }
-  };
-
   // Send the form data using axios PUT request
-  return axiosClient.put(apiRoutes.sendUserMessage, formData, config);
+  return axiosClient.put(apiRoutes.sendUserMessage, formData);
 };
 

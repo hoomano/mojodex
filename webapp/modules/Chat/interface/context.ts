@@ -20,9 +20,7 @@ export interface ChatStateType {
   socket?: any;
   chatUsedFrom?: ChatUsedFrom;
   currentTaskInfo?: {
-    text: string;
-    title: string;
-    textPk: number | null;
+    producedTextPk: number | null;
     taskExecutionPK: number;
   } | null;
   isNewSession?: boolean;

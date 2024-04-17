@@ -3,7 +3,7 @@ import axiosClient from "./config/axiosClient";
 import {
   UpdateCompanyDetailsPayload,
   BusinessGoal,
-  ProductCategoryAPIResponse
+  ProfileCategoryAPIResponse
 } from "modules/Onboarding/interface";
 
 export const registerCompany = (companyUrl: string) =>
@@ -15,11 +15,11 @@ export const updateCompanyDetails = (payload: UpdateCompanyDetailsPayload) =>
 export const updateBusinessGoal = (payload: BusinessGoal) =>
   axiosClient.put(apiRoutes.goal, payload);
 
-export const getProductCategories = (): Promise<ProductCategoryAPIResponse> =>
-  axiosClient.get(apiRoutes.productCategories);
+export const getProfileCategories = (): Promise<ProfileCategoryAPIResponse> =>
+  axiosClient.get(apiRoutes.profileCategories);
 
-export const updateCategory = (product_category_pk: number) =>
-  axiosClient.put(apiRoutes.updateProductCategory, { "product_category_pk": product_category_pk});
+export const updateCategory = (profile_category_pk: number) =>
+  axiosClient.put(apiRoutes.updateProfileCategory, { "profile_category_pk": profile_category_pk});
 
 export const onboardingPresentedSet = (): Promise<any> =>
   axiosClient.put(apiRoutes.onboardingPresented);

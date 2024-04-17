@@ -14,12 +14,12 @@ export interface BusinessGoal {
   goal: string;
 }
 
-export interface ProductCategoryAPIResponse {
-  product_categories: ProductCategory[];
+export interface ProfileCategoryAPIResponse {
+  profile_categories: ProfileCategory[];
 }
 
-export interface ProductCategory {
-  product_category_pk: number;
+export interface ProfileCategory {
+  profile_category_pk: number;
   emoji: string;
   name: string;
   description: string;

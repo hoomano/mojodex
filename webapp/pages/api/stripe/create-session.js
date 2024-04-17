@@ -32,19 +32,19 @@ export default async function handler(req, res) {
         cancel_url: `${redirectUrl}?canceled=true`,
       });
 
-      const purchasePayload = {
+      const rolePayload = {
         datetime: new Date().toISOString(),
         stripe_session_id: checkoutSession.id,
         product_stripe_id: productStripeId,
       };
 
       const response = await axios.put(
-        `${process.env.MOJODEX_BACKEND_URI}/purchase`,
-        purchasePayload,
+        `${process.env.MOJODEX_BACKEND_URI}/role`,
+        rolePayload,
         { headers: { Authorization: req.headers.token } }
       );
 
-      if (response.data?.purchase_pk) {
+      if (response.data?.role_pk) {
         return res.status(200).json({ sessionId: checkoutSession.id });
       } else {
         throw new Error("Unable to create transactions");

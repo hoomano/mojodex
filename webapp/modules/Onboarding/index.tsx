@@ -9,12 +9,12 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 // import Layout from "components/Layout";
 import Goals from "./components/Goals";
-import ProductCategories from "./components/ProductCategories";
+import ProfileCategories from "./components/ProfileCategories";
 import useUpdateBusinessGoal from "./hooks/useUpdateBusinessGoal";
 import useUpdateCategory from "./hooks/useUpdateCategory";
 import useAlert from "helpers/hooks/useAlert";
 import useOnboardingPresented from "./hooks/useOnboardingPresented";
-import { ProductCategory } from "./interface";
+import { ProfileCategory } from "./interface";
 import { useTranslation } from "react-i18next";
 
 declare let window: {
@@ -32,7 +32,7 @@ export enum OnboardingSteps {
   BUSINESS_LEARNING = "BUSINESS_LEARNING",
   BUSINESS_DETAILS = "BUSINESS_DETAILS",
   //BUSINESS_GOALS = "BUSINESS_GOALS",
-  PRODUCT_CATEGORIES = "PRODUCT_CATEGORIES",
+  PROFILE_CATEGORIES = "PROFILE_CATEGORIES",
 }
 
 interface OnboardingStep {
@@ -52,7 +52,7 @@ const Onboarding = () => {
   const { t } = useTranslation("dynamic");
   const { update: updateAuthSession, data: session }: any = useSession();
   const [activeStep, setActiveStep] = useState<OnboardingSteps>(
-    OnboardingSteps.PRODUCT_CATEGORIES
+    OnboardingSteps.PROFILE_CATEGORIES
   );
   const editorExtensionId = process.env.NEXT_PUBLIC_EDITOR_EXTENSION_ID;
 
@@ -63,7 +63,7 @@ const Onboarding = () => {
   useEffect(() => {
     if (
       session?.authorization?.onboarding_presented &&
-      activeStep === OnboardingSteps.PRODUCT_CATEGORIES
+      activeStep === OnboardingSteps.PROFILE_CATEGORIES
     ) {
       router.push("/");
     }
@@ -124,9 +124,9 @@ const Onboarding = () => {
     });
   };
 
-  const setSelectedCategory = (item: ProductCategory) => {
+  const setSelectedCategory = (item: ProfileCategory) => {
     updateCategory.mutate(
-      item.product_category_pk,
+      item.profile_category_pk,
       {
         onSuccess: () => {
           setActiveStep(OnboardingSteps.WELCOME);
@@ -141,7 +141,7 @@ const Onboarding = () => {
     );
   }
 
-  const onCategoryClick = (item: ProductCategory) => {
+  const onCategoryClick = (item: ProfileCategory) => {
     setSelectedCategory(item);
   };
 
@@ -215,13 +215,13 @@ const Onboarding = () => {
         />
       ),
     },*/
-    [OnboardingSteps.PRODUCT_CATEGORIES]: {
+    [OnboardingSteps.PROFILE_CATEGORIES]: {
       title: t("onboarding.categorySelection.title"),
       description:
         `${t("onboarding.categorySelection.content")} ${t("onboarding.categorySelection.question")}`,
       icon: t("onboarding.categorySelection.emoji"),
       children: (
-        <ProductCategories
+        <ProfileCategories
           onCategoryClick={onCategoryClick}
         />
       ),

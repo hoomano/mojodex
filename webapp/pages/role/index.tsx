@@ -1,16 +1,16 @@
 import Layout from "components/Layout";
-import Purchase from "modules/Purchase";
+import Role from "modules/Role";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 
-const PurchasePage = () => {
+const RolePage = () => {
   return (
     <Layout>
-      <Purchase />
+      <Role />
     </Layout>
   );
 };
 
-export default PurchasePage;
+export default RolePage;
 
 export async function getStaticProps({ locale }: any) {
   return {

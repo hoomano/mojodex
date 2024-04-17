@@ -1,12 +1,12 @@
 import useStripeRedirection from "helpers/hooks/useStripeRedirection";
-import { PurchasableProducts } from "helpers/interface/alltypes";
+import { AvailableProfile } from "helpers/interface/alltypes";
 import { useTranslation } from "react-i18next";
 
 interface Props {
-  purchasableProducts: PurchasableProducts[];
+  availableProfiles: AvailableProfile[];
 }
 
-const UpgradePlan = ({ purchasableProducts }: Props) => {
+const UpgradePlan = ({ availableProfiles }: Props) => {
   const { handleStripeCheckout } = useStripeRedirection();
   const { t } = useTranslation("dynamic");
 
@@ -17,7 +17,7 @@ const UpgradePlan = ({ purchasableProducts }: Props) => {
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-      {purchasableProducts.map((plan) => {
+      {availableProfiles.map((plan) => {
         const isSubscribeType =
           plan.n_days_validity === null && plan.n_tasks_limit === null;
 

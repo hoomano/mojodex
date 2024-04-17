@@ -5,11 +5,11 @@ import Button from "components/Button";
 import Modal from "components/Modal";
 import useAcceptTermAndCondition from "helpers/hooks/useAcceptTermAndCondition";
 import { useRouter } from "next/router";
-import useUpdatePurchaseInSession from "helpers/hooks/useUpdatePurchaseInSession";
+import useUpdateRoleInSession from "helpers/hooks/useUpdateRoleInSession";
 import { useTranslation } from "react-i18next";
 
 const AcceptTermsAndConditionModal = () => {
-  useUpdatePurchaseInSession();
+  useUpdateRoleInSession();
   const [accepted, setAccepted] = useState(false);
   const [isTermsModalOpen, setIsTermsModalOpen] = useState(false);
   const router = useRouter();

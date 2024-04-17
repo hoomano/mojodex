@@ -1,23 +1,23 @@
 import React, { useEffect } from "react";
 import Layout from "components/Layout";
-import useGetPurchaseStatus from "helpers/hooks/useGetPurchaseStatus";
+import useGetRoleStatus from "helpers/hooks/useGetRoleStatus";
 import { useSession } from "next-auth/react";
-import { PurchaseStatusResponse } from "helpers/interface/alltypes";
+import { RoleStatusResponse } from "helpers/interface/alltypes";
 import Loader from "components/Loader";
 import { useTranslation } from "react-i18next";
 
 const Payment = () => {
   const { update, data: session }: any = useSession();
-  const getPurchaseStatus = useGetPurchaseStatus();
+  const getRoleStatus = useGetRoleStatus();
   const { t } = useTranslation("dynamic");
 
-  const onSuccess = (purchaseStatusResponse: PurchaseStatusResponse) => {
-    if (session && purchaseStatusResponse?.purchase_status === "active") {
+  const onSuccess = (roleStatusResponse: RoleStatusResponse) => {
+    if (session && roleStatusResponse?.role_status === "active") {
       const updatedSession = {
         ...session,
         authorization: {
           ...session.authorization,
-          ...purchaseStatusResponse,
+          ...roleStatusResponse,
         },
       };
       update(updatedSession);
@@ -25,14 +25,14 @@ const Payment = () => {
   };
 
   useEffect(() => {
-    if (session && !getPurchaseStatus.data) {
-      getPurchaseStatus.mutate(undefined, {
+    if (session && !getRoleStatus.data) {
+      getRoleStatus.mutate(undefined, {
         onSuccess,
       });
     }
-  }, [getPurchaseStatus.data, session]);
+  }, [getRoleStatus.data, session]);
 
-  if (!getPurchaseStatus.data) {
+  if (!getRoleStatus.data) {
     return (
       <Layout>
         <div className="h-screen w-full flex justify-center items-center">
@@ -44,7 +44,7 @@ const Payment = () => {
     );
   }
 
-  if (getPurchaseStatus.data?.purchase_status === "active") {
+  if (getRoleStatus.data?.role_status === "active") {
     return (
       <Layout>
         <div className="flex h-screen">

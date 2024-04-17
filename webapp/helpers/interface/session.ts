@@ -9,7 +9,7 @@ export interface AuthorizationType {
   language_code: string;
   terms_and_conditions_agreed: boolean;
   name: string;
-  purchase_status: "no_purchase" | "active";
+  role_status: "no_purchase" | "active";
 }
 
 export interface SessionType {

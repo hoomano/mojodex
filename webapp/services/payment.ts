@@ -2,7 +2,7 @@ import { apiRoutes } from "services";
 import axiosClient from "./config/axiosClient";
 
 import {
-  PurchaseStatusResponse,
+  RoleStatusResponse,
   StripeCheckoutSessionResponse,
 } from "helpers/interface/alltypes";
 
@@ -14,5 +14,5 @@ export const createStripeCheckoutSession = (params: {
     params,
   });
 
-export const getPurchaseStatus = (): Promise<PurchaseStatusResponse> =>
-  axiosClient.get(apiRoutes.purchaseStatus);
+export const getRoleStatus = (): Promise<RoleStatusResponse> =>
+  axiosClient.get(apiRoutes.roleStatus);

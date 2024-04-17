@@ -20,7 +20,7 @@ class RoleManager:
     user_before_version_046_category = "user_before_version_046"
     role_status_free_trial = "free_trial"
     role_status_active = "active"
-    role_status_no_role = "no_role"
+    role_status_no_role = "no_purchase"
     roles_email_receivers = os.environ["PURCHASES_EMAIL_RECEIVERS"].split(",") if "PURCHASES_EMAIL_RECEIVERS" in os.environ else []
 
 

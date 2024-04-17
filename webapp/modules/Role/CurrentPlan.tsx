@@ -2,10 +2,10 @@ import { useTranslation } from "react-i18next";
 
 interface Props {
   currentData: any;
-  isCurrentPurchaseActive: boolean;
+  isCurrentRoleActive: boolean;
 }
 
-const CurrentPlan = ({ currentData, isCurrentPurchaseActive }: Props) => {
+const CurrentPlan = ({ currentData, isCurrentRoleActive }: Props) => {
   const { t } = useTranslation("dynamic");
 
   return (
@@ -28,12 +28,12 @@ const CurrentPlan = ({ currentData, isCurrentPurchaseActive }: Props) => {
               </div>
               <button
                 className={`text-sm rounded-2xl py-1 px-3 ${
-                  isCurrentPurchaseActive
+                  isCurrentRoleActive
                     ? "bg-[#C0D9C6] text-[#54AA4A]"
                     : "bg-[#ebc1c6] text-[#f0274d]"
                 } self-start`}
               >
-                {isCurrentPurchaseActive
+                {isCurrentRoleActive
                   ? `${t("plan.purchaseBadge.activeState")}`
                   : `${t("plan.purchaseBadge.expiredState")}`}
               </button>
@@ -57,7 +57,7 @@ const CurrentPlan = ({ currentData, isCurrentPurchaseActive }: Props) => {
                     {!isRemainingDays && (
                       <div>
                         -{" "}
-                        {isCurrentPurchaseActive
+                        {isCurrentRoleActive
                           ? plan.n_validity_days || 0
                           : plan.n_days_validity || 0}{" "}
                         {t("plan.productCard.nValidityDaysSuffix")}
@@ -90,7 +90,7 @@ const CurrentPlan = ({ currentData, isCurrentPurchaseActive }: Props) => {
                       {t("plan.purchaseUsageCard.nDaysLeft")}{" "}
                       .............................{" "}
                       {plan.remaining_days ? plan.remaining_days : 0} /{" "}
-                      {isCurrentPurchaseActive
+                      {isCurrentRoleActive
                         ? plan.n_validity_days || 0
                         : plan.n_days_validity || 0}
                     </div>

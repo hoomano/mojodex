@@ -40,7 +40,7 @@ class UserTaskExecution(Resource):
             role_manager = RoleManager()
             role = role_manager.role_for_new_task(user_task_pk)
             if role is None:
-                return {"error": "no_purchase"}, 402
+                return {"error": RoleManager.role_status_no_role}, 402
 
             session_creation = self.session_creator.create_session(user_id, platform, "form")
             if "error" in session_creation[0]:

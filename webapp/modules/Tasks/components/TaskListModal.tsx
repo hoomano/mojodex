@@ -19,7 +19,7 @@ const TaskListModal = ({ tasks = [], isOpen, closed }: TaskListModalType) => {
   const { globalState } = useContext(globalContext) as GlobalContextType;
   const { t } = useTranslation("dynamic");
 
-  const hasPurchasePlan = !!tasks.find((task) => task.enabled);
+  const hasRolePlan = !!tasks.find((task) => task.enabled);
   
   return (
     <div>
@@ -37,11 +37,11 @@ const TaskListModal = ({ tasks = [], isOpen, closed }: TaskListModalType) => {
           />
 
           <div className="relative">
-            {!hasPurchasePlan && (
+            {!hasRolePlan && (
               <div className="w-full h-full absolute flex justify-center z-20 backdrop-blur-[3px]">
                 <button
                   className="z-10 bg-blue-700 text-white p-4 rounded-lg h-max mt-52"
-                  onClick={() => router.push("/purchase")}
+                  onClick={() => router.push("/role")}
                 >
                   🌟 Upgrade now
                 </button>

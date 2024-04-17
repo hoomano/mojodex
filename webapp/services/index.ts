@@ -32,8 +32,8 @@ const onboardingAPIRoutes = {
   registerCompany: "/api/company",
   updateCompanyDetails: "/api/company",
   goal: "api/goal",
-  productCategories: "api/product_category",
-  updateProductCategory: "api/associate_free_product",
+  profileCategories: "api/profile_category",
+  updateProfileCategory: "api/associate_free_profile",
   onboardingPresented: "api/onboarding"
 };
 
@@ -52,7 +52,7 @@ const resourcesAPIRoutes = {
 
 const paymentAPIRoutes = {
   createStripeCheckoutSession: "/api/stripe/create-session",
-  purchaseStatus: "/api/purchase",
+  roleStatus: "/api/role",
 };
 
 const taskToolExecutionsAPIRoutes = {

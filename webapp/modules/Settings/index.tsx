@@ -93,7 +93,7 @@ const Settings = () => {
         </div>
         <div
           className="bg-[#F3F4F6] px-3 py-2 w-[250px] rounded-md flex justify-between items-center cursor-pointer"
-          onClick={() => router.push("/purchase")}
+          onClick={() => router.push("/role")}
         >
           <span>{t("account.planButton")}</span>
           <span className="text-gray-400 text-sm">

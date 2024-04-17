@@ -15,14 +15,18 @@ from mojodex_backend_logger import MojodexBackendLogger
 from models.role_manager import RoleManager
 from packaging import version
 
+#####
+#THIS FILE IS TEMPORARY
+# It will bridge the gap during transition from 0.4.10 to 0.4.11 => "product" to "profile"
+#### TO BE REMOVED AFTER 0.4.11 RELEASE => Replaced by Role
 
-class Role(Resource):
-    logger_prefix = "Role Resource:: "
+class Purchase(Resource):
+    logger_prefix = "Purchase Resource:: "
 
     def __init__(self):
         self.logger = MojodexBackendLogger(
-            f"{Role.logger_prefix}")
-        Role.method_decorators = [authenticate(methods=["GET", "PUT"])]
+            f"{Purchase.logger_prefix}")
+        Purchase.method_decorators = [authenticate(methods=["GET", "PUT"])]
 
     def put(self, user_id):
         # This function is called when a stripe session is opened,
@@ -62,7 +66,7 @@ class Role(Resource):
             db.session.add(role)
             db.session.commit()
             db.session.refresh(role)
-            return {"role_pk": role.role_pk}, 200
+            return {"purchase_pk": role.role_pk}, 200
         except Exception as e:
             log_error(f"Error adding role: {e}")
             return {"error": f"Error adding role: {e}"}, 400
@@ -134,7 +138,7 @@ class Role(Resource):
             except Exception as e:
                 log_error(f"Error sending mail : {e}")
 
-            return {"role_pk": role.role_pk}, 200
+            return {"purchase_pk": role.role_pk}, 200
 
         except Exception as e:
             log_error(f"Error in stripe webhook validating role: {e}")
@@ -157,13 +161,13 @@ class Role(Resource):
 
         try:
             role_manager = RoleManager()
-            current_roles = role_manager.check_user_active_roles(user_id)
-            available_profiles = role_manager.get_available_profiles(user_id)
+            current_roles = role_manager.check_user_active_purchases(user_id)
+            purchasable_profiles = role_manager.get_available_products(user_id)
 
             return {
-                "available_profiles": available_profiles,
-                "current_roles": current_roles,
-                "last_expired_role": role_manager.get_last_expired_roles(user_id),
+                "purchasable_products": purchasable_profiles,
+                "current_purchases": current_roles,
+                "last_expired_purchase": role_manager.get_last_expired_purchases(user_id),
             }, 200
 
         except Exception as e:

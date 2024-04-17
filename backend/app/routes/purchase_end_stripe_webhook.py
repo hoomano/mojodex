@@ -71,7 +71,7 @@ class PurchaseEndStripeWebHook(Resource):
                 log_error(f"Error sending mail : {e}")
 
             db.session.commit()
-            return {"purchase_pk": role.role_pk}, 200
+            return {"role_pk": role.role_pk}, 200
 
         except Exception as e:
             log_error(f"Error in stripe webhook ending role: {e}")

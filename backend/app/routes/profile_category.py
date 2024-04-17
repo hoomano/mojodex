@@ -220,8 +220,8 @@ class ProfileCategory(Resource):
                 )
                 .all())
 
-            return {"product_categories": [{
-                "product_category_pk": profile_category.profile_category_pk,
+            return {"profile_categories": [{
+                "profile_category_pk": profile_category.profile_category_pk,
                 "emoji": profile_category.emoji,
                 "name": profile_category.displayed_data[user_language_code]["name_for_user"]
                     if user_language_code in profile_category.displayed_data 

@@ -30,6 +30,68 @@ class RoleManager:
         if "STRIPE_API_KEY" in os.environ:
             stripe.api_key = os.environ["STRIPE_API_KEY"]
 
+    # TEMPORARY FUNCTION
+    def check_user_active_purchases(self, user_id):
+        """
+        Returns whether user has an active role the name of the profile the user has roled, and the number of remaining days of free trial if applicable
+        :param user_id:
+        :return:
+        """
+        try:
+            user_active_roles = self.__user_active_roles(user_id)
+            if not user_active_roles:  # the user has no active role
+                return []
+            else:
+                current_roles = []
+                for user_active_role in user_active_roles:
+                    # check role validity
+                    if user_active_role["is_free_profile"]:  # Profile is free
+                        self.logger.info("Profile is free")
+                    elif user_active_role["custom_role_id"]:
+                        # the role is managed by Backoffice
+                        self.logger.info("Role managed by Backoffice")
+                    elif user_active_role["subscription_stripe_id"]:  # role is a subscription and has been done through stripe
+                        # check role is_active (subscription has been paid) using stripe api Retrieve subscription
+                        try:
+                            if stripe.Subscription.retrieve(
+                                    user_active_role["subscription_stripe_id"]).status == "active":
+                                self.logger.info("Role paid with Stripe")
+                        except Exception as e:
+                            send_admin_email(
+                                subject=f"URGENT: STRIPE API FAILED TO CHECK ROLE {user_active_role['role_pk']}",
+                                recipients=self.roles_email_receivers,
+                                text=f"Stripe API error: {e}")
+                    elif user_active_role["session_stripe_id"] and user_active_role["completed_date"]:  # role is NOT a subscription and has been done through stripe
+                        self.logger.info("Role paid with Stripe")
+                    elif user_active_role[
+                        "apple_transaction_id"]:  # role has been done through apple in-app role
+                        self.logger.info("Role paid with Apple")
+                    else:
+                        # if not, then there is a strange problem, let's send a message to admin
+                        message = f"Role {user_active_role['role_pk']} of user {user_id} has no stripe_id nor apple_transaction_id nor custom_role_id and is not free." \
+                                  f"\nPlease check this role."
+                        send_admin_email(subject="URGENT: Incorrect role in db",
+                                         recipients=self.roles_email_receivers,
+                                         text=message)
+                        try:
+                            self.__deactivate_role_from_role_pk(user_active_role['role_pk'])
+                            db.session.commit()
+                        except Exception as e:
+                            self.logger.error(
+                                f"Error deactivating role {user_active_role['role_pk']} : {e}")
+                        continue
+                    current_roles.append({"product_name": user_active_role["profile_name"],
+                                              "remaining_days": user_active_role["role_remaining_days"],
+                                              "n_validity_days": user_active_role["profile_n_validity_days"],
+                                              "n_tasks_limit": user_active_role["profile_n_tasks_limit"],
+                                              "n_tasks_consumed": user_active_role["n_tasks_consumed"],
+                                              "tasks": user_active_role["profile_tasks"],
+                                              "is_free_product": user_active_role["is_free_profile"]})
+
+            return current_roles
+        except Exception as e:
+            raise Exception(f"RoleManager :: check_user_active_roles : {e}")
+
     def check_user_active_roles(self, user_id):
         """
         Returns whether user has an active role the name of the profile the user has roled, and the number of remaining days of free trial if applicable
@@ -44,9 +106,9 @@ class RoleManager:
                 current_roles = []
                 for user_active_role in user_active_roles:
                     # check role validity
-                    if user_active_role["is_free_product"]:  # Profile is free
+                    if user_active_role["is_free_profile"]:  # Profile is free
                         self.logger.info("Profile is free")
-                    elif user_active_role["custom_purchase_id"]:
+                    elif user_active_role["custom_role_id"]:
                         # the role is managed by Backoffice
                         self.logger.info("Role managed by Backoffice")
                     elif user_active_role["subscription_stripe_id"]:  # role is a subscription and has been done through stripe
@@ -57,7 +119,7 @@ class RoleManager:
                                 self.logger.info("Role paid with Stripe")
                         except Exception as e:
                             send_admin_email(
-                                subject=f"URGENT: STRIPE API FAILED TO CHECK ROLE {user_active_role['purchase_pk']}",
+                                subject=f"URGENT: STRIPE API FAILED TO CHECK ROLE {user_active_role['role_pk']}",
                                 recipients=self.roles_email_receivers,
                                 text=f"Stripe API error: {e}")
                     elif user_active_role["session_stripe_id"] and user_active_role["completed_date"]:  # role is NOT a subscription and has been done through stripe
@@ -67,25 +129,25 @@ class RoleManager:
                         self.logger.info("Role paid with Apple")
                     else:
                         # if not, then there is a strange problem, let's send a message to admin
-                        message = f"Role {user_active_role['purchase_pk']} of user {user_id} has no stripe_id nor apple_transaction_id nor custom_role_id and is not free." \
+                        message = f"Role {user_active_role['role_pk']} of user {user_id} has no stripe_id nor apple_transaction_id nor custom_role_id and is not free." \
                                   f"\nPlease check this role."
                         send_admin_email(subject="URGENT: Incorrect role in db",
                                          recipients=self.roles_email_receivers,
                                          text=message)
                         try:
-                            self.__deactivate_role_from_role_pk(user_active_role['purchase_pk'])
+                            self.__deactivate_role_from_role_pk(user_active_role['role_pk'])
                             db.session.commit()
                         except Exception as e:
                             self.logger.error(
-                                f"Error deactivating role {user_active_role['purchase_pk']} : {e}")
+                                f"Error deactivating role {user_active_role['role_pk']} : {e}")
                         continue
-                    current_roles.append({"product_name": user_active_role["product_name"],
-                                              "remaining_days": user_active_role["purchase_remaining_days"],
-                                              "n_validity_days": user_active_role["product_n_validity_days"],
-                                              "n_tasks_limit": user_active_role["product_n_tasks_limit"],
+                    current_roles.append({"profile_name": user_active_role["profile_name"],
+                                              "remaining_days": user_active_role["role_remaining_days"],
+                                              "n_validity_days": user_active_role["profile_n_validity_days"],
+                                              "n_tasks_limit": user_active_role["profile_n_tasks_limit"],
                                               "n_tasks_consumed": user_active_role["n_tasks_consumed"],
-                                              "tasks": user_active_role["product_tasks"],
-                                              "is_free_product": user_active_role["is_free_product"]})
+                                              "tasks": user_active_role["profile_tasks"],
+                                              "is_free_profile": user_active_role["is_free_profile"]})
 
             return current_roles
         except Exception as e:
@@ -146,21 +208,21 @@ class RoleManager:
 
             results = [result._asdict() for result in results]
 
-            return [{"purchase_pk": result["MdRole"].role_pk,
+            return [{"role_pk": result["MdRole"].role_pk,
                      "subscription_stripe_id": result["MdRole"].subscription_stripe_id,
                      "session_stripe_id": result["MdRole"].session_stripe_id,
                      "completed_date": result["MdRole"].completed_date,
                      "apple_transaction_id": result["MdRole"].apple_transaction_id,
-                     "custom_purchase_id": result["MdRole"].custom_role_id,
-                     "purchase_remaining_days": result["remaining_days"].days if result["remaining_days"] else None,
+                     "custom_role_id": result["MdRole"].custom_role_id,
+                     "role_remaining_days": result["remaining_days"].days if result["remaining_days"] else None,
                      "n_tasks_consumed": self.__role_tasks_consumption(result["MdRole"].role_pk),
-                     "product_name": result["profile_displayed_data"][user_language_code]
+                     "profile_name": result["profile_displayed_data"][user_language_code]
                         if user_language_code in result["profile_displayed_data"]
                         else result["profile_displayed_data"]["en"],
-                     "is_free_product": result["MdProfile"].free,
-                     "product_n_tasks_limit": result["MdProfile"].n_tasks_limit,
-                     "product_n_validity_days": result["MdProfile"].n_days_validity,
-                     "product_tasks": self.__get_profile_tasks(result["MdProfile"], user_id)
+                     "is_free_profile": result["MdProfile"].free,
+                     "profile_n_tasks_limit": result["MdProfile"].n_tasks_limit,
+                     "profile_n_validity_days": result["MdProfile"].n_days_validity,
+                     "profile_tasks": self.__get_profile_tasks(result["MdProfile"], user_id)
                     } for result in results]
 
         except Exception as e:
@@ -225,7 +287,15 @@ class RoleManager:
         except Exception as e:
             raise Exception(f"user_has_active_subscription : {e}")
 
-    def get_purchasable_profiles(self, user_id):
+     # TEMPORARY FUNCTION
+    
+    # TEMPORARY FUNCTION
+    def get_available_products(self, user_id):
+        #####
+        #THIS FUNCTION IS TEMPORARY
+        # It will bridge the gap during transition from 0.4.10 to 0.4.11 => "product" to "profile"
+        #### TO BE REMOVED AFTER 0.4.11 RELEASE => Replaced by get_available_profiles
+        
         try:
 
             # Get user's current category
@@ -276,6 +346,72 @@ class RoleManager:
             user_language = user_language[0] if user_language else "en"
 
             return [{"product_pk": purchasable_profile.profile_pk,
+                     "name": profile_displayed_data[user_language_code]
+                        if user_language_code in profile_displayed_data 
+                        else profile_displayed_data["en"],
+                     "product_stripe_id": purchasable_profile.product_stripe_id,
+                     "product_apple_id": purchasable_profile.product_apple_id,
+                     "n_days_validity": purchasable_profile.n_days_validity,
+                     "n_tasks_limit": purchasable_profile.n_tasks_limit,
+                     "stripe_price": self.__get_stripe_price(
+                         purchasable_profile.product_stripe_id) if purchasable_profile.product_stripe_id else None,
+                     "tasks": self.__get_profile_tasks(purchasable_profile, user_id)
+                    } for purchasable_profile, profile_displayed_data in purchasable_profiles]
+
+        except Exception as e:
+            raise Exception(f"__get_purchasable_profiles : {e}")
+
+    def get_available_profiles(self, user_id):
+        try:
+
+            # Get user's current category
+            result = (
+                db.session.query(
+                    MdUser.profile_category_fk,
+                    MdUser.language_code
+                )
+                .filter(MdUser.user_id == user_id)
+            ).first()
+
+            if result is None:
+                return []
+            
+            profile_category_pk, user_language_code = result
+
+            # User can buy any profile of the same category that is not free
+            # If they already have a subscription (profile.n_days_validity = None && profile.n_tasks_limit = None, they can't buy another one
+            # All not free profiles of same category
+            purchasable_profiles = (
+                db.session.query(
+                    MdProfile,
+                    func.json_object_agg(
+                        MdProfileDisplayedData.language_code,
+                        MdProfileDisplayedData.name
+                    ).label("profile_displayed_data"),
+                )
+                .join(MdProfileDisplayedData, MdProfileDisplayedData.profile_fk == MdProfile.profile_pk)
+                .filter(MdProfile.profile_category_fk == profile_category_pk)
+                .filter(MdProfile.free == False)
+                .filter(MdProfile.status == "active")
+                .group_by(
+                    MdProfile.profile_pk,
+                    MdProfileDisplayedData.profile_fk
+                )
+            )
+            # Does user has an active subscription ?
+            if self.user_has_active_subscription(user_id):
+                # filter out subscription profiles with n_days_validity
+                purchasable_profiles = purchasable_profiles.filter(or_(MdProfile.n_days_validity.isnot(None), MdProfile.n_tasks_limit.isnot(None)))
+
+            purchasable_profiles = purchasable_profiles.all()
+
+            # get user language
+            user_language = db.session.query(MdUser.language_code) \
+                .filter(MdUser.user_id == user_id) \
+                .first()
+            user_language = user_language[0] if user_language else "en"
+
+            return [{"profile_pk": purchasable_profile.profile_pk,
                      "name": profile_displayed_data[user_language_code]
                         if user_language_code in profile_displayed_data 
                         else profile_displayed_data["en"],
@@ -344,8 +480,6 @@ class RoleManager:
             raise Exception(
                 f"{self.logger_prefix} :: associate_role_to_user_task_execution - user_task_execution {user_task_execution_pk}: {e}")
 
-
-
     def __role_tasks_consumption(self, role_pk):
         try:
             count_user_task_execution = db.session.query(MdUserTaskExecution) \
@@ -369,7 +503,13 @@ class RoleManager:
         except Exception as e:
             raise Exception(f"{self.logger_prefix} :: role_is_all_consumed - role {role_pk}: {e}")
 
-    def get_last_expired_roles(self, user_id):
+    # TEMPORARY FUNCTION
+    def get_last_expired_purchases(self, user_id):
+        #####
+        #THIS FUNCTION IS TEMPORARY
+        # It will bridge the gap during transition from 0.4.10 to 0.4.11 => "product" to "profile"
+        #### TO BE REMOVED AFTER 0.4.11 RELEASE => Replaced by get_last_expired_roles
+        
         try:
             last_expired_roles = []
             last_expired_package = self.__get_last_expired_package(user_id)
@@ -403,6 +543,42 @@ class RoleManager:
             return last_expired_roles
         except Exception as e:
             raise Exception(f"{self.logger_prefix} :: get_last_expired_roles - user {user_id}: {e}")
+
+    def get_last_expired_roles(self, user_id):
+        try:
+            last_expired_roles = []
+            last_expired_package = self.__get_last_expired_package(user_id)
+            last_expired_subscription = self.__get_last_expired_subscription(user_id)
+
+            if last_expired_package:
+                last_expired_package, last_expired_package_profile, last_expired_package_profile_name, remaining_days = last_expired_package
+                last_expired_roles.append({
+                    "profile_name": last_expired_package_profile_name,
+                    "tasks": self.__get_profile_tasks(last_expired_package_profile, user_id),
+                    "remaining_days": remaining_days,
+                    "n_tasks_limit": last_expired_package_profile.n_tasks_limit,
+                    "n_days_validity": last_expired_package_profile.n_days_validity,
+                    "is_free_profile": last_expired_package_profile.free,
+                    "n_tasks_consumed": self.__role_tasks_consumption(last_expired_package.role_pk),
+                })
+
+            if last_expired_subscription:
+                last_expired_subscription, last_expired_subscription_profile, last_expired_subscription_profile_name, remaining_days = last_expired_subscription
+                if not last_expired_package or (
+                        last_expired_package and last_expired_subscription.role_pk != last_expired_package.role_pk):
+                    last_expired_roles.append({
+                        "profile_name": last_expired_subscription_profile_name,
+                        "tasks": self.__get_profile_tasks(last_expired_subscription_profile, user_id),
+                        "remaining_days": remaining_days,
+                        "n_tasks_limit": last_expired_subscription_profile.n_tasks_limit,
+                        "n_days_validity": last_expired_subscription_profile.n_days_validity,
+                        "is_free_profile": last_expired_subscription_profile.free,
+                        "n_tasks_consumed": self.__role_tasks_consumption(last_expired_subscription.role_pk),
+                    })
+            return last_expired_roles
+        except Exception as e:
+            raise Exception(f"{self.logger_prefix} :: get_last_expired_roles - user {user_id}: {e}")
+
 
     def __get_last_expired_package(self, user_id):
         try:

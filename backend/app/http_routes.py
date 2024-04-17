@@ -1,3 +1,6 @@
+from routes.purchase import Purchase
+from routes.associate_free_product import FreeProductAssociation
+from routes.product_category import ProductCategory
 from routes.user import User
 from routes.role import Role
 from routes.company import Company
@@ -57,7 +60,8 @@ from routes.user_workflow_step_execution import UserWorkflowStepExecution
 from routes.user_task_execution_produced_text import UserTaskExecutionProducedText
 class HttpRouteManager:
     def __init__(self, api):
-        api.add_resource(Role, '/purchase')
+        api.add_resource(Purchase, '/purchase')
+        api.add_resource(Role, '/role')
         api.add_resource(Session, '/session')
         api.add_resource(User, '/user')
         api.add_resource(Company, '/company')
@@ -103,8 +107,10 @@ class HttpRouteManager:
         api.add_resource(TodoDailyEmails, "/todo_daily_emails")
         api.add_resource(TaskToolQuery, "/task_tool_query")
         api.add_resource(Vocabulary, "/vocabulary")
-        api.add_resource(ProfileCategory, "/product_category")
-        api.add_resource(FreeProfileAssociation, "/associate_free_product")
+        api.add_resource(ProfileCategory, "/profile_category")
+        api.add_resource(ProductCategory, "/product_category")
+        api.add_resource(FreeProductAssociation, "/associate_free_product")
+        api.add_resource(FreeProfileAssociation, "/associate_free_profile")
         api.add_resource(FreeUsersEngagementChecker, "/check_disengaged_free_trial_users")
         api.add_resource(RetrieveProducedText, "/retrieve_produced_text")
         api.add_resource(CalendarSuggestionNotifications, "/calendar_suggestion_notifications")

@@ -14,12 +14,16 @@ from sqlalchemy import or_
 
 from mojodex_core.mail import mojo_mail_client
 
+#####
+# THIS FILE IS TEMPORARY
+# It will bridge the gap during transition from 0.4.10 to 0.4.11 => "product" to "profile"
+#### TO BE REMOVED AFTER 0.4.11 RELEASE => Replaced by FreeProfileAssociation
 
-class FreeProfileAssociation(Resource):
+class FreeProductAssociation(Resource):
     welcome_email_dir = "/data/mails/welcome"
 
     def __init__(self):
-        FreeProfileAssociation.method_decorators = [authenticate()]
+        FreeProductAssociation.method_decorators = [authenticate()]
 
     def put(self, user_id):
         error_message = "Error associating free profile"
@@ -29,7 +33,7 @@ class FreeProfileAssociation(Resource):
 
         try:
             timestamp = request.json["datetime"]
-            profile_category_pk = request.json["profile_category_pk"]
+            profile_category_pk = request.json["product_category_pk"]
         except KeyError as e:
             log_error(f"{error_message} - request.json: {request.json}: Missing field {e}", notify_admin=True)
             return {"error": f"Missing field {e}"}, 400
@@ -94,8 +98,8 @@ class FreeProfileAssociation(Resource):
             except Exception as e:
                 log_error(f"Error sending mail : {e}")
 
-            current_roles = role_manager.check_user_active_roles(user_id)
-            available_profiles = role_manager.get_available_profiles(user_id)
+            current_roles = role_manager.check_user_active_purchases(user_id)
+            purchasable_profiles = role_manager.get_available_products(user_id)
 
             try:
                 # Now, let's send a welcome email to the user !
@@ -137,8 +141,8 @@ class FreeProfileAssociation(Resource):
 
 
             return {
-                "available_profiles": available_profiles,
-                "current_roles": current_roles
+                "purchasable_products": purchasable_profiles,
+                "current_purchases": current_roles
             }, 200
         except Exception as e:
             db.session.rollback()

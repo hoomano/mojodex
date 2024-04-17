@@ -146,7 +146,6 @@ class UserMessage(Resource):
             raise Exception(f"_trigger_user_task_execution_start:: {e}")
 
     def put(self, user_id):
-
         try:
             session_id = request.form['session_id']
             # This message_id is sent by the client to identify the message, no usage in backend but to avoid saving the same message twice

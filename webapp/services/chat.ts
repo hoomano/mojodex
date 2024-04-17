@@ -1,4 +1,4 @@
-import { GetChatHistoryResponse, ChatSession } from "modules/Chat/interface";
+import { GetChatHistoryResponse, ChatSession, UserMessagePayload } from "modules/Chat/interface";
 import { apiRoutes } from ".";
 import axiosClient from "./config/axiosClient";
 
@@ -16,3 +16,7 @@ export const deleteChat = (session_id: string) =>
   axiosClient.delete(apiRoutes.deleteChat, {
     params: { session_id: session_id },
   });
+
+export const sendUserMessage = (payload: UserMessagePayload) =>
+  axiosClient.put(apiRoutes.sendUserMessage, payload);
+

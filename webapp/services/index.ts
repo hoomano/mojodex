@@ -1,3 +1,5 @@
+import { send } from "process";
+
 const generalAPIRoutes = {
   updateSession: "api/session",
   acceptTermsAndCondition: "api/terms_and_conditions",
@@ -37,10 +39,11 @@ const onboardingAPIRoutes = {
   onboardingPresented: "api/onboarding"
 };
 
-const chatHistoryAPIRoutes = {
+const chatAPIRoutes = {
   chatHistory: "api/session",
   editChat: "api/session",
   deleteChat: "api/session",
+  sendUserMessage: "api/user_message",
 };
 
 const resourcesAPIRoutes = {
@@ -77,7 +80,7 @@ export const apiRoutes = {
   ...producedTextAPIRoutes,
 
   // Chat History API's
-  ...chatHistoryAPIRoutes,
+  ...chatAPIRoutes,
 
   // resource API's
   ...resourcesAPIRoutes,

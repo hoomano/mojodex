@@ -30,3 +30,14 @@ export interface ChatSession {
 export interface GetChatHistoryResponse {
   sessions: ChatSession[];
 }
+
+export interface UserMessagePayload {
+  session_id: string;
+  message_id: string;
+  message_date: string;
+  text: string;
+  user_task_execution_pk?: number;
+  use_message_placeholder: boolean;
+  use_draft_placeholder: boolean;
+  origin: string;
+}

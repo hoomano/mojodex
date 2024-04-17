@@ -48,7 +48,7 @@ The `init-mojodex-data.sql` file contains the SQL scripts to create the Mojodex 
 This will create the following Mojodex config:
 - user: `user@demo.com`
 - password: `password`
-- product: `demo`
+- profile: `demo`
 - task: `meeting_recap`
 
 You will be able to use the default user and password to connect to your assistant to check everything is working.
@@ -105,12 +105,12 @@ You should see the following tables:
  public | md_predefined_action_displayed_data       | table | <your_user>
  public | md_produced_text                          | table | <your_user>
  public | md_produced_text_version                  | table | <your_user>
- public | md_product                                | table | <your_user>
- public | md_product_category                       | table | <your_user>
- public | md_product_category_displayed_data        | table | <your_user>
- public | md_product_displayed_data                 | table | <your_user>
- public | md_product_task                           | table | <your_user>
- public | md_purchase                               | table | <your_user>
+ public | md_profile                                | table | <your_user>
+ public | md_profile_category                       | table | <your_user>
+ public | md_profile_category_displayed_data        | table | <your_user>
+ public | md_profile_displayed_data                 | table | <your_user>
+ public | md_profile_task                           | table | <your_user>
+ public | md_role                                   | table | <your_user>
  public | md_session                                | table | <your_user>
  public | md_task                                   | table | <your_user>
  public | md_task_displayed_data                    | table | <your_user>
@@ -139,5 +139,5 @@ sqlacodegen postgresql+psycopg2://$DBUSER:$DBPASS@localhost:5432/$DBNAME --outfi
 
 ## Go further
 
-You can use the Mojodex API to create new users, products, tasks, etc.
+You can use the Mojodex API to create new users, profiles, tasks, etc.
 See the [Mojodex API documentation](#) for more information.

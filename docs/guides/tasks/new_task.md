@@ -157,16 +157,16 @@ curl --location --request PUT 'http://localhost:5001/task' \
 ```
 This command calls the backend REST API to create the task in the database and returns the primary key of the task. You will need this primary key in next step.
 
-STEP 3: Associate the task to your user though a product.
+STEP 3: Associate the task to your user though a profile.
 
-Default user `demo@example.com` is associated with default product `demo` with pk 1. Let's add the task to this product.
+Default user `demo@example.com` is associated with default profile `demo` with pk 1. Let's add the task to this profile.
 ```
-curl --location --request PUT 'http://localhost:5001/product_task_association' \
+curl --location --request PUT 'http://localhost:5001/profile_task_association' \
 --header 'Authorization: backoffice_secret' \
 --header 'Content-Type: application/json' \
 --data-raw '{
  "datetime": "'"$(date -u +"%Y-%m-%dT%H:%M:%S.%3NZ")"'",
- "product_pk": 1,
+ "profile_pk": 1,
  "task_pk": <task_pk retrieved from previous command>
 }'
 ```

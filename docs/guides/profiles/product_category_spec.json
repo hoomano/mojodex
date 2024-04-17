@@ -4,8 +4,8 @@
     "displayed_data": [
         {
             "language_code": "en",
-            "name_for_user": "<NAME OF THE PRODUCT CATEGORY AS IT APPEARS IN THE APP>",
-            "description_for_user": "<DESCRIPTION OF THE PRODUCT CATEGORY AS IT APPEARS IN THE APP>"
+            "name_for_user": "<NAME OF THE PROFILE CATEGORY AS IT APPEARS IN THE APP>",
+            "description_for_user": "<DESCRIPTION OF THE PROFILE CATEGORY AS IT APPEARS IN THE APP>"
         }
     ],
     "emoji": "<EMOJI>",

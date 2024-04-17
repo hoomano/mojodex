@@ -89,7 +89,7 @@ First, we need to setup the category for the Sales Assistant.
 Replace `<BACKOFFICE_SECRET>` with your actual token and run the following command in your terminal
 ```shell
 curl -X 'PUT' \
-  'http://localhost:5001/product_category' \
+  'http://localhost:5001/profile_category' \
   -H 'Authorization: <BACKOFFICE_SECRET>' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
@@ -108,37 +108,37 @@ curl -X 'PUT' \
 }'
 ```
 
-> The terminal will return a response with the `product_category_pk`. We will need it for the next step.
+> The terminal will return a response with the `profile_category_pk`. We will need it for the next step.
 
-### 3.2 Setup the product
+### 3.2 Setup the profile
 
-Then, we need to setup the product for the Sales Assistant.
+Then, we need to setup the profile for the Sales Assistant.
 
-Replace `<BACKOFFICE_SECRET>` and `<product_category_pk>` with the previously created category pk and run the following command in your terminal:
+Replace `<BACKOFFICE_SECRET>` and `<profile_category_pk>` with the previously created category pk and run the following command in your terminal:
 
 ```shell
 curl -X 'PUT' \
-  'http://localhost:5001/product' \
+  'http://localhost:5001/profile' \
     -H 'Authorization: <BACKOFFICE_SECRET>' \
     -H 'accept: application/json' \
     -H 'Content-Type: application/json' \
     -d '{
   "datetime": "2024-02-14T10:53:06.502Z",
-  "product_label": "sales_assistant",
+  "profile_label": "sales_assistant",
   "displayed_data": [
     {
       "language_code": "en",
       "name": "Sales Assistant"
     }
   ],
-  "product_category_pk": <product_category_pk>,
+  "profile_category_pk": <profile_category_pk>,
   "is_free": true,
   "n_days_validity": 99999,
   "n_tasks_limit": null
 }'
 ```
 
-> We set a 99999 days (~273 years) duration for the product to avoid any expiration.
+> We set a 99999 days (~273 years) duration for the profile to avoid any expiration.
 
 ### 3.3 Setup the tasks
 
@@ -201,21 +201,21 @@ EOF
 ```
 
 
-### 3.4 Associate the tasks to the product
+### 3.4 Associate the tasks to the profile
 
-For each task created, we need to associate it to the product.
+For each task created, we need to associate it to the profile.
 
 Replace `<BACKOFFICE_SECRET>` and `<task_pk>` with each previously created task pk and run the following command in your terminal as many times as necessary:
 
 ```shell
 curl -X 'PUT' \
-  'http://localhost:5001/product_task_association' \
+  'http://localhost:5001/profile_task_association' \
   -H 'Authorization: <BACKOFFICE_SECRET>' \
     -H 'accept: application/json' \
     -H 'Content-Type: application/json' \
     -d '{
     "datetime": "2024-02-14T11:00:00.000Z",
-    "product_pk": <product_pk>,
+    "profile_pk": <profile_pk>,
     "task_pk": <task_pk>
 }'
 ```
@@ -226,31 +226,31 @@ Now, the final part is to provide access to the Sales Assistant to the sales tea
 
 ### 4.1 Deployment to the existing users
 
-To do so, we will provide access the sales team accounts to the Sales Assistant product.
+To do so, we will provide access the sales team accounts to the Sales Assistant profile.
 
 Run the following command for each user identified by their email:
 
 In a terminal, run the following command:
 
-> ℹ️ Replace `<BACKOFFICE_SECRET>` , `<product_pk>` and `<user_email>` with the actual values.
+> ℹ️ Replace `<BACKOFFICE_SECRET>` , `<profile_pk>` and `<user_email>` with the actual values.
 
 ```shell
 curl -X 'PUT' \
-  'http://localhost:5001/manual_purchase' \
+  'http://localhost:5001/manual_role' \
   -H 'Authorization: <BACKOFFICE_SECRET>' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{
   "datetime": "2024-02-14T11:53:58.771Z",
   "user_email": "demo@example.com",
-  "product_pk": <product_pk>,
-  "custom_purchase_id": "demo"
+  "profile_pk": <profile_pk>,
+  "custom_role_id": "demo"
 }'
 ```
 
 ### 4.2 New sales team members
 
-For new sales team members, during the onboarding process, they will now have to choose the 'Sales Assistant' product, that we just created.
+For new sales team members, during the onboarding process, they will now have to choose the 'Sales Assistant' profile, that we just created.
 
 ## Future work
 

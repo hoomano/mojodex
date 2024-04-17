@@ -1,13 +1,13 @@
 {
     "datetime": "2024-02-14T10:53:06.502Z",
-    "product_label": "<PRODUCT LABEL>",
+    "profile_label": "<PROFILE LABEL>",
     "displayed_data": [
         {
             "language_code": "en",
-            "name": "<PRODUCT NAME AS DISPLAYED IN THE USER'S INTERFACE"
+            "name": "<PROFILE NAME AS DISPLAYED IN THE USER'S INTERFACE"
         }
     ],
-    "product_category_pk": <product_category_pk>,
+    "profile_category_pk": <profile_category_pk>,
     "is_free": <true/false>,
     "n_days_validity": <n_days_validity or null>,
     "n_tasks_limit": <n_tasks_limit or null>

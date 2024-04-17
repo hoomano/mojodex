@@ -43,7 +43,7 @@ The Scheduled tasks are implemented in the `scheduler/app/main.py` file.
 ```python
 [...]
 # Scheduled tasks
-PurchasesExpirationChecker(3600) # check ended free_plan every 1 hour
+RolesExpirationChecker(3600) # check ended free_plan every 1 hour
 ExtractTodos(600) # extract todos every 10 minutes
 RescheduleTodos(3600) # reschedule todos every 1 hour
 if push_notifications:

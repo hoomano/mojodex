@@ -124,7 +124,6 @@ Here comes Mojodex's scheduler again with another hourly trigger.
 
 `/scheduler/app/main.py`
 ```python
-from scheduled_tasks.purchase_expiration_checker import PurchasesExpirationChecker
 [...]
 emails = 'AWS_ACCESS_KEY_ID' in os.environ and os.environ['AWS_ACCESS_KEY_ID']
 if emails:

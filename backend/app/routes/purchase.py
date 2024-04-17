@@ -20,6 +20,8 @@ from packaging import version
 # It will bridge the gap during transition from 0.4.10 to 0.4.11 => "product" to "profile"
 #### TO BE REMOVED AFTER 0.4.11 RELEASE => Replaced by Role
 
+
+### MAYBE KEEP IT AS /PURCHASE FOR STRIPE WEBHOOK
 class Purchase(Resource):
     logger_prefix = "Purchase Resource:: "
 

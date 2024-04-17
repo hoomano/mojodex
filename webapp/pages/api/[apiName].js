@@ -3,13 +3,10 @@ import axios from "axios";
 export default async function handler(req, res) {
   const { apiName } = req.query;
   
-
   let headers = {
-    "Content-type": "application/json; charset=UTF-8",
+    "Content-type": req.headers["content-type"] || "application/json",
     Authorization: req.headers.token,
   };
-
-  res.setHeader("Content-Type", "application/json");
 
   if (req.method === "GET") {
     try {
@@ -57,7 +54,9 @@ export default async function handler(req, res) {
   }
 
   if (req.method === "PUT") {
+
     const { body } = req;
+
     try {
       const response = await axios.put(
         `${process.env.MOJODEX_BACKEND_URI}/${apiName}`,

@@ -85,7 +85,7 @@ const ChatAction = ({ showPopup }: { showPopup: () => void }) => {
       };
 
       if (chatState.currentTaskInfo?.taskExecutionPK) {
-        const { taskExecutionPK, text, textPk, title } =
+        const { taskExecutionPK } =
           chatState.currentTaskInfo;
 
         payload = {
@@ -98,7 +98,6 @@ const ChatAction = ({ showPopup }: { showPopup: () => void }) => {
         };
       }
 
-      //socket.emit(socketEvents.USER_MESSAGE, payload);
       sendUserMessage.mutate(payload);
     }
 

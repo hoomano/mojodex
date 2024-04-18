@@ -40,9 +40,14 @@ class ProducedTextManager(ABC):
                 db.session.flush()
                 db.session.refresh(produced_text)
 
-            embedding = ProducedTextManager.embed_produced_text(title, text, self.user_id,
-                                                                user_task_execution_pk=self.user_task_execution_pk,
-                                                                task_name_for_system=self.task_name_for_system)
+            try:
+                embedding = ProducedTextManager.embed_produced_text(title, text, self.user_id,
+                                                                    user_task_execution_pk=self.user_task_execution_pk,
+                                                                    task_name_for_system=self.task_name_for_system)
+            except Exception as e:
+                self.logger.error(f"_save_produced_text:: error embedding text: {e}")
+                embedding = None
+                
             new_version = MdProducedTextVersion(produced_text_fk=produced_text.produced_text_pk, title=title,
                                                 production=text,
                                                 creation_date=datetime.now(), text_type_fk=text_type_pk,

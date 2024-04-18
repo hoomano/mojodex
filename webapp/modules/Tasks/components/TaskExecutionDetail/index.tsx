@@ -79,7 +79,6 @@ const DraftDetail = () => {
   const { t } = useTranslation("dynamic");
 
   useEffect(() => {
-    console.log("🟢 editorDetails.producedTextPk", editorDetails.producedTextPk);
     let resultTab = {
       key: "result",
       title: `${t("userTaskExecution.resultTab.title")}`,
@@ -154,7 +153,6 @@ const DraftDetail = () => {
     }
 
     setTabs(tabs);
-    console.log("🟢 selectedTab ", selectedTab);
     // if selectedTab is null
     if (selectedTab === null) {
       if (router.query.tab === "todos") {
@@ -164,9 +162,7 @@ const DraftDetail = () => {
         if (currentTask?.task_type !== "workflow") {
           setSelectedTab("result");
         } else {
-          console.log("🟢 ici 1");
           if (editorDetails.producedTextPk) {
-            console.log("🟢 ici 2");
             setSelectedTab("result");
           } else {
             setSelectedTab("process");

@@ -22,7 +22,6 @@ const useGetMessageHistory = () => {
             data.messages,
             chatUsedFrom || null
           );
-          console.log(!formattedOldMessages.length && !currentTaskInfo?.producedTextPk);
           let buildChatState: ChatStateType = {
             messages: [...formattedOldMessages],
             inputDisabled: !formattedOldMessages.length && !currentTaskInfo?.producedTextPk && chatUsedFrom !== ChatUsedFrom.Workflow, // todo: only if current task is not a workflow

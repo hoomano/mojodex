@@ -24,7 +24,6 @@ const TaskDetailsPage = () => {
   const { data: currentTaskInfo } = useGetExecuteTaskById(taskExecutionPK);
   
   const taskSessionId = currentTaskInfo?.session_id;
-  console.log(currentTaskInfo);
  
   return (
     <Layout>

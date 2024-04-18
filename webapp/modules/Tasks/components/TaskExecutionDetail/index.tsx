@@ -24,7 +24,8 @@ import { useQueryClient } from "@tanstack/react-query";
 
 const DraftDetail = () => {
   const [tabs, setTabs] = useState<TabType[]>([]);
-  const [selectedTab, setSelectedTab] = useState("result");
+  // selectedTab is a string, initially set to null
+  const [selectedTab, setSelectedTab] = useState<string | null>(null);
   const router = useRouter();
 
   const messagePkRef = useRef<number[]>([]);
@@ -78,6 +79,7 @@ const DraftDetail = () => {
   const { t } = useTranslation("dynamic");
 
   useEffect(() => {
+    console.log("🟢 editorDetails.producedTextPk", editorDetails.producedTextPk);
     let resultTab = {
       key: "result",
       title: `${t("userTaskExecution.resultTab.title")}`,
@@ -152,16 +154,19 @@ const DraftDetail = () => {
     }
 
     setTabs(tabs);
-
+    console.log("🟢 selectedTab ", selectedTab);
     // if selectedTab is null
     if (selectedTab === null) {
       if (router.query.tab === "todos") {
         setSelectedTab("todos");
       } else {
+        
         if (currentTask?.task_type !== "workflow") {
           setSelectedTab("result");
         } else {
+          console.log("🟢 ici 1");
           if (editorDetails.producedTextPk) {
+            console.log("🟢 ici 2");
             setSelectedTab("result");
           } else {
             setSelectedTab("process");
@@ -250,9 +255,7 @@ const DraftDetail = () => {
       setChatState({
         currentTaskInfo: {
           taskExecutionPK: user_task_execution_pk,
-          text: produced_text,
-          textPk: produced_text_pk,
-          title: produced_text_title,
+          producedTextPk: produced_text_pk,
         },
         inputDisabled: false,
         waitingForServer: false,
@@ -414,7 +417,7 @@ const DraftDetail = () => {
                   <TaskInputs inputs={currentTask!.json_inputs_values}/>
                 </ExpandableCard>*/}
               <Tab
-                selected={selectedTab}
+                selected={selectedTab!}
                 onChangeTab={(key: string) => setSelectedTab(key)}
                 tabs={tabs}
                 notReadTodos={currentTask?.n_not_read_todos}

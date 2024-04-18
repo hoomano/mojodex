@@ -108,7 +108,7 @@ const StepProcessDetail: React.FC<StepProcessDetailProps> = ({
 
       <ul role="list" className="space-y-6 w-full">
         {stepExecutions?.map((stepItem, activityItemIdx) => (
-          <li key={stepItem.workflow_step_pk} className="relative flex gap-x-4">
+          <li key={stepItem.user_workflow_step_execution_pk} className="relative flex gap-x-4">
             <div
               className={classNames(
                 activityItemIdx === stepExecutions.length - 1 ? 'h-6' : '-bottom-6',

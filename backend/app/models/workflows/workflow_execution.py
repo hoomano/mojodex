@@ -361,7 +361,7 @@ class WorkflowExecution:
         try:
             validated_steps_json = [step_execution.to_json() for step_execution in self.past_accepted_steps_executions]
             last_step_execution = self._get_last_step_execution()
-            if last_step_execution and last_step_execution.validated is None and last_step_execution.workflow_step.user_validation_required:
+            if last_step_execution and last_step_execution.validated is None and (last_step_execution.workflow_step.user_validation_required or last_step_execution.error_status):
                 validated_steps_json.append(last_step_execution.to_json())
             return validated_steps_json
         except Exception as e:

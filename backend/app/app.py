@@ -210,28 +210,6 @@ def handle_message(data):
         log_error(f"Error while managing session events : {e}")
 
 
-def socketio_event_callback(event_name, data):
-    try:
-        if "session_id" in data:
-            session_id = data["session_id"]
-            app_version = version.parse(data["version"])
-            session = resume_session(session_id)
-        else:
-            message = {"error": "No session_id provided", "session_id": data.get("session_id")}
-            emit('error', message)
-            return
-        session.process_chat_message(data)
-    except Exception as e:
-        message = {"error": str(e), "session_id": data.get("session_id")}
-        emit('error', message)
-
-
-@server_socket.on('user_message')
-def handle_message(data):
-    emit("user_message_reception", {"success": "User message has been received", "session_id": data.get("session_id")})
-    socketio_event_callback('user_message', data)
-
-
 @server_socket.on('disconnect')
 def handle_message():
     try:

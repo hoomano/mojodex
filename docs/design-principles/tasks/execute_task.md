@@ -20,8 +20,8 @@ The task execution process involves several concepts matching database tables.
 #### Session
 - A `session` represents an interaction between the user and the assistant. It captures the messages exchanged between the user and the assistant, as well as the state of the conversation at any given time. A `user_task_execution` always needs a `session` for the user and its assistant to co-work on the task.
 
-> Note: With existing interface, a `user_task_execution` has 1 `session` and a `session` has 1 `user_task_execution`. This is a 1-1 relationship.
-> This being said, the architecture is prepared for 1 `session` to have multiple `user_task_execution` in the future, for example using a more general chat with routing to specific tasks.
+> Note: With existing interface, a `user_task_execution` has 1 `session`.
+> 1 `session` can have multiple `user_task_execution`, for example using a more general chat with routing to specific tasks.
 
 #### Message
 - A `message` represents a single message exchanged between the user and the assistant within a session. It captures the content of the message, sender, timestamp of the message, and other relevant metadata depeding on the type of message. In the database, a `json` field is used to store the content of the message, allowing high flexibility regarding stored data.
@@ -82,9 +82,9 @@ From those instructions, there are 2 ways to start the task:
 #### 2.1. User Task Execution Start from filled form
 This is the method used in the web interface. The user fills the form and submit it. This generates a call to POST `/user_task_execution_run` to the backend (`backend/app/routes/user_task_execution_run.py`), specifying the `user_task_execution_pk` received at previous step and the values of filled form.
 
-Resource associated to the route updated the User Task Execution instance and instanciates a `Task Manager`(`backend/app/models/task/task_manager.py`).
+Resource associated to the route updates the User Task Execution instance and instanciates a `Session`(`backend/app/models/session/session.py`).
 
-Finally, it launches in a parallel thread the start of the task by running task_manager.`start_task_from_form` method.
+Finally, it launches in a parallel thread the start of the task by running session.`process_form_input` method.
 
 ```python
 [...]
@@ -95,20 +95,16 @@ class UserTaskExecutionRun(Resource):
         user_task_execution.start_date = datetime.now()
         db.session.commit()
         [...]
-        task_manager = TaskManager(user, user_task_execution.session_id, platform, voice_generator,
-                                    mojo_messages_audio_storage,
-                                    task=task,
-                                    user_task_execution=user_task_execution)
-        def browse_missing_info_callback(app_version, task_manager, use_message_placeholder, use_draft_placeholder, tag_proper_nouns):
-                task_manager.start_task_from_form(app_version, use_message_placeholder=use_message_placeholder, use_draft_placeholder=use_draft_placeholder, tag_proper_nouns=tag_proper_nouns)
-                return
-
+        from models.session.session import Session as SessionModel
+        session = SessionModel(user_task_execution.session_id)
+        def launch_process(session, app_version, platform, user_task_execution_pk, use_message_placeholder, use_draft_placeholder):
+            session.process_form_input( app_version, platform, user_task_execution_pk, use_message_placeholder=use_message_placeholder, use_draft_placeholder=use_draft_placeholder)
+            return
         [...]
-
-        server_socket.start_background_task(browse_missing_info_callback, app_version, task_manager, use_message_placeholder, use_draft_placeholder, platform=="mobile")
+        server_socket.start_background_task(launch_process, session, app_version, platform, user_task_execution_pk, use_message_placeholder, use_draft_placeholder)
 ```
 
-The `Task Manager` is the epicenter of task execution. The function `start_task_from_form()` will:
+The `Session` is the epicenter of task execution. The function `process_form_input()` will:
 - Asynchronously call the Background to ask for a task execution title and summary generation
 - Prepare first assistant's response to the user.
 
@@ -245,10 +241,10 @@ with open(self.answer_user_prompt, 'r') as f:
                                     language=self.language,
                                     audio_message=self.platform == "mobile",
                                     tag_proper_nouns=tag_proper_nouns,
-                                    title_start_tag=TaskProducedTextManager.title_start_tag,
-                                    title_end_tag=TaskProducedTextManager.title_end_tag,
-                                    draft_start_tag=TaskProducedTextManager.draft_start_tag,
-                                    draft_end_tag=TaskProducedTextManager.draft_end_tag,
+                                    title_start_tag=ProducedTextManager.title_start_tag,
+                                    title_end_tag=ProducedTextManager.title_end_tag,
+                                    draft_start_tag=ProducedTextManager.draft_start_tag,
+                                    draft_end_tag=ProducedTextManager.draft_end_tag,
                                     task_tool_associations=self.task_tool_associations_json
                                     )
 
@@ -327,7 +323,7 @@ It will return a map containing message metadata with text to display to the use
 - TaskExecutionManager handles a response indicating the assistant has completed the task. In this case, the response format will include the result of the task enclosed in specific tags.
 ```python
 [...]
-if ExecutionManager.execution_start_tag in response:
+if TaskExecutor.execution_start_tag in response:
     return self.task_executor.manage_execution_text(execution_text=response, task=self.task, task_displayed_data=self.task_displayed_data,
                                                     user_task_execution_pk=self.task_execution.user_task_execution_pk,
                                                     user_message=user_message,
@@ -360,7 +356,5 @@ The task execution process is an iterative process. The user and the assistant e
 When the assistant sends a message to ask for any precision or when they want to ask for an edition, the user can send a message through the chat interface to interact with the assistant.
 
 When the user sends a message during a task execution, the message is sent to the backend through a PUT `user_message` call and the same process as described in part 2.2 is repeated.
-
-> Note: the web application as it is now still uses a socketio event `user_message` to send user's message to the backend. We started moving from this to the REST API `/user_message` as described here for robustness and scalability reasons. Mobile application already uses the REST API.
 
 ![complete_user_task_execution_flow](../../images/task_execution/complete_user_task_execution_flow.png)

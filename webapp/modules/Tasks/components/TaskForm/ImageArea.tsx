@@ -1,5 +1,6 @@
 import React, { Dispatch, SetStateAction, useState, useRef } from 'react';
 import { InputArrayProps, TaskJsonInput } from 'modules/Tasks/interface';
+import Button from 'components/Button';
 
 interface ImageAreaProps {
     jsonInput: TaskJsonInput;
@@ -54,9 +55,9 @@ const ImageArea = ({ jsonInput, setInputArray }: ImageAreaProps) => {
                         onChange={handleImageChange}
                         className="hidden"
                     />
-                    <button
-                        type="button"
-                        className="rounded-lg ring-1 ring-inset ring-gray-lighter focus:ring-2 focus:ring-primary-main"
+                    <Button
+                        variant="secondary"
+                        className="min-w-[83px]"
                         onClick={() => fileInputRef.current?.click()}
                     >
                         {imagePreview ? (
@@ -64,7 +65,7 @@ const ImageArea = ({ jsonInput, setInputArray }: ImageAreaProps) => {
                         ) : (
                             'Upload Image'
                         )}
-                    </button>
+                    </Button>
                 </div>
             </div>
         </div>

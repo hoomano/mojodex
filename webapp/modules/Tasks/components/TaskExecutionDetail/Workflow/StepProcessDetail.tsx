@@ -168,7 +168,8 @@ const StepProcessDetail: React.FC<StepProcessDetailProps> = ({
                       stepItem.result?.map((resultItem) => (
                         Object.entries(resultItem).map(([key, value]) => (
                           <p className="flex-auto py-0.5 text-sm leading-5 text-gray-900">
-                            <span className="font-medium text-gray-400">{key}:</span><br /> {value?.toString()}
+                            <span className="font-medium text-gray-400">{key}:</span><br />
+                            <pre style={{ whiteSpace: "pre-wrap", wordWrap: "break-word" }}>{value?.toString()}</pre>
                           </p>
                         ))
                       ))

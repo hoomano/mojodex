@@ -250,9 +250,7 @@ const DraftDetail = () => {
       setChatState({
         currentTaskInfo: {
           taskExecutionPK: user_task_execution_pk,
-          text: produced_text,
-          textPk: produced_text_pk,
-          title: produced_text_title,
+          producedTextPk: produced_text_pk,
         },
         inputDisabled: false,
         waitingForServer: false,

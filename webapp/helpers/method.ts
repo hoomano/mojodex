@@ -55,14 +55,14 @@ export const updateTaskMessageFormat = (
               message?.task_tool_execution_fk,
           });
         }
-      } else {
+      } else if (sender === "user") {
         formattedMessages.push({
           id: Math.random(),
           from: "user",
           content: message?.text,
           type: "message",
-        });
-      }
+        }); 
+      } // else, sender == system, won't be displayed
     }
   });
 

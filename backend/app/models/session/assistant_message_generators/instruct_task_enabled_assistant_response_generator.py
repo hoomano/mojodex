@@ -1,10 +1,6 @@
-import os
-from datetime import datetime
-
-import requests
 from models.session.assistant_message_generators.assistant_message_generator import AssistantMessageGenerator
 from abc import ABC, abstractmethod
-from app import placeholder_generator, db, server_socket
+from app import placeholder_generator, db
 
 from models.produced_text_managers.instruct_task_produced_text_manager import InstructTaskProducedTextManager
 

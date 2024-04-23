@@ -1,10 +1,13 @@
+import base64
+import json
 import os
 from datetime import datetime
 
 import requests
+
 from models.session.assistant_message_generators.assistant_response_generator import AssistantResponseGenerator
 from abc import ABC, abstractmethod
-from app import placeholder_generator, db, server_socket
+from app import server_socket, model_loader
 
 from mojodex_core.logging_handler import log_error
 
@@ -17,7 +20,6 @@ class TaskEnabledAssistantResponseGenerator(AssistantResponseGenerator, ABC):
         try:
             super().__init__(prompt_template_path, chat_context, tag_proper_nouns, llm_call_temperature)
             self.mojo_message_token_stream_callback = mojo_message_token_stream_callback
-
             self.use_message_placeholder = use_message_placeholder
         except Exception as e:
             raise Exception(f"{self.logger_prefix} __init__ :: {e}")
@@ -74,7 +76,63 @@ class TaskEnabledAssistantResponseGenerator(AssistantResponseGenerator, ABC):
             return user_task_inputs
         except Exception as e:
             raise Exception(f"_get_running_user_task_execution_inputs :: {e}")
+        
+    @property
+    def requires_vision_llm(self):
+        try:
+            for input in self.running_user_task_execution.json_input_values:
+                if input["type"] == "image":
+                    return True
+            return False
+        except Exception as e:
+            raise Exception(f"requires_vision_llm :: {e}")
 
+
+    def _get_input_images_names(self):
+        try:
+            input_images = [input["value"] for input in self.running_user_task_execution.json_input_values if
+                            input["type"] == "image"]
+            return input_images
+        except Exception as e:
+            raise Exception(f"_get_input_images_paths :: {e}")
+
+
+    # if requires_vision_llm, override method _generate_message_from_prompt
+    def _generate_message_from_prompt(self, prompt):
+        try:
+            print(f"🔵 _generate_message_from_prompt: {self.requires_vision_llm}")
+            if not self.requires_vision_llm:
+                return super()._generate_message_from_prompt(prompt)
+            
+            from models.user_images_file_manager import UserImagesFileManager
+            self.user_image_file_manager = UserImagesFileManager()
+            conversation_list = self.context.state.get_conversation_as_list(self.context.session_id)
+            input_images = self._get_input_images_names()
+            user_id = self.context.user_id
+            session_id = self.context.state.running_user_task_execution.session_id
+            #save prompt to /data/prompt.txt
+            with open("/data/prompt.txt", "w") as f:
+                f.write(prompt)
+            messages = [{"role": "system", 
+                         'content': [
+                                {"type": "text", "text": prompt}
+                        ] + [{"type": "image_url",
+                                "image_url": {"url": f"data:image/jpeg;base64,{self.user_image_file_manager.get_encoded_image(input_image, user_id, session_id)}" }
+                                } for input_image in input_images]
+                        }] + conversation_list
+            # save messages to /data/messages.json
+            with open("/data/messages.json", "w") as f:
+                json.dump(messages, f, indent=4)
+
+            responses = model_loader.main_vision_llm.invoke(messages, self.context.user_id,
+                                                        temperature=0,
+                                                        max_tokens=4000,
+                                                        label="CHAT",
+                                                        stream=True, stream_callback=self._token_callback)
+
+            return responses[0].strip() if responses else None
+        except Exception as e:
+            raise Exception(f"_generate_message_from_prompt:: {e}")
 
     def _token_callback(self, partial_text):
         partial_text = partial_text.strip()

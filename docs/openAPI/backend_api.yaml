@@ -822,6 +822,10 @@ paths:
                 datetime:
                   type: string
                   format: date-time
+                user_task_execution_pk:
+                  type: integer
+                session_id:
+                  type: string
                 produced_text_pk:
                   type: integer
                 production:
@@ -837,6 +841,8 @@ paths:
                 type: object
                 properties:
                   produced_text_pk:
+                    type: integer
+                  produced_text_version_pk:
                     type: integer
         '400':
           description: Bad request due to missing or invalid parameters
@@ -1289,21 +1295,22 @@ paths:
               type: object
               required:
                 - datetime
+                - task_type
                 - platforms
                 - name_for_system
                 - definition_for_system
-                - final_instruction
-                - output_format_instruction_title
-                - output_format_instruction_draft
-                - infos_to_extract
                 - icon
                 - task_displayed_data
-                - predefined_actions
                 - output_type
               properties:
                 datetime:
                   type: string
                   format: date-time
+                task_type:
+                  type: string
+                  enum:
+                    - instruct
+                    - workflow
                 platforms:
                   type: array
                   items:
@@ -1387,6 +1394,9 @@ paths:
           application/json:
             schema:
               type: object
+              required:
+                - datetime
+                - task_pk
               properties:
                 datetime:
                   type: string
@@ -1498,6 +1508,8 @@ paths:
               schema:
                 type: object
                 properties:
+                  type:
+                    type: string
                   platforms:
                     type: array
                     items:
@@ -3860,6 +3872,11 @@ paths:
           description: The offset for message retrieval
           schema:
             type: integer
+        - in: query
+          name: user_task_execution_pk
+          schema:
+          type: string
+          description: The primary key of the user task execution
       responses:
         '200':
           description: Messages retrieved successfully
@@ -5455,10 +5472,17 @@ paths:
                   format: date-time
                 version:
                   type: string
+                platform:
+                  type: string
                 use_message_placeholder:
-                  type: string
+                  type: boolean
                 use_draft_placeholder:
+                  type: boolean
+                origin:
                   type: string
+                  enum:
+                    - home_chat
+                    - task
                 text:
                   type: string
                 file:
@@ -5469,6 +5493,7 @@ paths:
                 - message_id
                 - message_date
                 - version
+                - origin
       responses:
         '200':
           description: User message processed successfully
@@ -5485,6 +5510,9 @@ paths:
                     type: number
                   message_id:
                     type: string
+                  user_task_execution_pk:
+                    type: string
+                    nullable: true
         '400':
           description: Error in processing user message
           content:
@@ -5555,12 +5583,6 @@ paths:
           schema:
             type: integer
             default: 0
-        - name: task_category_pk
-          in: query
-          required: false
-          description: Primary key of the task category to filter tasks
-          schema:
-            type: integer
       responses:
         '200':
           description: A list of user tasks
@@ -5584,6 +5606,19 @@ paths:
                           type: string
                         task_icon:
                           type: string
+                        task_type:
+                          type: string
+                        steps:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              workflow_step_pk:
+                                type: integer
+                              step_name_for_user:
+                                type: string
+                              step_definition_for_user:
+                                type: string
                         enabled:
                           type: boolean
         '400':
@@ -5930,6 +5965,7 @@ paths:
               required:
                 - datetime
                 - user_task_execution_pk
+                - inputs
               properties:
                 datetime:
                   type: string

@@ -32,7 +32,34 @@ export const getTaskConfigs = ({
 export const executeTask = (
   payload: ExecuteTaskPayload
 ): Promise<ExecuteTaskResponse> =>
-  axiosClient.post(apiRoutes.executeTask, payload);
+{
+  const formData = new FormData();
+  (Object.keys(payload) as Array<keyof ExecuteTaskPayload>).forEach(key => {
+
+    const value = payload[key];
+    if (key == 'inputs') {
+      // create an empty list of map
+      const inputs: any = [];
+      const value = payload[key];
+      value.forEach((input: any) => {
+        console.log(input);
+        if (!(input.input_value instanceof File)) {
+          inputs.push({
+            "input_name": input.input_name,
+            "input_value": input.input_value.toString()
+          });
+        } else if ((input.input_value instanceof File)) {
+          formData.append(input.input_name, input.input_value);
+        }
+      });
+      formData.append('inputs', JSON.stringify(inputs));
+    } else if (value !== undefined) {
+      formData.append(key, value.toString()); 
+    }
+  });
+ 
+  return axiosClient.post(apiRoutes.executeTask, formData);
+}
 
 export const onTaskComplete = (paylaod: TaskDonePayload) =>
   axiosClient.post(apiRoutes.taskConfigs, paylaod);

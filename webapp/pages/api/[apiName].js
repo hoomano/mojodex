@@ -29,7 +29,9 @@ export default async function handler(req, res) {
   }
 
   if (req.method === "POST") {
+
     const { body } = req;
+
     try {
       const response = await axios.post(
         `${process.env.MOJODEX_BACKEND_URI}/${apiName}`,

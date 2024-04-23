@@ -82,21 +82,50 @@ class OpenAILLM(LLM):
             return num_tokens
         except Exception as e:
             raise Exception(f"🔴 Error in num_tokens_from_messages : {e}")
+        
+    def _handle_chat_completion_response(self, completion, stream, stream_callback):
+        try:
+            if stream:
+                complete_text = ""
+                finish_reason = None
+                for stream_chunk in completion:
+                    choice = stream_chunk.choices[0]
+                    partial_token = choice.delta
+                    finish_reason = choice.finish_reason
+                    if partial_token.content:
+                        complete_text += partial_token.content
+                        if stream_callback is not None:
+                            try:
+                                flag_to_stop_streaming = stream_callback(
+                                    complete_text)
+                                if flag_to_stop_streaming:
+                                    return None
+                            except Exception as e:
+                                mojo_openai_logger.error(
+                                    f"🔴 Error in streamCallback: {e}")
 
-    def chatCompletion(self, messages, user_uuid, temperature, max_tokens, frequency_penalty=0,
-                       presence_penalty=0, stream=False, stream_callback=None, json_format=False,
-                       n_additional_calls_if_finish_reason_is_length=0, assistant_response="", n_calls=0, use_backup_client=False):
+                response = complete_text
+            else:
+                response = completion.choices[0].message.content
+                finish_reason = completion.choices[0].finish_reason
+
+            return response, finish_reason
+        except Exception as e:
+            raise Exception(f"_handle_chat_completion_stream : {e}")
+        
+
+    def chatCompletion(self, messages, user_uuid, temperature, max_tokens, frequency_penalty=0, presence_penalty=0, stream=False, stream_callback=None,
+                       n_additional_calls_if_finish_reason_is_length=0, assistant_response="", n_calls=0, use_backup_client=False, **kwargs):
         """
         OpenAI chat completion
         :param messages: List of messages composing the conversation, each message is a dict with keys "role" and "content"
         :param user_uuid: Compulsory for openAI to track harmful content. If a user tries to pass the openAI moderation, we will receive an email with this id and we can go back to him to remove his access.
         :param temperature: The higher the temperature, the crazier the text
         :param max_tokens: The maximum number of tokens to generate
-        :param frequency_penalty: The higher this is, the less likely the model is to repeat the same line verbatim (default 0)
-        :param presence_penalty: The higher this is, the more likely the model is to talk about something that was mentioned in the prompt (default 0)
+        :param frequency_penalty: The higher the penalty, the less likely the model is to repeat itself
+        :param presence_penalty: The higher the penalty, the less likely the model is to generate a response that is similar to the prompt
         :param stream: If True, will stream the completion
         :param stream_callback: If stream is True, will call this function with the completion as parameter
-        :param json_format: If True, will return a json object
         :param n_additional_calls_if_finish_reason_is_length: If the finish reason is "length", will relaunch the function, instructing the assistant to continue its response
         :param assistant_response: Assistant response to add to the completion
         :param n_calls: Number of calls to the function
@@ -104,58 +133,43 @@ class OpenAILLM(LLM):
         """
         openai_client = self.client_backup if use_backup_client else self.client
 
+        # if "json_format" in kwargs and kwargs["json_format"]:
+        # set response_format={"type": "json_object"} in kwargs
+        if "json_format" in kwargs and kwargs["json_format"]:
+            kwargs.pop("json_format")
+            kwargs["response_format"] = {"type": "json_object"}
+            
         completion = openai_client.chat.completions.create(
             messages=messages,
             model=self.name,
             temperature=temperature,
             max_tokens=max_tokens,
+            user=user_uuid,
             frequency_penalty=frequency_penalty,
             presence_penalty=presence_penalty,
-            user=user_uuid,
             stream=stream,
-            response_format={"type": "json_object"} if json_format else None
+            **kwargs
         )
-        if stream:
-            complete_text = ""
-            finish_reason = None
-            for stream_chunk in completion:
-                choice = stream_chunk.choices[0]
-                partial_token = choice.delta
-                finish_reason = choice.finish_reason
-                if partial_token.content:
-                    complete_text += partial_token.content
-                    if stream_callback is not None:
-                        try:
-                            flag_to_stop_streaming = stream_callback(
-                                complete_text)
-                            if flag_to_stop_streaming:
-                                return None
-                        except Exception as e:
-                            mojo_openai_logger.error(
-                                f"🔴 Error in streamCallback: {e}")
 
-            response = complete_text
-        else:
-            response = completion.choices[0].message.content
-            finish_reason = completion.choices[0].finish_reason
-
+        response, finish_reason = self._handle_chat_completion_response(completion, stream, stream_callback)
+        
         if finish_reason == "length" and n_calls < n_additional_calls_if_finish_reason_is_length:
             # recall the function with assistant_message + user_message
             messages = messages + [{'role': 'assistant', 'content': response},
                                    {'role': 'user', 'content': 'Continue'}]
             return self.chatCompletion(messages, user_uuid, temperature, max_tokens,
                                        frequency_penalty=frequency_penalty, presence_penalty=presence_penalty,
-                                       stream=stream, stream_callback=stream_callback, json_format=json_format,
+                                       stream=stream, stream_callback=stream_callback,
                                        assistant_response=assistant_response + " " + response,
                                        n_additional_calls_if_finish_reason_is_length=n_additional_calls_if_finish_reason_is_length,
-                                       n_calls=n_calls + 1)
+                                       n_calls=n_calls + 1, **kwargs)
         # [] is a legacy from the previous version that could return several completions. Need complete refacto to remove.
         return [assistant_response + " " + response]
 
 
     def invoke_from_mpt(self, mpt: MPT, user_id, temperature, max_tokens, frequency_penalty=0, presence_penalty=0,
-                        stream=False, stream_callback=None, json_format=False, user_task_execution_pk=None,
-                        task_name_for_system=None):
+                        stream=False, stream_callback=None, user_task_execution_pk=None,
+                        task_name_for_system=None, **kwargs):
         try:
             # put a reference to the execution with the filepath of the MPT instruction
             # label is the filename without the file extension
@@ -167,10 +181,10 @@ class OpenAILLM(LLM):
             messages = [{"role": "user", "content": mpt.prompt}]
             responses = self.recursive_invoke(messages, user_id, temperature, max_tokens, label=label,
                                            frequency_penalty=frequency_penalty, presence_penalty=presence_penalty,
-                                           stream=stream, stream_callback=stream_callback, json_format=json_format,
+                                           stream=stream, stream_callback=stream_callback,
                                            user_task_execution_pk=user_task_execution_pk,
                                            task_name_for_system=task_name_for_system,
-                                           n_additional_calls_if_finish_reason_is_length=0)
+                                           n_additional_calls_if_finish_reason_is_length=0, **kwargs)
             return responses
         except Exception as e:
             log_error(
@@ -180,18 +194,40 @@ class OpenAILLM(LLM):
                 )
 
     def invoke(self, messages: List, user_id, temperature, max_tokens, label,
-               frequency_penalty=0, presence_penalty=0, stream=False, stream_callback=None, json_format=False,
-               user_task_execution_pk=None, task_name_for_system=None):
+               frequency_penalty=0, presence_penalty=0, stream=False, stream_callback=None,
+               user_task_execution_pk=None, task_name_for_system=None, **kwargs):
         return self.recursive_invoke(messages, user_id, temperature, max_tokens, label,
                                    frequency_penalty=frequency_penalty, presence_penalty=presence_penalty,
-                                   stream=stream, stream_callback=stream_callback, json_format=json_format,
+                                   stream=stream, stream_callback=stream_callback,
                                    user_task_execution_pk=user_task_execution_pk,
                                    task_name_for_system=task_name_for_system,
-                                   n_additional_calls_if_finish_reason_is_length=0)
+                                   n_additional_calls_if_finish_reason_is_length=0, **kwargs)
 
-    def recursive_invoke(self, messages, user_id, temperature, max_tokens, label,
-                       frequency_penalty=0, presence_penalty=0, stream=False, stream_callback=None, json_format=False,
-                       user_task_execution_pk=None, task_name_for_system=None, n_additional_calls_if_finish_reason_is_length=0):
+
+    def _call_completion_with_rate_limit_management(self, messages, user_id, temperature, max_tokens, frequency_penalty, presence_penalty,
+                                                    stream, stream_callback,
+                                                    n_additional_calls_if_finish_reason_is_length, **kwargs):
+        try:
+            try:
+                return self.chatCompletion(messages, user_id, temperature, max_tokens, frequency_penalty, presence_penalty, stream=stream,
+                                                stream_callback=stream_callback, 
+                                                n_additional_calls_if_finish_reason_is_length=n_additional_calls_if_finish_reason_is_length,
+                                                **kwargs)
+            except RateLimitError:
+                # try to use backup engine
+                if self.client_backup:
+                    return self.chatCompletion(messages, user_id, temperature, max_tokens, frequency_penalty, presence_penalty,
+                                                    stream=stream,
+                                                    stream_callback=stream_callback,
+                                                    use_backup_client=True, **kwargs)
+                else:
+                    raise Exception("Rate limit exceeded and no backup engine available")
+        except Exception as e:
+            raise Exception(f"_call_completion_with_rate_limit_management : {e}")
+
+    def recursive_invoke(self, messages, user_id, temperature, max_tokens, label, frequency_penalty, presence_penalty,
+                       stream=False, stream_callback=None, user_task_execution_pk=None, task_name_for_system=None,
+                         n_additional_calls_if_finish_reason_is_length=0, **kwargs):
         try:
 
             try:
@@ -204,28 +240,18 @@ class OpenAILLM(LLM):
             n_tokens_prompt = self.num_tokens_from_messages(messages[:1])
             n_tokens_conversation = self.num_tokens_from_messages(messages[1:])
 
-            try:
-                responses = self.chatCompletion(messages, user_id, temperature, max_tokens,
-                                                frequency_penalty=frequency_penalty, presence_penalty=presence_penalty,
-                                                json_format=json_format, stream=stream,
-                                                stream_callback=stream_callback, n_additional_calls_if_finish_reason_is_length=n_additional_calls_if_finish_reason_is_length)
-            except RateLimitError:
-                # try to use backup engine
-                if self.client_backup:
-                    responses = self.chatCompletion(messages, user_id, temperature, max_tokens,
-                                                    frequency_penalty=frequency_penalty, presence_penalty=presence_penalty,
-                                                    stream=stream,
-                                                    stream_callback=stream_callback,
-                                                    use_backup_client=True)
-                else:
-                    raise Exception(
-                        "Rate limit exceeded and no backup engine available")
+            responses = self._call_completion_with_rate_limit_management(messages, user_id, temperature, max_tokens,
+                                                                         frequency_penalty, presence_penalty,
+                                                                        stream, stream_callback,
+                                                                        n_additional_calls_if_finish_reason_is_length,
+                                                                        **kwargs)
+
+            
             if responses is None:
                 return None
-            n_tokens_response = 0
-            for response in responses:
-                n_tokens_response += self.num_tokens_from_messages(
-                    [{'role': 'assistant', 'content': response}])
+
+            n_tokens_response = self.num_tokens_from_messages(
+                [{'role': 'assistant', 'content': responses[0]}])
 
             self.tokens_costs_manager.on_tokens_counted(user_id, n_tokens_prompt, n_tokens_conversation, n_tokens_response,
                                                         self.name, label, user_task_execution_pk, task_name_for_system)

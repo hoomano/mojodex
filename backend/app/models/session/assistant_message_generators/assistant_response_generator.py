@@ -35,6 +35,9 @@ class AssistantResponseGenerator(AssistantMessageGenerator, ABC):
         """
         try:
             conversation_list = self.context.state.get_conversation_as_list(self.context.session_id)
+            #save prompt to /data/prompt.txt
+            with open("/data/prompt.txt", "w") as f:
+                f.write(prompt)
             messages = [{"role": "system", "content": prompt}] + conversation_list
             responses = model_loader.main_llm.invoke(messages, self.context.user_id,
                                                         temperature=0,

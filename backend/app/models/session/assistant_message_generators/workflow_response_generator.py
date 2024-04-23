@@ -3,7 +3,7 @@ from models.session.assistant_message_state.workflow_chat_state import WorkflowC
 from models.knowledge.knowledge_manager import KnowledgeManager
 from models.session.assistant_message_context.chat_context import ChatContext
 from app import placeholder_generator, server_socket
-
+from app import model_loader
 from models.session.assistant_message_generators.task_enabled_assistant_response_generator import \
     TaskEnabledAssistantResponseGenerator
 
@@ -95,3 +95,27 @@ class WorkflowAssistantResponseGenerator(TaskEnabledAssistantResponseGenerator):
                                                         WorkflowAssistantResponseGenerator.no_go_explanation_end_tag)
         if text and self.mojo_message_token_stream_callback:
             self.mojo_message_token_stream_callback(text)
+
+    def _generate_message_from_prompt(self, prompt):
+        """
+        Generate a message from a prompt by calling the message generator
+        :param prompt: prompt
+        :return: generated message
+        """
+        try:
+            my_llm = model_loader.get_main_llm_provider()
+            my_llm.max_retries = 20
+            my_llm.client.max_retries = 20
+            my_llm.client.timeout = 1200
+            my_llm.client_backup = None
+            conversation_list = self.context.state.get_conversation_as_list(self.context.session_id)
+            messages = [{"role": "system", "content": prompt}] + conversation_list
+            responses = my_llm.invoke(messages, self.context.user_id,
+                                                        temperature=0,
+                                                        max_tokens=4000,
+                                                        label="CHAT",
+                                                        stream=True, stream_callback=self._token_callback)
+
+            return responses[0].strip() if responses else None
+        except Exception as e:
+            raise Exception(f"_generate_message_from_prompt:: {e}")

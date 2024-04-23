@@ -10,6 +10,8 @@ from mojodex_core.llm_engine.providers.ollama_llm import OllamaLLM
 import logging
 import os
 
+from mojodex_core.llm_engine.providers.openai_vision_llm import OpenAIVisionLLM
+
 logging.basicConfig(level=logging.INFO)
 
 
@@ -26,6 +28,7 @@ class ModelLoader:
     def __init__(self):
         self.providers = self._get_providers()
         self.main_llm: LLM = self.get_main_llm_provider()
+        self.main_vision_llm: LLM = self.get_main_vision_llm_provider()
         self.embedding_provider: EmbeddingProvider = self._get_embedding_provider()
 
     def get_main_llm_provider(self):
@@ -56,6 +59,21 @@ class ModelLoader:
             logging.error(
                 f"🔴: ERROR: ModelLoader.get_main_llm_provider() >> {e}")
             return None, None, None
+
+    def get_main_vision_llm_provider(self):
+        try:
+            providers = self._get_providers_by_model("gpt4-vision")
+            if len(providers) == 0:
+                logging.error(
+                    f"🔴: ERROR: ModelLoader.get_main_vision_llm_provider() >> No vision provider found")
+                return None
+            provider = providers[0]
+            _, _, llm, conf = self._build_provider(provider + '/gpt4-vision')
+            return type(llm)(conf, None)
+        except Exception as e:
+            logging.error(
+                f"🔴: ERROR: ModelLoader.get_main_vision_llm_provider() >> {e}")
+            return None
 
     def _get_embedding_provider(self):
         """
@@ -152,6 +170,16 @@ class ModelLoader:
                         "model_name": model_name
                     }
                     provider = OpenAILLM(conf)
+                elif model_name == "gpt4-vision":
+                    conf = {
+                        "api_key": provider_conf["gpt4_vision_azure_openai_key"],
+                        "api_base": provider_conf["gpt4_vision_azure_openai_api_base"],
+                        "api_type": provider_name,
+                        "api_version": provider_conf["gpt4_vision_azure_openai_api_version"],
+                        "deployment_id": provider_conf["gpt4_vision_azure_openai_deployment_id"],
+                        "model_name": model_name
+                    }
+                    provider = OpenAIVisionLLM(conf)
                 elif model_name == "mistral-large":
                     conf = {
                         "api_key": provider_conf["mistral_azure_api_key"],

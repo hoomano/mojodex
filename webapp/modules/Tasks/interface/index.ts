@@ -50,7 +50,7 @@ export interface TaskConfigAPIResponse {
 
 export interface InputArrayProps {
   input_name: string;
-  input_value: string;
+  input_value: string | File;
 }
 
 export interface NewlyCreatedTaskInfo {

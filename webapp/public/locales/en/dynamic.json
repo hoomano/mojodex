@@ -19,23 +19,23 @@
   "previousButton": "Previous",
   "skipContainerButton": "Skip",
   "onboarding": {
-    "termsAndConditions":{
-			"emoji": "😉",
-			"title": "Welcome!",
-			"IAgree": "I agree",
-			"defaultAgreement": "I agree to interact with the digital assistant in a respectful and courteous manner, recognizing the importance of kindness in our digital space.",
-			"defaultAgreementThankYou": "Your cooperation helps us maintain a positive environment for all users. Thank you for your understanding and support!",
+    "termsAndConditions": {
+      "emoji": "😉",
+      "title": "Welcome!",
+      "IAgree": "I agree",
+      "defaultAgreement": "I agree to interact with the digital assistant in a respectful and courteous manner, recognizing the importance of kindness in our digital space.",
+      "defaultAgreementThankYou": "Your cooperation helps us maintain a positive environment for all users. Thank you for your understanding and support!",
       "defaultModalContent": "Please take a moment to acknowledge our community guidelines.",
-			"termsModalContent": "Just before we start, have a look at our terms & conditions.",
-			"termsAndConditions": "terms & conditions",
-			"acceptButtonText": "Let's start"
-		},
-		"categorySelection":{
-			"emoji": "👋",
-			"title": "Hello from Mojodex!",
-			"content": "Ready to embark on an awesome journey?\nLet's get personal!",
-			"question": "Who are you?"
-		},
+      "termsModalContent": "Just before we start, have a look at our terms & conditions.",
+      "termsAndConditions": "terms & conditions",
+      "acceptButtonText": "Let's start"
+    },
+    "categorySelection": {
+      "emoji": "👋",
+      "title": "Hello from Mojodex!",
+      "content": "Ready to embark on an awesome journey?\nLet's get personal!",
+      "question": "Who are you?"
+    },
     "nextButton": "Next",
     "webUrlInputPage": {
       "emoji": "👋",
@@ -81,7 +81,7 @@
     "title": "🎯\nWhat would you like to do today?",
     "selectBusinessTasks": "Select one of the business tasks you would like to achieve with Mojo"
   },
-  "startUserTaskStepExecution":{
+  "startUserTaskStepExecution": {
     "stepsIntroduction": "The following steps will be executed for this task:"
   },
   "resources": {
@@ -101,6 +101,9 @@
     }
   },
   "userTaskExecution": {
+    "inputsTab": {
+      "title": "Initial inputs"
+    },
     "chatTab": {
       "title": "Chat",
       "notificationValidation": {
@@ -137,7 +140,7 @@
       "notWorkingOnTodosTitleMessage": "No explicit next steps found.",
       "notWorkingOnTodosBodyMessage": ""
     },
-    "processTab":{
+    "processTab": {
       "title": "Process",
       "relaunchButton": "Retry",
       "validateButton": "Validate",
@@ -145,8 +148,7 @@
       "stepExecutionParameters": "Parameters",
       "stepExecutionResults": "Results",
       "stepExecutionError": "Oops. I couldn't finish.",
-      "stepExecutionErrorInstruction":"You can try to relaunch the step or contact support."
-
+      "stepExecutionErrorInstruction": "You can try to relaunch the step or contact support."
     }
   },
   "todos": {

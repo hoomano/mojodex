@@ -38,7 +38,7 @@ STEP 2: Set up your OpenAI API key in the .env file
 ```bash
 cp .env.example .env
 ```
-Edit the .env file and set your OpenAI API key:
+Edit the models.conf file and set your OpenAI API key (or any LLM provider's credentials):
 
 ```bash
 [...]

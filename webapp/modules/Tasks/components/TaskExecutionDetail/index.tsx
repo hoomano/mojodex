@@ -5,8 +5,7 @@ import { Socket, io } from "socket.io-client";
 import { appVersion } from "helpers/constants";
 import { envVariable } from "helpers/constants/env-vars";
 import { decryptId } from "helpers/method";
-import useGetProducedText from "modules/ProducedTexts/hooks/useGetProducedText";
-import { EditerProducedText, UserTaskExecutionStepExecution } from "modules/Tasks/interface";
+import { EditerProducedText, UserTaskExecutionProducedTextResponse, UserTaskExecutionStepExecution } from "modules/Tasks/interface";
 import Tab, { TabType } from "components/Tab";
 import Result from "./Result";
 import useGetExecuteTaskById from "modules/Tasks/hooks/useGetExecuteTaskById";
@@ -19,8 +18,9 @@ import StepProcessDetail from "./Workflow/StepProcessDetail";
 import Chat from "modules/Chat";
 import TaskLoader from "./TaskLoader";
 import { ArrowLeftIcon } from "@heroicons/react/24/outline";
-import ExpandableCard from "components/ExpandableCard";
 import TaskInputs from "./TaskInputs";
+import { getUserTaskExecutionProducedText } from "services/tasks";
+import { useQueryClient } from "@tanstack/react-query";
 
 const DraftDetail = () => {
   const [tabs, setTabs] = useState<TabType[]>([]);
@@ -53,11 +53,29 @@ const DraftDetail = () => {
 
 
   const { data: currentTask } = useGetExecuteTaskById(taskExecutionPK);
+  const [producedTextIndex, setProducedTextIndex] = useState(currentTask!.produced_text_version_index || 0);
+  const [numberOfProducedTextVersions, setNumberOfProducedTextVersions] = useState(currentTask!.produced_text_version_index || 0);
+  const [isDraftStreaming, setIsDraftStreaming] = useState(!currentTask?.produced_text_pk);
 
-  const { data: draftDetails, isFetching: isDraftLoading } = useGetProducedText(
-    currentTask?.produced_text_pk || null,
-    { enabled: !!currentTask?.produced_text_pk } // enable the query only if currentTask has produced_text_pk
-  );
+
+  const queryClient = useQueryClient();
+
+  const onGetProducedTextIndex = (index: number) => {
+    setProducedTextIndex(prevIndex => index);
+    queryClient.fetchQuery(
+      ["getUserTaskExecutionProducedText", index, taskExecutionPK],
+      () => getUserTaskExecutionProducedText(index, taskExecutionPK!)
+    ).then((newData: UserTaskExecutionProducedTextResponse) => {
+      // Update state with the new data
+      setEditorDetails({
+        text: newData!.produced_text_production,
+        title: newData!.produced_text_title,
+        producedTextPk: newData!.produced_text_pk,
+      });
+    }).catch(error => {
+      console.error("Error fetching previous produced text: ", error);
+    });
+  };
 
 
   const [isSocketLoaded, setIsSocketLoaded] = useState(false);
@@ -74,7 +92,6 @@ const DraftDetail = () => {
   const { t } = useTranslation("dynamic");
 
   useEffect(() => {
-
     let resultTab = {
       key: "result",
       title: `${t("userTaskExecution.resultTab.title")}`,
@@ -82,7 +99,15 @@ const DraftDetail = () => {
         <Result
           userTaskExecutionPk={taskExecutionPK as number}
           producedText={editorDetails}
-          isLoading={isDraftLoading}
+          isLoading={isDraftStreaming}
+          onGetPreviousProducedText={() => onGetProducedTextIndex(producedTextIndex - 1)}
+          onGetNextProducedText={() => onGetProducedTextIndex(producedTextIndex + 1)}
+          showPreviousButton={producedTextIndex > 1}
+          showNextButton={producedTextIndex < numberOfProducedTextVersions}
+          onSaveNewProducedTextVersion={() => {
+            setProducedTextIndex(prevIndex => prevIndex + 1);
+            setNumberOfProducedTextVersions(prevVersions => prevVersions + 1);
+          }}
         />
       ),
       // disabled if editorDetails.textPk is null
@@ -158,25 +183,18 @@ const DraftDetail = () => {
         }
       }
     }
-  }, [workflowStepExecutions, editorDetails, isTask, router.query.tab]);
+  }, [workflowStepExecutions, editorDetails, isTask, router.query.tab, producedTextIndex, isDraftStreaming]);
 
+  
   useEffect(() => {
-    if (draftDetails) {
+    if (currentTask?.produced_text_pk) {
       setEditorDetails({
-        text: draftDetails?.production,
-        title: draftDetails?.title,
-        producedTextPk: draftDetails?.produced_text_pk,
-      });
-    }
-
-    if (currentTask) {
-      setEditorDetails({
-        text: currentTask.produced_text_production,
+        text: currentTask?.produced_text_production,
         title: currentTask?.produced_text_title,
         producedTextPk: currentTask?.produced_text_pk,
       });
     }
-  }, [draftDetails, currentTask]);
+  }, [currentTask]);
 
 
   useEffect(() => {
@@ -192,6 +210,7 @@ const DraftDetail = () => {
 
     const session: any = await getSession();
     const token = session?.authorization?.token || "";
+
 
     const socket = io(envVariable.socketUrl as string, {
       transports: ["websocket"],
@@ -211,6 +230,7 @@ const DraftDetail = () => {
 
     socket.on(socketEvents.DRAFT_TOKEN, ({ text }) => {
       setEditorDetails((prev) => ({ ...prev, text }));
+      setIsDraftStreaming(prev => true);
     });
 
     socket.on(socketEvents.USER_TASK_EXECUTION_TITLE, ({ title }) => {
@@ -236,6 +256,10 @@ const DraftDetail = () => {
         title: produced_text_title,
         producedTextPk: produced_text_pk,
       });
+      setIsDraftStreaming(prev => false);
+      setProducedTextIndex(prevIndex => prevIndex + 1);
+      setNumberOfProducedTextVersions(prevVersions => prevVersions + 1);
+     
 
       setChatState({
         currentTaskInfo: {
@@ -251,7 +275,6 @@ const DraftDetail = () => {
       if (ack) {
         ack({
           session_id: sessionId,
-          message_pk: message?.message_pk,
           produced_text_version_pk: message?.produced_text_version_pk,
         });
       }
@@ -400,8 +423,8 @@ const DraftDetail = () => {
                     </div>
                   )}
                 </div>
-                </div>
-                {/*<ExpandableCard headerText={t("userTaskExecution.inputsTab.title")}>
+              </div>
+              {/*<ExpandableCard headerText={t("userTaskExecution.inputsTab.title")}>
                   <TaskInputs inputs={currentTask!.json_inputs_values}/>
                 </ExpandableCard>*/}
               <Tab

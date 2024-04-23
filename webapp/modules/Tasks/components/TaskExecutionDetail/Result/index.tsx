@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/router";
 import BeatLoader from "react-spinners/BeatLoader";
 import { $getRoot, EditorState } from "lexical";
@@ -9,18 +9,13 @@ import { ContentEditable } from "@lexical/react/LexicalContentEditable";
 import { OnChangePlugin } from "@lexical/react/LexicalOnChangePlugin";
 import { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin";
 import LexicalErrorBoundary from "@lexical/react/LexicalErrorBoundary";
-
+import { ArrowLongLeftIcon, ArrowLongRightIcon } from '@heroicons/react/20/solid';
 import Button from "components/Button";
 import Toolbar from "./Toolbar";
 import UpdatePlugin from "./UpdatePlugin";
-
-// import { invalidateQuery } from "services/config/queryClient";
-// import cachedAPIName from "helpers/constants/cachedAPIName";
 import useDeleteProducedText from "modules/ProducedTexts/hooks/useDeleteProducedText";
 import useSaveDraft from "modules/ProducedTexts/hooks/useSaveProducedText";
-// import useOnTaskComplete from "modules/Tasks/hooks/useOnTaskComplete";
 import { EditerProducedText } from "modules/Tasks/interface";
-// import globalContext, { GlobalContextType } from "helpers/GlobalContext";
 import { FaCopy } from "react-icons/fa";
 import ToolTip from "components/Tooltip";
 import { debounce } from "helpers/method";
@@ -29,12 +24,22 @@ type Props = {
   userTaskExecutionPk: number | undefined;
   producedText: EditerProducedText;
   isLoading: boolean;
+  onGetPreviousProducedText: () => void;
+  onGetNextProducedText: () => void;
+  showPreviousButton: boolean;
+  showNextButton: boolean;
+  onSaveNewProducedTextVersion: () => void;
 };
 
 const Answer = ({
   userTaskExecutionPk,
   producedText: producedText,
   isLoading = false,
+  onGetPreviousProducedText,
+  onGetNextProducedText,
+  showPreviousButton,
+  showNextButton,
+  onSaveNewProducedTextVersion
 }: Props) => {
   const router = useRouter();
 
@@ -45,9 +50,20 @@ const Answer = ({
   const deleteDraft = useDeleteProducedText();
   const saveDraft = useSaveDraft();
 
+  // ref to keep track of user action
+  const isUserActionRef = useRef(true);
+
+  // By using a ref, you ensure that the flag's value is consistent across all renders and does not get caught up in the asynchronous state update batching. The `setTimeout` in the `useEffect` is used to push the re-enabling of the user action flag to the end of the call stack, ensuring that any `onChange` events triggered by the `setText` and `setTitle` calls are ignored.
+  // Please note that using `setTimeout` with a delay of `0` is a common technique to defer an operation until after the current call stack has cleared, which can be useful in cases like this where you want to wait for all the synchronous code to execute before changing the ref value.
+
   useEffect(() => {
+    isUserActionRef.current = false; // Disable user action flag
     setText(producedText.text);
     setTitle(producedText.title);
+    // Re-enable user action flag after a delay to ensure onChange events are ignored
+    setTimeout(() => {
+      isUserActionRef.current = true;
+    }, 0);
   }, [producedText]);
 
   useEffect(() => {
@@ -76,7 +92,7 @@ const Answer = ({
       });
     });
 
-    if (text !== newUpdatedText) {
+    if (isUserActionRef.current && text !== newUpdatedText) {
       setText(newUpdatedText);
       debouncedSaveDraft({ title, text: newUpdatedText });
     }
@@ -90,7 +106,7 @@ const Answer = ({
       });
     });
 
-    if (updatedTitle !== title) {
+    if (isUserActionRef.current && updatedTitle !== title) {
       setTitle(updatedTitle);
       debouncedSaveDraft({ title: updatedTitle, text });
     }
@@ -102,7 +118,7 @@ const Answer = ({
         text: string;
       } | null = null
     ) => {
-      if (producedText?.producedTextPk) {
+      if (!isLoading && producedText?.producedTextPk) {
         const newText = updatedData?.text || text;
         const newTitle = updatedData?.title || title;
 
@@ -114,16 +130,15 @@ const Answer = ({
           production: newText,
           title: newTitle,
         };
-
         saveDraft.mutate(payload, {
-          onSuccess: () => { },
+          onSuccess: () => { onSaveNewProducedTextVersion(); },
         });
       }
     },
     [producedText, title, text, userTaskExecutionPk]
   );
 
-  const debouncedSaveDraft = useCallback(debounce(onSaveDraft, 500), [producedText]);
+  const debouncedSaveDraft = useCallback(debounce(onSaveDraft, 1000), [producedText]);
 
   const onDeleteDraft = () => {
     if (producedText?.producedTextPk) {
@@ -208,13 +223,37 @@ const Answer = ({
             placeholder={null}
             ErrorBoundary={LexicalErrorBoundary}
           />
-          <OnChangePlugin onChange={onChangeText} />
+          <OnChangePlugin onChange={(state) => {
+            onChangeText(state)
+          }} />
           <HistoryPlugin />
           <UpdatePlugin
             text={producedText?.text?.replace(properNounRegex, "$1") || ""}
           />
         </LexicalComposer>
       </div>
+      {isLoading ? null : <nav className="flex items-center justify-between border-t border-gray-200 px-4 sm:px-0">
+        {showPreviousButton ? <div className="-mt-px flex w-0 flex-1">
+          <a
+            //href="#" => used to navigate to a certain query maybe useful ?
+            onClick={onGetPreviousProducedText}
+            className="inline-flex items-center border-t-2 border-transparent pr-1 pt-4 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700"
+          >
+            <ArrowLongLeftIcon className="mr-3 h-5 w-5 text-gray-400" aria-hidden="true" />
+            Previous
+          </a>
+        </div> : null}
+        {showNextButton ? <div className="-mt-px flex w-0 flex-1 justify-end">
+          <a
+            // href="#"
+            onClick={onGetNextProducedText}
+            className="inline-flex items-center border-t-2 border-transparent pl-1 pt-4 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700"
+          >
+            Next
+            <ArrowLongRightIcon className="ml-3 h-5 w-5 text-gray-400" aria-hidden="true" />
+          </a>
+        </div> : null}
+      </nav>}
       {(
         <div className="mt-5 flex gap-2">
           {isLoading || !producedText.producedTextPk ? (
@@ -238,6 +277,9 @@ const Answer = ({
           )}
         </div>
       )}
+
+
+
     </div>
   );
 };

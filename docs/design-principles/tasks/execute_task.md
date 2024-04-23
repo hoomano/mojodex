@@ -1,4 +1,4 @@
-# Task Execution Workflow in Mojodex
+# Instruct Task Execution Workflow in Mojodex
 
 This document provides an overview of the concept related to the task execution process in the Mojodex platform and describes the sequence of events that occur from the moment a user initiates a new task execution until the task is completed and the result is delivered.
 
@@ -7,7 +7,8 @@ This document provides an overview of the concept related to the task execution 
 The task execution process involves several concepts matching database tables.
 
 #### Task
-- Task concept is fully described in [this doc](./whats_a_task.md). Basically, a task is a some work the assistant can help the user with. A task is fully configurable.
+- Task concept is fully described in [this doc](./whats_a_task.md). Basically, a task is a some work the assistant can help the user with. A task is fully configurable. A task can be of type "instruct" or "workflow".
+> This documentation
 
 #### User Task
 - Each user has its own set of tasks it can launch with Mojodex.  A `user_task` stands for the association between a user and a task. Those association are defined by user's product (detailled in a coming doc).
@@ -20,8 +21,8 @@ The task execution process involves several concepts matching database tables.
 #### Session
 - A `session` represents an interaction between the user and the assistant. It captures the messages exchanged between the user and the assistant, as well as the state of the conversation at any given time. A `user_task_execution` always needs a `session` for the user and its assistant to co-work on the task.
 
-> Note: With existing interface, a `user_task_execution` has 1 `session` and a `session` has 1 `user_task_execution`. This is a 1-1 relationship.
-> This being said, the architecture is prepared for 1 `session` to have multiple `user_task_execution` in the future, for example using a more general chat with routing to specific tasks.
+> Note: With existing interface, a `user_task_execution` has 1 `session`.
+> 1 `session` can have multiple `user_task_execution`, for example using a more general chat with routing to specific tasks.
 
 #### Message
 - A `message` represents a single message exchanged between the user and the assistant within a session. It captures the content of the message, sender, timestamp of the message, and other relevant metadata depeding on the type of message. In the database, a `json` field is used to store the content of the message, allowing high flexibility regarding stored data.
@@ -82,9 +83,9 @@ From those instructions, there are 2 ways to start the task:
 #### 2.1. User Task Execution Start from filled form
 This is the method used in the web interface. The user fills the form and submit it. This generates a call to POST `/user_task_execution_run` to the backend (`backend/app/routes/user_task_execution_run.py`), specifying the `user_task_execution_pk` received at previous step and the values of filled form.
 
-Resource associated to the route updated the User Task Execution instance and instanciates a `Task Manager`(`backend/app/models/task/task_manager.py`).
+Resource associated to the route updates the User Task Execution instance and instanciates a `Session`(`backend/app/models/session/session.py`).
 
-Finally, it launches in a parallel thread the start of the task by running task_manager.`start_task_from_form` method.
+Finally, it launches in a parallel thread the start of the task by running session.`process_form_input` method.
 
 ```python
 [...]
@@ -95,20 +96,16 @@ class UserTaskExecutionRun(Resource):
         user_task_execution.start_date = datetime.now()
         db.session.commit()
         [...]
-        task_manager = TaskManager(user, user_task_execution.session_id, platform, voice_generator,
-                                    mojo_messages_audio_storage,
-                                    task=task,
-                                    user_task_execution=user_task_execution)
-        def browse_missing_info_callback(app_version, task_manager, use_message_placeholder, use_draft_placeholder, tag_proper_nouns):
-                task_manager.start_task_from_form(app_version, use_message_placeholder=use_message_placeholder, use_draft_placeholder=use_draft_placeholder, tag_proper_nouns=tag_proper_nouns)
-                return
-
+        from models.session.session import Session as SessionModel
+        session = SessionModel(user_task_execution.session_id)
+        def launch_process(session, app_version, platform, user_task_execution_pk, use_message_placeholder, use_draft_placeholder):
+            session.process_form_input( app_version, platform, user_task_execution_pk, use_message_placeholder=use_message_placeholder, use_draft_placeholder=use_draft_placeholder)
+            return
         [...]
-
-        server_socket.start_background_task(browse_missing_info_callback, app_version, task_manager, use_message_placeholder, use_draft_placeholder, platform=="mobile")
+        server_socket.start_background_task(launch_process, session, app_version, platform, user_task_execution_pk, use_message_placeholder, use_draft_placeholder)
 ```
 
-The `Task Manager` is the epicenter of task execution. The function `start_task_from_form()` will:
+The `Session` is the epicenter of task execution. The function `process_form_input()` will:
 - Asynchronously call the Background to ask for a task execution title and summary generation
 - Prepare first assistant's response to the user.
 
@@ -144,7 +141,7 @@ class UserMessage(Resource):
 
 Once the User Task Execution is updated, the Resource will instanciate a `Session` object (`backend/app/models/session.py`), responsible for managing user and assistant messages exchanges.
 
-Finally, it launched a parallel thread in which it runs method `receive_human_message` of `Session`.
+Finally, it launched a parallel thread in which it runs method `process_chat_message` of `Session`.
     
 ```python
 [...]
@@ -161,33 +158,46 @@ class UserMessage(Resource):
                                 "message_date": message_date.isoformat(),
                             "use_message_placeholder": use_message_placeholder, "use_draft_placeholder": use_draft_placeholder}
 
-        server_socket.start_background_task(session.receive_human_message, "user_message", session_message)
+        server_socket.start_background_task(session.process_chat_message, "user_message", session_message)
         [...]
 ```
 
-The `receive_human_message` method will:
+The `process_chat_message` method will:
 - Check the message is a task execution message
 - Instanciate a Task Manager
-- Call method `response_to_user_message` of the Task Manager
+- Call appropriate `assistant_response_generator` to generate the assistant's response to the user.
 
 ```python
 [...]
 class Session:
     [...]
-    def receive_human_message(self, event_name, message):
+    def process_chat_message(self, event_name, message):
         [...]
         response_event_name, response_message = self.__manage_task_session(message, app_version)
         [...]
     
-    def __manage_task_session(self, message, app_version):
+    def __manage_task_session(self, platform, user_task_execution_pk, use_message_placeholder=False, use_draft_placeholder=False):
         [...]
-        task_manager = TaskManager(self._get_user(), self.id, self.__get_platform(), self.voice_generator, self.__get_mojo_messages_audio_storage())
+            return self.__manage_instruct_task_session(platform, user_task_execution_pk, use_message_placeholder, use_draft_placeholder)
         [...]
-        response_event_name, response_message = task_manager.response_to_user_message(app_version, user_message=message,
-                                                                                        mojo_token_callback=self._mojo_token_callback,
-                                                                                            tag_proper_nouns=tag_proper_nouns)
+
+    def __manage_instruct_task_session(self, platform, user_task_execution_pk, use_message_placeholder=False, use_draft_placeholder=False):
         [...]
-        return response_event_name, response_message
+            tag_proper_nouns = platform == "mobile"
+            task_assistant_response_generator = InstructTaskAssistantResponseGenerator(mojo_message_token_stream_callback=self._mojo_message_stream_callback,
+                                                                              draft_token_stream_callback=self._produced_text_stream_callback,
+                                                                              use_message_placeholder=use_message_placeholder,
+                                                                               use_draft_placeholder=use_draft_placeholder,
+                                                                               tag_proper_nouns=tag_proper_nouns,
+                                                                               user=self._get_user(),
+                                                                               session_id=self.id,
+                                                                               user_messages_are_audio= platform=="mobile",
+                                                                               running_user_task_execution_pk=user_task_execution_pk)
+
+            response_message = task_assistant_response_generator.generate_message()
+            response_language = task_assistant_response_generator.context.state.current_language
+            return response_message, response_language
+        [...]
 [...]
 ```
 
@@ -195,108 +205,157 @@ class Session:
 
 ![start_user_task_execution_with_message](../../images/task_execution/start_user_task_execution_with_message.png)
      
-### 3. Task Manager
-The `Task Manager` is the epicenter of task execution. It is responsible for managing the execution of a task by the user and the assistant.
-The core method of the `Task Manager` is `__answer_user()` which is called to generate an answer to the user's message.
-Let's break this method down.
+### 3. InstructTaskAssistantResponseGenerator
+The `InstructTaskAssistantResponseGenerator` is the epicenter of task execution. It is responsible for managing the execution of a task by the user and the assistant.
+Its inheritance tree is as follows:
+- `AssistantMessageGenerator`: responsible for generating the assistant's message to the user
+    - `AssistantResponseGenerator`: responsible for generating the assistant's response to the user (used in the context of a response)
+        - `TaskEnabledAssistantResponseGenerator`: Specified in collecting the task execution context
+            - `InstructTaskEnabledAssistantResponseGenerator`: Holds the prompt and instruct tasks tags management
+                - `InstructTaskAssistantResponseGenerator`
+                
 
-> Note: if you have a look at the whole method, you will notice some boolean variables `use_placeholders` that can be passed as arguments of the method. Those have been set to limit tokens consumption while testing. We won't detail them in this doc.
-
-#### 3.1. Data collection
-First, the task manager collects all the data it needs to answer the user's message. Those data will be used to render Jinja2 template and generate the assistant's prompt.
+The core method of those object lies in `AssistantMessageGenerator` method `generate_message`.
 
 ```python
+class AssistantMessageGenerator(ABC):
+    [...]
+    def generate_message(self):
+        [...]
+            placeholder = self._handle_placeholder()
+            if placeholder:
+                return placeholder
+            prompt = self._render_prompt_from_template()
+            llm_output = self._generate_message_from_prompt(prompt)
+            if llm_output:
+                return self._handle_llm_output(llm_output)
+            return None
 [...]
-user_task_inputs = [{k: input[k] for k in
-                                 ("input_name", "description_for_system", "type", "value")} for input in
-                                self.task_execution.json_input_values if input["value"]]
-
-if len(user_task_inputs) == 0:
-    user_task_inputs = None
-
-self.produced_text_done = self.__get_produced_text_done()
-mojo_knowledge = KnowledgeManager.get_mojo_knowledge()
-global_context = KnowledgeManager.get_global_context_knowledge()
-user_company_knowledge = KnowledgeManager.get_user_company_knowledge(self.user_task.user_id)
 ```
 
-#### 3.2. Prompt preparation
+Let's break this method down.
+
+> Note: We won't deal with placeholders, those are basically useful to return a placeholder instead of a LLM generated message for development purposes.
+
+#### 3.1. Prompt preparation
+First, the assistant collects all the data it needs to answer the user's message. Those data will be used to render Jinja2 template and generate the assistant's prompt.
+
+Some data are stored in context, other in KnowledgeManager and some need specific calls to database to be collected.
+
+```python
+class InstructTaskEnabledAssistantResponseGeneratorTaskEnabledAssistantResponseGenerator, ABC)::
+    [...]
+    def _render_prompt_from_template(self):
+        try:
+            mojo_knowledge = KnowledgeManager.get_mojo_knowledge()
+            global_context = KnowledgeManager.get_global_context_knowledge()
+            user_company_knowledge = KnowledgeManager.get_user_company_knowledge(self.context.user_id)
+            available_user_tasks = self.__get_available_user_instruct_tasks()
+            task_specific_instructions = self.__get_specific_task_instructions(self.running_task) if self.running_task else None
+            produced_text_done = self.context.state.get_produced_text_done()
+
+            return self.prompt_template.render(mojo_knowledge=mojo_knowledge,
+                                                    global_context=global_context,
+                                                    username=self.context.username,
+                                                    user_company_knowledge=user_company_knowledge,
+                                                    tasks = available_user_tasks,
+                                                    running_task=self.running_task,
+                                                    task_specific_instructions=task_specific_instructions,
+                                                    produced_text_done=produced_text_done,
+                                                    audio_message=self.context.user_messages_are_audio,
+                                                    tag_proper_nouns=self.tag_proper_nouns,
+                                                    language=None
+                                                    )
+        except Exception as e:
+            raise Exception(f"{InstructTaskEnabledAssistantResponseGenerator.logger_prefix} _render_prompt_from_template :: {e}")
+
+[...]
+```
 
 > 💡The advanced prompting strategy used in the Task Manager is described in detail in the following article: [Advanced Prompting Strategies for Digital Assistant Development](https://blog.hoomano.com/advanced-prompting-strategies-for-digital-assistant-development-b6698996954f)
 
-The task manager's `prompt` is prepared in 3 steps:
-- Load Jinja2 template from `/data` directory
-- Render Jinja2 template with collected data
-- Add the prompt as the first message of the conversation list in this session
+The Jinja2 prompt is rendered using collecting data.
+At next step, it will be used as the content of initial system message of list of messages to send to LLM.
 
 
-```python
-[...]
-with open(self.answer_user_prompt, 'r') as f:
-    template = Template(f.read())
-
-    mega_prompt = template.render(mojo_knowledge=mojo_knowledge,
-                                    global_context=global_context,
-                                    username=self.username,
-                                    user_company_knowledge=user_company_knowledge,
-                                    task=self.task,
-                                    user_task_inputs=user_task_inputs,
-                                    produced_text_done=self.produced_text_done,
-                                    language=self.language,
-                                    audio_message=self.platform == "mobile",
-                                    tag_proper_nouns=tag_proper_nouns,
-                                    title_start_tag=TaskProducedTextManager.title_start_tag,
-                                    title_end_tag=TaskProducedTextManager.title_end_tag,
-                                    draft_start_tag=TaskProducedTextManager.draft_start_tag,
-                                    draft_end_tag=TaskProducedTextManager.draft_end_tag,
-                                    task_tool_associations=self.task_tool_associations_json
-                                    )
-
-    conversation_list = self.__get_conversation_as_list()
-    messages = [{"role": "system", "content": mega_prompt}] + conversation_list
-[...]
-```
-
-#### 3.3. LLM call
+#### 3.2. LLM call
 The LLM call is provided with various parameters and a stream callback function that will stream assistant's tokens on the go to user's interface.
 
 ```python
-[...]
-responses = TaskManager.user_answerer.invoke(messages, self.user_task.user_id,
-                                                           temperature=0, max_tokens=2000,
-                                                           user_task_execution_pk=self.task_execution.user_task_execution_pk,
-                                                           task_name_for_system=self.task.name_for_system,
-                                                           stream=True,
-                                                           stream_callback=self.__super_prompt_token_callback,
-                                                           )
-response = responses[0].strip()
+class AssistantResponseGenerator(AssistantMessageGenerator, ABC):
+    [...]
+    def _generate_message_from_prompt(self, prompt):
+       [...]
+        conversation_list = self.context.state.get_conversation_as_list(self.context.session_id)
+        messages = [{"role": "system", "content": prompt}] + conversation_list
+        responses = model_loader.main_llm.invoke(messages, self.context.user_id,
+                                                    temperature=0,
+                                                    max_tokens=4000,
+                                                    label="CHAT",
+                                                    stream=True, stream_callback=self._token_callback)
+
+        return responses[0].strip() if responses else None
+        [...]
 [...]
 ```
 
-#### 3.4. Response analysis
+#### 3.3. Response analysis
 Once LLM call completed, we can analyse the answer.
 
-At first call, when the task execution is just started, the prompt asks for the assistant to spot the language used by the user in the first information they provided. This is useful to affect a language per session instead of per user to let the user address their assistant in any language.
+The prompt asks for the assistant to spot the language used by the user in the first information they provided. This is useful to adapt the assistant's response to the user's language dynamically during the task.
 To check if the assistant spotted the language, we look for the language tag in the response. If found, we update the session with the language and commit the change.
 
 ```python
+class AssistantResponseGenerator(AssistantMessageGenerator, ABC):
 [...]
-if self.language is None and TaskManager.user_language_start_tag in response:
-    try:
-        self.language = TaskManager.remove_tags_from_text(response, TaskManager.user_language_start_tag,
-                                                            TaskManager.user_language_end_tag).lower()
-        self.logger.info(f"language: {self.language}")
-        # update session
-        db_session = db.session.query(MdSession).filter(MdSession.session_id == self.session_id).first()
-        db_session.language = self.language
-        db.session.commit()
-    except Exception as e:
-        db.session.rollback()
-        self.logger.error(f"Error while updating session language: {e}")
+    def __manage_response_language_tags(self, response):
+        """
+        Remove language tags from the response and update the language in the context
+        :param response: response
+        """
+        try:
+            if AssistantResponseGenerator.user_language_start_tag in response:
+                try:
+                    self.context.state.current_language = AssistantMessageGenerator.remove_tags_from_text(response, AssistantResponseGenerator.user_language_start_tag,
+                                                                        AssistantResponseGenerator.user_language_end_tag).lower()
+                except Exception as e:
+                    pass
+        except Exception as e:
+            raise Exception(f"__manage_response_language_tags:: {e}")
 [...]
 ```
 
-Then, we check for specific tags that will determine the nature of the response. For now, 3 types of responses can be generated. Those 3 types are each handled by a specific object:
+Then, we check for specific tags that will determine the nature of the response.
+```python
+class InstructTaskEnabledAssistantResponseGenerator(TaskEnabledAssistantResponseGenerator, ABC):
+    [...]
+    def _manage_response_task_tags(self, response):
+        [...]
+        if TaskInputsManager.ask_user_input_start_tag in response:
+            return self.task_input_manager.manage_ask_input_text(response)
+        if TaskToolManager.tool_usage_start_tag in response:
+            return self.task_tool_manager.manage_tool_usage_text(response,
+                                                                    self.running_user_task_execution.user_task_execution_pk,
+                                                                    self._get_task_tools_json(self.running_task))
+        return {"text": response}
+        [...]
+
+    def _manage_execution_tags(self, response):
+        [...]
+            if ExecutionManager.execution_start_tag in response:
+                return self.execution_manager.manage_execution_text(response, self.running_task, self.running_task_displayed_data,
+                                          self.running_user_task_execution, self.task_executor,
+                                          use_draft_placeholder=self.use_draft_placeholder)
+        [...]
+    
+    def _manage_response_tags(self, response):
+        execution = self._manage_execution_tags(response)
+        if execution:
+            return execution
+        return self._manage_response_task_tags(response)
+```
+
+For now, 3 types of responses can be generated. Those 3 types are each handled by a specific object:
 
 ##### TaskInputsManager
 - TaskInputsManager handles a response indicating the assistant needs more information from the user to complete the task. In this case, the response format will include a question addressed to the user enclosed in specific tags.
@@ -315,7 +374,9 @@ Basically, the TaskInputsManager will extract the question addressed to the user
 ```python
 [...]
 if TaskToolManager.tool_usage_start_tag in response:
-    return self.task_tool_manager.manage_tool_usage_text(response, self.task_execution.user_task_execution_pk, self.task_tool_associations_json)
+    return self.task_tool_manager.manage_tool_usage_text(response,
+                                                            self.running_user_task_execution.user_task_execution_pk,
+                                                            self._get_task_tools_json(self.running_task))
 [...]
 ```
 There, the TaskToolManager will:
@@ -323,20 +384,18 @@ There, the TaskToolManager will:
 - extract the explanation addressed to the user by removing the tags so that it can be displayed properly to the user.
 It will return a map containing message metadata with text to display to the user but also the primary key of the Task Tool Execution in database to indicate a special message to the UI receving the response, which can then decide of a specific display for this message.
 
-##### TaskExecutionManager
-- TaskExecutionManager handles a response indicating the assistant has completed the task. In this case, the response format will include the result of the task enclosed in specific tags.
+##### ExecutionManager
+- ExecutionManager handles a response indicating the assistant has completed the task by produceing a text. In this case, the response format will include the result of the task enclosed in specific tags.
 ```python
 [...]
 if ExecutionManager.execution_start_tag in response:
-    return self.task_executor.manage_execution_text(execution_text=response, task=self.task, task_displayed_data=self.task_displayed_data,
-                                                    user_task_execution_pk=self.task_execution.user_task_execution_pk,
-                                                    user_message=user_message,
-                                                    app_version = app_version,
-                                                    use_draft_placeholder=use_draft_placeholder)
+    return self.execution_manager.manage_execution_text(response, self.running_task, self.running_task_displayed_data,
+                                self.running_user_task_execution, self.task_executor,
+                                use_draft_placeholder=self.use_draft_placeholder)
 [...]
 ```
 
-The TaskExecutionManager will:
+The ExecutionManager will:
 - remove tags from the response to extract the result of the task in different format:
     - title of the produced text
     - body of the produced text
@@ -346,11 +405,9 @@ The TaskExecutionManager will:
 - send the message on SocketIO dedicated event: `draft_message`
 
 #### 3.5. Response to user
-Finally, the method `__answer_user` returns the assistant's message that should be sent to the user (or None if it was a `draft_message` managed by TaskExecutionManager).
+Finally, the method `generate_message` returns the assistant's message that should be sent to the user (or None if it was a `draft_message` managed by TaskExecutionManager).
 
-If an assistant's message is returned, it's the component that called `__answer_user` that is responsible for sending it to the user.
-In most cases, this component is the `Session` object. 
-Only if the call came from starting a task from a form, the Task Manager `start_task_from_form` method will take care of sending.
+Then, the session will get this message, the associated event_name and the eventual detected language, generate audio version if platform is mobile and send mojo message to the user using socketio.
 
 
 ### 4. Iterating on a task
@@ -360,7 +417,5 @@ The task execution process is an iterative process. The user and the assistant e
 When the assistant sends a message to ask for any precision or when they want to ask for an edition, the user can send a message through the chat interface to interact with the assistant.
 
 When the user sends a message during a task execution, the message is sent to the backend through a PUT `user_message` call and the same process as described in part 2.2 is repeated.
-
-> Note: the web application as it is now still uses a socketio event `user_message` to send user's message to the backend. We started moving from this to the REST API `/user_message` as described here for robustness and scalability reasons. Mobile application already uses the REST API.
 
 ![complete_user_task_execution_flow](../../images/task_execution/complete_user_task_execution_flow.png)

@@ -10,6 +10,8 @@ import { socketEvents } from "helpers/constants/socket";
 import useContextSession from "helpers/hooks/useContextSession";
 import { ChatContextType, ChatUsedFrom } from "modules/Chat/interface/context";
 import useApproveTaskToolExecution from "modules/TaskToolExecution/hooks/useApproveTaskToolExecution";
+import useSendUserMessage from "modules/Chat/hooks/useSendUserMessage";
+import { UserMessagePayload } from "modules/Chat/interface";
 
 const scrollToLastMsg = (messageId: string) => {
   document.getElementById(`message-id-${messageId}`)?.scrollIntoView({
@@ -26,6 +28,7 @@ const ChatAction = ({ showPopup }: { showPopup: () => void }) => {
   
   const userLanguage = session?.authorization?.language_code;
   const sendTaskToolExecutionApproval = useApproveTaskToolExecution();
+  const sendUserMessage = useSendUserMessage();
 
   const {
     isMobile,
@@ -69,30 +72,33 @@ const ChatAction = ({ showPopup }: { showPopup: () => void }) => {
       const currentDatetime: Date = new Date();
       const isoString: string = toISOStringLocal(currentDatetime);
       const timezoneOffsetMinutes: string = currentDatetime.getTimezoneOffset().toString();
-      let payload: any = {
+      let payload: UserMessagePayload = {
         text: message,
-        session_id: sessionId,
-        version: appVersion,
-        platform: appPlatform,
+        session_id: sessionId!,
+        //version: appVersion,
+        //platform: appPlatform,
+        message_id: `${isoString}_${sessionId}`,
         message_date: isoString,
-        timezone_offset: timezoneOffsetMinutes
+        use_message_placeholder: false,
+        use_draft_placeholder: false,
+        origin: chatState.currentTaskInfo?.taskExecutionPK ? "task" : "home_chat",
       };
 
       if (chatState.currentTaskInfo?.taskExecutionPK) {
-        const { taskExecutionPK, text, textPk, title } =
+        const { taskExecutionPK } =
           chatState.currentTaskInfo;
 
         payload = {
           ...payload,
-          displayed_workspace: true,
-          displayed_workspace_draft: text,
-          displayed_workspace_title: title,
-          displayed_workspace_produced_text_pk: textPk,
+          //displayed_workspace: true,
+          //displayed_workspace_draft: text,
+          //displayed_workspace_title: title,
+          //displayed_workspace_produced_text_pk: textPk,
           user_task_execution_pk: taskExecutionPK,
         };
       }
 
-      socket.emit(socketEvents.USER_MESSAGE, payload);
+      sendUserMessage.mutate(payload);
     }
 
     setTimeout(

@@ -25,7 +25,7 @@ class WorkflowExecution:
             self.db_object = self._get_db_object(workflow_execution_pk)
             self.user_id = self._db_user_workflow.user_id
             self.workflow = Workflow(self._db_workflow, self.db_session)
-            self.past_accepted_steps_executions = [WorkflowStepExecution(self.db_session, db_past_accepted_step_execution, self.user_id) for
+            self.past_accepted_steps_executions = [WorkflowStepExecution(self.db_session, db_past_accepted_step_execution, self.user_id, self.workflow.name_for_system) for
                                                    db_past_accepted_step_execution in self._db_past_accepted_step_executions]
             self._current_step = None
         except Exception as e:
@@ -76,7 +76,7 @@ class WorkflowExecution:
             )
             self.db_session.add(db_workflow_step_execution)
             self.db_session.commit()
-            return WorkflowStepExecution(self.db_session, db_workflow_step_execution, self.user_id)
+            return WorkflowStepExecution(self.db_session, db_workflow_step_execution, self.user_id, self.workflow.name_for_system)
         except Exception as e:
             raise Exception(f"_generate_new_step_execution :: {e}")
 
@@ -262,7 +262,7 @@ class WorkflowExecution:
             db_step_execution = self.db_session.query(MdUserWorkflowStepExecution) \
                 .filter(MdUserWorkflowStepExecution.user_workflow_step_execution_pk == step_execution_pk) \
                 .first()
-            return WorkflowStepExecution(self.db_session, db_step_execution, self.user_id)
+            return WorkflowStepExecution(self.db_session, db_step_execution, self.user_id, self.workflow.name_for_system)
         except Exception as e:
             raise Exception(f"_last_step_execution :: {e}")
 
@@ -289,7 +289,7 @@ class WorkflowExecution:
                 .first()
             if db_step_execution is None:
                 return None
-            return WorkflowStepExecution(self.db_session, db_step_execution, self.user_id)
+            return WorkflowStepExecution(self.db_session, db_step_execution, self.user_id, self.workflow.name_for_system)
         except Exception as e:
             raise Exception(f"_last_step_execution :: {e}")
 
@@ -361,7 +361,7 @@ class WorkflowExecution:
         try:
             validated_steps_json = [step_execution.to_json() for step_execution in self.past_accepted_steps_executions]
             last_step_execution = self._get_last_step_execution()
-            if last_step_execution and last_step_execution.validated is None and last_step_execution.workflow_step.user_validation_required:
+            if last_step_execution and last_step_execution.validated is None and (last_step_execution.workflow_step.user_validation_required or last_step_execution.error_status):
                 validated_steps_json.append(last_step_execution.to_json())
             return validated_steps_json
         except Exception as e:

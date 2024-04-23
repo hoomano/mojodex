@@ -19,6 +19,7 @@ const Messages = ({
   // Render the list of messages
   if (messages.length != 0) {
     messages.forEach((element) => {
+      
       list_messages.push(
         <ChatMessage
           key={element.id}

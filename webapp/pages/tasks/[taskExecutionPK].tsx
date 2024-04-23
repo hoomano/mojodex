@@ -30,6 +30,10 @@ const TaskDetailsPage = () => {
       {taskSessionId ? (
         <ChatProvider
           sessionId={taskSessionId}
+          currentTaskInfo={{
+            producedTextPk: currentTaskInfo!.produced_text_pk,
+            taskExecutionPK: currentTaskInfo!.user_task_execution_pk
+          }}
           chatUsedFrom={currentTaskInfo?.task_type === "workflow" ? ChatUsedFrom.Workflow : ChatUsedFrom.Task}
         >
           <div className="sm:hidden">

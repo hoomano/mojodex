@@ -108,7 +108,7 @@ const StepProcessDetail: React.FC<StepProcessDetailProps> = ({
 
       <ul role="list" className="space-y-6 w-full">
         {stepExecutions?.map((stepItem, activityItemIdx) => (
-          <li key={stepItem.workflow_step_pk} className="relative flex gap-x-4">
+          <li key={stepItem.user_workflow_step_execution_pk} className="relative flex gap-x-4">
             <div
               className={classNames(
                 activityItemIdx === stepExecutions.length - 1 ? 'h-6' : '-bottom-6',
@@ -168,7 +168,8 @@ const StepProcessDetail: React.FC<StepProcessDetailProps> = ({
                       stepItem.result?.map((resultItem) => (
                         Object.entries(resultItem).map(([key, value]) => (
                           <p className="flex-auto py-0.5 text-sm leading-5 text-gray-900">
-                            <span className="font-medium text-gray-400">{key}:</span><br /> {value?.toString()}
+                            <span className="font-medium text-gray-400">{key}:</span><br />
+                            <pre style={{ whiteSpace: "pre-wrap", wordWrap: "break-word" }}>{value?.toString()}</pre>
                           </p>
                         ))
                       ))

@@ -81,11 +81,11 @@ class WorkflowStep(ABC):
 
     @abstractmethod
     def _execute(self, parameter: dict, learned_instructions: dict, initial_parameters: dict,
-                 past_validated_steps_results: List[dict], user_id: str):
+                 past_validated_steps_results: List[dict], user_id: str, user_task_execution_pk: int, task_name_for_system: str):
         pass
 
     def execute(self, parameter: dict, learned_instructions: dict, initial_parameter: dict,
-                past_validated_steps_results: List[dict], user_id: str):
+                past_validated_steps_results: List[dict], user_id: str, user_task_execution_pk: int, task_name_for_system: str):
         """
         Returns a list of parameters (dict)
         """
@@ -96,7 +96,7 @@ class WorkflowStep(ABC):
                 if key not in parameter:
                     raise Exception(f"execute :: key {key} not in parameter")
             output = self._execute(parameter, learned_instructions, initial_parameter, past_validated_steps_results,
-                                   user_id)  # list of dict
+                                   user_id, user_task_execution_pk, task_name_for_system)  # list of dict
             # ensure output is a list
             if not isinstance(output, List):
                 raise Exception(f"execute :: output is not a list")

@@ -10,7 +10,7 @@ const useGetMessageHistory = () => {
     ChatContext
   ) as ChatContextType;
 
-  const { sessionId, chatUsedFrom, isNewSession } = chatState;
+  const { sessionId, chatUsedFrom, isNewSession, currentTaskInfo } = chatState;
 
   const msgHistory = useMutation(getMessageHistory);
 
@@ -22,10 +22,9 @@ const useGetMessageHistory = () => {
             data.messages,
             chatUsedFrom || null
           );
-
           let buildChatState: ChatStateType = {
             messages: [...formattedOldMessages],
-            inputDisabled: !formattedOldMessages.length && chatUsedFrom !== ChatUsedFrom.Workflow, // todo: only if current task is not a workflow
+            inputDisabled: !formattedOldMessages.length && !currentTaskInfo?.producedTextPk && chatUsedFrom !== ChatUsedFrom.Workflow, // todo: only if current task is not a workflow
           };
 
           if (formattedOldMessages.length) {

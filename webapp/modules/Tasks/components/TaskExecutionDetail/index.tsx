@@ -24,7 +24,8 @@ import { useQueryClient } from "@tanstack/react-query";
 
 const DraftDetail = () => {
   const [tabs, setTabs] = useState<TabType[]>([]);
-  const [selectedTab, setSelectedTab] = useState("result");
+  // selectedTab is a string, initially set to null
+  const [selectedTab, setSelectedTab] = useState<string | null>(null);
   const router = useRouter();
 
   const messagePkRef = useRef<number[]>([]);
@@ -37,20 +38,6 @@ const DraftDetail = () => {
   const taskExecutionPK = router.query?.taskExecutionPK
     ? decryptId(router.query.taskExecutionPK as string)
     : null;
-
-  useEffect(() => {
-    if (taskExecutionPK) {
-      setChatState({
-        currentTaskInfo: {
-          taskExecutionPK,
-          text: chatState?.currentTaskInfo?.text || "",
-          textPk: chatState?.currentTaskInfo?.textPk || null,
-          title: chatState?.currentTaskInfo?.title || "",
-        },
-      });
-    }
-  }, [taskExecutionPK]);
-
 
   const { data: currentTask } = useGetExecuteTaskById(taskExecutionPK);
   const [producedTextIndex, setProducedTextIndex] = useState(currentTask!.produced_text_version_index || 0);
@@ -166,12 +153,12 @@ const DraftDetail = () => {
     }
 
     setTabs(tabs);
-
     // if selectedTab is null
     if (selectedTab === null) {
       if (router.query.tab === "todos") {
         setSelectedTab("todos");
       } else {
+        
         if (currentTask?.task_type !== "workflow") {
           setSelectedTab("result");
         } else {
@@ -264,9 +251,7 @@ const DraftDetail = () => {
       setChatState({
         currentTaskInfo: {
           taskExecutionPK: user_task_execution_pk,
-          text: produced_text,
-          textPk: produced_text_pk,
-          title: produced_text_title,
+          producedTextPk: produced_text_pk,
         },
         inputDisabled: false,
         waitingForServer: false,
@@ -428,7 +413,7 @@ const DraftDetail = () => {
                   <TaskInputs inputs={currentTask!.json_inputs_values}/>
                 </ExpandableCard>*/}
               <Tab
-                selected={selectedTab}
+                selected={selectedTab!}
                 onChangeTab={(key: string) => setSelectedTab(key)}
                 tabs={tabs}
                 notReadTodos={currentTask?.n_not_read_todos}

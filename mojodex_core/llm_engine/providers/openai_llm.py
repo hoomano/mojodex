@@ -225,7 +225,7 @@ class OpenAILLM(LLM):
         except Exception as e:
             raise Exception(f"_call_completion_with_rate_limit_management : {e}")
 
-    def recursive_invoke(self, messages, user_id, temperature, max_tokens, label, frequency_penalty, presence_penalty,
+    def recursive_invoke(self, messages, user_id, temperature, max_tokens, label, frequency_penalty=0, presence_penalty=0,
                        stream=False, stream_callback=None, user_task_execution_pk=None, task_name_for_system=None,
                          n_additional_calls_if_finish_reason_is_length=0, **kwargs):
         try:

@@ -372,27 +372,6 @@ SELECT pg_catalog.setval('public.md_event_seq', 1, false);
 
 
 --
--- Name: md_feedback_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
---
-
-SELECT pg_catalog.setval('public.md_feedback_seq', 1, false);
-
-
---
--- Name: md_follow_up_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
---
-
-SELECT pg_catalog.setval('public.md_follow_up_seq', 1, false);
-
-
---
--- Name: md_idea_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
---
-
-SELECT pg_catalog.setval('public.md_idea_seq', 1, false);
-
-
---
 -- Name: md_message_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
 --
 
@@ -481,20 +460,6 @@ SELECT pg_catalog.setval('public.md_product_task_seq', 6, true);
 --
 
 SELECT pg_catalog.setval('public.md_purchase_seq', 3, true);
-
-
---
--- Name: md_relationship_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
---
-
-SELECT pg_catalog.setval('public.md_relationship_seq', 1, false);
-
-
---
--- Name: md_task_category_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
---
-
-SELECT pg_catalog.setval('public.md_task_category_seq', 1, false);
 
 
 --

@@ -80,6 +80,8 @@ class TaskEnabledAssistantResponseGenerator(AssistantResponseGenerator, ABC):
     @property
     def requires_vision_llm(self):
         try:
+            if not self.running_user_task_execution:
+                return False
             for input in self.running_user_task_execution.json_input_values:
                 if input["type"] == "image":
                     return True

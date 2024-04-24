@@ -10,6 +10,8 @@ data/costs/*
 data/prompts_dataset/*
 data/postgresql/*
 data/users/*
+docs/openAPI/scripts
+pgsql/patchs
 *.env
 *.conf
 site/

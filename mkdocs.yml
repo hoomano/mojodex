@@ -74,6 +74,8 @@ nav:
       - Organized by products:
         - What's a product: design-principles/products/whats_a_product.md
         - How it works: design-principles/products/how_it_works.md
+      - Organized by profiles:
+        - What's a profile: design-principles/profiles/whats_a_profile.md
       - Proactive To-do: 
         - What's a to-do: design-principles/to-do_list/whats_a_todo.md
         - How it works: design-principles/to-do_list/how_todo_works.md
@@ -101,6 +103,7 @@ nav:
   - Build your own Digital Assistants:
     - Getting Started: guides/index.md
     - Configure a new product: guides/products/new_product.md
+    - Configure a new profile: guides/products/new_profile.md
     - Configure a new task: guides/tasks/new_task.md
     - New Task example: guides/tasks/example.md
     - Add a new tool: guides/tools/new_tool.md

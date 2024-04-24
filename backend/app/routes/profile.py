@@ -7,8 +7,9 @@ from app import db
 
 class Profile(Resource):
     
-    # A profile is exactly the same thing as a profile and points to the same resource in DB
-    # Those routes are created only to allow for a /profile endpoint instead of /product
+    # A profile is the same thing as a profile and points to the same resource in DB
+    # By definition a profile is free and unlimited
+    # Those routes are created only to allow for a /profile endpoint instead of /product and simplified endpoint
     # which makes more sense in the context of someone pre-affecting user's account for a company 
     # (in comparison to users being autonomous in their product choices at onboarding)
 
@@ -29,20 +30,15 @@ class Profile(Resource):
 
         try:
             timestamp = request.json["datetime"]
-            product_label = request.json["product_label"]
+            profile_label = request.json["profile_label"]
             displayed_data = request.json["displayed_data"]
             product_category_pk = request.json["product_category_pk"]
-            product_stripe_id = request.json["product_stripe_id"] if "product_stripe_id" in request.json else None
-            product_apple_id = request.json["product_apple_id"] if "product_apple_id" in request.json else None
-            is_free = request.json["is_free"]
-            n_days_validity = request.json["n_days_validity"]
-            n_tasks_limit = request.json["n_tasks_limit"]
         except KeyError as e:
             return {"error": f"Missing field {e}"}, 400
 
         try:
-            product_pk=self.product_resource.create_new_product(product_label, displayed_data, product_category_pk, product_stripe_id, product_apple_id, is_free, n_days_validity, n_tasks_limit)
-            return {"product_pk": product_pk}, 200
+            profile_pk=self.product_resource.create_new_product(profile_label, displayed_data, product_category_pk, product_stripe_id=None, product_apple_id=None, is_free=True, n_days_validity=None, n_tasks_limit=None)
+            return {"profile_pk": profile_pk}, 200
         except Exception as e:
             return {"error": f"Error while creating profile: {e}"}, 500
 

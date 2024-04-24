@@ -11,6 +11,58 @@ class ProductCategory(Resource):
     def __init__(self):
         ProductCategory.method_decorators = [authenticate(methods=["GET"])]
 
+    
+    def create_product_category(self, product_category_label: str, displayed_data: list, emoji: str, implicit_goal: str, visible: bool):
+        try:
+            # Check if name already exists
+            product_category = db.session.query(MdProductCategory).filter(MdProductCategory.label == product_category_label).first()
+            if product_category is not None:
+                raise Exception(f"Product category label {product_category_label} already exists")
+
+            # ensure that display_data is a list
+            if not isinstance(displayed_data, list):
+                raise Exception(f"displayed_data must be a list of dict specifying the corresponding language_code")
+            else:
+                for translation in displayed_data:
+                    if not isinstance(translation, dict):
+                        raise Exception(f"displayed_data must be a list of dict specifying the corresponding language_code")
+                    if "language_code" not in translation:
+                        raise Exception(f"Missing language_code in displayed_data")
+                    if "name_for_user" not in translation:
+                        raise Exception(f"Missing name_for_user in displayed_data")
+                    if "description_for_user" not in translation:
+                        raise Exception(f"Missing description_for_user in displayed_data")
+
+            # Create product category
+            product_category = MdProductCategory(label=product_category_label,
+                                                emoji=emoji,
+                                                implicit_goal=implicit_goal, visible=visible)
+            db.session.add(product_category)
+            db.session.flush()
+            db.session.refresh(product_category)
+
+            for translation in displayed_data:
+                language_code = translation["language_code"]
+                name_for_user = translation["name_for_user"]
+                description_for_user = translation["description_for_user"]
+                # Create the product category displayed data
+                product_category_displayed_data = MdProductCategoryDisplayedData(
+                    product_category_fk=product_category.product_category_pk,
+                    language_code=language_code,
+                    name_for_user=name_for_user,
+                    description_for_user=description_for_user
+                )
+                db.session.add(product_category_displayed_data)
+                db.session.flush()
+
+            db.session.commit()
+            return product_category.product_category_pk
+        except Exception as e:
+            db.session.rollback()
+            raise Exception(f"create_product_category:: {e}")
+            
+
+
     # Route to create a new product category
     # Route used only by Backoffice
     # Protected by a secret
@@ -36,54 +88,89 @@ class ProductCategory(Resource):
             return {"error": f"Missing field {e}"}, 400
 
         try:
-            # Check if name already exists
-            product_category = db.session.query(MdProductCategory).filter(MdProductCategory.label == product_category_label).first()
-            if product_category is not None:
-                return {"error": f"Product category label {product_category_label} already exists"}, 400
-
-            # ensure that display_data is a list
-            if not isinstance(displayed_data, list):
-                return {
-                    "error": f"displayed_data must be a list of dict specifying the corresponding language_code"}, 400
-            else:
-                for translation in displayed_data:
-                    if not isinstance(translation, dict):
-                        return {
-                            "error": f"displayed_data must be a list of dict specifying the corresponding language_code"}, 400
-                    if "language_code" not in translation:
-                        return {"error": f"Missing language_code in displayed_data"}, 400
-                    if "name_for_user" not in translation:
-                        return {"error": f"Missing name_for_user in displayed_data"}, 400
-                    if "description_for_user" not in translation:
-                        return {"error": f"Missing description_for_user in displayed_data"}, 400
-
-            # Create product category
-            product_category = MdProductCategory(label=product_category_label,
-                                                emoji=emoji,
-                                                implicit_goal=implicit_goal, visible=visible)
-            db.session.add(product_category)
-            db.session.flush()
-            db.session.refresh(product_category)
-
-            for translation in displayed_data:
-                language_code = translation["language_code"]
-                name_for_user = translation["name_for_user"]
-                description_for_user = translation["description_for_user"]
-                # Create the product category displayed data
-                product_category_displayed_data = MdProductCategoryDisplayedData(
-                    product_category_fk=product_category.product_category_pk,
-                    language_code=language_code,
-                    name_for_user=name_for_user,
-                    description_for_user=description_for_user
-                )
-                db.session.add(product_category_displayed_data)
-                db.session.flush()
-
-            db.session.commit()
-            return {"product_category_pk": product_category.product_category_pk}, 200
+            product_category_pk = self.create_product_category(product_category_label, displayed_data, emoji, implicit_goal, visible)
+            return {"product_category_pk": product_category_pk}, 200
         except Exception as e:
             db.session.rollback()
             return {"error": f"Error while creating product category: {e}"}, 500
+
+
+    def update_product_category(self, product_category_pk: int, updated_data: dict):
+        try:
+            # Check if product category exists
+            product_category = db.session.query(MdProductCategory).filter(MdProductCategory.product_category_pk == product_category_pk).first()
+            if product_category is None:
+                raise Exception(f"Product category pk {product_category_pk} does not exist")
+
+            # Update product category
+            if 'visible' in updated_data:
+                # A purchase can't be turned visible if it doesn't have a free trial associated = product free + n_days_validity not null
+                if updated_data["visible"] is True and product_category.visible is False:
+                    product = db.session.query(MdProduct) \
+                        .filter(MdProduct.product_category_fk == product_category_pk) \
+                        .filter(MdProduct.free == True) \
+                        .filter(MdProduct.n_days_validity.isnot(None)) \
+                        .first()
+                    if product is None:
+                        raise Exception(f"Product category pk {product_category_pk} should have a limited free product associated to become visible")
+                product_category.visible = updated_data["visible"]
+            if 'label' in updated_data:
+                # ensure label is unique
+                product_category_with_same_label = db.session.query(MdProductCategory)\
+                    .filter(MdProductCategory.label == updated_data["label"])\
+                    .filter(MdProductCategory.product_category_pk != product_category_pk)\
+                    .first()
+                if product_category_with_same_label is not None:
+                    raise Exception(f"Product category label {updated_data['label']} already exists")
+                product_category.label = updated_data["label"]
+
+            if 'emoji' in updated_data:
+                product_category.emoji = updated_data["emoji"]
+
+            if 'displayed_data' in updated_data:
+                displayed_data = updated_data["displayed_data"]
+                # ensure that display_data is a list
+                if not isinstance(displayed_data, list):
+                    raise Exception(f"displayed_data must be a list of dict specifying the corresponding language_code")
+                else:
+                    for translation in displayed_data:
+                        if not isinstance(translation, dict):
+                            raise Exception(f"displayed_data must be a list of dict specifying the corresponding language_code")
+                        if "language_code" not in translation:
+                            raise Exception(f"Missing language_code in displayed_data")
+                        language_code = translation["language_code"]
+                        # Check if translation already exists
+                        product_category_displayed_data = db.session.query(MdProductCategoryDisplayedData)\
+                            .filter(MdProductCategoryDisplayedData.product_category_fk == product_category_pk)\
+                            .filter(MdProductCategoryDisplayedData.language_code == language_code)\
+                            .first()
+                        if product_category_displayed_data is None:
+                            # ensure there is a name_for_user and a description_for_user and create the product category displayed data
+                            if "name_for_user" not in translation:
+                                raise Exception(f"Missing name_for_user in displayed_data for language_code {language_code}")
+                            if "description_for_user" not in translation:
+                                raise Exception(f"Missing description_for_user in displayed_data for language_code {language_code}")
+                            name_for_user = translation["name_for_user"]
+                            description_for_user = translation["description_for_user"]
+                            product_category_displayed_data = MdProductCategoryDisplayedData(
+                                product_category_fk=product_category_pk,
+                                language_code=language_code,
+                                name_for_user=name_for_user,
+                                description_for_user=description_for_user
+                            )
+                            db.session.add(product_category_displayed_data)
+                            db.session.flush()
+                        else:
+                            if "name_for_user" in translation:
+                                product_category_displayed_data.name_for_user = translation["name_for_user"]
+                            if "description_for_user" in translation:
+                                product_category_displayed_data.description_for_user = translation["description_for_user"]
+                            db.session.flush()
+
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            raise Exception(f"update_product_category:: {e}")
 
     # Route to update a product category
     # Route used only by Backoffice
@@ -106,81 +193,8 @@ class ProductCategory(Resource):
             return {"error": f"Missing field {e}"}, 400
 
         try:
-            # Check if product category exists
-            product_category = db.session.query(MdProductCategory).filter(MdProductCategory.product_category_pk == product_category_pk).first()
-            if product_category is None:
-                return {"error": f"Product category pk {product_category_pk} does not exist"}, 400
-
-            # Update product category
-            if 'visible' in request.json:
-                # A purchase can't be turned visible if it doesn't have a free trial associated = product free + n_days_validity not null
-                if request.json["visible"] is True and product_category.visible is False:
-                    product = db.session.query(MdProduct) \
-                        .filter(MdProduct.product_category_fk == product_category_pk) \
-                        .filter(MdProduct.free == True) \
-                        .filter(MdProduct.n_days_validity.isnot(None)) \
-                        .first()
-                    if product is None:
-                        return {"error": f"Product category pk {product_category_pk} should have a limited free product associated to become visible"}, 400
-                product_category.visible = request.json["visible"]
-            if 'label' in request.json:
-                # ensure label is unique
-                product_category_with_same_label = db.session.query(MdProductCategory)\
-                    .filter(MdProductCategory.label == request.json["label"])\
-                    .filter(MdProductCategory.product_category_pk != product_category_pk)\
-                    .first()
-                if product_category_with_same_label is not None:
-                    return {"error": f"Product category label {request.json['label']} already exists"}, 400
-                product_category.label = request.json["label"]
-
-            if 'emoji' in request.json:
-                product_category.emoji = request.json["emoji"]
-
-            if 'displayed_data' in request.json:
-                displayed_data = request.json["displayed_data"]
-                # ensure that display_data is a list
-                if not isinstance(displayed_data, list):
-                    return {
-                        "error": f"displayed_data must be a list of dict specifying the corresponding language_code"}, 400
-                else:
-                    for translation in displayed_data:
-                        if not isinstance(translation, dict):
-                            return {
-                                "error": f"displayed_data must be a list of dict specifying the corresponding language_code"}, 400
-                        if "language_code" not in translation:
-                            return {"error": f"Missing language_code in displayed_data"}, 400
-                        language_code = translation["language_code"]
-                        # Check if translation already exists
-                        product_category_displayed_data = db.session.query(MdProductCategoryDisplayedData)\
-                            .filter(MdProductCategoryDisplayedData.product_category_fk == product_category_pk)\
-                            .filter(MdProductCategoryDisplayedData.language_code == language_code)\
-                            .first()
-                        if product_category_displayed_data is None:
-                            # ensure there is a name_for_user and a description_for_user and create the product category displayed data
-                            if "name_for_user" not in translation:
-                                return {"error": f"Missing name_for_user in displayed_data for language_code {language_code}"}, 400
-                            if "description_for_user" not in translation:
-                                return {"error": f"Missing description_for_user in displayed_data for language_code {language_code}"}, 400
-                            name_for_user = translation["name_for_user"]
-                            description_for_user = translation["description_for_user"]
-                            product_category_displayed_data = MdProductCategoryDisplayedData(
-                                product_category_fk=product_category_pk,
-                                language_code=language_code,
-                                name_for_user=name_for_user,
-                                description_for_user=description_for_user
-                            )
-                            db.session.add(product_category_displayed_data)
-                            db.session.flush()
-                        else:
-                            if "name_for_user" in translation:
-                                product_category_displayed_data.name_for_user = translation["name_for_user"]
-                            if "description_for_user" in translation:
-                                product_category_displayed_data.description_for_user = translation["description_for_user"]
-                            db.session.flush()
-
-
-            db.session.commit()
-            return {"product_category_pk": product_category.product_category_pk}, 200
+            self.update_product_category(product_category_pk, request.json)
+            return {"product_category_pk": product_category_pk}, 200
         except Exception as e:
             db.session.rollback()
             return {"error": f"Error while updating product category: {e}"}, 500

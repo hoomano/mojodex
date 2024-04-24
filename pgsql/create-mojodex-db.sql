@@ -1242,7 +1242,7 @@ CREATE TABLE public.md_user_workflow_step_execution (
     creation_date timestamp without time zone NOT NULL DEFAULT now(),
     parameter json NOT NULL,
     result json,
-    validated boolean not null default false,
+    validated boolean,
     learned_instruction text,
     error_status json
 );

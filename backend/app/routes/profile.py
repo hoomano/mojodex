@@ -32,12 +32,12 @@ class Profile(Resource):
             timestamp = request.json["datetime"]
             profile_label = request.json["profile_label"]
             displayed_data = request.json["displayed_data"]
-            product_category_pk = request.json["product_category_pk"]
+            profile_category_pk = request.json["profile_category_pk"]
         except KeyError as e:
             return {"error": f"Missing field {e}"}, 400
 
         try:
-            profile_pk=self.product_resource.create_new_product(profile_label, displayed_data, product_category_pk, product_stripe_id=None, product_apple_id=None, is_free=True, n_days_validity=None, n_tasks_limit=None)
+            profile_pk=self.product_resource.create_new_product(profile_label, displayed_data, profile_category_pk, product_stripe_id=None, product_apple_id=None, is_free=True, n_days_validity=None, n_tasks_limit=None)
             return {"profile_pk": profile_pk}, 200
         except Exception as e:
             return {"error": f"Error while creating profile: {e}"}, 500

@@ -954,6 +954,7 @@ paths:
                 - displayed_data
                 - emoji
                 - implicit_goal
+                - visible
               properties:
                 datetime:
                   type: string
@@ -979,6 +980,8 @@ paths:
                   type: string
                 implicit_goal:
                   type: string
+                visible:
+                  type: boolean
       responses:
         '200':
           description: Product category created successfully
@@ -1159,6 +1162,175 @@ paths:
                 properties:
                   error:
                     type: string
+  /profile_category:
+    put:
+      tags:
+        - Backoffice
+      summary: Create a new profile category
+      parameters:
+        - in: header
+          name: Authorization
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - datetime
+                - label
+                - displayed_data
+                - emoji
+                - implicit_goal
+                - visible
+              properties:
+                datetime:
+                  type: string
+                  format: date-time
+                label:
+                  type: string
+                displayed_data:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                      - language_code
+                      - name_for_user
+                      - description_for_user
+                    properties:
+                      language_code:
+                        type: string
+                      name_for_user:
+                        type: string
+                      description_for_user:
+                        type: string
+                emoji:
+                  type: string
+                implicit_goal:
+                  type: string
+                visible:
+                  type: boolean
+      responses:
+        '200':
+          description: Profile category created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  profile_category_pk:
+                    type: integer
+        '400':
+          description: Bad request, missing or invalid fields
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '403':
+          description: Authentication error, wrong or missing secret
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '500':
+          description: Internal server error while creating profile category
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+    post:
+      tags:
+        - Backoffice
+      summary: Update an existing profile category
+      parameters:
+          - in: header
+            name: Authorization
+            required: true
+            schema:
+              type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - datetime
+                - profile_category_pk
+              properties:
+                datetime:
+                  type: string
+                  format: date-time
+                profile_category_pk:
+                  type: integer
+                label:
+                  type: string
+                displayed_data:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      language_code:
+                        type: string
+                      name_for_user:
+                        type: string
+                      description_for_user:
+                        type: string
+                emoji:
+                  type: string
+                implicit_goal:
+                  type: string
+                visible:
+                  type: boolean
+      responses:
+        '200':
+          description: Profile category updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  profile_category_pk:
+                    type: integer
+        '400':
+          description: Bad request, missing or invalid fields
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '403':
+          description: Authentication error, wrong or missing secret
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '500':
+          description: Internal server error while updating profile category
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
   /product_task_association:
     put:
       tags:
@@ -1218,6 +1390,63 @@ paths:
                     type: string
         '500':
           description: Internal server error while creating product_task_association
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+  /profile_task_association:
+    put:
+      tags:
+        - Backoffice
+      summary: Associate a profile with a task
+      parameters:
+          - in: header
+            name: Authorization
+            required: true
+            schema:
+              type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - datetime
+                - profile_pk
+                - task_pk
+              properties:
+                datetime:
+                  type: string
+                  format: date-time
+                profile_pk:
+                  type: integer
+                task_pk:
+                  type: integer
+      responses:
+        '200':
+          description: Profile task association created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  profile_task_association_pk:
+                    type: integer
+        '400':
+          description: Error due to missing field or invalid request format
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '403':
+          description: Authentication error due to wrong or missing secret
           content:
             application/json:
               schema:
@@ -3719,13 +3948,14 @@ paths:
               type: object
               required:
                 - datetime
-                - user_id
                 - product_pk
               properties:
                 datetime:
                   type: string
                   format: date-time
                 user_id:
+                  type: string
+                user_email:
                   type: string
                 product_pk:
                   type: integer
@@ -3827,6 +4057,128 @@ paths:
                 properties:
                   error:
                     type: string
+  /role:
+    put:
+      tags:
+        - Backoffice
+      summary: Create a new role for a user
+      parameters:
+          - in: header
+            name: Authorization
+            required: true
+            schema:
+              type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - datetime
+                - profile_pk
+              properties:
+                datetime:
+                  type: string
+                  format: date-time
+                profile_pk:
+                  type: string
+                user_id:
+                  type: string
+                user_email:
+                  type: string
+      responses:
+        '200':
+          description: Role created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  role_pk:
+                    type: string
+        '400':
+          description: Bad request, missing or invalid fields
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '403':
+          description: Authentication error, wrong or missing secret
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '500':
+          description: Internal server error while creating role
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+    post:
+      tags:
+        - Backoffice
+      summary: Deactivate an existing role
+      parameters:
+          - in: header
+            name: Authorization
+            required: true
+            schema:
+              type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - datetime
+                - role_pk
+              properties:
+                datetime:
+                  type: string
+                  format: date-time
+                role_pk:
+                  type: string
+      responses:
+        '200':
+          description: Role deactivated successfully
+        '400':
+          description: Bad request, missing or invalid fields
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '403':
+          description: Authentication error, wrong or missing secret
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '500':
+          description: Internal server error while deactivating role
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
   /message:
     get:
       tags:
@@ -3875,7 +4227,7 @@ paths:
         - in: query
           name: user_task_execution_pk
           schema:
-          type: string
+            type: string
           description: The primary key of the user task execution
       responses:
         '200':
@@ -4313,6 +4665,163 @@ paths:
                     type: string
         '500':
           description: Internal server error while updating product
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+  /profile:
+    put:
+      tags:
+        - Backoffice
+      summary: Create a new profile
+      parameters:
+          - in: header
+            name: Authorization
+            required: true
+            schema:
+              type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - datetime
+                - profile_label
+                - displayed_data
+                - profile_category_pk
+              properties:
+                datetime:
+                  type: string
+                  format: date-time
+                profile_label:
+                  type: string
+                displayed_data:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                      - language_code
+                      - name
+                    properties:
+                      language_code:
+                        type: string
+                      name:
+                        type: string
+                profile_category_pk:
+                  type: integer
+      responses:
+        '200':
+          description: Profile created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  profile_pk:
+                    type: integer
+        '400':
+          description: Bad request, missing or invalid fields
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '403':
+          description: Authentication error, wrong or missing secret
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '500':
+          description: Internal server error while creating profile
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+    post:
+      tags:
+        - Backoffice
+      summary: Update an existing profile
+      parameters:
+          - in: header
+            name: Authorization
+            required: true
+            schema:
+              type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - datetime
+                - profile_pk
+              properties:
+                datetime:
+                  type: string
+                  format: date-time
+                profile_pk:
+                  type: integer
+                profile_label:
+                  type: string
+                displayed_data:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                      - language_code
+                      - name
+                    properties:
+                      language_code:
+                        type: string
+                      name:
+                        type: string
+                profile_category_pk:
+                  type: integer
+      responses:
+        '200':
+          description: Profile updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  profile_pk:
+                    type: integer
+        '400':
+          description: Bad request, missing or invalid fields
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '403':
+          description: Authentication error, wrong or missing secret
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '500':
+          description: Internal server error while updating profile
           content:
             application/json:
               schema:

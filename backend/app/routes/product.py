@@ -118,8 +118,8 @@ class Product(Resource):
                 # Update product label
                 product.label = product_label
 
-            if "product_category_fk" in updated_data or "profile_category_pk" in updated_data:
-                product_category_fk = updated_data["product_category_fk"] if "product_category_fk" in updated_data else updated_data["profile_category_pk"]
+            if "product_category_fk" in updated_data or "profile_category_fk" in updated_data:
+                product_category_fk = updated_data["product_category_fk"] if "product_category_fk" in updated_data else updated_data["profile_category_fk"]
                 # Check if product category exists
                 product_category = db.session.query(MdProductCategory).filter(MdProductCategory.product_category_pk == product_category_fk).first()
                 if product_category is None:

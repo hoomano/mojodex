@@ -356,6 +356,8 @@ const DraftDetail = () => {
         title: msg.produced_text_title,
         producedTextPk: msg.produced_text_pk,
       });
+      setIsDraftStreaming(prev => false);
+      setSelectedTab("result");
 
     });
 

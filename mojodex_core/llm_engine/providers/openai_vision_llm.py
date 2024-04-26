@@ -28,7 +28,7 @@ class OpenAIVisionLLM(OpenAILLM):
     @staticmethod
     def get_image_message_url_prefix(image_name):
         try:
-            extension = image_name.split(".")[-1]
+            extension = image_name.split(".")[-1].lower()
             # check if extension is allowed
             if extension not in OpenAIVisionLLM.ALLOWED_EXTENSIONS:
                 raise Exception(f"Image extension not allowed: {extension}")

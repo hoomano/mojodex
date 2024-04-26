@@ -92,7 +92,6 @@ class UserTaskExecutionRun(Resource):
                 for input in json_input_values:
                     if input["input_name"] == image_input:
                         filename = input["value"]
-                        input['value'] = filename
                         self.user_image_file_manager.store_image_file(request.files[image_input], filename, user_id, user_task_execution.session_id)
 
             user_task_execution.json_input_values = json_input_values

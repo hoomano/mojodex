@@ -26,7 +26,6 @@ export default async function handler(req, res) {
         try {
 
             let requestData = await parseFormDataFormidable(req);
-            console.log("🟢 requestData", requestData);
 
             const response = await axios.post(
                 `${process.env.MOJODEX_BACKEND_URI}/user_task_execution_run`,
@@ -71,17 +70,11 @@ function parseFormDataFormidable(req) {
                 formData[field] = fields[field];
             }
 
-            for (const file in files) {
-                const fileData = files[file];
-                console.log("🟢 fileData", fileData);
-                // get name
+            for (const fieldName in files) {
+                const fileData = files[fieldName];
                 const name = fileData.originalFilename;
-                console.log("🟢 name", name);
                 const fileStream = createReadStream(fileData.filepath);
-                console.log("🟢 fileStream", fileStream);
-
-                formData["image"] = fileStream;
-
+                formData[fieldName] = fileStream;
             }
 
             resolve(formData);

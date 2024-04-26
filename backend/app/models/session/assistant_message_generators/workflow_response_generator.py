@@ -104,9 +104,9 @@ class WorkflowAssistantResponseGenerator(TaskEnabledAssistantResponseGenerator):
         """
         try:
             my_llm = model_loader.get_main_llm_provider()
-            my_llm.max_retries = 20
-            my_llm.client.max_retries = 20
-            my_llm.client.timeout = 1200
+            my_llm.max_retries = 10
+            my_llm.client.max_retries = 10
+            my_llm.client.timeout = 600
             my_llm.client_backup = None
             conversation_list = self.context.state.get_conversation_as_list(self.context.session_id)
             messages = [{"role": "system", "content": prompt}] + conversation_list

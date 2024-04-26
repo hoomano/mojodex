@@ -9,6 +9,7 @@ from models.session.assistant_message_generators.assistant_response_generator im
 from abc import ABC, abstractmethod
 from app import server_socket, model_loader
 
+from mojodex_core.llm_engine.providers.openai_vision_llm import OpenAIVisionLLM
 from mojodex_core.logging_handler import log_error
 
 
@@ -112,19 +113,13 @@ class TaskEnabledAssistantResponseGenerator(AssistantResponseGenerator, ABC):
             input_images = self._get_input_images_names()
             user_id = self.context.user_id
             session_id = self.context.state.running_user_task_execution.session_id
-            #save prompt to /data/prompt.txt
-            with open("/data/prompt.txt", "w") as f:
-                f.write(prompt)
             messages = [{"role": "system", 
                          'content': [
                                 {"type": "text", "text": prompt}
                         ] + [{"type": "image_url",
-                                "image_url": {"url": f"data:image/jpeg;base64,{self.user_image_file_manager.get_encoded_image(input_image, user_id, session_id)}" }
+                                "image_url": {"url": f"{OpenAIVisionLLM.get_image_message_url_prefix(input_image)};base64,{self.user_image_file_manager.get_encoded_image(input_image, user_id, session_id)}" }
                                 } for input_image in input_images]
                         }] + conversation_list
-            # save messages to /data/messages.json
-            with open("/data/messages.json", "w") as f:
-                json.dump(messages, f, indent=4)
 
             responses = model_loader.main_vision_llm.invoke(messages, self.context.user_id,
                                                         temperature=0,

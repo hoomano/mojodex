@@ -17,11 +17,25 @@ mojo_openai_logger = MojodexCoreLogger("mojo_openai_logger")
 
 class OpenAIVisionLLM(OpenAILLM):
 
+    ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+
     def __init__(self, llm_conf, llm_backup_conf=None, max_retries=3):
         super().__init__(llm_conf, llm_backup_conf, max_retries)
         
     def num_tokens_from_messages(self, messages):
         raise NotImplementedError("num_tokens_from_messages() not implemented in OpenVisionAILLM")
+    
+    @staticmethod
+    def get_image_message_url_prefix(image_name):
+        try:
+            extension = image_name.split(".")[-1]
+            # check if extension is allowed
+            if extension not in OpenAIVisionLLM.ALLOWED_EXTENSIONS:
+                raise Exception(f"Image extension not allowed: {extension}")
+            return 'data:image/' + extension
+        except Exception as e:
+            raise Exception(f"_get_image_message_url_prefix :: {e}")
+
 
     
     def recursive_invoke(self, messages, user_id, temperature, max_tokens, label, frequency_penalty, presence_penalty,

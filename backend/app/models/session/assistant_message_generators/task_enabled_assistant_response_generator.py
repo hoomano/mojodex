@@ -103,7 +103,6 @@ class TaskEnabledAssistantResponseGenerator(AssistantResponseGenerator, ABC):
     # if requires_vision_llm, override method _generate_message_from_prompt
     def _generate_message_from_prompt(self, prompt):
         try:
-            print(f"🔵 _generate_message_from_prompt: {self.requires_vision_llm}")
             if not self.requires_vision_llm:
                 return super()._generate_message_from_prompt(prompt)
             

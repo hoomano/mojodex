@@ -49,6 +49,10 @@ export const executeTask = (
           });
         } else if ((input.input_value instanceof File)) {
           formData.append(input.input_name, input.input_value);
+          inputs.push({
+            "input_name": input.input_name,
+            "input_value": input.input_value.name
+          });
         }
       });
       formData.append('inputs', JSON.stringify(inputs));

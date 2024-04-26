@@ -27,7 +27,6 @@ class UserTaskExecutionRun(Resource):
     # This route is used to start a task_execution from a Form (webapp)
     def post(self, user_id):
         error_message = "Error launching UserTaskExecutionRun"
-        print(f"🟢 {request.headers.get('Content-Type')}")
 
         # data
         try:
@@ -42,7 +41,9 @@ class UserTaskExecutionRun(Resource):
                 use_draft_placeholder = request.json['use_draft_placeholder'] if (
                         'use_draft_placeholder' in request.json) else False
             else:
+                
                 timestamp = request.form["datetime"]
+                
                 user_task_execution_pk = request.form["user_task_execution_pk"]
                 platform = request.form["platform"] if "platform" in request.form else "webapp"
                 app_version = version.parse(request.form["version"]) if "version" in request.form else version.parse("0.0.0")
@@ -73,7 +74,7 @@ class UserTaskExecutionRun(Resource):
             # ensure inputs is a list of dicts and each dict has the required fields (input_name and input_value)
             if not isinstance(inputs, list):
                 return {"error": "inputs must be a list"}, 400
-            
+           
             json_input_values = user_task_execution.json_input_values
             for filled_input in inputs:
                 # check format
@@ -90,7 +91,7 @@ class UserTaskExecutionRun(Resource):
                 # look for corresponding input in json_input_values
                 for input in json_input_values:
                     if input["input_name"] == image_input:
-                        filename = secure_filename(request.files[image_input].filename)
+                        filename = input["value"]
                         input['value'] = filename
                         self.user_image_file_manager.store_image_file(request.files[image_input], filename, user_id, user_task_execution.session_id)
 

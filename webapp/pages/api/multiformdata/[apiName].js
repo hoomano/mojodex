@@ -1,5 +1,4 @@
 import axios from "axios";
-import busboy from "busboy";
 import { IncomingForm } from "formidable";
 import { createReadStream } from "fs";
 
@@ -33,7 +32,6 @@ export default async function handler(req, res) {
             );
 
             if (response.status !== 200) {
-                console.log("🔴 response.status", response.status);
                 if (response.data.error) {
                     res.status(response.status).json({ ...response.data, });
                 } else {
@@ -45,7 +43,6 @@ export default async function handler(req, res) {
                 ...response.data,
             });
         } catch (error) {
-            console.log("🔴 Error: ", error);
             return res.status(400).json({ "error": error });
         }
     }

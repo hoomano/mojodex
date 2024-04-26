@@ -11,7 +11,7 @@ export const config = {
 
 export default async function handler(req, res) {
 
-    const { apiName } = 'user_task_execution_run';
+    const { apiName } = req.query;
 
 
     let headers = {
@@ -19,16 +19,15 @@ export default async function handler(req, res) {
         Authorization: req.headers.token,
     };
 
+    let requestData = await parseFormDataFormidable(req);
+
 
     if (req.method === "POST") {
 
 
         try {
-
-            let requestData = await parseFormDataFormidable(req);
-
             const response = await axios.post(
-                `${process.env.MOJODEX_BACKEND_URI}/user_task_execution_run`,
+                `${process.env.MOJODEX_BACKEND_URI}/${apiName}`,
                 requestData,
                 { headers: headers }
             );
@@ -48,6 +47,31 @@ export default async function handler(req, res) {
         } catch (error) {
             console.log("🔴 Error: ", error);
             return res.status(400).json({ "error": error });
+        }
+    }
+
+    if (req.method === "PUT") {
+
+        try {
+            const response = await axios.put(
+                `${process.env.MOJODEX_BACKEND_URI}/${apiName}`,
+                requestData,
+                { headers: headers }
+            );
+
+            if (response.status !== 200) {
+                if (response.data.error) {
+                    res.status(response.status).json({ ...response.data, });
+                } else {
+                    res.status(response.status).json({ error: response.data });
+                }
+                return;
+            }
+            return res.status(200).json({
+                ...response.data,
+            });
+        } catch (error) {
+            return res.status(400).json({ ...error.response.data });
         }
     }
 

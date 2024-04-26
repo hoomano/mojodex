@@ -42,7 +42,6 @@ export const executeTask = (
       const inputs: any = [];
       const value = payload[key];
       value.forEach((input: any) => {
-        console.log(input);
         if (!(input.input_value instanceof File)) {
           inputs.push({
             "input_name": input.input_name,

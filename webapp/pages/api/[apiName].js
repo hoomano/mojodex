@@ -2,7 +2,7 @@ import axios from "axios";
 
 export default async function handler(req, res) {
   const { apiName } = req.query;
-  
+
   let headers = {
     "Content-type": req.headers["content-type"] || "application/json",
     Authorization: req.headers.token,
@@ -29,9 +29,7 @@ export default async function handler(req, res) {
   }
 
   if (req.method === "POST") {
-
     const { body } = req;
-
     try {
       const response = await axios.post(
         `${process.env.MOJODEX_BACKEND_URI}/${apiName}`,

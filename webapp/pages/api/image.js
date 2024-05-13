@@ -7,7 +7,6 @@ export default async function handler(req, res) {
         "Content-type": req.headers["content-type"] || "application/json",
         Authorization: req.headers.token,
     };
-    console.log(headers);
 
     if (req.method === "GET") {
         try {

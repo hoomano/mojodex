@@ -17,7 +17,7 @@ class UserImagesFileManager:
             raise Exception(f"Error in initializing UserImagesFileManager: {e}")
 
 
-    def __get_images_storage_path(self, user_id, session_id):
+    def get_images_storage_path(self, user_id, session_id):
         try:
             user_storage = os.path.join(SessionModel.sessions_storage, user_id)
             if not os.path.exists(user_storage):
@@ -39,7 +39,7 @@ class UserImagesFileManager:
         try:
             # check file is correct
             
-            images_storage = self.__get_images_storage_path(user_id, session_id)
+            images_storage = self.get_images_storage_path(user_id, session_id)
             image_file_path = os.path.join(images_storage, filename)
             file.save(image_file_path)
         except Exception as e:
@@ -47,7 +47,7 @@ class UserImagesFileManager:
 
     def get_encoded_image(self, image_name, user_id, session_id):
         try:
-            image_path = os.path.join(self.__get_images_storage_path(user_id, session_id), image_name)
+            image_path = os.path.join(self.get_images_storage_path(user_id, session_id), image_name)
             with open(image_path, "rb") as image_file:
                  return base64.b64encode(image_file.read()).decode('utf-8')
         except Exception as e:

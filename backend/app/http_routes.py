@@ -59,6 +59,7 @@ from routes.profile_category import ProfileCategory
 from routes.profile import Profile
 from routes.role import Role
 from routes.profile_task_association import ProfileTaskAssociation
+from routes.image import Image
 class HttpRouteManager:
     def __init__(self, api):
         api.add_resource(Purchase, '/purchase')
@@ -123,3 +124,4 @@ class HttpRouteManager:
         api.add_resource(Profile, "/profile")
         api.add_resource(Role, "/role")
         api.add_resource(ProfileTaskAssociation, "/profile_task_association")
+        api.add_resource(Image, "/image")

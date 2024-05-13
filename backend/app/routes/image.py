@@ -30,18 +30,13 @@ class Image(Resource):
         # Logic
         try:
             images_storage = self.user_image_file_manager.get_images_storage_path(user_id, session_id)
-            file_pattern = os.path.join(images_storage, filename)
-            matching_files = glob.glob(file_pattern)
-            if len(matching_files) == 0:
-                log_error(f"Error getting image : No matching file for file {file_pattern}")
-                return {"error": f"No matching file for file {file_pattern}"}, 400
-            image_file = matching_files[0]
-                
-            if not os.path.isfile(image_file):
-                log_error(f"Error getting image : Image file {image_file} does not exist")
-                return {"error": f"Image file {image_file} does not exist"}, 400
+            filepath = os.path.join(images_storage, filename)
+           
+            if not os.path.isfile(filepath):
+                log_error(f"Error getting image : Image file {filepath} does not exist")
+                return {"error": f"Image file {filepath} does not exist"}, 400
 
-            response = send_file(image_file, conditional=True)
+            response = send_file(filepath, conditional=True)
             response.headers.add('Accept-Ranges', 'bytes')
             return response
         except Exception as e:

@@ -23,7 +23,7 @@
     "bigpicture": "^2.6.2",
     "clsx": "^1.2.1",
     "cookies-next": "^2.1.1",
-    "formidable": "^2.1.1",
+    "formidable": "^2.1.2",
     "framer-motion": "^10.16.4",
     "i18next": "^23.5.1",
     "lexical": "^0.9.0",
@@ -51,8 +51,8 @@
     "xmlhttprequest": "^1.8.0"
   },
   "devDependencies": {
-    "@types/node": "18.11.3",
-    "@types/react": "18.0.21",
+    "@types/node": "20.12.7",
+    "@types/react": "18.2.79",
     "@types/react-dom": "18.0.6",
     "autoprefixer": "^10.4.12",
     "postcss": "^8.4.18",

@@ -2,7 +2,7 @@ import axios from "axios";
 
 export default async function handler(req, res) {
   const { apiName } = req.query;
-  
+
   let headers = {
     "Content-type": req.headers["content-type"] || "application/json",
     Authorization: req.headers.token,

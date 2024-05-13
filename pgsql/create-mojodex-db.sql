@@ -340,31 +340,6 @@ CREATE TABLE public.md_event (
 
 
 
---
--- Name: md_feedback_seq; Type: SEQUENCE; Schema: public;
---
-
-CREATE SEQUENCE public.md_feedback_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-
---
--- Name: md_follow_up_seq; Type: SEQUENCE; Schema: public;
---
-
-CREATE SEQUENCE public.md_follow_up_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
 
 --
 -- Name: md_home_chat; Type: TABLE; Schema: public;
@@ -378,19 +353,6 @@ CREATE TABLE public.md_home_chat (
     user_id character varying(255) NOT NULL,
     week date NOT NULL
 );
-
-
-
---
--- Name: md_idea_seq; Type: SEQUENCE; Schema: public;
---
-
-CREATE SEQUENCE public.md_idea_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
 
 
 
@@ -726,20 +688,6 @@ CREATE TABLE public.md_purchase (
 );
 
 
-
---
--- Name: md_relationship_seq; Type: SEQUENCE; Schema: public;
---
-
-CREATE SEQUENCE public.md_relationship_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-
 --
 -- Name: md_session; Type: TABLE; Schema: public;
 --
@@ -788,19 +736,6 @@ CREATE TABLE public.md_task (
     visible_for_teasing boolean DEFAULT false NOT NULL,
     infos_to_extract json
 );
-
-
-
---
--- Name: md_task_category_seq; Type: SEQUENCE; Schema: public;
---
-
-CREATE SEQUENCE public.md_task_category_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
 
 
 
@@ -1307,7 +1242,7 @@ CREATE TABLE public.md_user_workflow_step_execution (
     creation_date timestamp without time zone NOT NULL DEFAULT now(),
     parameter json NOT NULL,
     result json,
-    validated boolean not null default false,
+    validated boolean,
     learned_instruction text,
     error_status json
 );

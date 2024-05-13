@@ -12,6 +12,7 @@ import Button from "components/Button";
 import useGetTask from "modules/Tasks/hooks/useGetTask";
 import { useTranslation } from "react-i18next";
 import usePostExecuteTask from "modules/Tasks/hooks/usePostExecuteTask";
+import ImageArea from "./ImageArea";
 
 const CreateTaskForm = () => {
   const router = useRouter();
@@ -87,14 +88,26 @@ const CreateTaskForm = () => {
             <div className="py-6">
               <div className="grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
                 {!isLoading && taskConfigDetails ? (
-                  tasksForm.map((input) => (
-                    <Textarea
-                      key={input.input_name}
-                      jsonInput={input}
-                      setInputArray={setInputArray}
-                    />
-                  ))
-                ) : (
+                  tasksForm.map((input) => {
+                    switch (input.type) {
+                      case 'image':
+                        return (
+                          <ImageArea
+                            key={input.input_name}
+                            jsonInput={input}
+                            setInputArray={setInputArray}
+                          />
+                        );
+                      default:
+                        return (
+                          <Textarea
+                            key={input.input_name}
+                            jsonInput={input}
+                            setInputArray={setInputArray}
+                          />
+                        );
+                    }
+                  })) : (
                   <InputPlaceholder />
                 )}
               </div>

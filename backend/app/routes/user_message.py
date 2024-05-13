@@ -32,24 +32,8 @@ class UserMessage(Resource):
         except Exception as e:
             log_error(f"Error acknowledging message : {e}")
 
-    def _retrieve_or_create_db_message(self, message_pk, session_id, message_id, message_date, user):
+    def _retrieve_or_create_db_message(self, session_id, message_id, message_date, user, db_message):
         try:
-            if message_pk:  # if there is a message_pk, message is supposed to exist already
-                db_message = db.session.query(MdMessage).filter(MdMessage.message_pk == message_pk).first()
-            else:
-                # check if message_id already exists among messages with session_id=session_id and message field is not {}. message_id is stored in message.message json field
-                db_message = db.session.query(MdMessage) \
-                    .filter(MdMessage.session_id == session_id) \
-                    .filter(MdMessage.message.op('->>')('message_id') == message_id) \
-                    .first()
-            if db_message is not None:
-                if db_message.in_error_state is None:
-                    if len(db_message.message) == 1:  # only message_id in message
-                        return {"status": "processing"}, 200
-                    else:
-                        return db_message.message, 200
-                # else, retry transcription
-
             # This will receive a form with a m4a file and fields datetime and session_id
             session = db.session.query(MdSession).filter(MdSession.session_id == session_id).filter(
                 MdSession.user_id == user.user_id).first()
@@ -175,7 +159,22 @@ class UserMessage(Resource):
             if db_session is None:
                 return {"error": f"Invalid session_id: {session_id}"}, 400
 
-            db_message = self._retrieve_or_create_db_message(message_pk, session_id, message_id, message_date, user)
+            if message_pk:  # if there is a message_pk, message is supposed to exist already
+                db_message = db.session.query(MdMessage).filter(MdMessage.message_pk == message_pk).first()
+            else:
+                # check if message_id already exists among messages with session_id=session_id and message field is not {}. message_id is stored in message.message json field
+                db_message = db.session.query(MdMessage) \
+                    .filter(MdMessage.session_id == session_id) \
+                    .filter(MdMessage.message.op('->>')('message_id') == message_id) \
+                    .first()
+            if db_message is not None:
+                if db_message.in_error_state is None:
+                    if len(db_message.message) == 1:  # only message_id in message
+                        return {"status": "processing"}, 200
+                    else:
+                        return db_message.message, 200
+                # else, retry transcription
+            db_message = self._retrieve_or_create_db_message(session_id, message_id, message_date, user, db_message)
 
         except Exception as e:
             db.session.rollback()

@@ -132,7 +132,10 @@ const DraftDetail = () => {
       key: "inputs",
       title: `${t("userTaskExecution.inputsTab.title")}`,
       component: (
-        <TaskInputs inputs={currentTask!.json_inputs_values} />
+        <TaskInputs
+          inputs={currentTask!.json_inputs_values}
+          sessionId={currentTask!.session_id}
+            />
       ),
       disabled: false
     };

@@ -89,20 +89,21 @@ class OpenAILLM(LLM):
                 complete_text = ""
                 finish_reason = None
                 for stream_chunk in completion:
-                    choice = stream_chunk.choices[0]
-                    partial_token = choice.delta
-                    finish_reason = choice.finish_reason
-                    if partial_token.content:
-                        complete_text += partial_token.content
-                        if stream_callback is not None:
-                            try:
-                                flag_to_stop_streaming = stream_callback(
-                                    complete_text)
-                                if flag_to_stop_streaming:
-                                    return None
-                            except Exception as e:
-                                mojo_openai_logger.error(
-                                    f"🔴 Error in streamCallback: {e}")
+                    if stream_chunk.choices:
+                        choice = stream_chunk.choices[0]
+                        partial_token = choice.delta
+                        finish_reason = choice.finish_reason
+                        if partial_token.content:
+                            complete_text += partial_token.content
+                            if stream_callback is not None:
+                                try:
+                                    flag_to_stop_streaming = stream_callback(
+                                        complete_text)
+                                    if flag_to_stop_streaming:
+                                        return None
+                                except Exception as e:
+                                    mojo_openai_logger.error(
+                                        f"🔴 Error in streamCallback: {e}")
 
                 response = complete_text
             else:

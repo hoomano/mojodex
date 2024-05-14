@@ -10,7 +10,7 @@ When a user clicks the "sign up" button on Mojodex homepage, they are redirected
 - email
 - password
 
-Once the user has filled in the information, they click the "sign up" button and there are redirected to an onboarding process.
+Once the user has filled in the information, they click the "sign up" button and they are redirected to an onboarding process.
 
 1. They have to accept the terms and conditions if provided, else accept to be respectful when adressing the assistant.
 ![terms_and_conditions_modal](../../images/onboarding/terms_and_conditions_modal.png)

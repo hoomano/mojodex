@@ -46,7 +46,7 @@ class MistralAILLM(LLM):
         return None
 
     # TODO: implement this method with appropriate encoding for Mistral
-    def num_tokens_from_messages(self, messages):
+    def num_tokens_from_text_messages(self, messages):
         """Returns the number of tokens used by a list of messages."""
         num_tokens = 0
         for message in messages:

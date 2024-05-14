@@ -9,7 +9,7 @@ from models.session.assistant_message_generators.assistant_response_generator im
 from abc import ABC, abstractmethod
 from app import server_socket, model_loader
 
-from mojodex_core.llm_engine.providers.openai_vision_llm import OpenAIVisionLLM
+from mojodex_core.llm_engine.providers.openai_vision_llm import OpenAIVisionLLM, VisionMessagesData
 from mojodex_core.logging_handler import log_error
 
 
@@ -112,15 +112,12 @@ class TaskEnabledAssistantResponseGenerator(AssistantResponseGenerator, ABC):
             input_images = self._get_input_images_names()
             user_id = self.context.user_id
             session_id = self.context.state.running_user_task_execution.session_id
-            messages = [{"role": "system", 
-                         'content': [
-                                {"type": "text", "text": prompt}
-                        ] + [{"type": "image_url",
-                                "image_url": {"url": f"{OpenAIVisionLLM.get_image_message_url_prefix(input_image)};base64,{self.user_image_file_manager.get_encoded_image(input_image, user_id, session_id)}" }
-                                } for input_image in input_images]
-                        }] + conversation_list
-
-            responses = model_loader.main_vision_llm.invoke(messages, self.context.user_id,
+            
+            initial_system_message_data = [VisionMessagesData(role="system", text=prompt, images_path=[self.user_image_file_manager.get_image_file_path(image, user_id, session_id) for image in input_images])]
+            conversation_messages_data = [VisionMessagesData(role=message["role"], text=message["content"][0]["text"], images_path=[]) for message in conversation_list]
+            
+            messages_data = initial_system_message_data + conversation_messages_data
+            responses = model_loader.main_vision_llm.invoke(messages_data, self.context.user_id,
                                                         temperature=0,
                                                         max_tokens=4000,
                                                         label="CHAT",

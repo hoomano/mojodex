@@ -55,7 +55,7 @@ class OpenAILLM(LLM):
                     azure_deployment=llm_backup_conf["deployment_id"] if "deployment_id" in llm_backup_conf else None,
                     api_key=llm_backup_conf["api_key"],
                     max_retries=self.max_retries
-                ) if api_type == 'azure' else OpenAI(api_key=llm_backup_conf["api_key"])
+                ) if llm_backup_conf['api_type'] == 'azure' else OpenAI(api_key=llm_backup_conf["api_key"])
 
             self.tokens_costs_manager = TokensCostsManager()
             LLM.__init__(self, llm_conf, llm_backup_conf=llm_backup_conf, max_retries=self.max_retries)
@@ -87,7 +87,7 @@ class OpenAILLM(LLM):
             num_tokens += 2  # every reply is primed with <im_start>assistant
             return num_tokens
         except Exception as e:
-            raise Exception(f"🔴 Error in num_tokens_from_messages : {e}")
+            raise Exception(f"🔴 Error in num_tokens_from_text_messages : {e}")
         
     def _handle_chat_completion_response(self, completion, stream, stream_callback):
         try:
@@ -236,7 +236,6 @@ class OpenAILLM(LLM):
                        stream=False, stream_callback=None, user_task_execution_pk=None, task_name_for_system=None,
                          n_additional_calls_if_finish_reason_is_length=0, **kwargs):
         try:
-
             try:
                 if not os.path.exists(os.path.join(self.dataset_dir, "chat", label)):
                     os.mkdir(os.path.join(self.dataset_dir, "chat", label))

@@ -102,6 +102,7 @@ class OpenAIVisionLLM(OpenAILLM):
                     {"type": "text", "text": message_data.text}
                 ] 
                 }
+                
                 n_text_tokens = self.num_tokens_from_text_messages([message])
 
                 n_image_tokens = 0

@@ -12,6 +12,7 @@ from scheduled_tasks.send_todo_daily_emails import SendTodoDailyEmails
 from scheduled_tasks.purchase_expiration_checker import PurchasesExpirationChecker
 from scheduled_tasks.send_calendar_suggestion_notifications import CalendarSuggestionNotificationSender
 from scheduled_tasks.first_home_chat_of_week import FirstHomeChatOfWeek
+from scheduled_tasks.relaunch_locked_steps import RelaunchLockedSteps
 
 push_notifications = 'FIREBASE_PROJECT_ID' in os.environ and os.environ['FIREBASE_PROJECT_ID']
 emails = 'AWS_ACCESS_KEY_ID' in os.environ and os.environ['AWS_ACCESS_KEY_ID']

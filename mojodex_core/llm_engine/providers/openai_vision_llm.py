@@ -103,7 +103,6 @@ class OpenAIVisionLLM(OpenAILLM):
                 ] 
                 }
                 n_text_tokens = self.num_tokens_from_text_messages([message])
-                print(f"n_text_tokens: {n_text_tokens}")
 
                 n_image_tokens = 0
                 for image_path in message_data.images_path:
@@ -112,19 +111,13 @@ class OpenAIVisionLLM(OpenAILLM):
                         "image_url": {"url": f"{OpenAIVisionLLM.get_image_message_url_prefix(image_path)};base64,{encoded_image}" }
                         })
                     n_image_tokens += self.num_tokens_from_image(image_path)
-                    print(f"n_image_tokens: {n_image_tokens}")
 
                 messages.append(message)
                 
                 if index == 0:
                     n_tokens_prompt += n_text_tokens + n_image_tokens
-                    print(f"n_tokens_prompt: {n_tokens_prompt}")
                 else:
                     n_tokens_conversation += n_text_tokens + n_image_tokens
-                    print(f"n_tokens_conversation: {n_tokens_conversation}")
-
-            print(f"n_tokens_prompt: {n_tokens_prompt}")
-            print(f"n_tokens_conversation: {n_tokens_conversation}")
 
             try:
                 if not os.path.exists(os.path.join(self.dataset_dir, "chat", label)):

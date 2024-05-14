@@ -36,7 +36,7 @@ curl --location --request PUT 'http://localhost:5001/user' \
 "name": "user_name",
 "email": "user_email@email.com",
 "password": "user_temporary_password",
-"admin_creation": true
+"skip_user_validation": true
 }'
 ```
 

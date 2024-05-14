@@ -271,7 +271,7 @@ class User(Resource):
                 return {"error": User.error_email_already_exists}, 400
 
             user = self.register_user(email, app_version=app_version, password=password, name=name)
-            if admin_creation:
+            if skip_user_validation:
                 user.onboarding_presented = datetime.now()
                 user.terms_and_conditions_accepted = datetime.now()
 

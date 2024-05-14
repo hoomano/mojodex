@@ -28,6 +28,7 @@ if emails:
     SendTodoDailyEmails(3600) # send todo daily emails every 1 hour (filtered by timezone)
     CheckDisengagedFreeTrialUsers(86400)  # check disengaged free trial users every day
 FirstHomeChatOfWeek(3600)
+RelaunchLockedSteps(7200) # relaunch locked steps every 2 hours
 
 # Time based tasks
 

@@ -60,6 +60,7 @@ from routes.profile import Profile
 from routes.role import Role
 from routes.profile_task_association import ProfileTaskAssociation
 from routes.image import Image
+from routes.relaunch_locked_workflow_step_executions import RelaunchLockedWorkflowStepExecutions
 class HttpRouteManager:
     def __init__(self, api):
         api.add_resource(Purchase, '/purchase')
@@ -125,3 +126,4 @@ class HttpRouteManager:
         api.add_resource(Role, "/role")
         api.add_resource(ProfileTaskAssociation, "/profile_task_association")
         api.add_resource(Image, "/image")
+        api.add_resource(RelaunchLockedWorkflowStepExecutions, "/relaunch_locked_workflow_step_executions")

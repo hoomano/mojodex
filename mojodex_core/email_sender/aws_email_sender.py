@@ -15,8 +15,6 @@ class MojoAwsMail(EmailSender):
             
             self.charset = charset
             self.client = boto3.client('ses', region_name=self.region)
-            # configure login
-            # use iam called mojo-monitoring
             # https://docs.aws.amazon.com/ses/latest/DeveloperGuide/setting-up-ses.html
             # https://docs.aws.amazon.com/ses/latest/DeveloperGuide/using-iam.html
         except Exception as e:

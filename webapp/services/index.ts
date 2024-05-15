@@ -6,6 +6,7 @@ const generalAPIRoutes = {
   createDraft: "api/produced_text",
   language: "api/language",
   timezone: "api/timezone",
+  isEmailServiceConfigured: "api/is_email_service_configured"
 };
 
 const taskAPIRoutes = {

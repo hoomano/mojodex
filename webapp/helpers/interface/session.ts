@@ -22,3 +22,5 @@ export interface UpdateSessionResponseType {
   intro_done: boolean;
   session_id: string;
 }
+
+

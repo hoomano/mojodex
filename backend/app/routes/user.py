@@ -259,7 +259,7 @@ class User(Resource):
             name = request.json["name"]
             password = request.json["password"]
             app_version = version.parse(request.json["version"]) if "version" in request.json else version.parse("0.0.0")
-           skip_user_validation = request.json["skip_user_validation"] if "skip_user_validation" in request.json else False
+            skip_user_validation = request.json["skip_user_validation"] if "skip_user_validation" in request.json else False
         except KeyError as e:
             log_error(f"Error logging user {email}: Missing field {e}", notify_admin=True)
             return {"error": User.general_backend_error_message}, 400

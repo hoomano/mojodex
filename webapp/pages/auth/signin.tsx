@@ -12,7 +12,7 @@ import { useRouter } from "next/router";
 import AuthMobileView from "components/AuthMobileView";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { useTranslation } from "react-i18next";
-import useIsEmailServiceIsConfigured from "./hooks/useIsEmailServiceIsConfigured";
+import useIsEmailServiceIsConfigured from "../../helpers/hooks/useIsEmailServiceIsConfigured";
 declare let window: {
   chrome: any;
   postMessage: any;

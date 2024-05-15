@@ -36,7 +36,7 @@ class LLM(ABC):
         self._name = value
 
 
-    def num_tokens_from_messages(self, string):
+    def num_tokens_from_text_messages(self, string):
         """
         Abstract method that should be implemented to return the number of tokens from a given string of messages.
         """

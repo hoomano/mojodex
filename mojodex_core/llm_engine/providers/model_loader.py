@@ -62,13 +62,13 @@ class ModelLoader:
 
     def get_main_vision_llm_provider(self):
         try:
-            providers = self._get_providers_by_model("gpt4-vision")
+            providers = self._get_providers_by_model("gpt-4-vision-preview")
             if len(providers) == 0:
                 logging.error(
                     f"🔴: ERROR: ModelLoader.get_main_vision_llm_provider() >> No vision provider found")
                 return None
             provider = providers[0]
-            _, _, llm, conf = self._build_provider(provider + '/gpt4-vision')
+            _, _, llm, conf = self._build_provider(provider + '/gpt-4-vision-preview')
             return type(llm)(conf, None)
         except Exception as e:
             logging.error(
@@ -146,6 +146,8 @@ class ModelLoader:
                 }
                 if model_name == OpenAIEmbedding.default_embedding_model:
                     provider = OpenAIEmbedding(conf)
+                elif model_name == "gpt-4-vision-preview":
+                    provider = OpenAIVisionLLM(conf)
                 else:
                     provider = OpenAILLM(conf)
 
@@ -170,7 +172,7 @@ class ModelLoader:
                         "model_name": model_name
                     }
                     provider = OpenAILLM(conf)
-                elif model_name == "gpt4-vision":
+                elif model_name == "gpt-4-vision-preview":
                     conf = {
                         "api_key": provider_conf["gpt4_vision_azure_openai_key"],
                         "api_base": provider_conf["gpt4_vision_azure_openai_api_base"],

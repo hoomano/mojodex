@@ -1,13 +1,12 @@
-from openai import OpenAI, AzureOpenAI, RateLimitError
-from mojodex_core.llm_engine.llm import LLM
+import base64
 from mojodex_core.llm_engine.providers.openai_llm import OpenAILLM
 from mojodex_core.logging_handler import MojodexCoreLogger, log_error
-import tiktoken
 
+from math import ceil
 from typing import List
 
 from mojodex_core.costs_manager.tokens_costs_manager import TokensCostsManager
-
+from PIL import Image
 import os
 
 from mojodex_core.llm_engine.mpt import MPT
@@ -15,15 +14,61 @@ from mojodex_core.llm_engine.mpt import MPT
 mojo_openai_logger = MojodexCoreLogger("mojo_openai_logger")
 
 
+class VisionMessagesData:
+    def __init__(self, role: str, text: str, images_path: List[str]):
+        self.role = role
+        self.text = text
+        self.images_path = images_path
+        
+
 class OpenAIVisionLLM(OpenAILLM):
 
     ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
     def __init__(self, llm_conf, llm_backup_conf=None, max_retries=3):
         super().__init__(llm_conf, llm_backup_conf, max_retries)
+
+    def _image_resize(self, width, height):
+        try:
+            # images are first scaled to fit within a 2048 x 2048 square
+            max_size=2048
+            aspect_ratio = width / height
+            if max(width, height) > max_size:
+                if aspect_ratio > 1:
+                    width, height = max_size, int(max_size / aspect_ratio)
+                else:
+                    width, height = int(max_size * aspect_ratio), max_size
+
+            # Then, they are scaled such that the shortest side of the image is 768px long
+            shortest_side = 768
+            if min(width, height) > shortest_side:
+                if aspect_ratio > 1:
+                    width, height = int((shortest_side / height) * width), shortest_side
+                else:
+                    width, height = shortest_side, int((shortest_side / width) * height)
+
+            return width, height
+        except Exception as e:
+            raise Exception(f"_image_resize : {e}")
         
-    def num_tokens_from_messages(self, messages):
-        raise NotImplementedError("num_tokens_from_messages() not implemented in OpenVisionAILLM")
+    def num_tokens_from_image(self, image_path: str):
+        try:
+            with Image.open(image_path) as img:
+                original_width, original_height = img.size
+            
+            # According to https://platform.openai.com/docs/guides/vision
+            resized_width, resized_height = self._image_resize(original_width, original_height)
+            # Finally, we count how many 512px squares the image consists of
+            tile_size = 512
+            w = ceil(resized_width / tile_size)
+            h = ceil(resized_height / tile_size)
+            # Each of those squares costs 170 tokens. Another 85 tokens are always added to the final total.
+            base_tokens, tile_tokens = 85, 170
+            total = base_tokens + tile_tokens * h * w
+            return total
+        except Exception as e:
+            raise Exception(f"num_tokens_from_image : {e}")
+            
     
     @staticmethod
     def get_image_message_url_prefix(image_name):
@@ -36,12 +81,44 @@ class OpenAIVisionLLM(OpenAILLM):
         except Exception as e:
             raise Exception(f"_get_image_message_url_prefix :: {e}")
 
-
+    def get_encoded_image(self, image_path):
+        try:
+            with open(image_path, "rb") as image_file:
+                 return base64.b64encode(image_file.read()).decode('utf-8')
+        except Exception as e:
+            raise Exception(f"_get_encoded_image :: {e}")
     
-    def recursive_invoke(self, messages, user_id, temperature, max_tokens, label, frequency_penalty, presence_penalty,
+    def recursive_invoke(self, messages_data: List[VisionMessagesData], user_id, temperature, max_tokens, label, frequency_penalty, presence_penalty,
                        stream=False, stream_callback=None, user_task_execution_pk=None, task_name_for_system=None,
                          n_additional_calls_if_finish_reason_is_length=0, **kwargs):
+        
         try:
+            n_tokens_prompt = 0
+            n_tokens_conversation = 0
+            messages = []
+            for index in range(0, len(messages_data)):
+                message_data = messages_data[index]
+                message = {"role": message_data.role, 'content': [
+                    {"type": "text", "text": message_data.text}
+                ] 
+                }
+                
+                n_text_tokens = self.num_tokens_from_text_messages([message])
+
+                n_image_tokens = 0
+                for image_path in message_data.images_path:
+                    encoded_image = self.get_encoded_image(image_path)
+                    message['content'].append({"type": "image_url",
+                        "image_url": {"url": f"{OpenAIVisionLLM.get_image_message_url_prefix(image_path)};base64,{encoded_image}" }
+                        })
+                    n_image_tokens += self.num_tokens_from_image(image_path)
+
+                messages.append(message)
+                
+                if index == 0:
+                    n_tokens_prompt += n_text_tokens + n_image_tokens
+                else:
+                    n_tokens_conversation += n_text_tokens + n_image_tokens
 
             try:
                 if not os.path.exists(os.path.join(self.dataset_dir, "chat", label)):
@@ -49,9 +126,6 @@ class OpenAIVisionLLM(OpenAILLM):
             except Exception as e:
                 log_error(f"Error creating directory for dataset chat/{label}", notify_admin=False)
 
-            # check complete number of tokens in prompt
-            #n_tokens_prompt = self.num_tokens_from_messages(messages[:1])
-            #n_tokens_conversation = self.num_tokens_from_messages(messages[1:])
 
             responses = self._call_completion_with_rate_limit_management(messages, user_id, temperature, max_tokens,
                                                                          frequency_penalty, presence_penalty,

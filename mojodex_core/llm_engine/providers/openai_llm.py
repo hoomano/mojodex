@@ -55,7 +55,7 @@ class OpenAILLM(LLM):
                     azure_deployment=llm_backup_conf["deployment_id"] if "deployment_id" in llm_backup_conf else None,
                     api_key=llm_backup_conf["api_key"],
                     max_retries=self.max_retries
-                ) if api_type == 'azure' else OpenAI(api_key=llm_backup_conf["api_key"])
+                ) if llm_backup_conf['api_type'] == 'azure' else OpenAI(api_key=llm_backup_conf["api_key"])
 
             self.tokens_costs_manager = TokensCostsManager()
             LLM.__init__(self, llm_conf, llm_backup_conf=llm_backup_conf, max_retries=self.max_retries)
@@ -63,7 +63,7 @@ class OpenAILLM(LLM):
             raise Exception(f"🔴 Error initializing OpenAILLM __init__  : {e}")
 
     
-    def num_tokens_from_messages(self, messages):
+    def num_tokens_from_text_messages(self, messages):
         # Working for models gpt-4, gpt-3.5-turbo, text-embedding-ada-002
         # https://github.com/openai/openai-cookbook/blob/main/examples/How_to_count_tokens_with_tiktoken.ipynb
         """Returns the number of tokens used by a list of messages.
@@ -75,13 +75,19 @@ class OpenAILLM(LLM):
                 # every message follows <im_start>{role/name}\n{content}<im_end>\n
                 num_tokens += 4
                 for key, value in message.items():
-                    num_tokens += len(encoding.encode(value))
+                    if key == "content":
+                        if isinstance(value, list):
+                            for item in value:
+                                if item.get("type") == "text":
+                                    num_tokens += len(encoding.encode(item["text"]))
+                        elif isinstance(value, str):
+                            num_tokens += len(encoding.encode(value))
                     if key == "name":  # if there's a name, the role is omitted
                         num_tokens += -1  # role is always required and always 1 token
             num_tokens += 2  # every reply is primed with <im_start>assistant
             return num_tokens
         except Exception as e:
-            raise Exception(f"🔴 Error in num_tokens_from_messages : {e}")
+            raise Exception(f"🔴 Error in num_tokens_from_text_messages : {e}")
         
     def _handle_chat_completion_response(self, completion, stream, stream_callback):
         try:
@@ -230,7 +236,6 @@ class OpenAILLM(LLM):
                        stream=False, stream_callback=None, user_task_execution_pk=None, task_name_for_system=None,
                          n_additional_calls_if_finish_reason_is_length=0, **kwargs):
         try:
-
             try:
                 if not os.path.exists(os.path.join(self.dataset_dir, "chat", label)):
                     os.mkdir(os.path.join(self.dataset_dir, "chat", label))
@@ -238,8 +243,8 @@ class OpenAILLM(LLM):
                 log_error(f"Error creating directory for dataset chat/{label}", notify_admin=False)
 
             # check complete number of tokens in prompt
-            n_tokens_prompt = self.num_tokens_from_messages(messages[:1])
-            n_tokens_conversation = self.num_tokens_from_messages(messages[1:])
+            n_tokens_prompt = self.num_tokens_from_text_messages(messages[:1])
+            n_tokens_conversation = self.num_tokens_from_text_messages(messages[1:])
 
             responses = self._call_completion_with_rate_limit_management(messages, user_id, temperature, max_tokens,
                                                                          frequency_penalty, presence_penalty,
@@ -251,7 +256,7 @@ class OpenAILLM(LLM):
             if responses is None:
                 return None
 
-            n_tokens_response = self.num_tokens_from_messages(
+            n_tokens_response = self.num_tokens_from_text_messages(
                 [{'role': 'assistant', 'content': responses[0]}])
 
             self.tokens_costs_manager.on_tokens_counted(user_id, n_tokens_prompt, n_tokens_conversation, n_tokens_response,

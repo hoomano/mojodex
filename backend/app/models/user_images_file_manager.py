@@ -44,11 +44,8 @@ class UserImagesFileManager:
             file.save(image_file_path)
         except Exception as e:
             raise Exception(f"Error in saving image file: {e}")
+        
+    def get_image_file_path(self, image_name, user_id, session_id):
+        return os.path.join(self.get_images_storage_path(user_id, session_id), image_name)
 
-    def get_encoded_image(self, image_name, user_id, session_id):
-        try:
-            image_path = os.path.join(self.get_images_storage_path(user_id, session_id), image_name)
-            with open(image_path, "rb") as image_file:
-                 return base64.b64encode(image_file.read()).decode('utf-8')
-        except Exception as e:
-            raise Exception(f"_get_encoded_image :: {e}")
+    

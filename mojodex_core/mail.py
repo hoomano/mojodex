@@ -5,20 +5,20 @@ mail_logger = MojodexCoreLogger("mail_logger")
 
 admin_email_receivers = os.environ["ADMIN_EMAIL_RECEIVERS"].split(",") if "ADMIN_EMAIL_RECEIVERS" in os.environ else []
 technical_email_receivers = os.environ["TECHNICAL_EMAIL_RECEIVERS"].split(",") if "TECHNICAL_EMAIL_RECEIVERS" in os.environ else []
-print("🔵🔵🔵🔵🔵")
+
 def _configure_email_sender():
     try:
         mojo_mail_client = None
         if os.environ.get('AWS_SES_REGION', ''):
             from mojodex_core.email_sender.aws_email_sender import MojoAwsMail
             mojo_mail_client = MojoAwsMail()
-            mail_logger.info("🔵 AWS SES email client configured.")
+            mail_logger.info("AWS SES email client configured.")
         elif os.environ.get('SMTP_ADDRESS', ''):
             from mojodex_core.email_sender.smtp_email_sender import SMTPEmailSender
             mojo_mail_client = SMTPEmailSender()
-            mail_logger.info("🔵 SMTP email client configured.")
+            mail_logger.info("SMTP email client configured.")
         else:
-            mail_logger.info("🔵 No email client configured.")
+            mail_logger.warning("No email client configured.")
         return mojo_mail_client
     except Exception as e:
         mail_logger.info(f"Error configuring email sender: {e}")

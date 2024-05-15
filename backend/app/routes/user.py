@@ -331,7 +331,9 @@ class User(Resource):
 
         
         template = Template(email_content)
-        mail = template.render(username=user.name, reset_password_link=f'{os.environ["MOJODEX_WEBAPP_URI"]}/auth/reset-password?token={token}')
+        mail = template.render(username=user.name, 
+                               reset_password_link=f'{os.environ["MOJODEX_WEBAPP_URI"]}/auth/reset-password?token={token}',
+                               mojodex_webapp_url=os.environ["MOJODEX_WEBAPP_URI"])
     
         mojo_mail_client.send_email(subject=subject,
                                     recipients=[user.email],

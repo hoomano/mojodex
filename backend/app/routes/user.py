@@ -259,6 +259,7 @@ class User(Resource):
             name = request.json["name"]
             password = request.json["password"]
             app_version = version.parse(request.json["version"]) if "version" in request.json else version.parse("0.0.0")
+           skip_user_validation = request.json["skip_user_validation"] if "skip_user_validation" in request.json else False
         except KeyError as e:
             log_error(f"Error logging user {email}: Missing field {e}", notify_admin=True)
             return {"error": User.general_backend_error_message}, 400
@@ -270,6 +271,9 @@ class User(Resource):
                 return {"error": User.error_email_already_exists}, 400
 
             user = self.register_user(email, app_version=app_version, password=password, name=name)
+            if skip_user_validation:
+                user.onboarding_presented = datetime.now()
+                user.terms_and_conditions_accepted = datetime.now()
 
             # create a directory in users_dir
             os.mkdir(os.path.join(self.users_directory, user.user_id))

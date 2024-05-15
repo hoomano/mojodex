@@ -174,7 +174,25 @@
 		"darkModeButton": "Dark Mode",
 		"autoPlayVocalMessage":"Auto-play vocal messages",
 		"languageButton": "Language",
-		"languageName": "English"
+		"languageName": "English",
+		"signin": {
+			"title": "Sign in to your account",
+			"emailAddress": "Email address",
+			"password": "Password",
+			"button": "Sign in",
+			"forgotPassword": "Forgot password",
+			"otherProviders": "Or continue with",
+			"noAccount": "Don't have an account ?",
+			"signupLink": "Sign up"
+		},
+		"signup": {
+			"title": "Create an account",
+			"emailAddress": "Email address",
+			"password": "Password",
+			"name": "Name",
+			"button": "Sign up",
+			"otherProviders": "Or continue with"
+		}
 	},
 	"calendar": {
 		"appBarTitle": "Calendar",

@@ -174,7 +174,25 @@
         "darkModeButton": "Mode sombre",
         "autoPlayVocalMessage": "Lecture automatique des messages vocaux",
         "languageButton": "Langue",
-        "languageName": "Français"
+        "languageName": "Français",
+        "signin": {
+            "title": "Connectez-vous à votre compte",
+            "emailAddress": "Adresse email",
+            "password": "Mot de passe",
+            "button": "Se connecter",
+            "forgotPassword": "Mot de passe oublié",
+            "otherProviders": "Ou continuer avec",
+            "noAccount": "Vous n'avez pas de compte ?",
+            "signupLink": "Créez un compte"
+        },
+        "signup": {
+            "title": "Créer un compte",
+            "emailAddress": "Adresse email",
+            "password": "Mot de passe",
+            "name": "Nom",
+            "button": "Créer un compte",
+            "otherProviders": "Ou continuer avec"
+        }
     },
     "calendar": {
         "appBarTitle": "Calendrier",

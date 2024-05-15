@@ -169,7 +169,25 @@
     "darkModeButton": "Modo Oscuro",
     "autoPlayVocalMessage": "Reproducción automática de mensajes vocales",
     "languageButton": "Idioma",
-    "languageName": "Español"
+    "languageName": "Español",
+    "signin": {
+      "title": "Inicia sesión en tu cuenta",
+      "emailAddress": "dirección de correo electrónico",
+      "password": "Contraseña",
+      "button": "Iniciar sesión",
+      "forgotPassword": "¿Olvidaste tu contraseña?",
+      "otherProviders": "O continuar con",
+      "noAccount": "¿No tienes cuenta?",
+      "signupLink": "Regístrate"
+    },
+    "signup": {
+      "title": "Crear una cuenta",
+      "emailAddress": "dirección de correo electrónico",
+      "password": "Contraseña",
+      "name": "Nombre",
+      "button": "Registrarse",
+      "otherProviders": "O continuar con"
+    }
   },
   "calendar": {
     "appBarTitle": "Calendario",

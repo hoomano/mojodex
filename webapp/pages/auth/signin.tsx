@@ -1,5 +1,4 @@
 import type {
-  GetServerSidePropsContext,
   InferGetServerSidePropsType,
 } from "next";
 import { getProviders, signIn } from "next-auth/react";
@@ -11,6 +10,8 @@ import Button from "components/Button";
 import AuthError from "components/Error/AuthError";
 import { useRouter } from "next/router";
 import AuthMobileView from "components/AuthMobileView";
+import { serverSideTranslations } from "next-i18next/serverSideTranslations";
+import { useTranslation } from "react-i18next";
 
 declare let window: {
   chrome: any;
@@ -32,6 +33,7 @@ export default function SignIn({
   const [errorShow, setErrorShow] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const { t } = useTranslation("dynamic");
 
   const editorExtensionId = process.env.NEXT_PUBLIC_EDITOR_EXTENSION_ID;
 
@@ -179,7 +181,7 @@ export default function SignIn({
             alt="Mojodex"
           />
           <h2 className="mt-6 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">
-            Sign in to your account
+            {t("account.signin.title")}
           </h2>
         </div>
 
@@ -197,7 +199,7 @@ export default function SignIn({
                   htmlFor="email"
                   className="block text-sm font-medium leading-6 text-gray-900"
                 >
-                  Email address
+                  {t("account.signin.emailAddress")}
                 </label>
                 <div className="mt-2">
                   <input
@@ -218,7 +220,7 @@ export default function SignIn({
                   htmlFor="password"
                   className="block text-sm font-medium leading-6 text-gray-900"
                 >
-                  Password
+                  {t("account.signin.password")}
                 </label>
                 <div className="mt-2">
                   <input
@@ -240,14 +242,14 @@ export default function SignIn({
                   className="flex w-full justify-center"
                   type="submit"
                 >
-                  Sign in
+                  {t("account.signin.button")}
                 </Button>
               </div>
 
               {isEmailServiceConfigured &&
                 <div className="text-center">
                   <Link href="/auth/forgot-password" className="mx-auto mt-2">
-                    Forgot Password?
+                    {t("account.signin.forgotPassword")}
                   </Link>
                 </div>
               }
@@ -263,7 +265,7 @@ export default function SignIn({
                 </div>
                 <div className="relative flex justify-center text-sm font-medium leading-6">
                   <span className="bg-white px-6 text-gray-900">
-                    Or continue with
+                    {t("account.signin.otherProviders")}
                   </span>
                 </div>
               </div>
@@ -277,8 +279,7 @@ export default function SignIn({
           <div className="text-white text-sm mt-2"></div>
           {isFromMobile && (
             <p className="mt-10 text-center text-sm text-gray-500">
-              Don't have an account ? <Link href={signupLinkHref}>Sign up</Link>{" "}
-              from here.
+              {t("account.signin.noAccount")} <Link href={signupLinkHref}> {t("account.signin.signupLink")}</Link>{" "}
             </p>
           )}
         </div>
@@ -288,12 +289,13 @@ export default function SignIn({
   );
 }
 
-export async function getServerSideProps(context: GetServerSidePropsContext) {
+export async function getServerSideProps(context: any) {
   const session = await getServerSession(
     context.req,
     context.res,
     authOptions as any
   );
+  const { locale } = context;
 
   // If the user is already logged in, redirect.
   // Note: Make sure not to redirect to the same page
@@ -301,12 +303,14 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   if (session) {
     return { redirect: { destination: "/" } };
   }
-  const { callbackUrl } = context.query;
+  const { callbackUrl = null } = context.query; // Ensure callbackUrl is always defined
   const providers = await getProviders();
 
-  let localProps;
-  if (callbackUrl != undefined)
-    localProps = { callbackUrl: callbackUrl, providers: providers };
-  else localProps = { providers: providers };
-  return { props: localProps };
+  return {
+    props: {
+      ...(await serverSideTranslations(locale, ["common", "home", "dynamic"])),
+      callbackUrl,
+      providers,
+    },
+  };
 }

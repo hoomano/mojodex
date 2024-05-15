@@ -64,9 +64,9 @@ class Event(Resource):
                     return {"error": f"Mojo tried to send a notification to user {user_id} but failed either because the user has no device or because the notification failed to be sent on every devices."}, 500
             elif "email" in event_type:
                 subject, body, email = request.json['message']['subject'], request.json['message']['body'], request.json['message']['email']
-                mojo_mail_client.send_mail(subject=subject,
+                mojo_mail_client.send_email(subject=subject,
                                            recipients=[email],
-                                           html=body)
+                                           html_body=body)
                 # add notification to db
                 email_event = MdEvent(creation_date=datetime.now(), event_type=event_type,
                                        user_id=user_id,

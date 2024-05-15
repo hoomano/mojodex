@@ -4,7 +4,7 @@ import requests
 
 from background_logger import BackgroundLogger
 
-from mojodex_core.mail import send_admin_error_email
+from mojodex_core.mail import send_technical_error_email
 from mojodex_core.llm_engine.mpt import MPT
 
 
@@ -21,7 +21,7 @@ class UserTaskExecutionSummarizer:
             self.title, self.summary = self._task_execution_summary()
             self._save_to_db()
         except Exception as e:
-            send_admin_error_email(f"{self.logger.name} : {e}")
+            send_technical_error_email(f"{self.logger.name} : {e}")
             raise Exception(
                 f"{UserTaskExecutionSummarizer.logger_prefix} __init__: {e}")
 

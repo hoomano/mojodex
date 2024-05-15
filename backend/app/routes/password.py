@@ -56,9 +56,9 @@ class Password(Resource):
                 template = Template(f.read())
                 mail = template.render(username=user.name, reset_password_link=f'{os.environ["MOJODEX_WEBAPP_URI"]}/auth/reset-password?token={token}')
             try:
-                mojo_mail_client.send_mail(subject=f"Mojodex reset password",
+                mojo_mail_client.send_email(subject=f"Mojodex reset password",
                                            recipients=[email],
-                                           html=mail)
+                                           html_body=mail)
             except Exception as e:
                 log_error(f"Error sending reset password email to {email}: {e} - request.json: {request.json}", notify_admin=True)
                 return {"error": User.general_backend_error_message}, 409

@@ -7,17 +7,12 @@ from botocore.exceptions import ClientError
 from mojodex_core.email_sender.email_sender import EmailSender
 
 class MojoAwsMail(EmailSender):
-    def __init__(self, sender_name, sender_email,  region, charset="UTF-8"):
+    def __init__(self, charset="UTF-8"):
         try:
             logging.basicConfig(level=logging.INFO)
 
-            # Check if the environment variables are set
-            if "AWS_ACCESS_KEY_ID" not in os.environ:
-                raise Exception("AWS_ACCESS_KEY_ID is not set")
-            if "AWS_SECRET_ACCESS_KEY" not in os.environ:
-                raise Exception("AWS_SECRET_ACCESS_KEY is not set")
-            self.sender = f"{sender_name} <{sender_email}>"
-            self.region = region
+            self._load_config()
+            
             self.charset = charset
             self.client = boto3.client('ses', region_name=self.region)
             # configure login
@@ -27,23 +22,47 @@ class MojoAwsMail(EmailSender):
         except Exception as e:
             raise Exception(
                 "MojoAwsMail : Error while initializing MojoAwsMail : {}".format(e))
-
-    def send_mail(self, subject: str, recipients: List[str], body: str):
-        # Try to send the email.
+        
+    def _load_config(self):
         try:
-            # Provide the contents of the email.
+            if "AWS_ACCESS_KEY_ID" not in os.environ:
+                raise Exception("AWS_ACCESS_KEY_ID is not set")
+            if "AWS_SECRET_ACCESS_KEY" not in os.environ:
+                raise Exception("AWS_SECRET_ACCESS_KEY is not set")
+            if "AWS_SES_REGION" not in os.environ:
+                raise Exception("AWS_SES_REGION is not set")
+            if "SENDER_EMAIL" not in os.environ:
+                raise Exception("SENDER_EMAIL is not set")
+            if "SENDER_NAME" not in os.environ:
+                raise Exception("SENDER_NAME is not set")
+            
+            self.region = os.environ["AWS_SES_REGION"]
+            self.email_address = os.environ["SENDER_EMAIL"]
+            self.email_sender_name = os.environ["SENDER_NAME"]
+            self.sender = f"{self.email_sender_name} <{self.email_address}>"
+        except Exception as e:
+            raise Exception(f"_load_config : {e}")
+
+    def send_email(self, subject: str, recipients: List[str], text_body: str = None, html_body: str = None):
+        # Try to send the email.
+        try:# Provide the contents of the email.
             message = {
                 'Subject': {
                         'Charset': self.charset,
-                        'Data': subject
-                        },
-                'Body':  {
-                        'Text': {
-                            'Charset': self.charset,
-                            'Data': body
-                            },
-                        } 
-                    }
+                        'Data': subject}
+                }
+            body = {}
+            if text_body is not None:
+                body['Text'] = {
+                    'Charset': self.charset,
+                    'Data': text_body
+                }
+            if html_body is not None:
+                body['Html'] = {
+                    'Charset': self.charset,
+                    'Data': html_body
+                }
+            message['Body'] = body
 
             response = self.client.send_email(
                 Destination={
@@ -52,9 +71,10 @@ class MojoAwsMail(EmailSender):
                 Message=message,
                 Source=self.sender,
             )
+            
         # Display an error if something goes wrong.
         except ClientError as e:
-            raise Exception(f"MojoAwsMail : send_mail: {e.response['Error']['Message']}")
+            raise Exception(f"MojoAwsMail : send_email: {e.response['Error']['Message']}")
         else:
             logging.info("Email sent! Message ID:"),
             logging.info(response['MessageId'])

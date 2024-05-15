@@ -11,7 +11,7 @@ from sqlalchemy import func, text
 
 from models.todos.todos_rescheduler import TodosRescheduler
 
-from mojodex_core.mail import send_admin_error_email
+from mojodex_core.mail import send_technical_error_email
 
 
 class RescheduleTodoCortex:
@@ -48,7 +48,7 @@ class RescheduleTodoCortex:
 
         except Exception as e:
             self.logger.error(f"__init__ :: {e}")
-            send_admin_error_email(f"Error in {self.logger_prefix} - __init__ (todo_pk: {todo.todo_pk}): {e}")
+            send_technical_error_email(f"Error in {self.logger_prefix} - __init__ (todo_pk: {todo.todo_pk}): {e}")
 
 
     def reschedule_todo(self):
@@ -64,7 +64,7 @@ class RescheduleTodoCortex:
             todo_rescheduler.reschedule_and_save()
         except Exception as e:
             self.logger.error(f"reschedule_todo: {e}")
-            send_admin_error_email(f"Error in {self.logger_prefix} - todo_pk {self.todo_pk} - reschedule_todo: {e}")
+            send_technical_error_email(f"Error in {self.logger_prefix} - todo_pk {self.todo_pk} - reschedule_todo: {e}")
 
 
 

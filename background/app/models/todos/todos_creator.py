@@ -7,7 +7,7 @@ from background_logger import BackgroundLogger
 from mojodex_core.logging_handler import on_json_error
 
 
-from mojodex_core.mail import send_admin_error_email
+from mojodex_core.mail import send_technical_error_email
 
 from mojodex_core.llm_engine.mpt import MPT
 
@@ -38,7 +38,7 @@ class TodosCreator:
                     self.logger.debug(
                         f"extract_and_save: {todo['todo_definition']} not mentioned as todo - Not saving to db")
                     if todo['mentioned_as_todo'].strip().lower() != 'no':
-                        send_admin_error_email(
+                        send_technical_error_email(
                             f"(Warning) Extracting todos for user_task_execution_pk {self.user_task_execution.user_task_execution_pk} : {todo['mentioned_as_todo']} is not a valid value for mentioned_as_todo")
                     continue
                 # check reminder_date is a DateTime in format yyyy-mm-dd

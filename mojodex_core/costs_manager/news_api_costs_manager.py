@@ -1,6 +1,6 @@
 from datetime import datetime
 from mojodex_core.costs_manager.costs_manager import CostsManager
-from mojodex_core.mail import send_admin_error_email
+from mojodex_core.mail import send_technical_error_email
 
 
 class NewsAPICostsManager(CostsManager):
@@ -12,7 +12,7 @@ class NewsAPICostsManager(CostsManager):
         try:
             super().__init__(NewsAPICostsManager.name, NewsAPICostsManager.columns)
         except Exception as e:
-            send_admin_error_email(f"{NewsAPICostsManager.logger_prefix}: __init__: {e}")
+            send_technical_error_email(f"{NewsAPICostsManager.logger_prefix}: __init__: {e}")
 
 
     def on_search(self, user_id, num_of_results_asked, user_task_execution_pk, task_name_for_system):
@@ -20,4 +20,4 @@ class NewsAPICostsManager(CostsManager):
             with open(self.file_path, "a") as f:
                 f.write(f"{datetime.utcnow().isoformat()},{user_id},{num_of_results_asked},{user_task_execution_pk},{task_name_for_system}\n")
         except Exception as e:
-            send_admin_error_email(f"{NewsAPICostsManager.logger_prefix}: on_search: {e}")
+            send_technical_error_email(f"{NewsAPICostsManager.logger_prefix}: on_search: {e}")

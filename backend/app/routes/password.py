@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 import random
 import string
 import os
-
+from bs4 import BeautifulSoup
 from routes.user import User
 
 
@@ -24,7 +24,7 @@ def generate_reset_password_token(user_id):
 
 
 class Password(Resource):
-    reset_password_mail_template_path = "/data/mails/reset_password.html"
+    reset_password_mail_template_dir = "/data/mails/reset_forgotten_password"
     error_expired_reset_link="Link expired"
     error_invalid_reset_link="Invalid link"
     wrong_email_error_message="Email not found"
@@ -52,16 +52,34 @@ class Password(Resource):
 
             token = generate_reset_password_token(user.user_id)
 
-            with open(Password.reset_password_mail_template_path, "r") as f:
-                template = Template(f.read())
-                mail = template.render(username=user.name, reset_password_link=f'{os.environ["MOJODEX_WEBAPP_URI"]}/auth/reset-password?token={token}')
+            email_file = os.path.join(self.reset_password_mail_template_dir, user.language_code + ".html")
+
+            # check if email file exists
+            if not os.path.isfile(email_file):
+                email_file = os.path.join(self.reset_password_mail_template_dir, "en.html")
+
+            with open(email_file, "r") as f:
+                email_content = f.read()
+
             try:
-                mojo_mail_client.send_email(subject=f"Mojodex reset password",
-                                           recipients=[email],
-                                           html_body=mail)
+                soup = BeautifulSoup(email_content, 'html.parser')
+                subject = soup.head.title.string
+                if not subject:
+                    raise Exception("No subject found")
             except Exception as e:
-                log_error(f"Error sending reset password email to {email}: {e} - request.json: {request.json}", notify_admin=True)
-                return {"error": User.general_backend_error_message}, 409
+                log_error(f"Error parsing temporary password email {email_file} : {e}", notify_admin=True)
+                subject = "Reset password"
+
+            
+            template = Template(email_content)
+            mail = template.render(username=user.name, 
+                                reset_password_link=f'{os.environ["MOJODEX_WEBAPP_URI"]}/auth/reset-password?token={token}',
+                                mojodex_webapp_url=os.environ["MOJODEX_WEBAPP_URI"])
+
+            
+            mojo_mail_client.send_email(subject=subject,
+                                        recipients=[email],
+                                        html_body=mail)
             return {"message": "Email sent."}, 200
         except Exception as e:
             log_error(f"Error sending reset password email to {email}: {e} - request.json: {request.json}", notify_admin=True)

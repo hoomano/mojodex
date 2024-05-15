@@ -2,10 +2,11 @@ import base64
 import json
 import os
 import random
+from jinja2 import Template
 import requests
 from flask import request
 from flask_restful import Resource
-from app import db
+from app import db, mojo_mail_client
 from mojodex_core.logging_handler import log_error
 from mojodex_core.entities import *
 import hashlib
@@ -16,7 +17,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
 from cryptography.hazmat.primitives.asymmetric import rsa
-
+from bs4 import BeautifulSoup
 from models.purchase_manager import PurchaseManager
 
 from mojodex_core.mail import send_admin_email
@@ -46,13 +47,14 @@ class User(Resource):
     wrong_email_or_password_error_message = "Wrong email or password."
     error_user_not_registered_with_password="User is not registered with password."
     error_email_already_exists = "Email already exists."
+    change_temporary_password_mails_dir = "/data/mails/change_temporary_password"
 
     def __init__(self):
         self.purchase_manager = PurchaseManager()
 
 
 
-    def register_user(self, email, app_version, name=None, password=None, google_id=None, microsoft_id=None, apple_id=None):
+    def register_user(self, email, app_version, language_code='en', name=None, password=None, google_id=None, microsoft_id=None, apple_id=None):
         # create user
         user_id = generate_user_id(email)
 
@@ -60,6 +62,7 @@ class User(Resource):
                       email=email,
                       password=generate_password_hash(password) if password else None,
                       google_id=google_id, microsoft_id=microsoft_id, apple_id=apple_id,
+                      language_code=language_code,
                       creation_date=datetime.now())
 
         db.session.add(user)
@@ -258,6 +261,7 @@ class User(Resource):
             email = request.json["email"]
             name = request.json["name"]
             password = request.json["password"]
+            language_code = request.json["language_code"] if "language_code" in request.json else "en"
             app_version = version.parse(request.json["version"]) if "version" in request.json else version.parse("0.0.0")
             skip_user_validation = request.json["skip_user_validation"] if "skip_user_validation" in request.json else False
         except KeyError as e:
@@ -270,16 +274,24 @@ class User(Resource):
             if user is not None:
                 return {"error": User.error_email_already_exists}, 400
 
-            user = self.register_user(email, app_version=app_version, password=password, name=name)
+            user = self.register_user(email, app_version=app_version, password=password, name=name, language_code=language_code)
             if skip_user_validation:
                 user.onboarding_presented = datetime.now()
                 user.terms_and_conditions_accepted = datetime.now()
-
+               
             # create a directory in users_dir
             os.mkdir(os.path.join(self.users_directory, user.user_id))
 
 
             token = generate_token(user.user_id)
+            db.session.flush()
+
+            if skip_user_validation:
+                try:
+                    self.send_email_to_change_password(user)
+                except Exception as e:
+                    log_error(f"Error sending reset password email to {email}: {e} - request.json: {request.json}", notify_admin=True)
+                    return {"error": f"Account creation aborted: could not send reset password email to user: {e}"}, 400
 
 
             db.session.commit()
@@ -293,3 +305,36 @@ class User(Resource):
             db.session.rollback()
             log_error(f"Error registering user {email} : {e}", notify_admin=True)
             return {"error": User.general_backend_error_message}, 400
+
+    def send_email_to_change_password(self, user):
+        from routes.password import generate_reset_password_token
+        # send reset password email to change temporary password
+        token = generate_reset_password_token(user.user_id)
+
+        email_file = os.path.join(self.change_temporary_password_mails_dir, user.language_code + ".html")
+
+        # check if email file exists
+        if not os.path.isfile(email_file):
+            email_file = os.path.join(self.change_temporary_password_mails_dir, "en.html")
+
+        with open(email_file, "r") as f:
+            email_content = f.read()
+
+        try:
+            soup = BeautifulSoup(email_content, 'html.parser')
+            subject = soup.head.title.string
+            if not subject:
+                raise Exception("No subject found")
+        except Exception as e:
+            log_error(f"Error parsing temporary password email {email_file} : {e}", notify_admin=True)
+            subject = "Welcome to Mojodex"
+
+        
+        template = Template(email_content)
+        mail = template.render(username=user.name, reset_password_link=f'{os.environ["MOJODEX_WEBAPP_URI"]}/auth/reset-password?token={token}')
+    
+        mojo_mail_client.send_email(subject=subject,
+                                    recipients=[user.email],
+                                    html_body=mail)
+                
+                

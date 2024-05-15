@@ -31,6 +31,8 @@ def send_technical_error_email(error_message):
             mojo_mail_client.send_email(subject=f"MOJODEX ERROR - {os.environ['ENVIRONMENT']}",
                                         recipients=technical_email_receivers,
                                         text_body=error_message)
+        else:
+            mail_logger.info(f"No email client configured - email to send was tech error: {error_message}")
     except Exception as e:
         mail_logger.error(f"Error while sending technical error email : {e}")
 
@@ -41,5 +43,7 @@ def send_admin_email(subject, recipients, text):
             mojo_mail_client.send_email(subject=subject,
                                        recipients=recipients,
                                        text_body=text)
+        else:
+            mail_logger.info(f"No email client configured - email to send was admin info: {text}")
     except Exception as e:
         mail_logger.error(f"Error while sending admin email : {e}")

@@ -1,5 +1,4 @@
 import type {
-  GetServerSidePropsContext,
   InferGetServerSidePropsType,
 } from "next";
 import { getProviders, signIn } from "next-auth/react";
@@ -11,6 +10,10 @@ import AuthError from "components/Error/AuthError";
 import { useRouter } from "next/router";
 import AuthMobileView from "components/AuthMobileView";
 import useLanguageCode from "helpers/hooks/useLanguageCode";
+import { serverSideTranslations } from "next-i18next/serverSideTranslations";
+import { useTranslation } from "react-i18next";
+
+
 export default function SignIn({
   providers,
   callbackUrl,
@@ -24,6 +27,7 @@ export default function SignIn({
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const languageCode = useLanguageCode();
+  const { t } = useTranslation("dynamic");
 
   const customSignIn = async (providerId: string) => {
     signIn(providerId, {
@@ -162,7 +166,7 @@ export default function SignIn({
             alt="Mojodex"
           />
           <h2 className="mt-6 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">
-            Create an account
+            {t("account.signup.title")}
           </h2>
         </div>
 
@@ -180,7 +184,7 @@ export default function SignIn({
                   htmlFor="email"
                   className="block text-sm font-medium leading-6 text-gray-900"
                 >
-                  Name
+                  {t("account.signup.name")}
                 </label>
                 <div className="mt-2">
                   <input
@@ -200,7 +204,7 @@ export default function SignIn({
                   htmlFor="email"
                   className="block text-sm font-medium leading-6 text-gray-900"
                 >
-                  Email address
+                  {t("account.signup.emailAddress")}
                 </label>
                 <div className="mt-2">
                   <input
@@ -221,7 +225,7 @@ export default function SignIn({
                   htmlFor="password"
                   className="block text-sm font-medium leading-6 text-gray-900"
                 >
-                  Password
+                  {t("account.signup.password")}
                 </label>
                 <div className="mt-2">
                   <input
@@ -243,7 +247,7 @@ export default function SignIn({
                   type="submit"
                   className="flex w-full justify-center"
                 >
-                  Sign up
+                  {t("account.signup.button")}
                 </Button>
               </div>
             </form>
@@ -258,7 +262,7 @@ export default function SignIn({
                 </div>
                 <div className="relative flex justify-center text-sm font-medium leading-6">
                   <span className="bg-white px-6 text-gray-900">
-                    Or continue with
+                    {t("account.signup.otherProviders")}
                   </span>
                 </div>
               </div>
@@ -277,13 +281,13 @@ export default function SignIn({
   );
 }
 
-export async function getServerSideProps(context: GetServerSidePropsContext) {
+export async function getServerSideProps(context: any) {
   const session = await getServerSession(
     context.req,
     context.res,
     authOptions as any
   );
-
+  const { locale } = context;
   // If the user is already logged in, redirect.
   // Note: Make sure not to redirect to the same page
   // To avoid an infinite loop!
@@ -291,12 +295,14 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     return { redirect: { destination: "/" } };
   }
 
-  const { callbackUrl } = context.query;
+  const { callbackUrl = null } = context.query; // Ensure callbackUrl is always defined
   const providers = await getProviders();
-
-  let localProps;
-  if (callbackUrl != undefined)
-    localProps = { callbackUrl: callbackUrl, providers: providers };
-  else localProps = { providers: providers };
-  return { props: localProps };
+  
+  return {
+    props: {
+      ...(await serverSideTranslations(locale, ["common", "home", "dynamic"])),
+      callbackUrl,
+      providers,
+    },
+  };
 }

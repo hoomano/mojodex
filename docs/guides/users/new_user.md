@@ -34,8 +34,9 @@ curl --location --request PUT 'http://localhost:5001/user' \
 --header 'Content-Type: application/json' \
 --data-raw '{"datetime": "2024-02-14T17:49:26.545180",
 "name": "user_name",
-"email": "user_email@email.com",
+"email": "user@email.com",
 "password": "user_temporary_password",
+"language_code": "en",
 "skip_user_validation": true
 }'
 ```

@@ -19,7 +19,7 @@ class MailClientLogging:
 mojo_mail_client = None
 try:
     if os.environ.get('SENDER_EMAIL', ''):
-        from mojodex_core.email_sender import MojoAwsMail
+        from mojodex_core.email_sender.aws_email_sender import MojoAwsMail
         mojo_mail_client = MojoAwsMail(sender_name=os.environ['SENDER_NAME'], sender_email=os.environ['SENDER_EMAIL'],
                                     region="eu-west-3")
     else:

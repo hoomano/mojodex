@@ -12,7 +12,7 @@ import { useRouter } from "next/router";
 import AuthMobileView from "components/AuthMobileView";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { useTranslation } from "react-i18next";
-
+import useIsEmailServiceIsConfigured from "./hooks/useIsEmailServiceIsConfigured";
 declare let window: {
   chrome: any;
   postMessage: any;
@@ -37,8 +37,8 @@ export default function SignIn({
 
   const editorExtensionId = process.env.NEXT_PUBLIC_EDITOR_EXTENSION_ID;
 
-  // This is the AWS SES service configuration check
-  const isEmailServiceConfigured = process.env.AWS_ACCESS_KEY_ID || process.env.SMTP_ADDRESS;
+  const {data: is_email_configured} = useIsEmailServiceIsConfigured(); 
+  
 
   const customSignIn = async (providerId: string) => {
     signIn(providerId, {
@@ -246,7 +246,7 @@ export default function SignIn({
                 </Button>
               </div>
 
-              {isEmailServiceConfigured &&
+              {is_email_configured?.is_configured &&
                 <div className="text-center">
                   <Link href="/auth/forgot-password" className="mx-auto mt-2">
                     {t("account.signin.forgotPassword")}

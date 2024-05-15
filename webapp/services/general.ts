@@ -1,6 +1,7 @@
 import { apiRoutes } from ".";
 import axiosClient from "./config/axiosClient";
 import { UpdateSessionResponseType } from "helpers/interface/session";
+import { isEmailServiceConfiguredResponseType } from "helpers/interface/email_configured";
 
 const updateSession = (body: any): Promise<UpdateSessionResponseType> =>
   axiosClient.put(apiRoutes.updateSession, body);
@@ -18,5 +19,8 @@ export const getLanguageCode = (languageCode: string): Promise<any> =>
 
 export const timezoneSet = (payload: any) =>
   axiosClient.post(apiRoutes.timezone, payload);
+
+export const getIsEmailServiceConfigured = (): Promise<isEmailServiceConfiguredResponseType> =>
+  axiosClient.get(apiRoutes.isEmailServiceConfigured);
 
 export { updateSession, acceptTermsAndCondition };

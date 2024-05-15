@@ -12,6 +12,7 @@ const cachedAPIName = {
   TODOS: "todos",
   LANGUAGE: "language",
   PRODUCT_CATEGORIES: "product_category",
+  IS_EMAIL_SERVICE_CONFIGURED: "is_email_service_configured",
 };
 
 export default cachedAPIName;

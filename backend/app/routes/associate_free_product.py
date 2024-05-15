@@ -122,9 +122,9 @@ class FreeProductAssociation(Resource):
                     subject = "Welcome to Mojodex"
 
                 if mojo_mail_client:
-                    mojo_mail_client.send_mail(subject=subject,
+                    mojo_mail_client.send_email(subject=subject,
                                                recipients=[user.email],
-                                               html=email_content)
+                                               html_body=email_content)
                     # add notification to db
                     email_event = MdEvent(creation_date=datetime.now(), event_type='welcome_email',
                                           user_id=user_id,

@@ -3,7 +3,7 @@ from app import server_socket
 from mojodex_core.entities import MdUser, MdUserWorkflowStepExecution, MdWorkflowStep
 from typing import List
 from models.workflows.steps_library import steps_class
-from mojodex_core.mail import send_admin_error_email
+from mojodex_core.mail import send_technical_error_email
 from sqlalchemy.orm.attributes import flag_modified
 from app import time_manager
 import pytz
@@ -44,7 +44,7 @@ class WorkflowStepExecution:
         except Exception as e:
             self.error_status = {"datetime": datetime.now().isoformat(), "error": str(e)}
             # send email to admin
-            send_admin_error_email(f"Error while executing step {self.db_object.user_workflow_step_execution_pk} for user {self.user_id} : {e}")
+            send_technical_error_email(f"Error while executing step {self.db_object.user_workflow_step_execution_pk} for user {self.user_id} : {e}")
 
     @property
     def error_status(self):

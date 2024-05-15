@@ -148,9 +148,9 @@ Once an email is ready, the background sends it to the backend using route `/eve
 `backend/app/routes/event.py`
 ```python
 [...]
-mojo_mail_client.send_mail(subject=subject,
+mojo_mail_client.send_email(subject=subject,
                             recipients=[email],
-                            html=body)
+                            html_body=body)
 # add notification to db
 email_event = MdEvent(creation_date=datetime.now(), event_type=event_type,
                         user_id=user_id,

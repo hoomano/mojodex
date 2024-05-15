@@ -36,7 +36,7 @@ export default function SignIn({
   const editorExtensionId = process.env.NEXT_PUBLIC_EDITOR_EXTENSION_ID;
 
   // This is the AWS SES service configuration check
-  const isEmailServiceConfigured = process.env.AWS_ACCESS_KEY_ID;
+  const isEmailServiceConfigured = process.env.AWS_ACCESS_KEY_ID || process.env.SMTP_ADDRESS;
 
   const customSignIn = async (providerId: string) => {
     signIn(providerId, {

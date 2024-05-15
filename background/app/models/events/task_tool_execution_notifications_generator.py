@@ -2,7 +2,7 @@ from background_logger import BackgroundLogger
 from mojodex_core.json_loader import json_decode_retry
 from mojodex_core.logging_handler import on_json_error
 
-from mojodex_core.mail import send_admin_error_email
+from mojodex_core.mail import send_technical_error_email
 from models.events.events_generator import EventsGenerator
 
 from mojodex_core.llm_engine.mpt import MPT
@@ -36,12 +36,12 @@ class TaskToolExecutionNotificationsGenerator(EventsGenerator):
             except Exception as e:
                 self.logger.debug(
                     f"Error preparing notification for user {user_id}: {e}")
-                send_admin_error_email(
+                send_technical_error_email(
                     f"{self.logger.name} : Error preparing notification for user {user_id}: {e}")
         except Exception as e:
             self.logger.debug(
                 f"Error preparing notification for user {user_id}: {e}")
-            send_admin_error_email(
+            send_technical_error_email(
                 f"{self.logger.name} : Error preparing notifications: {e}")
 
     @json_decode_retry(retries=3, required_keys=["title", "message"], on_json_error=on_json_error)

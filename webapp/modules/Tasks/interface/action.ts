@@ -28,3 +28,12 @@ export interface TodoCompletePayload {
   todo_pk?: number;
   user_task_execution_pk?: number;
 }
+
+export interface SaveResultPayload {
+  user_workflow_step_execution_pk: number;
+  result: Array<{ [k: string]: string; }>;
+}
+
+export interface SaveResultResponse {
+  new_result: Array<Map<string, string>>;
+}

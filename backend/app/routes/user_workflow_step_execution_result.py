@@ -41,7 +41,7 @@ class UserWorkflowStepExecutionResult(Resource):
             db.session.add(step_result)
             db.session.commit()
             
-            return {"message": f"New result associated to step execution {user_workflow_step_execution_pk}"}, 200
+            return {"new_result": new_result}, 200
         except Exception as e:
             log_error(e)
             db.session.rollback()

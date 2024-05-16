@@ -4,11 +4,13 @@ import Button from "components/Button";
 import useOnStepExecutionValidate from "modules/Tasks/hooks/useOnStepExecutionValidate";
 import useOnStepExecutionInvalidate from "modules/Tasks/hooks/useOnStepExecutionInvalidate";
 import useOnStepExecutionRelaunch from "modules/Tasks/hooks/useOnStepExecutionRelaunch";
+import useOnSaveResultEdition from "modules/Tasks/hooks/useOnSaveResultEdition";
 import TextareaAutosize from 'react-textarea-autosize';
 import { CheckCircleIcon, ExclamationCircleIcon } from '@heroicons/react/24/solid'
 import BeatLoader from "react-spinners/BeatLoader";
 import { useTranslation } from "next-i18next";
 import { useState } from "react";
+
 
 
 interface StepDetailProps {
@@ -25,6 +27,7 @@ const StepProcessDetail: React.FC<StepDetailProps> = ({
     onStepRelaunched
 }) => {
     const { t } = useTranslation('dynamic');
+    const onSaveStepResultEdition = useOnSaveResultEdition();
     const onValidateStepExecution = useOnStepExecutionValidate();
     const onInvalidateStepExecution = useOnStepExecutionInvalidate();
     const onStepExecutionRelaunch = useOnStepExecutionRelaunch();
@@ -63,6 +66,25 @@ const StepProcessDetail: React.FC<StepDetailProps> = ({
 
     const [editing, setEditing] = useState<boolean>(false);
     const [editedResult, setEditedResult] = useState<Array<Map<string, string>>>([]);
+    
+    const onSaveResultEdition = () => {
+        onSaveStepResultEdition.mutate({
+            user_workflow_step_execution_pk: stepExecution.user_workflow_step_execution_pk,
+            result: editedResult.map(obj => Object.fromEntries(obj))
+        }, {
+            onSuccess: (data) => {
+                console.log(data);
+                stepExecution.result = data['new_result'];
+                console.log(stepExecution.result);
+                setEditing(false);
+            },
+            onError: (error) => {
+                console.log("Error saving result edition", error);
+                // todo: manage error message
+            }
+        });
+    };
+    
     const onReviewStep = () => {
         onInvalidateStepExecution.mutate(stepExecution.user_workflow_step_execution_pk, {
             onSuccess: () => {
@@ -183,7 +205,7 @@ const StepProcessDetail: React.FC<StepDetailProps> = ({
                                     Cancel
                                 </Button>
 
-                                <Button variant="primary" size="middle" onClick={() => console.log("Save")}>
+                                <Button variant="primary" size="middle" onClick={() => onSaveResultEdition()}>
                                     Save
                                 </Button>
                             </div> : stepExecution.user_validation_required && stepExecution.validated === null && stepExecution.result != null ?

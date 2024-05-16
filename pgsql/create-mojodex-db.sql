@@ -2,8 +2,8 @@
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 13.12
--- Dumped by pg_dump version 14.8 (Homebrew)
+-- Dumped from database version 15.4 (Debian 15.4-2.pgdg120+1)
+-- Dumped by pg_dump version 15.4 (Debian 15.4-2.pgdg120+1)
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -31,7 +31,7 @@ COMMENT ON EXTENSION vector IS 'vector data type and ivfflat access method';
 
 
 --
--- Name: _session_mode; Type: TYPE; Schema: public;
+-- Name: _session_mode; Type: TYPE; Schema: public; Owner: assistant_db_user
 --
 
 CREATE TYPE public._session_mode AS ENUM (
@@ -39,8 +39,23 @@ CREATE TYPE public._session_mode AS ENUM (
     'form'
 );
 
+
+ALTER TYPE public._session_mode OWNER TO assistant_db_user;
+
 --
--- Name: _task_type; Type: TYPE; Schema: public;
+-- Name: _step_result_author; Type: TYPE; Schema: public; Owner: assistant_db_user
+--
+
+CREATE TYPE public._step_result_author AS ENUM (
+    'assistant',
+    'user'
+);
+
+
+ALTER TYPE public._step_result_author OWNER TO assistant_db_user;
+
+--
+-- Name: _task_type; Type: TYPE; Schema: public; Owner: assistant_db_user
 --
 
 CREATE TYPE public._task_type AS ENUM (
@@ -48,8 +63,11 @@ CREATE TYPE public._task_type AS ENUM (
     'workflow'
 );
 
+
+ALTER TYPE public._task_type OWNER TO assistant_db_user;
+
 --
--- Name: document_type_; Type: TYPE; Schema: public;
+-- Name: document_type_; Type: TYPE; Schema: public; Owner: assistant_db_user
 --
 
 CREATE TYPE public.document_type_ AS ENUM (
@@ -58,9 +76,10 @@ CREATE TYPE public.document_type_ AS ENUM (
 );
 
 
+ALTER TYPE public.document_type_ OWNER TO assistant_db_user;
 
 --
--- Name: login_method_type; Type: TYPE; Schema: public;
+-- Name: login_method_type; Type: TYPE; Schema: public; Owner: assistant_db_user
 --
 
 CREATE TYPE public.login_method_type AS ENUM (
@@ -71,9 +90,10 @@ CREATE TYPE public.login_method_type AS ENUM (
 );
 
 
+ALTER TYPE public.login_method_type OWNER TO assistant_db_user;
 
 --
--- Name: md_product_status_; Type: TYPE; Schema: public;
+-- Name: md_product_status_; Type: TYPE; Schema: public; Owner: assistant_db_user
 --
 
 CREATE TYPE public.md_product_status_ AS ENUM (
@@ -82,9 +102,10 @@ CREATE TYPE public.md_product_status_ AS ENUM (
 );
 
 
+ALTER TYPE public.md_product_status_ OWNER TO assistant_db_user;
 
 --
--- Name: md_sender_; Type: TYPE; Schema: public;
+-- Name: md_sender_; Type: TYPE; Schema: public; Owner: assistant_db_user
 --
 
 CREATE TYPE public.md_sender_ AS ENUM (
@@ -94,9 +115,10 @@ CREATE TYPE public.md_sender_ AS ENUM (
 );
 
 
+ALTER TYPE public.md_sender_ OWNER TO assistant_db_user;
 
 --
--- Name: platform_name; Type: TYPE; Schema: public;
+-- Name: platform_name; Type: TYPE; Schema: public; Owner: assistant_db_user
 --
 
 CREATE TYPE public.platform_name AS ENUM (
@@ -107,9 +129,10 @@ CREATE TYPE public.platform_name AS ENUM (
 );
 
 
+ALTER TYPE public.platform_name OWNER TO assistant_db_user;
 
 --
--- Name: home_chat_pk_seq; Type: SEQUENCE; Schema: public;
+-- Name: home_chat_pk_seq; Type: SEQUENCE; Schema: public; Owner: assistant_db_user
 --
 
 CREATE SEQUENCE public.home_chat_pk_seq
@@ -119,8 +142,11 @@ CREATE SEQUENCE public.home_chat_pk_seq
     NO MAXVALUE
     CACHE 1;
 
+
+ALTER TABLE public.home_chat_pk_seq OWNER TO assistant_db_user;
+
 --
--- Name: welcome_message_pk_seq; Type: SEQUENCE; Schema: public;
+-- Name: welcome_message_pk_seq; Type: SEQUENCE; Schema: public; Owner: assistant_db_user
 --
 
 CREATE SEQUENCE public.welcome_message_pk_seq
@@ -131,13 +157,14 @@ CREATE SEQUENCE public.welcome_message_pk_seq
     CACHE 1;
 
 
+ALTER TABLE public.welcome_message_pk_seq OWNER TO assistant_db_user;
 
 SET default_tablespace = '';
 
 SET default_table_access_method = heap;
 
 --
--- Name: md_calendar_suggestion; Type: TABLE; Schema: public;
+-- Name: md_calendar_suggestion; Type: TABLE; Schema: public; Owner: assistant_db_user
 --
 
 CREATE TABLE public.md_calendar_suggestion (
@@ -160,9 +187,10 @@ CREATE TABLE public.md_calendar_suggestion (
 );
 
 
+ALTER TABLE public.md_calendar_suggestion OWNER TO assistant_db_user;
 
 --
--- Name: md_company_seq; Type: SEQUENCE; Schema: public;
+-- Name: md_company_seq; Type: SEQUENCE; Schema: public; Owner: assistant_db_user
 --
 
 CREATE SEQUENCE public.md_company_seq
@@ -173,9 +201,10 @@ CREATE SEQUENCE public.md_company_seq
     CACHE 1;
 
 
+ALTER TABLE public.md_company_seq OWNER TO assistant_db_user;
 
 --
--- Name: md_company; Type: TABLE; Schema: public;
+-- Name: md_company; Type: TABLE; Schema: public; Owner: assistant_db_user
 --
 
 CREATE TABLE public.md_company (
@@ -189,9 +218,10 @@ CREATE TABLE public.md_company (
 );
 
 
+ALTER TABLE public.md_company OWNER TO assistant_db_user;
 
 --
--- Name: md_device_seq; Type: SEQUENCE; Schema: public;
+-- Name: md_device_seq; Type: SEQUENCE; Schema: public; Owner: assistant_db_user
 --
 
 CREATE SEQUENCE public.md_device_seq
@@ -202,9 +232,10 @@ CREATE SEQUENCE public.md_device_seq
     CACHE 1;
 
 
+ALTER TABLE public.md_device_seq OWNER TO assistant_db_user;
 
 --
--- Name: md_device; Type: TABLE; Schema: public;
+-- Name: md_device; Type: TABLE; Schema: public; Owner: assistant_db_user
 --
 
 CREATE TABLE public.md_device (
@@ -216,9 +247,10 @@ CREATE TABLE public.md_device (
 );
 
 
+ALTER TABLE public.md_device OWNER TO assistant_db_user;
 
 --
--- Name: md_document_seq; Type: SEQUENCE; Schema: public;
+-- Name: md_document_seq; Type: SEQUENCE; Schema: public; Owner: assistant_db_user
 --
 
 CREATE SEQUENCE public.md_document_seq
@@ -229,9 +261,10 @@ CREATE SEQUENCE public.md_document_seq
     CACHE 1;
 
 
+ALTER TABLE public.md_document_seq OWNER TO assistant_db_user;
 
 --
--- Name: md_document; Type: TABLE; Schema: public;
+-- Name: md_document; Type: TABLE; Schema: public; Owner: assistant_db_user
 --
 
 CREATE TABLE public.md_document (
@@ -245,9 +278,10 @@ CREATE TABLE public.md_document (
 );
 
 
+ALTER TABLE public.md_document OWNER TO assistant_db_user;
 
 --
--- Name: md_document_chunk_seq; Type: SEQUENCE; Schema: public;
+-- Name: md_document_chunk_seq; Type: SEQUENCE; Schema: public; Owner: assistant_db_user
 --
 
 CREATE SEQUENCE public.md_document_chunk_seq
@@ -258,9 +292,10 @@ CREATE SEQUENCE public.md_document_chunk_seq
     CACHE 1;
 
 
+ALTER TABLE public.md_document_chunk_seq OWNER TO assistant_db_user;
 
 --
--- Name: md_document_chunk; Type: TABLE; Schema: public;
+-- Name: md_document_chunk; Type: TABLE; Schema: public; Owner: assistant_db_user
 --
 
 CREATE TABLE public.md_document_chunk (
@@ -273,9 +308,10 @@ CREATE TABLE public.md_document_chunk (
 );
 
 
+ALTER TABLE public.md_document_chunk OWNER TO assistant_db_user;
 
 --
--- Name: md_error_seq; Type: SEQUENCE; Schema: public;
+-- Name: md_error_seq; Type: SEQUENCE; Schema: public; Owner: assistant_db_user
 --
 
 CREATE SEQUENCE public.md_error_seq
@@ -286,9 +322,10 @@ CREATE SEQUENCE public.md_error_seq
     CACHE 1;
 
 
+ALTER TABLE public.md_error_seq OWNER TO assistant_db_user;
 
 --
--- Name: md_error; Type: TABLE; Schema: public;
+-- Name: md_error; Type: TABLE; Schema: public; Owner: assistant_db_user
 --
 
 CREATE TABLE public.md_error (
@@ -299,9 +336,10 @@ CREATE TABLE public.md_error (
 );
 
 
+ALTER TABLE public.md_error OWNER TO assistant_db_user;
 
 --
--- Name: md_evaluation_seq; Type: SEQUENCE; Schema: public;
+-- Name: md_evaluation_seq; Type: SEQUENCE; Schema: public; Owner: assistant_db_user
 --
 
 CREATE SEQUENCE public.md_evaluation_seq
@@ -312,9 +350,10 @@ CREATE SEQUENCE public.md_evaluation_seq
     CACHE 1;
 
 
+ALTER TABLE public.md_evaluation_seq OWNER TO assistant_db_user;
 
 --
--- Name: md_event_seq; Type: SEQUENCE; Schema: public;
+-- Name: md_event_seq; Type: SEQUENCE; Schema: public; Owner: assistant_db_user
 --
 
 CREATE SEQUENCE public.md_event_seq
@@ -325,9 +364,10 @@ CREATE SEQUENCE public.md_event_seq
     CACHE 1;
 
 
+ALTER TABLE public.md_event_seq OWNER TO assistant_db_user;
 
 --
--- Name: md_event; Type: TABLE; Schema: public;
+-- Name: md_event; Type: TABLE; Schema: public; Owner: assistant_db_user
 --
 
 CREATE TABLE public.md_event (
@@ -339,10 +379,10 @@ CREATE TABLE public.md_event (
 );
 
 
-
+ALTER TABLE public.md_event OWNER TO assistant_db_user;
 
 --
--- Name: md_home_chat; Type: TABLE; Schema: public;
+-- Name: md_home_chat; Type: TABLE; Schema: public; Owner: assistant_db_user
 --
 
 CREATE TABLE public.md_home_chat (
@@ -355,9 +395,10 @@ CREATE TABLE public.md_home_chat (
 );
 
 
+ALTER TABLE public.md_home_chat OWNER TO assistant_db_user;
 
 --
--- Name: md_message_seq; Type: SEQUENCE; Schema: public;
+-- Name: md_message_seq; Type: SEQUENCE; Schema: public; Owner: assistant_db_user
 --
 
 CREATE SEQUENCE public.md_message_seq
@@ -368,9 +409,10 @@ CREATE SEQUENCE public.md_message_seq
     CACHE 1;
 
 
+ALTER TABLE public.md_message_seq OWNER TO assistant_db_user;
 
 --
--- Name: md_message; Type: TABLE; Schema: public;
+-- Name: md_message; Type: TABLE; Schema: public; Owner: assistant_db_user
 --
 
 CREATE TABLE public.md_message (
@@ -386,9 +428,10 @@ CREATE TABLE public.md_message (
 );
 
 
+ALTER TABLE public.md_message OWNER TO assistant_db_user;
 
 --
--- Name: md_platform_seq; Type: SEQUENCE; Schema: public;
+-- Name: md_platform_seq; Type: SEQUENCE; Schema: public; Owner: assistant_db_user
 --
 
 CREATE SEQUENCE public.md_platform_seq
@@ -399,9 +442,10 @@ CREATE SEQUENCE public.md_platform_seq
     CACHE 1;
 
 
+ALTER TABLE public.md_platform_seq OWNER TO assistant_db_user;
 
 --
--- Name: md_platform; Type: TABLE; Schema: public;
+-- Name: md_platform; Type: TABLE; Schema: public; Owner: assistant_db_user
 --
 
 CREATE TABLE public.md_platform (
@@ -410,9 +454,10 @@ CREATE TABLE public.md_platform (
 );
 
 
+ALTER TABLE public.md_platform OWNER TO assistant_db_user;
 
 --
--- Name: md_predefined_action_displayed_data_seq; Type: SEQUENCE; Schema: public;
+-- Name: md_predefined_action_displayed_data_seq; Type: SEQUENCE; Schema: public; Owner: assistant_db_user
 --
 
 CREATE SEQUENCE public.md_predefined_action_displayed_data_seq
@@ -423,9 +468,10 @@ CREATE SEQUENCE public.md_predefined_action_displayed_data_seq
     CACHE 1;
 
 
+ALTER TABLE public.md_predefined_action_displayed_data_seq OWNER TO assistant_db_user;
 
 --
--- Name: md_predefined_action_displayed_data; Type: TABLE; Schema: public;
+-- Name: md_predefined_action_displayed_data; Type: TABLE; Schema: public; Owner: assistant_db_user
 --
 
 CREATE TABLE public.md_predefined_action_displayed_data (
@@ -436,9 +482,10 @@ CREATE TABLE public.md_predefined_action_displayed_data (
 );
 
 
+ALTER TABLE public.md_predefined_action_displayed_data OWNER TO assistant_db_user;
 
 --
--- Name: md_process_seq; Type: SEQUENCE; Schema: public;
+-- Name: md_process_seq; Type: SEQUENCE; Schema: public; Owner: assistant_db_user
 --
 
 CREATE SEQUENCE public.md_process_seq
@@ -449,9 +496,10 @@ CREATE SEQUENCE public.md_process_seq
     CACHE 1;
 
 
+ALTER TABLE public.md_process_seq OWNER TO assistant_db_user;
 
 --
--- Name: md_process_step_seq; Type: SEQUENCE; Schema: public;
+-- Name: md_process_step_seq; Type: SEQUENCE; Schema: public; Owner: assistant_db_user
 --
 
 CREATE SEQUENCE public.md_process_step_seq
@@ -462,9 +510,10 @@ CREATE SEQUENCE public.md_process_step_seq
     CACHE 1;
 
 
+ALTER TABLE public.md_process_step_seq OWNER TO assistant_db_user;
 
 --
--- Name: md_produced_text_seq; Type: SEQUENCE; Schema: public;
+-- Name: md_produced_text_seq; Type: SEQUENCE; Schema: public; Owner: assistant_db_user
 --
 
 CREATE SEQUENCE public.md_produced_text_seq
@@ -475,9 +524,10 @@ CREATE SEQUENCE public.md_produced_text_seq
     CACHE 1;
 
 
+ALTER TABLE public.md_produced_text_seq OWNER TO assistant_db_user;
 
 --
--- Name: md_produced_text; Type: TABLE; Schema: public;
+-- Name: md_produced_text; Type: TABLE; Schema: public; Owner: assistant_db_user
 --
 
 CREATE TABLE public.md_produced_text (
@@ -489,9 +539,10 @@ CREATE TABLE public.md_produced_text (
 );
 
 
+ALTER TABLE public.md_produced_text OWNER TO assistant_db_user;
 
 --
--- Name: md_produced_text_version_seq; Type: SEQUENCE; Schema: public;
+-- Name: md_produced_text_version_seq; Type: SEQUENCE; Schema: public; Owner: assistant_db_user
 --
 
 CREATE SEQUENCE public.md_produced_text_version_seq
@@ -502,9 +553,10 @@ CREATE SEQUENCE public.md_produced_text_version_seq
     CACHE 1;
 
 
+ALTER TABLE public.md_produced_text_version_seq OWNER TO assistant_db_user;
 
 --
--- Name: md_produced_text_version; Type: TABLE; Schema: public;
+-- Name: md_produced_text_version; Type: TABLE; Schema: public; Owner: assistant_db_user
 --
 
 CREATE TABLE public.md_produced_text_version (
@@ -519,9 +571,10 @@ CREATE TABLE public.md_produced_text_version (
 );
 
 
+ALTER TABLE public.md_produced_text_version OWNER TO assistant_db_user;
 
 --
--- Name: md_product_seq; Type: SEQUENCE; Schema: public;
+-- Name: md_product_seq; Type: SEQUENCE; Schema: public; Owner: assistant_db_user
 --
 
 CREATE SEQUENCE public.md_product_seq
@@ -532,9 +585,10 @@ CREATE SEQUENCE public.md_product_seq
     CACHE 1;
 
 
+ALTER TABLE public.md_product_seq OWNER TO assistant_db_user;
 
 --
--- Name: md_product; Type: TABLE; Schema: public;
+-- Name: md_product; Type: TABLE; Schema: public; Owner: assistant_db_user
 --
 
 CREATE TABLE public.md_product (
@@ -550,9 +604,10 @@ CREATE TABLE public.md_product (
 );
 
 
+ALTER TABLE public.md_product OWNER TO assistant_db_user;
 
 --
--- Name: md_product_category_pk_seq; Type: SEQUENCE; Schema: public;
+-- Name: md_product_category_pk_seq; Type: SEQUENCE; Schema: public; Owner: assistant_db_user
 --
 
 CREATE SEQUENCE public.md_product_category_pk_seq
@@ -563,9 +618,10 @@ CREATE SEQUENCE public.md_product_category_pk_seq
     CACHE 1;
 
 
+ALTER TABLE public.md_product_category_pk_seq OWNER TO assistant_db_user;
 
 --
--- Name: md_product_category; Type: TABLE; Schema: public;
+-- Name: md_product_category; Type: TABLE; Schema: public; Owner: assistant_db_user
 --
 
 CREATE TABLE public.md_product_category (
@@ -577,9 +633,10 @@ CREATE TABLE public.md_product_category (
 );
 
 
+ALTER TABLE public.md_product_category OWNER TO assistant_db_user;
 
 --
--- Name: md_product_category_displayed_data_seq; Type: SEQUENCE; Schema: public;
+-- Name: md_product_category_displayed_data_seq; Type: SEQUENCE; Schema: public; Owner: assistant_db_user
 --
 
 CREATE SEQUENCE public.md_product_category_displayed_data_seq
@@ -590,9 +647,10 @@ CREATE SEQUENCE public.md_product_category_displayed_data_seq
     CACHE 1;
 
 
+ALTER TABLE public.md_product_category_displayed_data_seq OWNER TO assistant_db_user;
 
 --
--- Name: md_product_category_displayed_data; Type: TABLE; Schema: public;
+-- Name: md_product_category_displayed_data; Type: TABLE; Schema: public; Owner: assistant_db_user
 --
 
 CREATE TABLE public.md_product_category_displayed_data (
@@ -604,9 +662,10 @@ CREATE TABLE public.md_product_category_displayed_data (
 );
 
 
+ALTER TABLE public.md_product_category_displayed_data OWNER TO assistant_db_user;
 
 --
--- Name: md_product_displayed_data_seq; Type: SEQUENCE; Schema: public;
+-- Name: md_product_displayed_data_seq; Type: SEQUENCE; Schema: public; Owner: assistant_db_user
 --
 
 CREATE SEQUENCE public.md_product_displayed_data_seq
@@ -617,9 +676,10 @@ CREATE SEQUENCE public.md_product_displayed_data_seq
     CACHE 1;
 
 
+ALTER TABLE public.md_product_displayed_data_seq OWNER TO assistant_db_user;
 
 --
--- Name: md_product_displayed_data; Type: TABLE; Schema: public;
+-- Name: md_product_displayed_data; Type: TABLE; Schema: public; Owner: assistant_db_user
 --
 
 CREATE TABLE public.md_product_displayed_data (
@@ -630,9 +690,10 @@ CREATE TABLE public.md_product_displayed_data (
 );
 
 
+ALTER TABLE public.md_product_displayed_data OWNER TO assistant_db_user;
 
 --
--- Name: md_product_task_seq; Type: SEQUENCE; Schema: public;
+-- Name: md_product_task_seq; Type: SEQUENCE; Schema: public; Owner: assistant_db_user
 --
 
 CREATE SEQUENCE public.md_product_task_seq
@@ -643,9 +704,10 @@ CREATE SEQUENCE public.md_product_task_seq
     CACHE 1;
 
 
+ALTER TABLE public.md_product_task_seq OWNER TO assistant_db_user;
 
 --
--- Name: md_product_task; Type: TABLE; Schema: public;
+-- Name: md_product_task; Type: TABLE; Schema: public; Owner: assistant_db_user
 --
 
 CREATE TABLE public.md_product_task (
@@ -655,8 +717,10 @@ CREATE TABLE public.md_product_task (
 );
 
 
+ALTER TABLE public.md_product_task OWNER TO assistant_db_user;
+
 --
--- Name: md_purchase_seq; Type: SEQUENCE; Schema: public;
+-- Name: md_purchase_seq; Type: SEQUENCE; Schema: public; Owner: assistant_db_user
 --
 
 CREATE SEQUENCE public.md_purchase_seq
@@ -667,9 +731,10 @@ CREATE SEQUENCE public.md_purchase_seq
     CACHE 1;
 
 
+ALTER TABLE public.md_purchase_seq OWNER TO assistant_db_user;
 
 --
--- Name: md_purchase; Type: TABLE; Schema: public;
+-- Name: md_purchase; Type: TABLE; Schema: public; Owner: assistant_db_user
 --
 
 CREATE TABLE public.md_purchase (
@@ -688,8 +753,10 @@ CREATE TABLE public.md_purchase (
 );
 
 
+ALTER TABLE public.md_purchase OWNER TO assistant_db_user;
+
 --
--- Name: md_session; Type: TABLE; Schema: public;
+-- Name: md_session; Type: TABLE; Schema: public; Owner: assistant_db_user
 --
 
 CREATE TABLE public.md_session (
@@ -705,9 +772,10 @@ CREATE TABLE public.md_session (
 );
 
 
+ALTER TABLE public.md_session OWNER TO assistant_db_user;
 
 --
--- Name: md_task_seq; Type: SEQUENCE; Schema: public;
+-- Name: md_task_seq; Type: SEQUENCE; Schema: public; Owner: assistant_db_user
 --
 
 CREATE SEQUENCE public.md_task_seq
@@ -718,14 +786,15 @@ CREATE SEQUENCE public.md_task_seq
     CACHE 1;
 
 
+ALTER TABLE public.md_task_seq OWNER TO assistant_db_user;
 
 --
--- Name: md_task; Type: TABLE; Schema: public;
+-- Name: md_task; Type: TABLE; Schema: public; Owner: assistant_db_user
 --
 
 CREATE TABLE public.md_task (
     task_pk integer DEFAULT nextval('public.md_task_seq'::regclass) NOT NULL,
-    type public._task_type NOT NULL default 'instruct',
+    type public._task_type DEFAULT 'instruct'::public._task_type NOT NULL,
     name_for_system character varying(255) NOT NULL,
     definition_for_system text NOT NULL,
     final_instruction text,
@@ -738,9 +807,10 @@ CREATE TABLE public.md_task (
 );
 
 
+ALTER TABLE public.md_task OWNER TO assistant_db_user;
 
 --
--- Name: md_task_displayed_data_seq; Type: SEQUENCE; Schema: public;
+-- Name: md_task_displayed_data_seq; Type: SEQUENCE; Schema: public; Owner: assistant_db_user
 --
 
 CREATE SEQUENCE public.md_task_displayed_data_seq
@@ -751,9 +821,10 @@ CREATE SEQUENCE public.md_task_displayed_data_seq
     CACHE 1;
 
 
+ALTER TABLE public.md_task_displayed_data_seq OWNER TO assistant_db_user;
 
 --
--- Name: md_task_displayed_data; Type: TABLE; Schema: public;
+-- Name: md_task_displayed_data; Type: TABLE; Schema: public; Owner: assistant_db_user
 --
 
 CREATE TABLE public.md_task_displayed_data (
@@ -766,9 +837,10 @@ CREATE TABLE public.md_task_displayed_data (
 );
 
 
+ALTER TABLE public.md_task_displayed_data OWNER TO assistant_db_user;
 
 --
--- Name: md_task_platform_association_seq; Type: SEQUENCE; Schema: public;
+-- Name: md_task_platform_association_seq; Type: SEQUENCE; Schema: public; Owner: assistant_db_user
 --
 
 CREATE SEQUENCE public.md_task_platform_association_seq
@@ -779,9 +851,10 @@ CREATE SEQUENCE public.md_task_platform_association_seq
     CACHE 1;
 
 
+ALTER TABLE public.md_task_platform_association_seq OWNER TO assistant_db_user;
 
 --
--- Name: md_task_platform_association; Type: TABLE; Schema: public;
+-- Name: md_task_platform_association; Type: TABLE; Schema: public; Owner: assistant_db_user
 --
 
 CREATE TABLE public.md_task_platform_association (
@@ -791,9 +864,10 @@ CREATE TABLE public.md_task_platform_association (
 );
 
 
+ALTER TABLE public.md_task_platform_association OWNER TO assistant_db_user;
 
 --
--- Name: md_task_predefined_action_association_seq; Type: SEQUENCE; Schema: public;
+-- Name: md_task_predefined_action_association_seq; Type: SEQUENCE; Schema: public; Owner: assistant_db_user
 --
 
 CREATE SEQUENCE public.md_task_predefined_action_association_seq
@@ -804,9 +878,10 @@ CREATE SEQUENCE public.md_task_predefined_action_association_seq
     CACHE 1;
 
 
+ALTER TABLE public.md_task_predefined_action_association_seq OWNER TO assistant_db_user;
 
 --
--- Name: md_task_predefined_action_association; Type: TABLE; Schema: public;
+-- Name: md_task_predefined_action_association; Type: TABLE; Schema: public; Owner: assistant_db_user
 --
 
 CREATE TABLE public.md_task_predefined_action_association (
@@ -816,9 +891,10 @@ CREATE TABLE public.md_task_predefined_action_association (
 );
 
 
+ALTER TABLE public.md_task_predefined_action_association OWNER TO assistant_db_user;
 
 --
--- Name: md_task_tool_association_seq; Type: SEQUENCE; Schema: public;
+-- Name: md_task_tool_association_seq; Type: SEQUENCE; Schema: public; Owner: assistant_db_user
 --
 
 CREATE SEQUENCE public.md_task_tool_association_seq
@@ -829,9 +905,10 @@ CREATE SEQUENCE public.md_task_tool_association_seq
     CACHE 1;
 
 
+ALTER TABLE public.md_task_tool_association_seq OWNER TO assistant_db_user;
 
 --
--- Name: md_task_tool_association; Type: TABLE; Schema: public;
+-- Name: md_task_tool_association; Type: TABLE; Schema: public; Owner: assistant_db_user
 --
 
 CREATE TABLE public.md_task_tool_association (
@@ -842,9 +919,10 @@ CREATE TABLE public.md_task_tool_association (
 );
 
 
+ALTER TABLE public.md_task_tool_association OWNER TO assistant_db_user;
 
 --
--- Name: md_task_tool_execution_seq; Type: SEQUENCE; Schema: public;
+-- Name: md_task_tool_execution_seq; Type: SEQUENCE; Schema: public; Owner: assistant_db_user
 --
 
 CREATE SEQUENCE public.md_task_tool_execution_seq
@@ -855,9 +933,10 @@ CREATE SEQUENCE public.md_task_tool_execution_seq
     CACHE 1;
 
 
+ALTER TABLE public.md_task_tool_execution_seq OWNER TO assistant_db_user;
 
 --
--- Name: md_task_tool_execution; Type: TABLE; Schema: public;
+-- Name: md_task_tool_execution; Type: TABLE; Schema: public; Owner: assistant_db_user
 --
 
 CREATE TABLE public.md_task_tool_execution (
@@ -868,9 +947,10 @@ CREATE TABLE public.md_task_tool_execution (
 );
 
 
+ALTER TABLE public.md_task_tool_execution OWNER TO assistant_db_user;
 
 --
--- Name: md_task_tool_query_seq; Type: SEQUENCE; Schema: public;
+-- Name: md_task_tool_query_seq; Type: SEQUENCE; Schema: public; Owner: assistant_db_user
 --
 
 CREATE SEQUENCE public.md_task_tool_query_seq
@@ -881,9 +961,10 @@ CREATE SEQUENCE public.md_task_tool_query_seq
     CACHE 1;
 
 
+ALTER TABLE public.md_task_tool_query_seq OWNER TO assistant_db_user;
 
 --
--- Name: md_task_tool_query; Type: TABLE; Schema: public;
+-- Name: md_task_tool_query; Type: TABLE; Schema: public; Owner: assistant_db_user
 --
 
 CREATE TABLE public.md_task_tool_query (
@@ -896,9 +977,10 @@ CREATE TABLE public.md_task_tool_query (
 );
 
 
+ALTER TABLE public.md_task_tool_query OWNER TO assistant_db_user;
 
 --
--- Name: md_text_edit_action_seq; Type: SEQUENCE; Schema: public;
+-- Name: md_text_edit_action_seq; Type: SEQUENCE; Schema: public; Owner: assistant_db_user
 --
 
 CREATE SEQUENCE public.md_text_edit_action_seq
@@ -909,9 +991,10 @@ CREATE SEQUENCE public.md_text_edit_action_seq
     CACHE 1;
 
 
+ALTER TABLE public.md_text_edit_action_seq OWNER TO assistant_db_user;
 
 --
--- Name: md_text_edit_action; Type: TABLE; Schema: public;
+-- Name: md_text_edit_action; Type: TABLE; Schema: public; Owner: assistant_db_user
 --
 
 CREATE TABLE public.md_text_edit_action (
@@ -921,9 +1004,10 @@ CREATE TABLE public.md_text_edit_action (
 );
 
 
+ALTER TABLE public.md_text_edit_action OWNER TO assistant_db_user;
 
 --
--- Name: md_text_edit_action_displayed_data_seq; Type: SEQUENCE; Schema: public;
+-- Name: md_text_edit_action_displayed_data_seq; Type: SEQUENCE; Schema: public; Owner: assistant_db_user
 --
 
 CREATE SEQUENCE public.md_text_edit_action_displayed_data_seq
@@ -934,9 +1018,10 @@ CREATE SEQUENCE public.md_text_edit_action_displayed_data_seq
     CACHE 1;
 
 
+ALTER TABLE public.md_text_edit_action_displayed_data_seq OWNER TO assistant_db_user;
 
 --
--- Name: md_text_edit_action_displayed_data; Type: TABLE; Schema: public;
+-- Name: md_text_edit_action_displayed_data; Type: TABLE; Schema: public; Owner: assistant_db_user
 --
 
 CREATE TABLE public.md_text_edit_action_displayed_data (
@@ -948,9 +1033,10 @@ CREATE TABLE public.md_text_edit_action_displayed_data (
 );
 
 
+ALTER TABLE public.md_text_edit_action_displayed_data OWNER TO assistant_db_user;
 
 --
--- Name: md_text_edit_action_text_type_association_seq; Type: SEQUENCE; Schema: public;
+-- Name: md_text_edit_action_text_type_association_seq; Type: SEQUENCE; Schema: public; Owner: assistant_db_user
 --
 
 CREATE SEQUENCE public.md_text_edit_action_text_type_association_seq
@@ -961,9 +1047,10 @@ CREATE SEQUENCE public.md_text_edit_action_text_type_association_seq
     CACHE 1;
 
 
+ALTER TABLE public.md_text_edit_action_text_type_association_seq OWNER TO assistant_db_user;
 
 --
--- Name: md_text_edit_action_text_type_association; Type: TABLE; Schema: public;
+-- Name: md_text_edit_action_text_type_association; Type: TABLE; Schema: public; Owner: assistant_db_user
 --
 
 CREATE TABLE public.md_text_edit_action_text_type_association (
@@ -973,9 +1060,10 @@ CREATE TABLE public.md_text_edit_action_text_type_association (
 );
 
 
+ALTER TABLE public.md_text_edit_action_text_type_association OWNER TO assistant_db_user;
 
 --
--- Name: md_text_type_seq; Type: SEQUENCE; Schema: public;
+-- Name: md_text_type_seq; Type: SEQUENCE; Schema: public; Owner: assistant_db_user
 --
 
 CREATE SEQUENCE public.md_text_type_seq
@@ -986,9 +1074,10 @@ CREATE SEQUENCE public.md_text_type_seq
     CACHE 1;
 
 
+ALTER TABLE public.md_text_type_seq OWNER TO assistant_db_user;
 
 --
--- Name: md_text_type; Type: TABLE; Schema: public;
+-- Name: md_text_type; Type: TABLE; Schema: public; Owner: assistant_db_user
 --
 
 CREATE TABLE public.md_text_type (
@@ -997,9 +1086,10 @@ CREATE TABLE public.md_text_type (
 );
 
 
+ALTER TABLE public.md_text_type OWNER TO assistant_db_user;
 
 --
--- Name: md_todo_seq; Type: SEQUENCE; Schema: public;
+-- Name: md_todo_seq; Type: SEQUENCE; Schema: public; Owner: assistant_db_user
 --
 
 CREATE SEQUENCE public.md_todo_seq
@@ -1010,9 +1100,10 @@ CREATE SEQUENCE public.md_todo_seq
     CACHE 1;
 
 
+ALTER TABLE public.md_todo_seq OWNER TO assistant_db_user;
 
 --
--- Name: md_todo; Type: TABLE; Schema: public;
+-- Name: md_todo; Type: TABLE; Schema: public; Owner: assistant_db_user
 --
 
 CREATE TABLE public.md_todo (
@@ -1028,9 +1119,10 @@ CREATE TABLE public.md_todo (
 );
 
 
+ALTER TABLE public.md_todo OWNER TO assistant_db_user;
 
 --
--- Name: md_todo_scheduling; Type: TABLE; Schema: public;
+-- Name: md_todo_scheduling; Type: TABLE; Schema: public; Owner: assistant_db_user
 --
 
 CREATE TABLE public.md_todo_scheduling (
@@ -1042,9 +1134,10 @@ CREATE TABLE public.md_todo_scheduling (
 );
 
 
+ALTER TABLE public.md_todo_scheduling OWNER TO assistant_db_user;
 
 --
--- Name: md_todo_scheduling_seq; Type: SEQUENCE; Schema: public;
+-- Name: md_todo_scheduling_seq; Type: SEQUENCE; Schema: public; Owner: assistant_db_user
 --
 
 CREATE SEQUENCE public.md_todo_scheduling_seq
@@ -1055,9 +1148,10 @@ CREATE SEQUENCE public.md_todo_scheduling_seq
     CACHE 1;
 
 
+ALTER TABLE public.md_todo_scheduling_seq OWNER TO assistant_db_user;
 
 --
--- Name: md_tool_seq; Type: SEQUENCE; Schema: public;
+-- Name: md_tool_seq; Type: SEQUENCE; Schema: public; Owner: assistant_db_user
 --
 
 CREATE SEQUENCE public.md_tool_seq
@@ -1068,9 +1162,10 @@ CREATE SEQUENCE public.md_tool_seq
     CACHE 1;
 
 
+ALTER TABLE public.md_tool_seq OWNER TO assistant_db_user;
 
 --
--- Name: md_tool; Type: TABLE; Schema: public;
+-- Name: md_tool; Type: TABLE; Schema: public; Owner: assistant_db_user
 --
 
 CREATE TABLE public.md_tool (
@@ -1080,9 +1175,10 @@ CREATE TABLE public.md_tool (
 );
 
 
+ALTER TABLE public.md_tool OWNER TO assistant_db_user;
 
 --
--- Name: md_tool_execution_seq; Type: SEQUENCE; Schema: public;
+-- Name: md_tool_execution_seq; Type: SEQUENCE; Schema: public; Owner: assistant_db_user
 --
 
 CREATE SEQUENCE public.md_tool_execution_seq
@@ -1093,9 +1189,10 @@ CREATE SEQUENCE public.md_tool_execution_seq
     CACHE 1;
 
 
+ALTER TABLE public.md_tool_execution_seq OWNER TO assistant_db_user;
 
 --
--- Name: md_user; Type: TABLE; Schema: public;
+-- Name: md_user; Type: TABLE; Schema: public; Owner: assistant_db_user
 --
 
 CREATE TABLE public.md_user (
@@ -1122,9 +1219,10 @@ CREATE TABLE public.md_user (
 );
 
 
+ALTER TABLE public.md_user OWNER TO assistant_db_user;
 
 --
--- Name: md_user_task_seq; Type: SEQUENCE; Schema: public;
+-- Name: md_user_task_seq; Type: SEQUENCE; Schema: public; Owner: assistant_db_user
 --
 
 CREATE SEQUENCE public.md_user_task_seq
@@ -1135,9 +1233,10 @@ CREATE SEQUENCE public.md_user_task_seq
     CACHE 1;
 
 
+ALTER TABLE public.md_user_task_seq OWNER TO assistant_db_user;
 
 --
--- Name: md_user_task; Type: TABLE; Schema: public;
+-- Name: md_user_task; Type: TABLE; Schema: public; Owner: assistant_db_user
 --
 
 CREATE TABLE public.md_user_task (
@@ -1148,9 +1247,10 @@ CREATE TABLE public.md_user_task (
 );
 
 
+ALTER TABLE public.md_user_task OWNER TO assistant_db_user;
 
 --
--- Name: md_user_task_execution_seq; Type: SEQUENCE; Schema: public;
+-- Name: md_user_task_execution_seq; Type: SEQUENCE; Schema: public; Owner: assistant_db_user
 --
 
 CREATE SEQUENCE public.md_user_task_execution_seq
@@ -1161,9 +1261,10 @@ CREATE SEQUENCE public.md_user_task_execution_seq
     CACHE 1;
 
 
+ALTER TABLE public.md_user_task_execution_seq OWNER TO assistant_db_user;
 
 --
--- Name: md_user_task_execution; Type: TABLE; Schema: public;
+-- Name: md_user_task_execution; Type: TABLE; Schema: public; Owner: assistant_db_user
 --
 
 CREATE TABLE public.md_user_task_execution (
@@ -1183,9 +1284,10 @@ CREATE TABLE public.md_user_task_execution (
 );
 
 
+ALTER TABLE public.md_user_task_execution OWNER TO assistant_db_user;
 
 --
--- Name: md_user_task_preference_seq; Type: SEQUENCE; Schema: public;
+-- Name: md_user_task_preference_seq; Type: SEQUENCE; Schema: public; Owner: assistant_db_user
 --
 
 CREATE SEQUENCE public.md_user_task_preference_seq
@@ -1196,9 +1298,10 @@ CREATE SEQUENCE public.md_user_task_preference_seq
     CACHE 1;
 
 
+ALTER TABLE public.md_user_task_preference_seq OWNER TO assistant_db_user;
 
 --
--- Name: md_user_vocabulary_pk_seq; Type: SEQUENCE; Schema: public;
+-- Name: md_user_vocabulary_pk_seq; Type: SEQUENCE; Schema: public; Owner: assistant_db_user
 --
 
 CREATE SEQUENCE public.md_user_vocabulary_pk_seq
@@ -1209,9 +1312,10 @@ CREATE SEQUENCE public.md_user_vocabulary_pk_seq
     CACHE 1;
 
 
+ALTER TABLE public.md_user_vocabulary_pk_seq OWNER TO assistant_db_user;
 
 --
--- Name: md_user_vocabulary; Type: TABLE; Schema: public;
+-- Name: md_user_vocabulary; Type: TABLE; Schema: public; Owner: assistant_db_user
 --
 
 CREATE TABLE public.md_user_vocabulary (
@@ -1222,9 +1326,12 @@ CREATE TABLE public.md_user_vocabulary (
 );
 
 
+ALTER TABLE public.md_user_vocabulary OWNER TO assistant_db_user;
+
 --
--- Name: md_user_workflow_step_execution_seq; Type: SEQUENCE; Schema: public;
+-- Name: md_user_workflow_step_execution_seq; Type: SEQUENCE; Schema: public; Owner: assistant_db_user
 --
+
 CREATE SEQUENCE public.md_user_workflow_step_execution_seq
     START WITH 1
     INCREMENT BY 1
@@ -1232,24 +1339,58 @@ CREATE SEQUENCE public.md_user_workflow_step_execution_seq
     NO MAXVALUE
     CACHE 1;
 
+
+ALTER TABLE public.md_user_workflow_step_execution_seq OWNER TO assistant_db_user;
+
 --
--- Name: md_user_workflow_step_execution; Type: TABLE; Schema: public;
+-- Name: md_user_workflow_step_execution; Type: TABLE; Schema: public; Owner: assistant_db_user
 --
+
 CREATE TABLE public.md_user_workflow_step_execution (
     user_workflow_step_execution_pk integer DEFAULT nextval('public.md_user_workflow_step_execution_seq'::regclass) NOT NULL,
     user_task_execution_fk integer NOT NULL,
     workflow_step_fk integer NOT NULL,
-    creation_date timestamp without time zone NOT NULL DEFAULT now(),
+    creation_date timestamp without time zone DEFAULT now() NOT NULL,
     parameter json NOT NULL,
-    result json,
     validated boolean,
     learned_instruction text,
     error_status json
 );
 
 
+ALTER TABLE public.md_user_workflow_step_execution OWNER TO assistant_db_user;
+
 --
--- Name md_workflow_step_seq; Type: SEQUENCE; Schema: public;
+-- Name: md_user_workflow_step_execution_result_seq; Type: SEQUENCE; Schema: public; Owner: assistant_db_user
+--
+
+CREATE SEQUENCE public.md_user_workflow_step_execution_result_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.md_user_workflow_step_execution_result_seq OWNER TO assistant_db_user;
+
+--
+-- Name: md_user_workflow_step_execution_result; Type: TABLE; Schema: public; Owner: assistant_db_user
+--
+
+CREATE TABLE public.md_user_workflow_step_execution_result (
+    user_workflow_step_execution_result_pk integer DEFAULT nextval('public.md_user_workflow_step_execution_result_seq'::regclass) NOT NULL,
+    user_workflow_step_execution_fk integer NOT NULL,
+    creation_date timestamp without time zone DEFAULT now() NOT NULL,
+    result json NOT NULL,
+    author public._step_result_author DEFAULT 'assistant'::public._step_result_author NOT NULL
+);
+
+
+ALTER TABLE public.md_user_workflow_step_execution_result OWNER TO assistant_db_user;
+
+--
+-- Name: md_workflow_step_seq; Type: SEQUENCE; Schema: public; Owner: assistant_db_user
 --
 
 CREATE SEQUENCE public.md_workflow_step_seq
@@ -1259,19 +1400,26 @@ CREATE SEQUENCE public.md_workflow_step_seq
     NO MAXVALUE
     CACHE 1;
 
+
+ALTER TABLE public.md_workflow_step_seq OWNER TO assistant_db_user;
+
 --
--- Name: md_workflow_step; Type: TABLE; Schema: public;
+-- Name: md_workflow_step; Type: TABLE; Schema: public; Owner: assistant_db_user
 --
+
 CREATE TABLE public.md_workflow_step (
     workflow_step_pk integer DEFAULT nextval('public.md_workflow_step_seq'::regclass) NOT NULL,
     task_fk integer NOT NULL,
     name_for_system character varying(255) NOT NULL,
     rank integer NOT NULL,
-    user_validation_required boolean not null default true
+    user_validation_required boolean DEFAULT true NOT NULL
 );
 
+
+ALTER TABLE public.md_workflow_step OWNER TO assistant_db_user;
+
 --
--- Name: md_workflow_step_displayed_data_seq; Type: SEQUENCE; Schema: public;
+-- Name: md_workflow_step_displayed_data_seq; Type: SEQUENCE; Schema: public; Owner: assistant_db_user
 --
 
 CREATE SEQUENCE public.md_workflow_step_displayed_data_seq
@@ -1282,8 +1430,10 @@ CREATE SEQUENCE public.md_workflow_step_displayed_data_seq
     CACHE 1;
 
 
+ALTER TABLE public.md_workflow_step_displayed_data_seq OWNER TO assistant_db_user;
+
 --
--- Name: md_workflow_step_displayed_data; Type: TABLE; Schema: public;
+-- Name: md_workflow_step_displayed_data; Type: TABLE; Schema: public; Owner: assistant_db_user
 --
 
 CREATE TABLE public.md_workflow_step_displayed_data (
@@ -1294,8 +1444,11 @@ CREATE TABLE public.md_workflow_step_displayed_data (
     definition_for_user text NOT NULL
 );
 
+
+ALTER TABLE public.md_workflow_step_displayed_data OWNER TO assistant_db_user;
+
 --
--- Name: md_device device_pkey; Type: CONSTRAINT; Schema: public;
+-- Name: md_device device_pkey; Type: CONSTRAINT; Schema: public; Owner: assistant_db_user
 --
 
 ALTER TABLE ONLY public.md_device
@@ -1303,7 +1456,7 @@ ALTER TABLE ONLY public.md_device
 
 
 --
--- Name: md_error error_pkey; Type: CONSTRAINT; Schema: public;
+-- Name: md_error error_pkey; Type: CONSTRAINT; Schema: public; Owner: assistant_db_user
 --
 
 ALTER TABLE ONLY public.md_error
@@ -1311,7 +1464,7 @@ ALTER TABLE ONLY public.md_error
 
 
 --
--- Name: md_event event_pkey; Type: CONSTRAINT; Schema: public;
+-- Name: md_event event_pkey; Type: CONSTRAINT; Schema: public; Owner: assistant_db_user
 --
 
 ALTER TABLE ONLY public.md_event
@@ -1319,7 +1472,7 @@ ALTER TABLE ONLY public.md_event
 
 
 --
--- Name: md_company md_company_pkey; Type: CONSTRAINT; Schema: public;
+-- Name: md_company md_company_pkey; Type: CONSTRAINT; Schema: public; Owner: assistant_db_user
 --
 
 ALTER TABLE ONLY public.md_company
@@ -1327,7 +1480,7 @@ ALTER TABLE ONLY public.md_company
 
 
 --
--- Name: md_document_chunk md_document_chunk_pkey; Type: CONSTRAINT; Schema: public;
+-- Name: md_document_chunk md_document_chunk_pkey; Type: CONSTRAINT; Schema: public; Owner: assistant_db_user
 --
 
 ALTER TABLE ONLY public.md_document_chunk
@@ -1335,7 +1488,7 @@ ALTER TABLE ONLY public.md_document_chunk
 
 
 --
--- Name: md_document md_document_pkey; Type: CONSTRAINT; Schema: public;
+-- Name: md_document md_document_pkey; Type: CONSTRAINT; Schema: public; Owner: assistant_db_user
 --
 
 ALTER TABLE ONLY public.md_document
@@ -1343,7 +1496,7 @@ ALTER TABLE ONLY public.md_document
 
 
 --
--- Name: md_home_chat md_home_chat_pkey; Type: CONSTRAINT; Schema: public;
+-- Name: md_home_chat md_home_chat_pkey; Type: CONSTRAINT; Schema: public; Owner: assistant_db_user
 --
 
 ALTER TABLE ONLY public.md_home_chat
@@ -1351,7 +1504,7 @@ ALTER TABLE ONLY public.md_home_chat
 
 
 --
--- Name: md_platform md_platform_pkey; Type: CONSTRAINT; Schema: public;
+-- Name: md_platform md_platform_pkey; Type: CONSTRAINT; Schema: public; Owner: assistant_db_user
 --
 
 ALTER TABLE ONLY public.md_platform
@@ -1359,7 +1512,7 @@ ALTER TABLE ONLY public.md_platform
 
 
 --
--- Name: md_predefined_action_displayed_data md_predefined_action_displayed_data_pkey; Type: CONSTRAINT; Schema: public;
+-- Name: md_predefined_action_displayed_data md_predefined_action_displayed_data_pkey; Type: CONSTRAINT; Schema: public; Owner: assistant_db_user
 --
 
 ALTER TABLE ONLY public.md_predefined_action_displayed_data
@@ -1367,7 +1520,7 @@ ALTER TABLE ONLY public.md_predefined_action_displayed_data
 
 
 --
--- Name: md_product_category_displayed_data md_product_category_displayed_data_pkey; Type: CONSTRAINT; Schema: public;
+-- Name: md_product_category_displayed_data md_product_category_displayed_data_pkey; Type: CONSTRAINT; Schema: public; Owner: assistant_db_user
 --
 
 ALTER TABLE ONLY public.md_product_category_displayed_data
@@ -1375,7 +1528,7 @@ ALTER TABLE ONLY public.md_product_category_displayed_data
 
 
 --
--- Name: md_product_category md_product_category_pkey; Type: CONSTRAINT; Schema: public;
+-- Name: md_product_category md_product_category_pkey; Type: CONSTRAINT; Schema: public; Owner: assistant_db_user
 --
 
 ALTER TABLE ONLY public.md_product_category
@@ -1383,7 +1536,7 @@ ALTER TABLE ONLY public.md_product_category
 
 
 --
--- Name: md_product_displayed_data md_product_displayed_data_pkey; Type: CONSTRAINT; Schema: public;
+-- Name: md_product_displayed_data md_product_displayed_data_pkey; Type: CONSTRAINT; Schema: public; Owner: assistant_db_user
 --
 
 ALTER TABLE ONLY public.md_product_displayed_data
@@ -1391,7 +1544,7 @@ ALTER TABLE ONLY public.md_product_displayed_data
 
 
 --
--- Name: md_task_displayed_data md_task_displayed_data_pkey; Type: CONSTRAINT; Schema: public;
+-- Name: md_task_displayed_data md_task_displayed_data_pkey; Type: CONSTRAINT; Schema: public; Owner: assistant_db_user
 --
 
 ALTER TABLE ONLY public.md_task_displayed_data
@@ -1399,7 +1552,7 @@ ALTER TABLE ONLY public.md_task_displayed_data
 
 
 --
--- Name: md_task_platform_association md_task_platform_association_pkey; Type: CONSTRAINT; Schema: public;
+-- Name: md_task_platform_association md_task_platform_association_pkey; Type: CONSTRAINT; Schema: public; Owner: assistant_db_user
 --
 
 ALTER TABLE ONLY public.md_task_platform_association
@@ -1407,7 +1560,7 @@ ALTER TABLE ONLY public.md_task_platform_association
 
 
 --
--- Name: md_task_predefined_action_association md_task_predefined_action_association_pkey; Type: CONSTRAINT; Schema: public;
+-- Name: md_task_predefined_action_association md_task_predefined_action_association_pkey; Type: CONSTRAINT; Schema: public; Owner: assistant_db_user
 --
 
 ALTER TABLE ONLY public.md_task_predefined_action_association
@@ -1415,7 +1568,7 @@ ALTER TABLE ONLY public.md_task_predefined_action_association
 
 
 --
--- Name: md_task_tool_query md_task_tool_query_pkey; Type: CONSTRAINT; Schema: public;
+-- Name: md_task_tool_query md_task_tool_query_pkey; Type: CONSTRAINT; Schema: public; Owner: assistant_db_user
 --
 
 ALTER TABLE ONLY public.md_task_tool_query
@@ -1423,7 +1576,7 @@ ALTER TABLE ONLY public.md_task_tool_query
 
 
 --
--- Name: md_text_edit_action_displayed_data md_text_edit_action_displayed_data_pkey; Type: CONSTRAINT; Schema: public;
+-- Name: md_text_edit_action_displayed_data md_text_edit_action_displayed_data_pkey; Type: CONSTRAINT; Schema: public; Owner: assistant_db_user
 --
 
 ALTER TABLE ONLY public.md_text_edit_action_displayed_data
@@ -1431,7 +1584,7 @@ ALTER TABLE ONLY public.md_text_edit_action_displayed_data
 
 
 --
--- Name: md_text_edit_action md_text_edit_action_pkey; Type: CONSTRAINT; Schema: public;
+-- Name: md_text_edit_action md_text_edit_action_pkey; Type: CONSTRAINT; Schema: public; Owner: assistant_db_user
 --
 
 ALTER TABLE ONLY public.md_text_edit_action
@@ -1439,7 +1592,7 @@ ALTER TABLE ONLY public.md_text_edit_action
 
 
 --
--- Name: md_text_edit_action_text_type_association md_text_edit_action_text_type_association_pkey; Type: CONSTRAINT; Schema: public;
+-- Name: md_text_edit_action_text_type_association md_text_edit_action_text_type_association_pkey; Type: CONSTRAINT; Schema: public; Owner: assistant_db_user
 --
 
 ALTER TABLE ONLY public.md_text_edit_action_text_type_association
@@ -1447,7 +1600,7 @@ ALTER TABLE ONLY public.md_text_edit_action_text_type_association
 
 
 --
--- Name: md_text_type md_text_type_pkey; Type: CONSTRAINT; Schema: public;
+-- Name: md_text_type md_text_type_pkey; Type: CONSTRAINT; Schema: public; Owner: assistant_db_user
 --
 
 ALTER TABLE ONLY public.md_text_type
@@ -1455,7 +1608,7 @@ ALTER TABLE ONLY public.md_text_type
 
 
 --
--- Name: md_todo md_todo_pkey; Type: CONSTRAINT; Schema: public;
+-- Name: md_todo md_todo_pkey; Type: CONSTRAINT; Schema: public; Owner: assistant_db_user
 --
 
 ALTER TABLE ONLY public.md_todo
@@ -1463,7 +1616,7 @@ ALTER TABLE ONLY public.md_todo
 
 
 --
--- Name: md_todo_scheduling md_todo_scheduling_pkey; Type: CONSTRAINT; Schema: public;
+-- Name: md_todo_scheduling md_todo_scheduling_pkey; Type: CONSTRAINT; Schema: public; Owner: assistant_db_user
 --
 
 ALTER TABLE ONLY public.md_todo_scheduling
@@ -1471,7 +1624,7 @@ ALTER TABLE ONLY public.md_todo_scheduling
 
 
 --
--- Name: md_user_vocabulary md_user_vocabulary_pkey; Type: CONSTRAINT; Schema: public;
+-- Name: md_user_vocabulary md_user_vocabulary_pkey; Type: CONSTRAINT; Schema: public; Owner: assistant_db_user
 --
 
 ALTER TABLE ONLY public.md_user_vocabulary
@@ -1479,147 +1632,7 @@ ALTER TABLE ONLY public.md_user_vocabulary
 
 
 --
--- Name: md_calendar_suggestion md_welcome_message_pkey; Type: CONSTRAINT; Schema: public;
---
-
-ALTER TABLE ONLY public.md_calendar_suggestion
-    ADD CONSTRAINT md_welcome_message_pkey PRIMARY KEY (calendar_suggestion_pk);
-
-
---
--- Name: md_message message_pkey; Type: CONSTRAINT; Schema: public;
---
-
-ALTER TABLE ONLY public.md_message
-    ADD CONSTRAINT message_pkey PRIMARY KEY (message_pk);
-
-
---
--- Name: md_produced_text produced_text_pkey; Type: CONSTRAINT; Schema: public;
---
-
-ALTER TABLE ONLY public.md_produced_text
-    ADD CONSTRAINT produced_text_pkey PRIMARY KEY (produced_text_pk);
-
-
---
--- Name: md_produced_text_version produced_text_version_pkey; Type: CONSTRAINT; Schema: public;
---
-
-ALTER TABLE ONLY public.md_produced_text_version
-    ADD CONSTRAINT produced_text_version_pkey PRIMARY KEY (produced_text_version_pk);
-
-
---
--- Name: md_product product_label_key; Type: CONSTRAINT; Schema: public;
---
-
-ALTER TABLE ONLY public.md_product
-    ADD CONSTRAINT product_label_key UNIQUE (label);
-
-
---
--- Name: md_product product_pkey; Type: CONSTRAINT; Schema: public;
---
-
-ALTER TABLE ONLY public.md_product
-    ADD CONSTRAINT product_pkey PRIMARY KEY (product_pk);
-
-
---
--- Name: md_product_task product_task_pkey; Type: CONSTRAINT; Schema: public;
---
-
-ALTER TABLE ONLY public.md_product_task
-    ADD CONSTRAINT product_task_pkey PRIMARY KEY (product_task_pk);
-
---
--- Name: md_purchase purchase_pkey; Type: CONSTRAINT; Schema: public;
---
-
-ALTER TABLE ONLY public.md_purchase
-    ADD CONSTRAINT purchase_pkey PRIMARY KEY (purchase_pk);
-
-
---
--- Name: md_session session_pkey; Type: CONSTRAINT; Schema: public;
---
-
-ALTER TABLE ONLY public.md_session
-    ADD CONSTRAINT session_pkey PRIMARY KEY (session_id);
-
-
---
--- Name: md_task task_pkey; Type: CONSTRAINT; Schema: public;
---
-
-ALTER TABLE ONLY public.md_task
-    ADD CONSTRAINT task_pkey PRIMARY KEY (task_pk);
-
-
---
--- Name: md_task_tool_association task_tool_association_pkey; Type: CONSTRAINT; Schema: public;
---
-
-ALTER TABLE ONLY public.md_task_tool_association
-    ADD CONSTRAINT task_tool_association_pkey PRIMARY KEY (task_tool_association_pk);
-
-
---
--- Name: md_task_tool_execution task_tool_execution_pkey; Type: CONSTRAINT; Schema: public;
---
-
-ALTER TABLE ONLY public.md_task_tool_execution
-    ADD CONSTRAINT task_tool_execution_pkey PRIMARY KEY (task_tool_execution_pk);
-
-
---
--- Name: md_tool tool_pkey; Type: CONSTRAINT; Schema: public;
---
-
-ALTER TABLE ONLY public.md_tool
-    ADD CONSTRAINT tool_pkey PRIMARY KEY (tool_pk);
-
-
---
--- Name: md_user user_pkey; Type: CONSTRAINT; Schema: public;
---
-
-ALTER TABLE ONLY public.md_user
-    ADD CONSTRAINT user_pkey PRIMARY KEY (user_id);
-
-
---
--- Name: md_user_task_execution user_task_execution_pkey; Type: CONSTRAINT; Schema: public;
---
-
-ALTER TABLE ONLY public.md_user_task_execution
-    ADD CONSTRAINT user_task_execution_pkey PRIMARY KEY (user_task_execution_pk);
-
-
---
--- Name: md_user_task user_task_pkey; Type: CONSTRAINT; Schema: public;
---
-
-ALTER TABLE ONLY public.md_user_task
-    ADD CONSTRAINT user_task_pkey PRIMARY KEY (user_task_pk);
-
---
--- Name: md_workflow_step_displayed_data md_workflow_step_displayed_data_pkey; Type: CONSTRAINT; Schema: public;
---
-
-ALTER TABLE ONLY public.md_workflow_step_displayed_data
-    ADD CONSTRAINT md_workflow_step_displayed_data_pkey PRIMARY KEY (workflow_step_displayed_data_pk);
-
---
--- Name: md_workflow_step md_workflow_step_pkey; Type: CONSTRAINT; Schema: public;
---
-
-ALTER TABLE ONLY public.md_workflow_step
-    ADD CONSTRAINT md_workflow_step_pkey PRIMARY KEY (workflow_step_pk);
-
---
--- Name: md_user_workflow_step_execution md_user_workflow_step_execution_pkey; Type: CONSTRAINT; Schema: public;
+-- Name: md_user_workflow_step_execution md_user_workflow_step_execution_pkey; Type: CONSTRAINT; Schema: public; Owner: assistant_db_user
 --
 
 ALTER TABLE ONLY public.md_user_workflow_step_execution
@@ -1627,7 +1640,159 @@ ALTER TABLE ONLY public.md_user_workflow_step_execution
 
 
 --
--- Name: md_device device_user_id_fkey; Type: FK CONSTRAINT; Schema: public;
+-- Name: md_calendar_suggestion md_welcome_message_pkey; Type: CONSTRAINT; Schema: public; Owner: assistant_db_user
+--
+
+ALTER TABLE ONLY public.md_calendar_suggestion
+    ADD CONSTRAINT md_welcome_message_pkey PRIMARY KEY (calendar_suggestion_pk);
+
+
+--
+-- Name: md_workflow_step_displayed_data md_workflow_step_displayed_data_pkey; Type: CONSTRAINT; Schema: public; Owner: assistant_db_user
+--
+
+ALTER TABLE ONLY public.md_workflow_step_displayed_data
+    ADD CONSTRAINT md_workflow_step_displayed_data_pkey PRIMARY KEY (workflow_step_displayed_data_pk);
+
+
+--
+-- Name: md_workflow_step md_workflow_step_pkey; Type: CONSTRAINT; Schema: public; Owner: assistant_db_user
+--
+
+ALTER TABLE ONLY public.md_workflow_step
+    ADD CONSTRAINT md_workflow_step_pkey PRIMARY KEY (workflow_step_pk);
+
+
+--
+-- Name: md_message message_pkey; Type: CONSTRAINT; Schema: public; Owner: assistant_db_user
+--
+
+ALTER TABLE ONLY public.md_message
+    ADD CONSTRAINT message_pkey PRIMARY KEY (message_pk);
+
+
+--
+-- Name: md_produced_text produced_text_pkey; Type: CONSTRAINT; Schema: public; Owner: assistant_db_user
+--
+
+ALTER TABLE ONLY public.md_produced_text
+    ADD CONSTRAINT produced_text_pkey PRIMARY KEY (produced_text_pk);
+
+
+--
+-- Name: md_produced_text_version produced_text_version_pkey; Type: CONSTRAINT; Schema: public; Owner: assistant_db_user
+--
+
+ALTER TABLE ONLY public.md_produced_text_version
+    ADD CONSTRAINT produced_text_version_pkey PRIMARY KEY (produced_text_version_pk);
+
+
+--
+-- Name: md_product product_label_key; Type: CONSTRAINT; Schema: public; Owner: assistant_db_user
+--
+
+ALTER TABLE ONLY public.md_product
+    ADD CONSTRAINT product_label_key UNIQUE (label);
+
+
+--
+-- Name: md_product product_pkey; Type: CONSTRAINT; Schema: public; Owner: assistant_db_user
+--
+
+ALTER TABLE ONLY public.md_product
+    ADD CONSTRAINT product_pkey PRIMARY KEY (product_pk);
+
+
+--
+-- Name: md_product_task product_task_pkey; Type: CONSTRAINT; Schema: public; Owner: assistant_db_user
+--
+
+ALTER TABLE ONLY public.md_product_task
+    ADD CONSTRAINT product_task_pkey PRIMARY KEY (product_task_pk);
+
+
+--
+-- Name: md_purchase purchase_pkey; Type: CONSTRAINT; Schema: public; Owner: assistant_db_user
+--
+
+ALTER TABLE ONLY public.md_purchase
+    ADD CONSTRAINT purchase_pkey PRIMARY KEY (purchase_pk);
+
+
+--
+-- Name: md_session session_pkey; Type: CONSTRAINT; Schema: public; Owner: assistant_db_user
+--
+
+ALTER TABLE ONLY public.md_session
+    ADD CONSTRAINT session_pkey PRIMARY KEY (session_id);
+
+
+--
+-- Name: md_task task_pkey; Type: CONSTRAINT; Schema: public; Owner: assistant_db_user
+--
+
+ALTER TABLE ONLY public.md_task
+    ADD CONSTRAINT task_pkey PRIMARY KEY (task_pk);
+
+
+--
+-- Name: md_task_tool_association task_tool_association_pkey; Type: CONSTRAINT; Schema: public; Owner: assistant_db_user
+--
+
+ALTER TABLE ONLY public.md_task_tool_association
+    ADD CONSTRAINT task_tool_association_pkey PRIMARY KEY (task_tool_association_pk);
+
+
+--
+-- Name: md_task_tool_execution task_tool_execution_pkey; Type: CONSTRAINT; Schema: public; Owner: assistant_db_user
+--
+
+ALTER TABLE ONLY public.md_task_tool_execution
+    ADD CONSTRAINT task_tool_execution_pkey PRIMARY KEY (task_tool_execution_pk);
+
+
+--
+-- Name: md_tool tool_pkey; Type: CONSTRAINT; Schema: public; Owner: assistant_db_user
+--
+
+ALTER TABLE ONLY public.md_tool
+    ADD CONSTRAINT tool_pkey PRIMARY KEY (tool_pk);
+
+
+--
+-- Name: md_user user_pkey; Type: CONSTRAINT; Schema: public; Owner: assistant_db_user
+--
+
+ALTER TABLE ONLY public.md_user
+    ADD CONSTRAINT user_pkey PRIMARY KEY (user_id);
+
+
+--
+-- Name: md_user_task_execution user_task_execution_pkey; Type: CONSTRAINT; Schema: public; Owner: assistant_db_user
+--
+
+ALTER TABLE ONLY public.md_user_task_execution
+    ADD CONSTRAINT user_task_execution_pkey PRIMARY KEY (user_task_execution_pk);
+
+
+--
+-- Name: md_user_task user_task_pkey; Type: CONSTRAINT; Schema: public; Owner: assistant_db_user
+--
+
+ALTER TABLE ONLY public.md_user_task
+    ADD CONSTRAINT user_task_pkey PRIMARY KEY (user_task_pk);
+
+
+--
+-- Name: md_user_workflow_step_execution_result user_workflow_step_execution_result_pkey; Type: CONSTRAINT; Schema: public; Owner: assistant_db_user
+--
+
+ALTER TABLE ONLY public.md_user_workflow_step_execution_result
+    ADD CONSTRAINT user_workflow_step_execution_result_pkey PRIMARY KEY (user_workflow_step_execution_result_pk);
+
+
+--
+-- Name: md_device device_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: assistant_db_user
 --
 
 ALTER TABLE ONLY public.md_device
@@ -1635,7 +1800,7 @@ ALTER TABLE ONLY public.md_device
 
 
 --
--- Name: md_error error_session_id_fkey; Type: FK CONSTRAINT; Schema: public;
+-- Name: md_error error_session_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: assistant_db_user
 --
 
 ALTER TABLE ONLY public.md_error
@@ -1643,7 +1808,7 @@ ALTER TABLE ONLY public.md_error
 
 
 --
--- Name: md_event event_user_id_fkey; Type: FK CONSTRAINT; Schema: public;
+-- Name: md_event event_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: assistant_db_user
 --
 
 ALTER TABLE ONLY public.md_event
@@ -1651,7 +1816,7 @@ ALTER TABLE ONLY public.md_event
 
 
 --
--- Name: md_task_predefined_action_association md_action_task_fkey; Type: FK CONSTRAINT; Schema: public;
+-- Name: md_task_predefined_action_association md_action_task_fkey; Type: FK CONSTRAINT; Schema: public; Owner: assistant_db_user
 --
 
 ALTER TABLE ONLY public.md_task_predefined_action_association
@@ -1659,7 +1824,7 @@ ALTER TABLE ONLY public.md_task_predefined_action_association
 
 
 --
--- Name: md_document md_document_author_user_id_fk; Type: FK CONSTRAINT; Schema: public;
+-- Name: md_document md_document_author_user_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: assistant_db_user
 --
 
 ALTER TABLE ONLY public.md_document
@@ -1667,7 +1832,7 @@ ALTER TABLE ONLY public.md_document
 
 
 --
--- Name: md_document_chunk md_document_chunk_document_fk; Type: FK CONSTRAINT; Schema: public;
+-- Name: md_document_chunk md_document_chunk_document_fk; Type: FK CONSTRAINT; Schema: public; Owner: assistant_db_user
 --
 
 ALTER TABLE ONLY public.md_document_chunk
@@ -1675,7 +1840,7 @@ ALTER TABLE ONLY public.md_document_chunk
 
 
 --
--- Name: md_home_chat md_home_chat_session_id_key; Type: FK CONSTRAINT; Schema: public;
+-- Name: md_home_chat md_home_chat_session_id_key; Type: FK CONSTRAINT; Schema: public; Owner: assistant_db_user
 --
 
 ALTER TABLE ONLY public.md_home_chat
@@ -1683,7 +1848,7 @@ ALTER TABLE ONLY public.md_home_chat
 
 
 --
--- Name: md_home_chat md_home_chat_user_id_fkey; Type: FK CONSTRAINT; Schema: public;
+-- Name: md_home_chat md_home_chat_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: assistant_db_user
 --
 
 ALTER TABLE ONLY public.md_home_chat
@@ -1691,7 +1856,7 @@ ALTER TABLE ONLY public.md_home_chat
 
 
 --
--- Name: md_produced_text md_produced_text_session_id_fkey; Type: FK CONSTRAINT; Schema: public;
+-- Name: md_produced_text md_produced_text_session_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: assistant_db_user
 --
 
 ALTER TABLE ONLY public.md_produced_text
@@ -1699,7 +1864,7 @@ ALTER TABLE ONLY public.md_produced_text
 
 
 --
--- Name: md_produced_text md_produced_text_user_id_fkey; Type: FK CONSTRAINT; Schema: public;
+-- Name: md_produced_text md_produced_text_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: assistant_db_user
 --
 
 ALTER TABLE ONLY public.md_produced_text
@@ -1707,14 +1872,15 @@ ALTER TABLE ONLY public.md_produced_text
 
 
 --
--- Name: md_produced_text md_produced_text_user_task_execution_fk_fkey; Type: FK CONSTRAINT; Schema: public;
+-- Name: md_produced_text md_produced_text_user_task_execution_fk_fkey; Type: FK CONSTRAINT; Schema: public; Owner: assistant_db_user
 --
 
 ALTER TABLE ONLY public.md_produced_text
     ADD CONSTRAINT md_produced_text_user_task_execution_fk_fkey FOREIGN KEY (user_task_execution_fk) REFERENCES public.md_user_task_execution(user_task_execution_pk);
 
+
 --
--- Name: md_produced_text_version md_produced_text_version_text_type_fk; Type: FK CONSTRAINT; Schema: public;
+-- Name: md_produced_text_version md_produced_text_version_text_type_fk; Type: FK CONSTRAINT; Schema: public; Owner: assistant_db_user
 --
 
 ALTER TABLE ONLY public.md_produced_text_version
@@ -1722,7 +1888,7 @@ ALTER TABLE ONLY public.md_produced_text_version
 
 
 --
--- Name: md_product md_product_category_fk; Type: FK CONSTRAINT; Schema: public;
+-- Name: md_product md_product_category_fk; Type: FK CONSTRAINT; Schema: public; Owner: assistant_db_user
 --
 
 ALTER TABLE ONLY public.md_product
@@ -1730,7 +1896,7 @@ ALTER TABLE ONLY public.md_product
 
 
 --
--- Name: md_product_category_displayed_data md_product_category_fkey; Type: FK CONSTRAINT; Schema: public;
+-- Name: md_product_category_displayed_data md_product_category_fkey; Type: FK CONSTRAINT; Schema: public; Owner: assistant_db_user
 --
 
 ALTER TABLE ONLY public.md_product_category_displayed_data
@@ -1738,7 +1904,7 @@ ALTER TABLE ONLY public.md_product_category_displayed_data
 
 
 --
--- Name: md_product_displayed_data md_product_fkey; Type: FK CONSTRAINT; Schema: public;
+-- Name: md_product_displayed_data md_product_fkey; Type: FK CONSTRAINT; Schema: public; Owner: assistant_db_user
 --
 
 ALTER TABLE ONLY public.md_product_displayed_data
@@ -1746,7 +1912,7 @@ ALTER TABLE ONLY public.md_product_displayed_data
 
 
 --
--- Name: md_task_displayed_data md_task_fkey; Type: FK CONSTRAINT; Schema: public;
+-- Name: md_task_displayed_data md_task_fkey; Type: FK CONSTRAINT; Schema: public; Owner: assistant_db_user
 --
 
 ALTER TABLE ONLY public.md_task_displayed_data
@@ -1754,7 +1920,7 @@ ALTER TABLE ONLY public.md_task_displayed_data
 
 
 --
--- Name: md_task_predefined_action_association md_task_fkey; Type: FK CONSTRAINT; Schema: public;
+-- Name: md_task_predefined_action_association md_task_fkey; Type: FK CONSTRAINT; Schema: public; Owner: assistant_db_user
 --
 
 ALTER TABLE ONLY public.md_task_predefined_action_association
@@ -1762,7 +1928,7 @@ ALTER TABLE ONLY public.md_task_predefined_action_association
 
 
 --
--- Name: md_task md_task_output_text_type_fk; Type: FK CONSTRAINT; Schema: public;
+-- Name: md_task md_task_output_text_type_fk; Type: FK CONSTRAINT; Schema: public; Owner: assistant_db_user
 --
 
 ALTER TABLE ONLY public.md_task
@@ -1770,7 +1936,7 @@ ALTER TABLE ONLY public.md_task
 
 
 --
--- Name: md_task_platform_association md_task_platform_association_platform_fkey; Type: FK CONSTRAINT; Schema: public;
+-- Name: md_task_platform_association md_task_platform_association_platform_fkey; Type: FK CONSTRAINT; Schema: public; Owner: assistant_db_user
 --
 
 ALTER TABLE ONLY public.md_task_platform_association
@@ -1778,7 +1944,7 @@ ALTER TABLE ONLY public.md_task_platform_association
 
 
 --
--- Name: md_task_platform_association md_task_platform_association_task_fkey; Type: FK CONSTRAINT; Schema: public;
+-- Name: md_task_platform_association md_task_platform_association_task_fkey; Type: FK CONSTRAINT; Schema: public; Owner: assistant_db_user
 --
 
 ALTER TABLE ONLY public.md_task_platform_association
@@ -1786,7 +1952,7 @@ ALTER TABLE ONLY public.md_task_platform_association
 
 
 --
--- Name: md_predefined_action_displayed_data md_task_predefined_action_association_fkey; Type: FK CONSTRAINT; Schema: public;
+-- Name: md_predefined_action_displayed_data md_task_predefined_action_association_fkey; Type: FK CONSTRAINT; Schema: public; Owner: assistant_db_user
 --
 
 ALTER TABLE ONLY public.md_predefined_action_displayed_data
@@ -1794,7 +1960,7 @@ ALTER TABLE ONLY public.md_predefined_action_displayed_data
 
 
 --
--- Name: md_task_tool_query md_task_tool_execution_fk_fkey; Type: FK CONSTRAINT; Schema: public;
+-- Name: md_task_tool_query md_task_tool_execution_fk_fkey; Type: FK CONSTRAINT; Schema: public; Owner: assistant_db_user
 --
 
 ALTER TABLE ONLY public.md_task_tool_query
@@ -1802,7 +1968,7 @@ ALTER TABLE ONLY public.md_task_tool_query
 
 
 --
--- Name: md_text_edit_action_text_type_association md_text_edit_action_fkey; Type: FK CONSTRAINT; Schema: public;
+-- Name: md_text_edit_action_text_type_association md_text_edit_action_fkey; Type: FK CONSTRAINT; Schema: public; Owner: assistant_db_user
 --
 
 ALTER TABLE ONLY public.md_text_edit_action_text_type_association
@@ -1810,7 +1976,7 @@ ALTER TABLE ONLY public.md_text_edit_action_text_type_association
 
 
 --
--- Name: md_text_edit_action_displayed_data md_text_edit_action_fkey; Type: FK CONSTRAINT; Schema: public;
+-- Name: md_text_edit_action_displayed_data md_text_edit_action_fkey; Type: FK CONSTRAINT; Schema: public; Owner: assistant_db_user
 --
 
 ALTER TABLE ONLY public.md_text_edit_action_displayed_data
@@ -1818,7 +1984,7 @@ ALTER TABLE ONLY public.md_text_edit_action_displayed_data
 
 
 --
--- Name: md_text_edit_action_text_type_association md_text_type_fkey; Type: FK CONSTRAINT; Schema: public;
+-- Name: md_text_edit_action_text_type_association md_text_type_fkey; Type: FK CONSTRAINT; Schema: public; Owner: assistant_db_user
 --
 
 ALTER TABLE ONLY public.md_text_edit_action_text_type_association
@@ -1826,7 +1992,7 @@ ALTER TABLE ONLY public.md_text_edit_action_text_type_association
 
 
 --
--- Name: md_todo_scheduling md_todo_scheduling_todo_fk_fkey; Type: FK CONSTRAINT; Schema: public;
+-- Name: md_todo_scheduling md_todo_scheduling_todo_fk_fkey; Type: FK CONSTRAINT; Schema: public; Owner: assistant_db_user
 --
 
 ALTER TABLE ONLY public.md_todo_scheduling
@@ -1834,7 +2000,7 @@ ALTER TABLE ONLY public.md_todo_scheduling
 
 
 --
--- Name: md_todo md_todo_user_task_execution_fk_fkey; Type: FK CONSTRAINT; Schema: public;
+-- Name: md_todo md_todo_user_task_execution_fk_fkey; Type: FK CONSTRAINT; Schema: public; Owner: assistant_db_user
 --
 
 ALTER TABLE ONLY public.md_todo
@@ -1842,7 +2008,7 @@ ALTER TABLE ONLY public.md_todo
 
 
 --
--- Name: md_user md_user_company_fk; Type: FK CONSTRAINT; Schema: public;
+-- Name: md_user md_user_company_fk; Type: FK CONSTRAINT; Schema: public; Owner: assistant_db_user
 --
 
 ALTER TABLE ONLY public.md_user
@@ -1850,7 +2016,23 @@ ALTER TABLE ONLY public.md_user
 
 
 --
--- Name: md_calendar_suggestion md_welcome_message_md_task_fkey; Type: FK CONSTRAINT; Schema: public;
+-- Name: md_user_workflow_step_execution md_user_workflow_step_execution_user_task_execution_fk_fkey; Type: FK CONSTRAINT; Schema: public; Owner: assistant_db_user
+--
+
+ALTER TABLE ONLY public.md_user_workflow_step_execution
+    ADD CONSTRAINT md_user_workflow_step_execution_user_task_execution_fk_fkey FOREIGN KEY (user_task_execution_fk) REFERENCES public.md_user_task_execution(user_task_execution_pk);
+
+
+--
+-- Name: md_user_workflow_step_execution md_user_workflow_step_execution_workflow_step_fk_fkey; Type: FK CONSTRAINT; Schema: public; Owner: assistant_db_user
+--
+
+ALTER TABLE ONLY public.md_user_workflow_step_execution
+    ADD CONSTRAINT md_user_workflow_step_execution_workflow_step_fk_fkey FOREIGN KEY (workflow_step_fk) REFERENCES public.md_workflow_step(workflow_step_pk);
+
+
+--
+-- Name: md_calendar_suggestion md_welcome_message_md_task_fkey; Type: FK CONSTRAINT; Schema: public; Owner: assistant_db_user
 --
 
 ALTER TABLE ONLY public.md_calendar_suggestion
@@ -1858,7 +2040,7 @@ ALTER TABLE ONLY public.md_calendar_suggestion
 
 
 --
--- Name: md_calendar_suggestion md_welcome_message_triggered_user_task_execution_pk_fkey; Type: FK CONSTRAINT; Schema: public;
+-- Name: md_calendar_suggestion md_welcome_message_triggered_user_task_execution_pk_fkey; Type: FK CONSTRAINT; Schema: public; Owner: assistant_db_user
 --
 
 ALTER TABLE ONLY public.md_calendar_suggestion
@@ -1866,7 +2048,23 @@ ALTER TABLE ONLY public.md_calendar_suggestion
 
 
 --
--- Name: md_message message_session_id_fkey; Type: FK CONSTRAINT; Schema: public;
+-- Name: md_workflow_step_displayed_data md_workflow_step_displayed_data_workflow_step_fk_fkey; Type: FK CONSTRAINT; Schema: public; Owner: assistant_db_user
+--
+
+ALTER TABLE ONLY public.md_workflow_step_displayed_data
+    ADD CONSTRAINT md_workflow_step_displayed_data_workflow_step_fk_fkey FOREIGN KEY (workflow_step_fk) REFERENCES public.md_workflow_step(workflow_step_pk);
+
+
+--
+-- Name: md_workflow_step md_workflow_step_task_fk_fkey; Type: FK CONSTRAINT; Schema: public; Owner: assistant_db_user
+--
+
+ALTER TABLE ONLY public.md_workflow_step
+    ADD CONSTRAINT md_workflow_step_task_fk_fkey FOREIGN KEY (task_fk) REFERENCES public.md_task(task_pk);
+
+
+--
+-- Name: md_message message_session_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: assistant_db_user
 --
 
 ALTER TABLE ONLY public.md_message
@@ -1874,7 +2072,7 @@ ALTER TABLE ONLY public.md_message
 
 
 --
--- Name: md_produced_text_version produced_text_version_produced_text_fk_fkey; Type: FK CONSTRAINT; Schema: public;
+-- Name: md_produced_text_version produced_text_version_produced_text_fk_fkey; Type: FK CONSTRAINT; Schema: public; Owner: assistant_db_user
 --
 
 ALTER TABLE ONLY public.md_produced_text_version
@@ -1882,7 +2080,7 @@ ALTER TABLE ONLY public.md_produced_text_version
 
 
 --
--- Name: md_product_task product_task_product_fk_fkey; Type: FK CONSTRAINT; Schema: public;
+-- Name: md_product_task product_task_product_fk_fkey; Type: FK CONSTRAINT; Schema: public; Owner: assistant_db_user
 --
 
 ALTER TABLE ONLY public.md_product_task
@@ -1890,7 +2088,7 @@ ALTER TABLE ONLY public.md_product_task
 
 
 --
--- Name: md_product_task product_task_task_fk_fkey; Type: FK CONSTRAINT; Schema: public;
+-- Name: md_product_task product_task_task_fk_fkey; Type: FK CONSTRAINT; Schema: public; Owner: assistant_db_user
 --
 
 ALTER TABLE ONLY public.md_product_task
@@ -1898,7 +2096,7 @@ ALTER TABLE ONLY public.md_product_task
 
 
 --
--- Name: md_purchase purchase_product_fk_fkey; Type: FK CONSTRAINT; Schema: public;
+-- Name: md_purchase purchase_product_fk_fkey; Type: FK CONSTRAINT; Schema: public; Owner: assistant_db_user
 --
 
 ALTER TABLE ONLY public.md_purchase
@@ -1906,7 +2104,7 @@ ALTER TABLE ONLY public.md_purchase
 
 
 --
--- Name: md_purchase purchase_user_id_fkey; Type: FK CONSTRAINT; Schema: public;
+-- Name: md_purchase purchase_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: assistant_db_user
 --
 
 ALTER TABLE ONLY public.md_purchase
@@ -1914,7 +2112,7 @@ ALTER TABLE ONLY public.md_purchase
 
 
 --
--- Name: md_session session_user_id_fkey; Type: FK CONSTRAINT; Schema: public;
+-- Name: md_session session_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: assistant_db_user
 --
 
 ALTER TABLE ONLY public.md_session
@@ -1922,7 +2120,7 @@ ALTER TABLE ONLY public.md_session
 
 
 --
--- Name: md_task_tool_association task_tool_association_task_fk_fkey; Type: FK CONSTRAINT; Schema: public;
+-- Name: md_task_tool_association task_tool_association_task_fk_fkey; Type: FK CONSTRAINT; Schema: public; Owner: assistant_db_user
 --
 
 ALTER TABLE ONLY public.md_task_tool_association
@@ -1930,7 +2128,7 @@ ALTER TABLE ONLY public.md_task_tool_association
 
 
 --
--- Name: md_task_tool_association task_tool_association_tool_fk_fkey; Type: FK CONSTRAINT; Schema: public;
+-- Name: md_task_tool_association task_tool_association_tool_fk_fkey; Type: FK CONSTRAINT; Schema: public; Owner: assistant_db_user
 --
 
 ALTER TABLE ONLY public.md_task_tool_association
@@ -1938,7 +2136,7 @@ ALTER TABLE ONLY public.md_task_tool_association
 
 
 --
--- Name: md_task_tool_execution task_tool_execution_task_tool_association_fk_fkey; Type: FK CONSTRAINT; Schema: public;
+-- Name: md_task_tool_execution task_tool_execution_task_tool_association_fk_fkey; Type: FK CONSTRAINT; Schema: public; Owner: assistant_db_user
 --
 
 ALTER TABLE ONLY public.md_task_tool_execution
@@ -1946,7 +2144,7 @@ ALTER TABLE ONLY public.md_task_tool_execution
 
 
 --
--- Name: md_task_tool_execution task_tool_execution_user_task_execution_fk_fkey; Type: FK CONSTRAINT; Schema: public;
+-- Name: md_task_tool_execution task_tool_execution_user_task_execution_fk_fkey; Type: FK CONSTRAINT; Schema: public; Owner: assistant_db_user
 --
 
 ALTER TABLE ONLY public.md_task_tool_execution
@@ -1954,7 +2152,7 @@ ALTER TABLE ONLY public.md_task_tool_execution
 
 
 --
--- Name: md_user user_product_category_fkey; Type: FK CONSTRAINT; Schema: public;
+-- Name: md_user user_product_category_fkey; Type: FK CONSTRAINT; Schema: public; Owner: assistant_db_user
 --
 
 ALTER TABLE ONLY public.md_user
@@ -1962,7 +2160,7 @@ ALTER TABLE ONLY public.md_user
 
 
 --
--- Name: md_user_task_execution user_task_execution_purchase_fkey; Type: FK CONSTRAINT; Schema: public;
+-- Name: md_user_task_execution user_task_execution_purchase_fkey; Type: FK CONSTRAINT; Schema: public; Owner: assistant_db_user
 --
 
 ALTER TABLE ONLY public.md_user_task_execution
@@ -1970,7 +2168,7 @@ ALTER TABLE ONLY public.md_user_task_execution
 
 
 --
--- Name: md_user_task_execution user_task_execution_session_id_fkey; Type: FK CONSTRAINT; Schema: public;
+-- Name: md_user_task_execution user_task_execution_session_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: assistant_db_user
 --
 
 ALTER TABLE ONLY public.md_user_task_execution
@@ -1978,7 +2176,7 @@ ALTER TABLE ONLY public.md_user_task_execution
 
 
 --
--- Name: md_user_task_execution user_task_execution_user_task_execution_fk_fkey; Type: FK CONSTRAINT; Schema: public;
+-- Name: md_user_task_execution user_task_execution_user_task_execution_fk_fkey; Type: FK CONSTRAINT; Schema: public; Owner: assistant_db_user
 --
 
 ALTER TABLE ONLY public.md_user_task_execution
@@ -1986,7 +2184,7 @@ ALTER TABLE ONLY public.md_user_task_execution
 
 
 --
--- Name: md_user_task_execution user_task_execution_user_task_fk_fkey; Type: FK CONSTRAINT; Schema: public;
+-- Name: md_user_task_execution user_task_execution_user_task_fk_fkey; Type: FK CONSTRAINT; Schema: public; Owner: assistant_db_user
 --
 
 ALTER TABLE ONLY public.md_user_task_execution
@@ -1994,7 +2192,7 @@ ALTER TABLE ONLY public.md_user_task_execution
 
 
 --
--- Name: md_user_task user_task_task_fk_fkey; Type: FK CONSTRAINT; Schema: public;
+-- Name: md_user_task user_task_task_fk_fkey; Type: FK CONSTRAINT; Schema: public; Owner: assistant_db_user
 --
 
 ALTER TABLE ONLY public.md_user_task
@@ -2002,7 +2200,7 @@ ALTER TABLE ONLY public.md_user_task
 
 
 --
--- Name: md_user_task user_task_user_id_fkey; Type: FK CONSTRAINT; Schema: public;
+-- Name: md_user_task user_task_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: assistant_db_user
 --
 
 ALTER TABLE ONLY public.md_user_task
@@ -2010,7 +2208,7 @@ ALTER TABLE ONLY public.md_user_task
 
 
 --
--- Name: md_user_vocabulary user_vocabulary_user_id_fkey; Type: FK CONSTRAINT; Schema: public;
+-- Name: md_user_vocabulary user_vocabulary_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: assistant_db_user
 --
 
 ALTER TABLE ONLY public.md_user_vocabulary
@@ -2018,40 +2216,22 @@ ALTER TABLE ONLY public.md_user_vocabulary
 
 
 --
--- Name: md_calendar_suggestion welcome_message_user_id_fkey; Type: FK CONSTRAINT; Schema: public;
+-- Name: md_user_workflow_step_execution_result user_workflow_step_execution_fkey; Type: FK CONSTRAINT; Schema: public; Owner: assistant_db_user
+--
+
+ALTER TABLE ONLY public.md_user_workflow_step_execution_result
+    ADD CONSTRAINT user_workflow_step_execution_fkey FOREIGN KEY (user_workflow_step_execution_fk) REFERENCES public.md_user_workflow_step_execution(user_workflow_step_execution_pk);
+
+
+--
+-- Name: md_calendar_suggestion welcome_message_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: assistant_db_user
 --
 
 ALTER TABLE ONLY public.md_calendar_suggestion
     ADD CONSTRAINT welcome_message_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.md_user(user_id);
 
---
--- Name: md_workflow_step md_workflow_step_task_fk_fkey; Type: FK CONSTRAINT; Schema: public;
---
-
-ALTER TABLE ONLY public.md_workflow_step
-    ADD CONSTRAINT md_workflow_step_task_fk_fkey FOREIGN KEY (task_fk) REFERENCES public.md_task(task_pk);
-
---
--- Name: md_workflow_step_displayed_data md_workflow_step_displayed_data_fk_fkey; Type: FK CONSTRAINT; Schema: public;
---
-
-ALTER TABLE ONLY public.md_workflow_step_displayed_data
-    ADD CONSTRAINT md_workflow_step_displayed_data_workflow_step_fk_fkey FOREIGN KEY (workflow_step_fk) REFERENCES public.md_workflow_step(workflow_step_pk);
-
---
--- Name: md_user_workflow_step_execution md_user_workflow_step_execution_user_task_execution_fk_fkey; Type: FK CONSTRAINT; Schema: public;
---
-
-ALTER TABLE ONLY public.md_user_workflow_step_execution
-    ADD CONSTRAINT md_user_workflow_step_execution_user_task_execution_fk_fkey FOREIGN KEY (user_task_execution_fk) REFERENCES public.md_user_task_execution(user_task_execution_pk);
-
---
--- Name: md_user_workflow_step_execution md_user_workflow_step_execution_user_workflow_step_fk_fkey; Type: FK CONSTRAINT; Schema: public;
---
-
-ALTER TABLE ONLY public.md_user_workflow_step_execution
-    ADD CONSTRAINT md_user_workflow_step_execution_workflow_step_fk_fkey FOREIGN KEY (workflow_step_fk) REFERENCES public.md_workflow_step(workflow_step_pk);
 
 --
 -- PostgreSQL database dump complete
 --
+

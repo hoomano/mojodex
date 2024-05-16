@@ -20,22 +20,22 @@
   "skipContainerButton": "Omitir",
   "onboarding": {
     "termsAndConditions": {
-            "emoji": "😉",
-            "title": "¡Bienvenido!",
-            "IAgree": "Estoy de acuerdo",
-            "defaultAgreement": "Estoy de acuerdo en interactuar con el asistente digital de forma respetuosa y cortés, reconociendo la importancia de la amabilidad en nuestro espacio digital.",
-            "defaultAgreementThankYou": "Su cooperación nos ayuda a mantener un entorno positivo para todos los usuarios. Gracias por su comprensión y apoyo.",
-            "defaultModalContent": "Por favor, tómate un momento para reconocer nuestras directrices de la comunidad",
-            "termsModalContent": "Justo antes de empezar, echa un vistazo a nuestros términos y condiciones",
-            "termsAndConditions": "términos y condiciones",
-            "acceptButtonText": "Empecemos"
-        },
-        "categorySelection": {
-            "emoji": "👋",
-            "title": "¡Hola desde Mojodex!",
-            "content": "¿Preparado para embarcarte en un viaje increíble?",
-            "question": "¿Quién es usted?"
-        },
+      "emoji": "😉",
+      "title": "¡Bienvenido!",
+      "IAgree": "Estoy de acuerdo",
+      "defaultAgreement": "Estoy de acuerdo en interactuar con el asistente digital de forma respetuosa y cortés, reconociendo la importancia de la amabilidad en nuestro espacio digital.",
+      "defaultAgreementThankYou": "Su cooperación nos ayuda a mantener un entorno positivo para todos los usuarios. Gracias por su comprensión y apoyo.",
+      "defaultModalContent": "Por favor, tómate un momento para reconocer nuestras directrices de la comunidad",
+      "termsModalContent": "Justo antes de empezar, echa un vistazo a nuestros términos y condiciones",
+      "termsAndConditions": "términos y condiciones",
+      "acceptButtonText": "Empecemos"
+    },
+    "categorySelection": {
+      "emoji": "👋",
+      "title": "¡Hola desde Mojodex!",
+      "content": "¿Preparado para embarcarte en un viaje increíble?",
+      "question": "¿Quién es usted?"
+    },
     "nextButton": "Siguiente",
     "webUrlInputPage": {
       "emoji": "👋",
@@ -81,7 +81,7 @@
     "title": "🎯\nQue le gustaria hacer hoy?",
     "selectBusinessTasks": "Selecciona una de las tareas empresariales que te gustaría conseguir con Mojo"
   },
-  "startUserTaskStepExecution":{
+  "startUserTaskStepExecution": {
     "stepsIntroduction": "Para esta tarea se ejecutarán los siguientes pasos:"
   },
   "resources": {
@@ -148,7 +148,9 @@
       "stepExecutionParameters": "Parámetros",
       "stepExecutionResults": "Resultados",
       "stepExecutionError": "Ups. No he podido terminar",
-      "stepExecutionErrorInstruction": "Puedes intentar relanzar el paso o ponerte en contacto con soporte."
+      "stepExecutionErrorInstruction": "Puedes intentar relanzar el paso o ponerte en contacto con soporte.",
+      "cancelEditionButton": "Cancelar",
+      "saveEditionButton": "Guardar"
     }
   },
   "todos": {

@@ -6,7 +6,7 @@ import pytz
 from flask import request
 from flask_restful import Resource
 from mojodex_core.logging_handler import log_error
-from mojodex_core.entities import MdUserWorkflowStepExecution, MdUserWorkflowStepExecutionResult
+from mojodex_core.entities import MdUserTaskExecution, MdUserWorkflowStepExecution, MdUserWorkflowStepExecutionResult
 from app import db, server_socket
 
 class RelaunchLockedWorkflowStepExecutions(Resource):
@@ -44,6 +44,8 @@ class RelaunchLockedWorkflowStepExecutions(Resource):
                 .filter(MdUserWorkflowStepExecution.error_status.is_(None))\
                 .filter(MdUserWorkflowStepExecution.creation_date < two_hours_ago)\
                 .filter(MdUserWorkflowStepExecutionResult.user_workflow_step_execution_fk.is_(None))\
+                .join(MdUserWorkflowStepExecution, MdUserWorkflowStepExecution.user_task_execution_fk == MdUserTaskExecution.user_task_execution_pk)\
+                .filter(MdUserTaskExecution.deleted_by_user.is_(None))\
                 .all()
             
             user_workflow_step_executions_pk = [step.user_workflow_step_execution_pk for step in locked_steps]

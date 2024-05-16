@@ -122,7 +122,7 @@ const StepProcessDetail: React.FC<StepDetailProps> = ({
     };
 
     return (
-        <li key={stepExecution.user_workflow_step_execution_pk} className="relative flex gap-x-4">
+       
             <>
                 <div className="flex flex-row w-full">
                     <div className="relative h-6 w-6 flex-none items-center justify-center bg-white">
@@ -202,11 +202,11 @@ const StepProcessDetail: React.FC<StepDetailProps> = ({
                                     onClick={() => setEditing(false)}
                                     className="mr-2"
                                 >
-                                    Cancel
+                                {t("userTaskExecution.processTab.cancelEditionButton")}
                                 </Button>
 
                                 <Button variant="primary" size="middle" onClick={() => onSaveResultEdition()}>
-                                    Save
+                                {t("userTaskExecution.processTab.saveEditionButton")}
                                 </Button>
                             </div> : stepExecution.user_validation_required && stepExecution.validated === null && stepExecution.result != null ?
                                 <div className="text-end pt-2">
@@ -252,7 +252,7 @@ const StepProcessDetail: React.FC<StepDetailProps> = ({
                 </div>
             </>
 
-        </li>
+    
     );
 };
 

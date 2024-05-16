@@ -6,7 +6,7 @@ from models.workflows.step_execution import WorkflowStepExecution
 from models.workflows.workflow import Workflow
 
 from models.produced_text_managers.workflow_produced_text_manager import WorkflowProducedTextManager
-from mojodex_core.entities import MdUserTaskExecution, MdUserTask, MdWorkflowStep, MdTask, \
+from mojodex_core.entities import MdUserTaskExecution, MdUserTask, MdUserWorkflowStepExecutionResult, MdWorkflowStep, MdTask, \
     MdUserWorkflowStepExecution
 from mojodex_core.db import engine, Session
 from typing import List
@@ -101,6 +101,10 @@ class WorkflowExecution:
                     .filter(MdUserWorkflowStepExecution.workflow_step_fk == db_dependency_step.workflow_step_pk) \
                     .order_by(MdUserWorkflowStepExecution.creation_date.desc()) \
                     .first()
+                db_dependency_step_execution_result = self.db_session.query(MdUserWorkflowStepExecutionResult) \
+                    .filter(MdUserWorkflowStepExecutionResult.user_workflow_step_execution_fk == db_dependency_step_execution.user_workflow_step_execution_pk) \
+                    .order_by(MdUserWorkflowStepExecutionResult.creation_date.desc()) \
+                    .first()
 
                 # load all validated step executions of current step:
                 current_step_executions_count = self.db_session.query(MdUserWorkflowStepExecution) \
@@ -122,8 +126,8 @@ class WorkflowExecution:
                     .count()
 
                 # have all parameters been executed and validated?
-                if current_step_executions_count < len(db_dependency_step_execution.result):
-                    current_parameter = db_dependency_step_execution.result[current_step_executions_count]
+                if current_step_executions_count < len(db_dependency_step_execution_result.result):
+                    current_parameter = db_dependency_step_execution_result.result[current_step_executions_count]
                     self._current_step = self._generate_new_step_execution(last_validated_step_execution.workflow_step,
                                                                            current_parameter)
                     return self._current_step
@@ -141,7 +145,7 @@ class WorkflowExecution:
             self._current_step = self._generate_new_step_execution(next_step, last_validated_step_execution.result[0])
             return self._current_step
         except Exception as e:
-            raise Exception(f"_get_current_step :: {e}")
+            raise Exception(f"_get_next_step_execution_to_run :: {e}")
 
     @property
     def initial_parameters(self):
@@ -209,7 +213,7 @@ class WorkflowExecution:
         try:
             # concatenation of results of last step's validated executions
             last_step= self.workflow.db_steps[-1]
-            validated_last_step_executions = self.db_session.query(MdUserWorkflowStepExecution) \
+            db_validated_last_step_executions = self.db_session.query(MdUserWorkflowStepExecution) \
                 .filter(
                 MdUserWorkflowStepExecution.user_task_execution_fk == self.db_object.user_task_execution_pk) \
                 .filter(
@@ -227,6 +231,7 @@ class WorkflowExecution:
                 .filter(MdUserWorkflowStepExecution.error_status.is_(None)) \
                 .order_by(MdUserWorkflowStepExecution.creation_date.desc())\
                 .all()
+            validated_last_step_executions = [WorkflowStepExecution(self.db_session, step, self.user_id, self.workflow.name_for_system) for step in db_validated_last_step_executions]
 
             production = "\n\n".join([list(step.result[0].values())[0] for step in validated_last_step_executions[::-1]])
 

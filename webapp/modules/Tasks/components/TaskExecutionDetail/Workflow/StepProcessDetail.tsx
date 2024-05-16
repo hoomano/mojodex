@@ -1,14 +1,10 @@
 
 import { UserTaskExecutionStepExecution } from "modules/Tasks/interface";
-import useOnStepExecutionValidate from "modules/Tasks/hooks/useOnStepExecutionValidate";
-import useOnStepExecutionInvalidate from "modules/Tasks/hooks/useOnStepExecutionInvalidate";
-import useOnStepExecutionRelaunch from "modules/Tasks/hooks/useOnStepExecutionRelaunch";
-import { useTranslation } from "next-i18next";
-import { useState } from "react";
 import Step from "./Step";
-import { on } from "events";
 
-
+function classNames(...classes: string[]) {
+  return classes.filter(Boolean).join(' ')
+}
 
 interface StepProcessDetailProps {
   stepExecutions: UserTaskExecutionStepExecution[];
@@ -23,10 +19,6 @@ const StepProcessDetail: React.FC<StepProcessDetailProps> = ({
   onValidate,
   onStepRelaunched
 }) => {
-  const { t } = useTranslation('dynamic');
-  const onValidateStepExecution = useOnStepExecutionValidate();
-  const onInvalidateStepExecution = useOnStepExecutionInvalidate();
-  const onStepExecutionRelaunch = useOnStepExecutionRelaunch();
 
 
 
@@ -35,12 +27,23 @@ const StepProcessDetail: React.FC<StepProcessDetailProps> = ({
     <div className="p-[60px] w-full">
       <ul role="list" className="space-y-6 w-full">
         {stepExecutions?.map((stepItem, stepItemIdx) => (
+          <li key={stepItem.user_workflow_step_execution_pk} className="relative flex gap-x-4">
+            <div
+              className={classNames(
+                stepItemIdx === stepExecutions.length - 1 ? 'h-6' : '-bottom-6',
+                'absolute left-0 top-0 flex w-6 justify-center'
+              )}
+            >
+              <div className="w-px bg-gray-200" />
+            </div>
+          
           <Step
             stepExecution={stepItem}
             onInvalidate={onInvalidate}
             onValidate={onValidate}
             onStepRelaunched={onStepRelaunched}
-          />
+            />
+          </li>
         ))}
       </ul>
 

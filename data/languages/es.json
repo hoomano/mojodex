@@ -153,7 +153,9 @@
             "stepExecutionParameters": "Parámetros",
             "stepExecutionResults": "Resultados",
             "stepExecutionError": "Ups. No he podido terminar",
-            "stepExecutionErrorInstruction": "Puedes intentar relanzar el paso o ponerte en contacto con soporte."
+            "stepExecutionErrorInstruction": "Puedes intentar relanzar el paso o ponerte en contacto con soporte.",
+            "cancelEditionButton": "Cancelar",
+            "saveEditionButton": "Guardar"
         }
     },
     "todos": {

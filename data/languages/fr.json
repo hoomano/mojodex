@@ -153,7 +153,9 @@
             "stepExecutionParameters": "Paramètres",
             "stepExecutionResults": "Resultats",
             "stepExecutionError": "Oops. Je n'ai pas pu terminer",
-            "stepExecutionErrorInstruction": "Vous pouvez essayer de relancer l'étape ou contacter l'assistance."
+            "stepExecutionErrorInstruction": "Vous pouvez essayer de relancer l'étape ou contacter l'assistance.",
+            "cancelEditionButton": "Annuler",
+            "saveEditionButton": "Enregistrer"
         }
     },
     "todos": {

@@ -62,8 +62,7 @@ const StepProcessDetail: React.FC<StepDetailProps> = ({
     };
 
     const [editing, setEditing] = useState<boolean>(false);
-    const [editedResult, setEditedResult] = useState<Array<Map<string, string>>>(stepExecution.result.map(obj => new Map(Object.entries(obj))));
-
+    const [editedResult, setEditedResult] = useState<Array<Map<string, string>>>([]);
     const onReviewStep = () => {
         onInvalidateStepExecution.mutate(stepExecution.user_workflow_step_execution_pk, {
             onSuccess: () => {
@@ -193,7 +192,7 @@ const StepProcessDetail: React.FC<StepDetailProps> = ({
                                         variant="outline"
                                         size="middle"
                                             onClick={() => {
-                                                console.log(editedResult);
+                                                setEditedResult(stepExecution.result.map(obj => new Map(Object.entries(obj))));
                                                 setEditing(true)
                                             }}
                                         className="mr-2"

@@ -732,13 +732,13 @@ class MdUserWorkflowStepExecution(Base):
     workflow_step_fk = Column(Integer, nullable=False)
     creation_date = Column(DateTime, nullable=False, server_default=text('now()'))
     parameter = Column(JSON, nullable=False)
-    result = Column(JSON)
     validated = Column(Boolean)
     learned_instruction = Column(Text)
     error_status = Column(JSON)
 
     md_user_task_execution = relationship('MdUserTaskExecution', back_populates='md_user_workflow_step_execution')
     md_workflow_step = relationship('MdWorkflowStep', back_populates='md_user_workflow_step_execution')
+    md_user_workflow_step_execution_result = relationship('MdUserWorkflowStepExecutionResult', back_populates='md_user_workflow_step_execution')
 
 
 class MdProducedTextVersion(Base):
@@ -793,3 +793,19 @@ class MdTodoScheduling(Base):
     reschedule_justification = Column(Text)
 
     md_todo = relationship('MdTodo', back_populates='md_todo_scheduling')
+
+
+class MdUserWorkflowStepExecutionResult(Base):
+    __tablename__ = 'md_user_workflow_step_execution_result'
+    __table_args__ = (
+        ForeignKeyConstraint(['user_workflow_step_execution_fk'], ['md_user_workflow_step_execution.user_workflow_step_execution_pk'], name='user_workflow_step_execution_fkey'),
+        PrimaryKeyConstraint('user_workflow_step_execution_result_pk', name='user_workflow_step_execution_result_pkey')
+    )
+
+    user_workflow_step_execution_result_pk = Column(Integer, Sequence('md_user_workflow_step_execution_result_seq'), primary_key=True)
+    user_workflow_step_execution_fk = Column(Integer, nullable=False)
+    creation_date = Column(DateTime, nullable=False, server_default=text('now()'))
+    result = Column(JSON, nullable=False)
+    author = Column(Enum('assistant', 'user', name='_step_result_author'), nullable=False, server_default=text("'assistant'::_step_result_author"))
+
+    md_user_workflow_step_execution = relationship('MdUserWorkflowStepExecution', back_populates='md_user_workflow_step_execution_result')

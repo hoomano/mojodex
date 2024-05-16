@@ -41,6 +41,7 @@
     "react-rating-stars-component": "^2.2.0",
     "react-share": "^4.4.1",
     "react-spinners": "^0.13.8",
+    "react-textarea-autosize": "^8.5.3",
     "react-unity-webgl": "^7.1.13",
     "request": "^2.88.2",
     "socket.io": "^4.5.4",

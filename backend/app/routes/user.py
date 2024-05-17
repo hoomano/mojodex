@@ -1,9 +1,10 @@
-import base64
-import json
+
 import os
 import random
 from jinja2 import Template
 import requests
+from models.login_providers.google_login_manager import GoogleLoginManager
+from models.login_providers.apple_login_manager import AppleLoginManager
 from flask import request
 from flask_restful import Resource
 from app import db, mojo_mail_client
@@ -14,9 +15,6 @@ import string
 from datetime import datetime, timedelta
 import jwt
 from werkzeug.security import generate_password_hash, check_password_hash
-from google.oauth2 import id_token
-from google.auth.transport import requests as google_requests
-from cryptography.hazmat.primitives.asymmetric import rsa
 from bs4 import BeautifulSoup
 from models.purchase_manager import PurchaseManager
 
@@ -78,6 +76,7 @@ class User(Resource):
 
         return user
 
+
     # login route used by nextJS backend when user is authenticated on front side and need authentication on backend side
     def post(self):
         if not request.is_json:
@@ -90,8 +89,8 @@ class User(Resource):
             login_method = request.json["login_method"]
             app_version = version.parse(request.json["version"]) if "version" in request.json else version.parse("0.0.0")
             # ensure there is at least a password or a token
-            if "password" not in request.json and "google_token" not in request.json and "microsoft_token" not in request.json and "apple_token" not in request.json:
-                log_error(f"Error logging user {email} : Missing password or google_token or microsoft_token or apple_token", notify_admin=True)
+            if "password" not in request.json and "google_token" not in request.json and "microsoft_token" not in request.json and "apple_token" not in request.json and "apple_authorization_code" not in request.json:
+                log_error(f"Error logging user {email} : Missing password or google_token or microsoft_token or apple_token or apple_authorization_code", notify_admin=True)
                 return {"error": User.general_backend_error_message}, 400
 
         except KeyError as e:
@@ -127,71 +126,20 @@ class User(Resource):
             elif login_method == "google":
                 try:
                     google_token = request.json["google_token"]
+                    google_id, name, email = GoogleLoginManager().login(token=google_token)
                 except KeyError as e:
                     log_error(f"Error logging user {email}: Missing field : google_token", notify_admin=True)
                     return {"error": User.general_backend_error_message}, 400
-                try:
-                    google_client_id = os.environ.get("GOOGLE_CLIENT_ID")
-                    if google_client_id is None:
-                        log_error(f"Error logging user with google {email}: Missing GOOGLE_CLIENT_ID in env", notify_admin=True)
-                        return {"error": User.general_backend_error_message}, 400
-                    idinfo = id_token.verify_oauth2_token(google_token, google_requests.Request(), google_client_id)
-                    google_id = idinfo['sub']
-                    name = idinfo['name']
-                except ValueError as e:
+                except Exception as e:
                     log_error(f"Error logging user {email}: Wrong google_token", notify_admin=True)
                     return {"error": User.general_backend_error_message}, 400
             elif login_method == "apple":
                 try:
-                    apple_token = request.json["apple_token"]
-                except KeyError as e:
-                    log_error(f"Error logging user {email}: Missing field : apple_token", notify_admin=True)
-                    return {"error": User.general_backend_error_message}, 400
-                try:
-                    apple_client_id = os.environ.get("APPLE_CLIENT_ID")
-                    if apple_client_id is None:
-                        log_error(f"Error logging user with apple {email}: Missing APPLE_CLIENT_ID in env", notify_admin=True)
-                        return {"error": User.general_backend_error_message}, 400
-
-                    # Split the JWT token into header, payload, and signature
-                    header_base64 = apple_token.split('.')[0]
-
-                    # Decode the header from base64
-                    decoded_header = base64.urlsafe_b64decode(header_base64 + "===").decode("utf-8")
-                    # Parse the JSON content of the header
-                    header_data = json.loads(decoded_header)
-                    kid = header_data['kid']
-                    # Fetch https://appleid.apple.com/auth/keys to get the public key
-                    # and find the public key with the matching kid
-                    r = requests.get('https://appleid.apple.com/auth/keys')
-                    public_key = next(key for key in r.json()['keys'] if key['kid'] == kid)
-                    n_base64url, e_base64url = public_key['n'], public_key['e']
-
-                    # Convert Base64URL to Base64
-                    def base64url_to_base64(base64url):
-                        base64 = base64url.replace('-', '+').replace('_', '/')
-                        padding = len(base64) % 4
-                        if padding:
-                            base64 += '=' * (4 - padding)
-                        return base64
-
-                    n_base64 = base64url_to_base64(n_base64url)
-                    e_base64 = base64url_to_base64(e_base64url)
-                    # Convert Base64 to Decimal
-                    n_decimal = int.from_bytes(base64.b64decode(n_base64), byteorder='big')
-                    e_decimal = int.from_bytes(base64.b64decode(e_base64), byteorder='big')
-
-                    public_key = rsa.RSAPublicNumbers(e_decimal, n_decimal).public_key()
-
-                    # decode
-                    decoded = jwt.decode(apple_token, public_key, algorithms=['RS256'],
-                                         audience=apple_client_id)
-
-                    apple_id = decoded["sub"]
-                    # name = what is before @ of email because apple does not provide name in token
-                    name = decoded["email"].split("@")[0]
-                except jwt.exceptions.InvalidTokenError as e:
-                    log_error(f"Error logging user {email}: Wrong apple_token", notify_admin=True)
+                    apple_token = request.json["apple_token"] if "apple_token" in request.json else None
+                    apple_authorization_code = request.json["apple_authorization_code"] if "apple_authorization_code" in request.json else None
+                    apple_id, name, email = AppleLoginManager().login(authorization_code=apple_authorization_code, token=apple_token)
+                except Exception as e:
+                    log_error(f"Error login user {email} with apple: {e}", notify_admin=True)
                     return {"error": User.general_backend_error_message}, 400
             else:
                 log_error(f"Error logging user {email}: Login method {login_method} not supported", notify_admin=True)

@@ -221,14 +221,14 @@ const Step: React.FC<StepProps> = ({
                                     >
                                         {t("userTaskExecution.processTab.editionButton")}
                                     </Button>
-                                    <Button
+                                    {/*<Button
                                         variant="outline"
                                         size="middle"
                                         onClick={() => onReviewStep()}
                                         className="mr-2"
                                     >
                                         {t("userTaskExecution.processTab.invalidateButton")}
-                                    </Button>
+                                        </Button>*/}
 
                                     <Button variant="primary" size="middle" onClick={() => onContinueStep()}>
                                         {t("userTaskExecution.processTab.validateButton")}

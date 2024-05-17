@@ -13,14 +13,14 @@ import { useState } from "react";
 
 
 
-interface StepDetailProps {
+interface StepProps {
     stepExecution: UserTaskExecutionStepExecution;
     onInvalidate: any;
     onValidate: any;
     onStepRelaunched: any;
 }
 
-const StepProcessDetail: React.FC<StepDetailProps> = ({
+const Step: React.FC<StepProps> = ({
     stepExecution,
     onInvalidate,
     onValidate,
@@ -219,7 +219,7 @@ const StepProcessDetail: React.FC<StepDetailProps> = ({
                                             }}
                                         className="mr-2"
                                     >
-                                        Edit
+                                        {t("userTaskExecution.processTab.editionButton")}
                                     </Button>
                                     <Button
                                         variant="outline"
@@ -256,4 +256,4 @@ const StepProcessDetail: React.FC<StepDetailProps> = ({
     );
 };
 
-export default StepProcessDetail;
+export default Step;

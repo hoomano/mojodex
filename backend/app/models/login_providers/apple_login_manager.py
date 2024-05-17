@@ -8,6 +8,7 @@ import requests
 
 class AppleLoginManager:
     apple_token_uri = "https://appleid.apple.com/auth/token"
+    apple_keys_uri = "https://appleid.apple.com/auth/keys"
 
     def __init__(self):
         try:
@@ -56,7 +57,7 @@ class AppleLoginManager:
         try:
             # Fetch https://appleid.apple.com/auth/keys to get the public key
             # and find the public key with the matching kid
-            r = requests.get('https://appleid.apple.com/auth/keys')
+            r = requests.get(self.apple_keys_uri)
 
             public_key = next(key for key in r.json()['keys'] if key['kid'] == kid)
             n_base64url, e_base64url = public_key['n'], public_key['e']

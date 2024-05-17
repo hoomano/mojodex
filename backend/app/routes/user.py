@@ -1,9 +1,9 @@
-import base64
-import json
+
 import os
 import random
 from jinja2 import Template
 import requests
+from models.login_providers.google_login_manager import GoogleLoginManager
 from models.login_providers.apple_login_manager import AppleLoginManager
 from flask import request
 from flask_restful import Resource
@@ -15,9 +15,6 @@ import string
 from datetime import datetime, timedelta
 import jwt
 from werkzeug.security import generate_password_hash, check_password_hash
-from google.oauth2 import id_token
-from google.auth.transport import requests as google_requests
-from cryptography.hazmat.primitives.asymmetric import rsa
 from bs4 import BeautifulSoup
 from models.purchase_manager import PurchaseManager
 
@@ -129,28 +126,17 @@ class User(Resource):
             elif login_method == "google":
                 try:
                     google_token = request.json["google_token"]
+                    google_id, name, email = GoogleLoginManager().login(token=google_token)
                 except KeyError as e:
                     log_error(f"Error logging user {email}: Missing field : google_token", notify_admin=True)
                     return {"error": User.general_backend_error_message}, 400
-                try:
-                    google_client_id = os.environ.get("GOOGLE_CLIENT_ID")
-                    if google_client_id is None:
-                        log_error(f"Error logging user with google {email}: Missing GOOGLE_CLIENT_ID in env", notify_admin=True)
-                        return {"error": User.general_backend_error_message}, 400
-                    idinfo = id_token.verify_oauth2_token(google_token, google_requests.Request(), google_client_id)
-                    google_id = idinfo['sub']
-                    name = idinfo['name']
-                except ValueError as e:
+                except Exception as e:
                     log_error(f"Error logging user {email}: Wrong google_token", notify_admin=True)
                     return {"error": User.general_backend_error_message}, 400
             elif login_method == "apple":
                 try:
                     apple_token = request.json["apple_token"] if "apple_token" in request.json else None
                     apple_authorization_code = request.json["apple_authorization_code"] if "apple_authorization_code" in request.json else None
-                except KeyError as e:
-                    log_error(f"Error logging user {email}: Missing field : apple_token", notify_admin=True)
-                    return {"error": User.general_backend_error_message}, 400
-                try:
                     apple_id, name, email = AppleLoginManager().login(authorization_code=apple_authorization_code, token=apple_token)
                 except Exception as e:
                     log_error(f"Error login user {email} with apple: {e}", notify_admin=True)

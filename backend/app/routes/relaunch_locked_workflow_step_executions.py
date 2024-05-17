@@ -44,7 +44,7 @@ class RelaunchLockedWorkflowStepExecutions(Resource):
                 .filter(MdUserWorkflowStepExecution.error_status.is_(None))\
                 .filter(MdUserWorkflowStepExecution.creation_date < two_hours_ago)\
                 .filter(MdUserWorkflowStepExecutionResult.user_workflow_step_execution_fk.is_(None))\
-                .join(MdUserWorkflowStepExecution, MdUserWorkflowStepExecution.user_task_execution_fk == MdUserTaskExecution.user_task_execution_pk)\
+                .join(MdUserTaskExecution, MdUserWorkflowStepExecution.user_task_execution_fk == MdUserTaskExecution.user_task_execution_pk)\
                 .filter(MdUserTaskExecution.deleted_by_user.is_(None))\
                 .all()
             

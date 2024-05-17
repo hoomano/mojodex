@@ -18,6 +18,7 @@ const taskAPIRoutes = {
   messageHistory: "/api/task/message",
   todos: "/api/todos",
   userWorkflowStepExecution: "/api/user_workflow_step_execution",
+  userWorkflowStepExecutionResult: "/api/user_workflow_step_execution_result",
 };
 
 const producedTextAPIRoutes = {

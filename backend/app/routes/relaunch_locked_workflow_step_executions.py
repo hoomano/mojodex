@@ -6,9 +6,8 @@ import pytz
 from flask import request
 from flask_restful import Resource
 from mojodex_core.logging_handler import log_error
-from mojodex_core.entities import MdUserWorkflowStepExecution
+from mojodex_core.entities import MdUserTaskExecution, MdUserWorkflowStepExecution, MdUserWorkflowStepExecutionResult
 from app import db, server_socket
-from sqlalchemy import func, text
 
 class RelaunchLockedWorkflowStepExecutions(Resource):
 
@@ -39,11 +38,16 @@ class RelaunchLockedWorkflowStepExecutions(Resource):
             current_time = datetime.now(utc)
             two_hours_ago = current_time - timedelta(hours=2)
             # find every user_workflow_step_execution that is locked => locked = no result and no error with creation_date > 2 hours
+           
             locked_steps = db.session.query(MdUserWorkflowStepExecution)\
-                .filter(MdUserWorkflowStepExecution.result.is_(None))\
+                .outerjoin(MdUserWorkflowStepExecutionResult, MdUserWorkflowStepExecution.user_workflow_step_execution_pk == MdUserWorkflowStepExecutionResult.user_workflow_step_execution_fk)\
                 .filter(MdUserWorkflowStepExecution.error_status.is_(None))\
                 .filter(MdUserWorkflowStepExecution.creation_date < two_hours_ago)\
+                .filter(MdUserWorkflowStepExecutionResult.user_workflow_step_execution_fk.is_(None))\
+                .join(MdUserTaskExecution, MdUserWorkflowStepExecution.user_task_execution_fk == MdUserTaskExecution.user_task_execution_pk)\
+                .filter(MdUserTaskExecution.deleted_by_user.is_(None))\
                 .all()
+            
             user_workflow_step_executions_pk = [step.user_workflow_step_execution_pk for step in locked_steps]
             # mark these steps as error
             for step in locked_steps:

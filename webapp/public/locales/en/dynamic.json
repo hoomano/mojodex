@@ -148,7 +148,10 @@
       "stepExecutionParameters": "Parameters",
       "stepExecutionResults": "Results",
       "stepExecutionError": "Oops. I couldn't finish.",
-      "stepExecutionErrorInstruction": "You can try to relaunch the step or contact support."
+      "stepExecutionErrorInstruction": "You can try to relaunch the step or contact support.",
+      "cancelEditionButton": "Cancel",
+      "saveEditionButton": "Save",
+      "editionButton": "Edit"
     }
   },
   "todos": {

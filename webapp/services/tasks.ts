@@ -12,6 +12,8 @@ import {
 import axiosClient from "./config/axiosClient";
 import {
   MessageHistoryResponse,
+  SaveResultPayload,
+  SaveResultResponse,
   TodoCompletePayload,
   TodosType,
 } from "modules/Tasks/interface/action";
@@ -146,5 +148,8 @@ export const relaunchStepExecution = (stepExecutionPk: number) =>
   axiosClient.put(apiRoutes.userWorkflowStepExecution, {
     user_workflow_step_execution_pk: stepExecutionPk,
   });
+
+export const saveResultEdition = (payload: SaveResultPayload): Promise<SaveResultResponse> =>
+ axiosClient.put(apiRoutes.userWorkflowStepExecutionResult, payload);
 
   

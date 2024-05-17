@@ -1,6 +1,6 @@
 from datetime import datetime
 from app import server_socket
-from mojodex_core.entities import MdUser, MdUserWorkflowStepExecution, MdWorkflowStep
+from mojodex_core.entities import MdUserWorkflowStepExecutionResult, MdUserWorkflowStepExecution, MdWorkflowStep
 from typing import List
 from models.workflows.steps_library import steps_class
 from mojodex_core.mail import send_technical_error_email
@@ -68,15 +68,22 @@ class WorkflowStepExecution:
     @property
     def result(self):
         try:
-            return self.db_object.result
+            # find the last associated step result if any
+            step_result = self.db_session.query(MdUserWorkflowStepExecutionResult)\
+                .filter(MdUserWorkflowStepExecutionResult.user_workflow_step_execution_fk == self.db_object.user_workflow_step_execution_pk)\
+                .order_by(MdUserWorkflowStepExecutionResult.creation_date.desc())\
+                .first()
+            return step_result.result if step_result else None
         except Exception as e:
             raise Exception(f"{self.logger_prefix} :: parameter :: {e}")
 
     @result.setter
     def result(self, value: List[dict]):
         try:
-            self.db_object.result = value
-            flag_modified(self.db_object, "result")
+            step_result = MdUserWorkflowStepExecutionResult(
+                user_workflow_step_execution_fk=self.db_object.user_workflow_step_execution_pk,
+                result=value)
+            self.db_session.add(step_result)
             self.db_session.commit()
         except Exception as e:
             raise Exception(f"{self.logger_prefix} :: result :: {e}")

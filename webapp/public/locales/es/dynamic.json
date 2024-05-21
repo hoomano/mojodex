@@ -105,7 +105,8 @@
       "title": "Entradas iniciales",
       "cancelEditionButton": "Cancelar",
       "saveEditionButton": "Guardar y Reiniciar",
-      "restartError": "Error al reiniciar el flujo de trabajo. Vuelva a intentarlo o póngase en contacto con el servicio de asistencia."
+      "restartError": "Error al reiniciar el flujo de trabajo. Vuelva a intentarlo o póngase en contacto con el servicio de asistencia.",
+      "imageUploadButton": "Subir imagen"
     },
     "chatTab": {
       "title": "Chat",

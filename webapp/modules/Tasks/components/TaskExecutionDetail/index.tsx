@@ -143,7 +143,7 @@ const DraftDetail = () => {
           user_task_execution_pk={taskExecutionPK as number}
           inputs={currentTask!.json_inputs_values}
           sessionId={currentTask!.session_id}
-          editable={editingInputs} // TODO
+          editable={editingInputs}
           onCancelEdition={() => {
             processTab.disabled = false;
             setEditingInputs(false);

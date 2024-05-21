@@ -105,7 +105,8 @@
             "title": "Données initiales",
             "cancelEditionButton": "Annuler",
             "saveEditionButton": "Sauvegarder et redémarrer",
-            "restartError": "Erreur lors du redémarrage du flux de travail. Veuillez réessayer ou contacter le support."
+            "restartError": "Erreur lors du redémarrage du flux de travail. Veuillez réessayer ou contacter le support.",
+            "imageUploadButton": "Télécharger une image"
         },
         "chatTab": {
             "title": "Chat",

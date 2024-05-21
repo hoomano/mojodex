@@ -1,5 +1,5 @@
-import { TaskJsonInput } from "modules/Tasks/interface";
-import React, { FunctionComponent } from "react";
+import { InputArrayProps, TaskJsonInput } from "modules/Tasks/interface";
+import React, { FunctionComponent, useState } from "react";
 
 import Button from "components/Button";
 import InputsForm from "../TaskForm/inputsForm";
@@ -7,25 +7,43 @@ import ImagePreview from "../imagePreview";
 import useOnWorkflowRestart from "modules/Tasks/hooks/useOnWorkflowRestart";
 
 interface TaskInputsProps {
+    user_task_execution_pk: number;
     inputs: TaskJsonInput[];
     sessionId: string;
     editable: boolean;
-    onCancelEdition?: () => void;
-    onSaveAndRestart?: () => void;
+    onCancelEdition: () => void;
+    onSaveAndRestart: () => void;
 }
 
 
 
-const TaskInputs: FunctionComponent<TaskInputsProps> = ({ inputs, sessionId, editable, onCancelEdition, onSaveAndRestart }) => {
+const TaskInputs: FunctionComponent<TaskInputsProps> = ({ user_task_execution_pk, inputs, sessionId, editable, onCancelEdition, onSaveAndRestart }) => {
     const onWorkflowRestart = useOnWorkflowRestart();
+    const [inputArray, setInputArray] = useState<InputArrayProps[]>(inputs.map((input) => ({
+        input_name: input.input_name,
+        input_value: input.value || '', // Add a default value of an empty string if input.value is undefined
+        })));
     // For now, restart can only be done on workflows, not instruct tasks
     const restartWorkflow = () => {
+        // edit inputs using inputArray
+        // for each name in inputArray, find the corresponding input in inputs and update its value
+        inputArray.forEach((input) => {
+            const inputToUpdate = inputs.find((i) => i.input_name === input.input_name);
+            if (inputToUpdate) {
+                if(input.input_value instanceof File) {
+                    inputToUpdate.value = input.input_value.name;
+                } else {
+                    inputToUpdate.value = input.input_value as string;
+                }
+            }
+        });
+
         onWorkflowRestart.mutate({
-            user_workflow_step_execution_pk: user_task_execution_pk,
-            inputs: inputs
+            user_task_execution_pk: user_task_execution_pk,
+            inputs: inputArray,
         }, {
             onSuccess: (data) => {
-                console.log(data);
+                onSaveAndRestart(); // todo: update current tasks inputs for display
             },
             onError: (error) => {
                 console.log("Error saving result edition", error);
@@ -41,7 +59,7 @@ const TaskInputs: FunctionComponent<TaskInputsProps> = ({ inputs, sessionId, edi
                     <div className="pb-4">
                         <InputsForm
                             jsonInputs={inputs}
-                            setInputArray={() => { }}
+                            setInputArray={setInputArray}
                             sessionId={sessionId}
                         />
                     </div>
@@ -55,7 +73,7 @@ const TaskInputs: FunctionComponent<TaskInputsProps> = ({ inputs, sessionId, edi
                             Cancel
                         </Button>
 
-                        <Button variant="primary" size="middle" onClick={onSaveAndRestart}>
+                        <Button variant="primary" size="middle" onClick={restartWorkflow}>
                             Save and restart
                         </Button>
                     </div>

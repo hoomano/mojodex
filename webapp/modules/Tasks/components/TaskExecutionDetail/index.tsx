@@ -142,6 +142,7 @@ const DraftDetail = () => {
       title: `${t("userTaskExecution.inputsTab.title")}`,
       component: (
         <TaskInputs
+          user_task_execution_pk={taskExecutionPK as number}
           inputs={currentTask!.json_inputs_values}
           sessionId={currentTask!.session_id}
           editable={editingInputs} // TODO

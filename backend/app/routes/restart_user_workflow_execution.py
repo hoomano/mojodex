@@ -1,4 +1,6 @@
 from datetime import datetime
+import json
+from models.user_task_execution_inputs_manager import UserTaskExecutionInputsManager
 from models.workflows.workflow_execution import WorkflowExecution
 from flask import request
 from flask_restful import Resource
@@ -11,6 +13,7 @@ class RestartUserWorkflowExecution(Resource):
 
     def __init__(self):
         RestartUserWorkflowExecution.method_decorators = [authenticate()]
+        self.user_task_execution_inputs_manager = UserTaskExecutionInputsManager()
 
     def post(self, user_id):
         """Route to restart a workflow execution by changing initial data and restarting the workflow"""
@@ -18,7 +21,7 @@ class RestartUserWorkflowExecution(Resource):
         try:
             timestamp = request.form['datetime']
             user_task_execution_pk = request.form['user_task_execution_pk']
-            new_inputs = request.form['inputs']
+            new_inputs = json.loads(request.form["inputs"])
             platform = request.form['platform']
         except KeyError as e:
             return {"error": f"Missing parameter : {e}"}, 400
@@ -39,10 +42,12 @@ class RestartUserWorkflowExecution(Resource):
             if task.type != "workflow":
                 log_error(f"{error_message} : Task {task.task_pk} is not a workflow")
                 return {"error": "Task is not a workflow"}, 400
-
+            
+            #print(new_inputs)
             json_input_values = self.user_task_execution_inputs_manager.construct_inputs_from_request(user_task_execution.json_input_values,
                                                                                     new_inputs, request.files, user_id,
                                                                                     user_task_execution.session_id)
+            
             user_task_execution.json_input_values = json_input_values
             flag_modified(user_task_execution, "json_input_values")
             db.session.commit()

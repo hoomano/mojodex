@@ -104,7 +104,8 @@
     "inputsTab": {
       "title": "Données initiales",
       "cancelEditionButton": "Annuler",
-      "saveEditionButton": "Sauvegarder et redémarrer"
+      "saveEditionButton": "Sauvegarder et redémarrer",
+      "restartError": "Erreur lors du redémarrage du flux de travail. Veuillez réessayer ou contacter le support."
     },
     "chatTab": {
       "title": "Chat",

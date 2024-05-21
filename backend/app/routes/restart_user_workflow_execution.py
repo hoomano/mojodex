@@ -43,7 +43,6 @@ class RestartUserWorkflowExecution(Resource):
                 log_error(f"{error_message} : Task {task.task_pk} is not a workflow")
                 return {"error": "Task is not a workflow"}, 400
             
-            #print(new_inputs)
             json_input_values = self.user_task_execution_inputs_manager.construct_inputs_from_request(user_task_execution.json_input_values,
                                                                                     new_inputs, request.files, user_id,
                                                                                     user_task_execution.session_id)

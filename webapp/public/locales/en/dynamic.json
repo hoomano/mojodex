@@ -104,7 +104,8 @@
     "inputsTab": {
       "title": "Initial inputs",
       "cancelEditionButton": "Cancel",
-      "saveEditionButton": "Save and Restart"
+      "saveEditionButton": "Save and Restart",
+      "restartError": "Error restarting workflow. Please retry or contact support."
     },
     "chatTab": {
       "title": "Chat",

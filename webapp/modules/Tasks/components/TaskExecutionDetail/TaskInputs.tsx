@@ -27,31 +27,29 @@ const TaskInputs: FunctionComponent<TaskInputsProps> = ({ user_task_execution_pk
         })));
     // For now, restart can only be done on workflows, not instruct tasks
     const restartWorkflow = () => {
-        // edit inputs using inputArray
-        // for each name in inputArray, find the corresponding input in inputs and update its value
-        inputArray.forEach((input) => {
-            const inputToUpdate = inputs.find((i) => i.input_name === input.input_name);
-            if (inputToUpdate) {
-                if(input.input_value instanceof File) {
-                    inputToUpdate.value = input.input_value.name;
-                } else {
-                    inputToUpdate.value = input.input_value as string;
-                }
-            }
-        });
-
         onWorkflowRestart.mutate({
             user_task_execution_pk: user_task_execution_pk,
             inputs: inputArray,
         }, {
-            onSuccess: (data) => {
-                onSaveAndRestart(); // todo: update current tasks inputs for display
+            onSuccess: () => {
+                // edit inputs using inputArray
+                // for each name in inputArray, find the corresponding input in inputs and update its value
+                inputArray.forEach((input) => {
+                    const inputToUpdate = inputs.find((i) => i.input_name === input.input_name);
+                    if (inputToUpdate) {
+                        if (input.input_value instanceof File) {
+                            inputToUpdate.value = input.input_value.name;
+                        } else {
+                            inputToUpdate.value = input.input_value as string;
+                        }
+                    }
+                });
+                onSaveAndRestart();
             },
             onError: (error) => {
-                console.log("Error saving result edition", error);
-                // todo: manage error message
+                alert("Error restarting workflow. Please retry or contact support.");
             }
-        });
+        });  
     }
 
     return (

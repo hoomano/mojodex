@@ -115,7 +115,8 @@
         "title": "I'm on it !",
         "textContent": {
           "notifAllowed": "Please allow notifications and I will let you know once my work is done",
-          "notNotifAllowed": "I will let you know once my work is done"
+          "notNotifAllowed": "I will let you know once my work is done",
+          "webapp": "This will require some time, come back later to check my work"
         },
         "acceptButtonText": {
           "notifAllowed": "Notify me",
@@ -133,7 +134,11 @@
       },
       "editEmoji": "🎙️",
       "editButton": "Edit",
-      "exportButton": "Export"
+      "exportButton": "Export",
+      "hubspotIntegration": {
+        "saveAs": "Save as ",
+        "in": " in "
+      }
     },
     "todosTab": {
       "title": "Todos",
@@ -156,7 +161,10 @@
       "cancelEditionButton": "Cancel",
       "saveEditionButton": "Save",
       "editionButton": "Edit",
-      "restartButton": "Restart"
+      "restartButton": "Restart",
+      "restartButtonTooltip": "Goes back to the initial form and amend the inputs",
+      "editButtonTooltip": "Manually edit the result of the step provided by Mojo",
+      "validateButtonTooltip": "Validates this step and continues the process"
     }
   },
   "todos": {
@@ -254,7 +262,7 @@
   "accountDeletion": {
     "appBarTitle": "Account Deletion",
     "title": "Delete Account",
-    "body": "<Placeholder for the body of the account deletion page>",
+    "body": "If you wish to permanently delete your account, click the button below to send a pre-written email to Hoomano requesting account deletion.",
     "requestAccountDeletionButton": "Request Account Deletion"
   }
 }

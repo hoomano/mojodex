@@ -1,3 +1,9 @@
+import { MessageType } from "modules/Chat/interface";
+
+export interface MessageHistoryResponse {
+  messages: { sender: string; message: MessageType }[];
+}
+
 export interface UserTask {
   user_task_pk?: number;
   task_pk: number;
@@ -120,6 +126,15 @@ export interface EditerProducedText {
   text: string;
   title: string;
   producedTextPk: number | null;
+}
+
+export interface SaveResultPayload {
+  user_workflow_step_execution_pk: number;
+  result: Array<{ [k: string]: string; }>;
+}
+
+export interface SaveResultResponse {
+  new_result: Array<Map<string, string>>;
 }
 
 export interface RestartWorkflowPayload{

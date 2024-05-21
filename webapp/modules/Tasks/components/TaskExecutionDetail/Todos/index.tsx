@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import Loader from "components/Loader";
 import useGetAllTodos from "modules/Tasks/hooks/useGetAllTodos";
 import moment from "moment";
-import { Todos } from "modules/Tasks/interface/action";
+import { Todos } from "modules/Tasks/interface/todos";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faCommentDots,
@@ -91,7 +91,7 @@ const TodosView = ({ taskExecutionPK, workingOnTodos, nTodos }: TodosType) => {
         mark_as_done: updatedStates[todo_pk],
       },
       {
-        onSuccess: () => {},
+        onSuccess: () => { },
       }
     );
   };
@@ -154,7 +154,7 @@ const TodosView = ({ taskExecutionPK, workingOnTodos, nTodos }: TodosType) => {
               )}
 
               {todo.completed == null &&
-              moment(todo.scheduled_date).isBefore(moment(), "day") ? (
+                moment(todo.scheduled_date).isBefore(moment(), "day") ? (
                 <FontAwesomeIcon
                   icon={faBan}
                   className="text-gray-lighter w-5 h-5"
@@ -171,11 +171,10 @@ const TodosView = ({ taskExecutionPK, workingOnTodos, nTodos }: TodosType) => {
               )}
               <div className="flex-1">
                 <div
-                  className={`text-[14px] ${
-                    !!todo.completed || todoCompletionStates[todo.todo_pk]
+                  className={`text-[14px] ${!!todo.completed || todoCompletionStates[todo.todo_pk]
                       ? "line-through italic"
                       : ""
-                  }`}
+                    }`}
                 >
                   {todo.description}
                 </div>

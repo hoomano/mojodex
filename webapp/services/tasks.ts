@@ -9,15 +9,15 @@ import {
   UserTask,
   UserTasksAPIResponse,
   RestartWorkflowPayload,
+  SaveResultPayload,
+  SaveResultResponse,
+  MessageHistoryResponse,
 } from "modules/Tasks/interface";
 import axiosClient from "./config/axiosClient";
 import {
-  MessageHistoryResponse,
-  SaveResultPayload,
-  SaveResultResponse,
   TodoCompletePayload,
   TodosType,
-} from "modules/Tasks/interface/action";
+} from "modules/Tasks/interface/todos";
 
 export const getAllUserTasks = (): Promise<UserTasksAPIResponse> =>
   axiosClient.get(apiRoutes.userTasks);
@@ -54,8 +54,7 @@ const addUserInputsToForm = (userInputsFromForm: any[], formData: FormData) => {
 
 export const executeTask = (
   payload: ExecuteTaskPayload
-): Promise<ExecuteTaskResponse> =>
-{
+): Promise<ExecuteTaskResponse> => {
   const formData = new FormData();
   (Object.keys(payload) as Array<keyof ExecuteTaskPayload>).forEach(key => {
 
@@ -63,10 +62,10 @@ export const executeTask = (
     if (key == 'inputs') {
       addUserInputsToForm(payload['inputs'], formData);
     } else if (value !== undefined) {
-      formData.append(key, value.toString()); 
+      formData.append(key, value.toString());
     }
   });
- 
+
   return axiosClient.post(apiRoutes.executeTask, formData);
 }
 
@@ -104,7 +103,7 @@ export const getUserTaskExecutionProducedText = (producedTextIndex: number, user
     params: {
       produced_text_version_index: producedTextIndex,
       user_task_execution_pk: userTaskExecutionPk,
-     },
+    },
   });  //.then(response => response.data)
 
 
@@ -154,7 +153,7 @@ export const relaunchStepExecution = (stepExecutionPk: number) =>
   });
 
 export const saveResultEdition = (payload: SaveResultPayload): Promise<SaveResultResponse> =>
- axiosClient.put(apiRoutes.userWorkflowStepExecutionResult, payload);
+  axiosClient.put(apiRoutes.userWorkflowStepExecutionResult, payload);
 
 export const workflowRestart = (payload: RestartWorkflowPayload) => {
   const { user_task_execution_pk, inputs } = payload;
@@ -163,4 +162,3 @@ export const workflowRestart = (payload: RestartWorkflowPayload) => {
   addUserInputsToForm(inputs, formData);
   return axiosClient.post(apiRoutes.workflowRestart, formData);
 };
-  

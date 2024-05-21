@@ -8,6 +8,7 @@ import {
   UserTaskExecutionProducedTextResponse,
   UserTask,
   UserTasksAPIResponse,
+  RestartWorkflowPayload,
 } from "modules/Tasks/interface";
 import axiosClient from "./config/axiosClient";
 import {
@@ -31,6 +32,26 @@ export const getTaskConfigs = ({
 }: any): Promise<TaskConfigAPIResponse> =>
   axiosClient.put(apiRoutes.taskConfigs, { user_task_pk: queryKey[1] });
 
+
+const addUserInputsToForm = (userInputsFromForm: any[], formData: FormData) => {
+  const json_inputs: any = [];
+  userInputsFromForm.forEach((input: any) => {
+    if (!(input.input_value instanceof File)) {
+      json_inputs.push({
+        "input_name": input.input_name,
+        "input_value": input.input_value.toString()
+      });
+    } else if ((input.input_value instanceof File)) {
+      formData.append(input.input_name, input.input_value);
+      json_inputs.push({
+        "input_name": input.input_name,
+        "input_value": input.input_value.name
+      });
+    }
+  });
+  formData.append('inputs', JSON.stringify(json_inputs));
+};
+
 export const executeTask = (
   payload: ExecuteTaskPayload
 ): Promise<ExecuteTaskResponse> =>
@@ -40,24 +61,7 @@ export const executeTask = (
 
     const value = payload[key];
     if (key == 'inputs') {
-      // create an empty list of map
-      const inputs: any = [];
-      const value = payload[key];
-      value.forEach((input: any) => {
-        if (!(input.input_value instanceof File)) {
-          inputs.push({
-            "input_name": input.input_name,
-            "input_value": input.input_value.toString()
-          });
-        } else if ((input.input_value instanceof File)) {
-          formData.append(input.input_name, input.input_value);
-          inputs.push({
-            "input_name": input.input_name,
-            "input_value": input.input_value.name
-          });
-        }
-      });
-      formData.append('inputs', JSON.stringify(inputs));
+      addUserInputsToForm(payload['inputs'], formData);
     } else if (value !== undefined) {
       formData.append(key, value.toString()); 
     }
@@ -152,4 +156,11 @@ export const relaunchStepExecution = (stepExecutionPk: number) =>
 export const saveResultEdition = (payload: SaveResultPayload): Promise<SaveResultResponse> =>
  axiosClient.put(apiRoutes.userWorkflowStepExecutionResult, payload);
 
+export const workflowRestart = (payload: RestartWorkflowPayload) => {
+  const { user_task_execution_pk, inputs } = payload;
+  const formData = new FormData();
+  formData.append('user_task_execution_pk', user_task_execution_pk.toString());
+  addUserInputsToForm(inputs, formData);
+  return axiosClient.post(apiRoutes.workflowRestart, formData);
+};
   

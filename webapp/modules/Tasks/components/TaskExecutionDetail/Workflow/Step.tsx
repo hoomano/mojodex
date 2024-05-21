@@ -18,13 +18,17 @@ interface StepProps {
     onInvalidate: any;
     onValidate: any;
     onStepRelaunched: any;
+    onRestart: any;
+    isFirstStep: boolean;
 }
 
 const Step: React.FC<StepProps> = ({
     stepExecution,
     onInvalidate,
     onValidate,
-    onStepRelaunched
+    onStepRelaunched,
+    onRestart,
+    isFirstStep
 }) => {
     const { t } = useTranslation('dynamic');
     const onSaveStepResultEdition = useOnSaveResultEdition();
@@ -210,6 +214,18 @@ const Step: React.FC<StepProps> = ({
                                 </Button>
                             </div> : stepExecution.user_validation_required && stepExecution.validated === null && stepExecution.result != null ?
                                 <div className="text-end pt-2">
+                                    {isFirstStep ? <Button
+                                        variant="outline"
+                                        size="middle"
+                                        onClick={() => {
+                                            // change tab => back to "initial data"
+                                            onRestart();
+
+                                        }}
+                                        className="mr-2"
+                                    >
+                                        Restart
+                                    </Button>: null}
                                     <Button
                                         variant="outline"
                                         size="middle"

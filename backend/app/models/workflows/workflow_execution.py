@@ -317,6 +317,18 @@ class WorkflowExecution:
             checkpoint_step.learn_instruction(learned_instruction)
         except Exception as e:
             raise Exception(f"invalidate_current_step :: {e}")
+    
+    def restart(self):
+        try:
+            current_step_in_validation = self._get_last_step_execution()
+            if current_step_in_validation.workflow_step.rank != 1:
+                raise Exception("Can only restart from first step")
+            current_step_in_validation.invalidate(self.db_object.session_id)
+            # restart
+            self.run()
+        except Exception as e:
+            raise Exception(f"restart :: {e}")
+        
 
     @property
     def _db_workflow(self):

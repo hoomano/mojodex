@@ -121,3 +121,8 @@ export interface EditerProducedText {
   title: string;
   producedTextPk: number | null;
 }
+
+export interface RestartWorkflowPayload{
+  user_task_execution_pk: number;
+  inputs: InputArrayProps[];
+}

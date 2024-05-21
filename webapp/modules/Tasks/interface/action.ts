@@ -34,6 +34,8 @@ export interface SaveResultPayload {
   result: Array<{ [k: string]: string; }>;
 }
 
+
+
 export interface SaveResultResponse {
   new_result: Array<Map<string, string>>;
 }

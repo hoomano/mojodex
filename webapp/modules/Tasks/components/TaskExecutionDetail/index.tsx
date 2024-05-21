@@ -75,6 +75,9 @@ const DraftDetail = () => {
   });
   const [workflowStepExecutions, setWorkflowStepExecutions] = useState(currentTask!.step_executions);
   const [chatIsVisible, setChatIsVisible] = useState(currentTask!.task_type !== "workflow");
+  const [editingInputs, setEditingInputs] = useState(false);
+
+
 
   const { t } = useTranslation("dynamic");
 
@@ -123,6 +126,12 @@ const DraftDetail = () => {
           onInvalidate={() => setChatIsVisible(true)}
           onValidate={(stepExecutionPk: number) => onStepExecutionValidated(stepExecutionPk)}
           onStepRelaunched={(stepExecutionPk: number) => onStepRelaunched(stepExecutionPk)}
+          onRestartWorkflow={() => {
+            processTab.disabled = true;
+            setEditingInputs(true);
+            console.log("Editing inputs: ", editingInputs);
+            setSelectedTab("inputs")
+          }}
         />
       ),
       disabled: false
@@ -135,6 +144,18 @@ const DraftDetail = () => {
         <TaskInputs
           inputs={currentTask!.json_inputs_values}
           sessionId={currentTask!.session_id}
+          editable={editingInputs} // TODO
+          onCancelEdition={() => {
+            processTab.disabled = false;
+            setEditingInputs(false);
+            setSelectedTab("process");
+          }}
+          onSaveAndRestart={() => {
+            processTab.disabled = false;
+            setEditingInputs(false);
+            setSelectedTab("process");
+            // TODO: relaunch workflow (= first step)
+          }}
             />
       ),
       disabled: false
@@ -173,7 +194,7 @@ const DraftDetail = () => {
         }
       }
     }
-  }, [workflowStepExecutions, editorDetails, isTask, router.query.tab, producedTextIndex, isDraftStreaming]);
+  }, [workflowStepExecutions, editorDetails, isTask, router.query.tab, producedTextIndex, isDraftStreaming, editingInputs]);
 
   
   useEffect(() => {
@@ -390,6 +411,8 @@ const DraftDetail = () => {
     }
   }
 
+
+
   return (
     <div className="flex relative">
       <div className="flex-1 p-8 lg:p-16 h-[calc(100vh-72px)] lg:h-screen overflow-auto">
@@ -414,12 +437,16 @@ const DraftDetail = () => {
                   )}
                 </div>
               </div>
-              {/*<ExpandableCard headerText={t("userTaskExecution.inputsTab.title")}>
-                  <TaskInputs inputs={currentTask!.json_inputs_values}/>
-                </ExpandableCard>*/}
               <Tab
                 selected={selectedTab!}
-                onChangeTab={(key: string) => setSelectedTab(key)}
+                  onChangeTab={(key: string) => {
+                    // if key is not "inputs"
+                    if (key !== "inputs") {
+                      // set editingInputs to false
+                      setEditingInputs(false);
+                    }
+                    setSelectedTab(key)
+                  }}
                 tabs={tabs}
                 notReadTodos={currentTask?.n_not_read_todos}
               />

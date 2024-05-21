@@ -4,13 +4,11 @@ import { InputArrayProps } from "../../interface";
 import { useRouter } from "next/router";
 import useGetTaskConfigs from "modules/Tasks/hooks/useGetTaskConfigs";
 import InputPlaceholder from "./InputPlaceholder";
-import Textarea from "./TextArea";
 import { decryptId, encryptId } from "helpers/method";
 import Button from "components/Button";
 import useGetTask from "modules/Tasks/hooks/useGetTask";
 import usePostExecuteTask from "modules/Tasks/hooks/usePostExecuteTask";
-import ImageArea from "./ImageArea";
-import DropDownList from "./DropDownList";
+import InputsForm from "./inputsForm";
 
 const CreateTaskForm = () => {
   const router = useRouter();
@@ -50,7 +48,7 @@ const CreateTaskForm = () => {
           },
         }
       );
-      
+
     } else {
       alert("Field missing");
     }
@@ -81,39 +79,15 @@ const CreateTaskForm = () => {
             </>
 
             <div className="py-6">
-              <div className="grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
-                {!isLoading && taskConfigDetails ? (
-                  tasksForm.map((input) => {
-                    switch (input.type) {
-                      case 'image':
-                        return (
-                          <ImageArea
-                            key={input.input_name}
-                            jsonInput={input}
-                            setInputArray={setInputArray}
-                          />
-                        );
-                      case 'drop_down_list':
-                        return (
-                          <DropDownList
-                            key={input.input_name}
-                            jsonInput={input}
-                            setInputArray={setInputArray}
-                          />
-                        );
-                      default:
-                        return (
-                          <Textarea
-                            key={input.input_name}
-                            jsonInput={input}
-                            setInputArray={setInputArray}
-                          />
-                        );
-                    }
-                  })) : (
+              {!isLoading && taskConfigDetails ? <InputsForm
+                jsonInputs={tasksForm}
+                setInputArray={setInputArray}
+                sessionId={sessionId!}
+              />
+
+                : (
                   <InputPlaceholder />
                 )}
-              </div>
             </div>
 
 

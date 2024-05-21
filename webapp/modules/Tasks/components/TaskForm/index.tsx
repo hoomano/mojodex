@@ -1,18 +1,16 @@
-import { useState, useEffect, useContext } from "react";
+import { useState } from "react";
 import { ArrowLeftIcon } from "@heroicons/react/20/solid";
-import { InputArrayProps, TaskPreference, UserTask } from "../../interface";
-import globalContext from "helpers/GlobalContext";
+import { InputArrayProps } from "../../interface";
 import { useRouter } from "next/router";
 import useGetTaskConfigs from "modules/Tasks/hooks/useGetTaskConfigs";
 import InputPlaceholder from "./InputPlaceholder";
 import Textarea from "./TextArea";
-import PrefSwitchGroup from "./PrefSwitchGroup";
 import { decryptId, encryptId } from "helpers/method";
 import Button from "components/Button";
 import useGetTask from "modules/Tasks/hooks/useGetTask";
-import { useTranslation } from "react-i18next";
 import usePostExecuteTask from "modules/Tasks/hooks/usePostExecuteTask";
 import ImageArea from "./ImageArea";
+import DropDownList from "./DropDownList";
 
 const CreateTaskForm = () => {
   const router = useRouter();
@@ -20,7 +18,6 @@ const CreateTaskForm = () => {
   const taskId = query.taskId ? decryptId(query.taskId as string) : null;
 
   const { data: task } = useGetTask(taskId);
-  const { setGlobalState }: any = useContext(globalContext);
 
   const [inputArray, setInputArray] = useState<InputArrayProps[]>([]);
 
@@ -33,12 +30,12 @@ const CreateTaskForm = () => {
   const tasksForm = taskConfigDetails?.json_input || [];
   const taskType = task?.task_type;
 
-  const { t } = useTranslation("dynamic");
 
   const { mutate: executeTaskMutation, isLoading: isPostExecuteTaskLoading } =
     usePostExecuteTask();
 
   const generateAnswerHandler = () => {
+    console.log(inputArray);
     if (inputArray.length == tasksForm.length && taskExecutionPK && sessionId && taskType) {
       executeTaskMutation(
         {
@@ -60,7 +57,6 @@ const CreateTaskForm = () => {
     }
   };
 
-  let counter = 1;
   return (
     <div className="flex">
       <div className="flex-1">
@@ -93,6 +89,14 @@ const CreateTaskForm = () => {
                       case 'image':
                         return (
                           <ImageArea
+                            key={input.input_name}
+                            jsonInput={input}
+                            setInputArray={setInputArray}
+                          />
+                        );
+                      case 'drop_down_list':
+                        return (
+                          <DropDownList
                             key={input.input_name}
                             jsonInput={input}
                             setInputArray={setInputArray}

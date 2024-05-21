@@ -17,6 +17,7 @@ from werkzeug.utils import secure_filename
 class UserTaskExecutionRun(Resource):
     logger_prefix = "UserTaskExecutionRun"
     image_type = "image"
+    drop_down_type = "drop_down_list"
 
     def __init__(self):
         UserTaskExecutionRun.method_decorators = [authenticate()]
@@ -85,6 +86,10 @@ class UserTaskExecutionRun(Resource):
                 # look for corresponding input in json_input_values
                 for input in json_input_values:
                     if input["input_name"] == filled_input["input_name"]:
+                        if input["type"] == self.drop_down_type:
+                            possible_values = [value["value"] for value in input["possible_values"]]
+                            if filled_input["input_value"] not in possible_values:
+                                return {"error": f"Invalid value for input {input['input_name']}"}, 400
                         input["value"] = filled_input["input_value"]
 
             for image_input in request.files:

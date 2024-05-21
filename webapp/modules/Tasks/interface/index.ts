@@ -32,6 +32,11 @@ export interface TaskPreference {
   enabled?: boolean;
 }
 
+export interface TaskJsonInputPossibleValues {
+  value: string;
+  displayed_text: string;
+}
+
 export interface TaskJsonInput {
   input_name: string;
   description_for_user: string;
@@ -39,6 +44,7 @@ export interface TaskJsonInput {
   placeholder: string;
   type: string;
   value: string | undefined;
+  possible_values: TaskJsonInputPossibleValues[] | undefined;
 }
 
 export interface TaskConfigAPIResponse {

@@ -35,7 +35,6 @@ const CreateTaskForm = () => {
     usePostExecuteTask();
 
   const generateAnswerHandler = () => {
-    console.log(inputArray);
     if (inputArray.length == tasksForm.length && taskExecutionPK && sessionId && taskType) {
       executeTaskMutation(
         {

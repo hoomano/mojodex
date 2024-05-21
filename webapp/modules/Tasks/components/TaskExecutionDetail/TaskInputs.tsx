@@ -47,7 +47,7 @@ const TaskInputs: FunctionComponent<TaskInputsProps> = ({ user_task_execution_pk
                 onSaveAndRestart();
             },
             onError: (error) => {
-                alert("Error restarting workflow. Please retry or contact support.");
+                alert(t("userTaskExecution.inputsTab.restartError"));
             }
         });  
     }

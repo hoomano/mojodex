@@ -127,9 +127,7 @@ const DraftDetail = () => {
           onValidate={(stepExecutionPk: number) => onStepExecutionValidated(stepExecutionPk)}
           onStepRelaunched={(stepExecutionPk: number) => onStepRelaunched(stepExecutionPk)}
           onRestartWorkflow={() => {
-            processTab.disabled = true;
             setEditingInputs(true);
-            console.log("Editing inputs: ", editingInputs);
             setSelectedTab("inputs")
           }}
         />
@@ -155,7 +153,6 @@ const DraftDetail = () => {
             processTab.disabled = false;
             setEditingInputs(false);
             setSelectedTab("process");
-            // TODO: relaunch workflow (= first step)
           }}
             />
       ),

@@ -224,7 +224,7 @@ const Step: React.FC<StepProps> = ({
                                         }}
                                         className="mr-2"
                                     >
-                                        Restart
+                                        {t("userTaskExecution.processTab.restartButton")}
                                     </Button>: null}
                                     <Button
                                         variant="outline"

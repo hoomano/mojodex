@@ -102,7 +102,9 @@
   },
   "userTaskExecution": {
     "inputsTab": {
-      "title": "Initial inputs"
+      "title": "Initial inputs",
+      "cancelEditionButton": "Cancel",
+      "saveEditionButton": "Save and Restart"
     },
     "chatTab": {
       "title": "Chat",
@@ -151,7 +153,8 @@
       "stepExecutionErrorInstruction": "You can try to relaunch the step or contact support.",
       "cancelEditionButton": "Cancel",
       "saveEditionButton": "Save",
-      "editionButton": "Edit"
+      "editionButton": "Edit",
+      "restartButton": "Restart"
     }
   },
   "todos": {

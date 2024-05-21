@@ -102,7 +102,9 @@
   },
   "userTaskExecution": {
     "inputsTab": {
-      "title": "Données initiales"
+      "title": "Données initiales",
+      "cancelEditionButton": "Annuler",
+      "saveEditionButton": "Sauvegarder et redémarrer"
     },
     "chatTab": {
       "title": "Chat",
@@ -151,7 +153,8 @@
       "stepExecutionErrorInstruction": "Vous pouvez essayer de relancer l'étape ou contacter l'assistance.",
       "cancelEditionButton": "Annuler",
       "saveEditionButton": "Enregistrer",
-      "editionButton": "Modifier"
+      "editionButton": "Modifier",
+      "restartButton": "Redémarrer"
     }
   },
   "todos": {

@@ -5,6 +5,7 @@ import Button from "components/Button";
 import InputsForm from "../TaskForm/inputsForm";
 import ImagePreview from "../imagePreview";
 import useOnWorkflowRestart from "modules/Tasks/hooks/useOnWorkflowRestart";
+import { useTranslation } from "next-i18next";
 
 interface TaskInputsProps {
     user_task_execution_pk: number;
@@ -19,6 +20,7 @@ interface TaskInputsProps {
 
 const TaskInputs: FunctionComponent<TaskInputsProps> = ({ user_task_execution_pk, inputs, sessionId, editable, onCancelEdition, onSaveAndRestart }) => {
     const onWorkflowRestart = useOnWorkflowRestart();
+    const { t } = useTranslation('dynamic');
     const [inputArray, setInputArray] = useState<InputArrayProps[]>(inputs.map((input) => ({
         input_name: input.input_name,
         input_value: input.value || '', // Add a default value of an empty string if input.value is undefined
@@ -70,11 +72,11 @@ const TaskInputs: FunctionComponent<TaskInputsProps> = ({ user_task_execution_pk
                             onClick={onCancelEdition}
                             className="mr-2"
                         >
-                            Cancel
+                            {t("userTaskExecution.inputsTab.cancelEditionButton")}
                         </Button>
 
                         <Button variant="primary" size="middle" onClick={restartWorkflow}>
-                            Save and restart
+                            {t("userTaskExecution.inputsTab.saveEditionButton")}
                         </Button>
                     </div>
                 </div>

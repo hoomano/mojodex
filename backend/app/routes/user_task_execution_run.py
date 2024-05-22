@@ -1,28 +1,23 @@
-import base64
 from datetime import datetime
 import json
-import os
 
-from models.user_images_file_manager import UserImagesFileManager
+from models.user_task_execution_inputs_manager import UserTaskExecutionInputsManager
 from flask import request
 from flask_restful import Resource
 from app import db, authenticate, server_socket
 from models.workflows.workflow_execution import WorkflowExecution
 from mojodex_core.logging_handler import log_error
-from mojodex_core.entities import *
+from mojodex_core.entities import MdUserTaskExecution, MdTask, MdUserTask
 from sqlalchemy.orm.attributes import flag_modified
 from packaging import version
-from werkzeug.utils import secure_filename
 
 class UserTaskExecutionRun(Resource):
     logger_prefix = "UserTaskExecutionRun"
     image_type = "image"
-    drop_down_type = "drop_down_list"
 
     def __init__(self):
         UserTaskExecutionRun.method_decorators = [authenticate()]
-        self.user_image_file_manager = UserImagesFileManager()
-
+        self.user_task_execution_inputs_manager = UserTaskExecutionInputsManager()
 
     # post
     # This route is used to start a task_execution from a Form (webapp)
@@ -72,33 +67,9 @@ class UserTaskExecutionRun(Resource):
 
             user_task_execution, task = result
 
-            # ensure inputs is a list of dicts and each dict has the required fields (input_name and input_value)
-            if not isinstance(inputs, list):
-                return {"error": "inputs must be a list"}, 400
-           
-            json_input_values = user_task_execution.json_input_values
-            for filled_input in inputs:
-                # check format
-                if not isinstance(filled_input, dict):
-                    raise KeyError("inputs must be a list of dicts")
-                if "input_name" not in filled_input or "input_value" not in filled_input:
-                    raise KeyError("inputs must be a list of dicts with keys input_name and input_value")
-                # look for corresponding input in json_input_values
-                for input in json_input_values:
-                    if input["input_name"] == filled_input["input_name"]:
-                        if input["type"] == self.drop_down_type:
-                            possible_values = [value["value"] for value in input["possible_values"]]
-                            if filled_input["input_value"] not in possible_values:
-                                return {"error": f"Invalid value for input {input['input_name']}"}, 400
-                        input["value"] = filled_input["input_value"]
-
-            for image_input in request.files:
-                # look for corresponding input in json_input_values
-                for input in json_input_values:
-                    if input["input_name"] == image_input:
-                        filename = input["value"]
-                        self.user_image_file_manager.store_image_file(request.files[image_input], filename, user_id, user_task_execution.session_id)
-
+            json_input_values = self.user_task_execution_inputs_manager.construct_inputs_from_request(user_task_execution.json_input_values,
+                                                                                    inputs, request.files, user_id,
+                                                                                    user_task_execution.session_id)
             user_task_execution.json_input_values = json_input_values
             flag_modified(user_task_execution, "json_input_values")
             db.session.commit()

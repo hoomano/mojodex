@@ -19,6 +19,7 @@ const taskAPIRoutes = {
   todos: "/api/todos",
   userWorkflowStepExecution: "/api/user_workflow_step_execution",
   userWorkflowStepExecutionResult: "/api/user_workflow_step_execution_result",
+  workflowRestart: "/api/restart_user_workflow_execution"
 };
 
 const producedTextAPIRoutes = {

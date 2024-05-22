@@ -1,16 +1,20 @@
 import React, { Dispatch, SetStateAction, useState, useRef } from 'react';
 import { InputArrayProps, TaskJsonInput } from 'modules/Tasks/interface';
 import Button from 'components/Button';
+import ImagePreview from '../imagePreview';
+import { useTranslation } from "next-i18next";
 
 interface ImageAreaProps {
     jsonInput: TaskJsonInput;
     setInputArray: Dispatch<SetStateAction<InputArrayProps[]>>;
+    sessionId: string;
 }
 
-const ImageArea = ({ jsonInput, setInputArray }: ImageAreaProps) => {
+const ImageArea = ({ jsonInput, setInputArray, sessionId }: ImageAreaProps) => {
     const { input_name, description_for_user } = jsonInput;
     const [imagePreview, setImagePreview] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const { t } = useTranslation('dynamic');
 
     const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files ? event.target.files[0] : null;
@@ -59,9 +63,10 @@ const ImageArea = ({ jsonInput, setInputArray }: ImageAreaProps) => {
                     >
                         {imagePreview ? (
                             <img src={imagePreview as string} alt="Preview" style={{ maxWidth: '300px' }}  className="rounded-lg w-full" />
-                        ) : (
-                            'Upload Image'
-                        )}
+                        ) : jsonInput.value ? <ImagePreview sessionId={sessionId} filename={jsonInput.value!} alt={jsonInput.description_for_user} /> : (
+                                t("userTaskExecution.inputsTab.imageUploadButton")
+                        )
+                        }
                     </Button>
                 </div>
             </div>

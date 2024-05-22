@@ -102,7 +102,11 @@
   },
   "userTaskExecution": {
     "inputsTab": {
-      "title": "Entradas iniciales"
+      "title": "Entradas iniciales",
+      "cancelEditionButton": "Cancelar",
+      "saveEditionButton": "Guardar y Reiniciar",
+      "restartError": "Error al reiniciar el flujo de trabajo. Vuelva a intentarlo o póngase en contacto con el servicio de asistencia.",
+      "imageUploadButton": "Subir imagen"
     },
     "chatTab": {
       "title": "Chat",
@@ -151,7 +155,8 @@
       "stepExecutionErrorInstruction": "Puedes intentar relanzar el paso o ponerte en contacto con soporte.",
       "cancelEditionButton": "Cancelar",
       "saveEditionButton": "Guardar",
-      "editionButton": "Editar"
+      "editionButton": "Editar",
+      "restartButton": "Reiniciar"
     }
   },
   "todos": {

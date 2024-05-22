@@ -4,7 +4,7 @@ import useGetAllTodos from "modules/Tasks/hooks/useGetAllTodos";
 import moment from "moment";
 import { useRouter } from "next/router";
 import { encryptId } from "helpers/method";
-import { Todos } from "modules/Tasks/interface/action";
+import { Todos } from "modules/Tasks/interface/todos";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrash, faBan } from "@fortawesome/free-solid-svg-icons";
 import useDeleteTodo from "modules/Tasks/hooks/useDeleteTodo";
@@ -83,7 +83,7 @@ const TodosDrawer = () => {
         mark_as_done: updatedStates[todo_pk],
       },
       {
-        onSuccess: () => {},
+        onSuccess: () => { },
       }
     );
   };
@@ -125,9 +125,8 @@ const TodosDrawer = () => {
       {Object.keys(groupedTodos).map((formattedDate) => (
         <div key={formattedDate}>
           <h2
-            className={`text-gray-400 my-2.5 ${
-              formattedDate === "Today" && "text-2xl !text-black font-bold"
-            }`}
+            className={`text-gray-400 my-2.5 ${formattedDate === "Today" && "text-2xl !text-black font-bold"
+              }`}
           >
             {formattedDate}
           </h2>
@@ -140,7 +139,7 @@ const TodosDrawer = () => {
               )}
 
               {todo.completed == null &&
-              moment(todo.scheduled_date).isBefore(moment(), "day") ? (
+                moment(todo.scheduled_date).isBefore(moment(), "day") ? (
                 <FontAwesomeIcon
                   icon={faBan}
                   className="text-gray-lighter w-5 h-5"
@@ -157,11 +156,10 @@ const TodosDrawer = () => {
               )}
               <div className="flex-1">
                 <div
-                  className={`text-[14px] cursor-pointer ${
-                    !!todo.completed || todoCompletionStates[todo.todo_pk]
+                  className={`text-[14px] cursor-pointer ${!!todo.completed || todoCompletionStates[todo.todo_pk]
                       ? "line-through italic"
                       : ""
-                  }`}
+                    }`}
                   onClick={() => todoClickHandler(todo)}
                 >
                   {todo.description}

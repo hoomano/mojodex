@@ -11,17 +11,16 @@ interface StepProcessDetailProps {
   onInvalidate: any;
   onValidate: any;
   onStepRelaunched: any;
+  onRestartWorkflow: any;
 }
 
 const StepProcessDetail: React.FC<StepProcessDetailProps> = ({
   stepExecutions,
   onInvalidate,
   onValidate,
-  onStepRelaunched
+  onStepRelaunched,
+  onRestartWorkflow,
 }) => {
-
-
-
 
   return (
     <div className="p-[60px] w-full">
@@ -41,7 +40,9 @@ const StepProcessDetail: React.FC<StepProcessDetailProps> = ({
             stepExecution={stepItem}
             onInvalidate={onInvalidate}
             onValidate={onValidate}
-            onStepRelaunched={onStepRelaunched}
+              onStepRelaunched={onStepRelaunched}
+              isFirstStep={stepItemIdx === 0}
+              onRestart={onRestartWorkflow}
             />
           </li>
         ))}

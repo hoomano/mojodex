@@ -1,9 +1,3 @@
-import { MessageType } from "modules/Chat/interface";
-
-
-export interface MessageHistoryResponse {
-  messages: { sender: string; message: MessageType }[];
-}
 
 export interface TodosType {
   todos: Todos[];
@@ -29,11 +23,3 @@ export interface TodoCompletePayload {
   user_task_execution_pk?: number;
 }
 
-export interface SaveResultPayload {
-  user_workflow_step_execution_pk: number;
-  result: Array<{ [k: string]: string; }>;
-}
-
-export interface SaveResultResponse {
-  new_result: Array<Map<string, string>>;
-}

@@ -38,6 +38,7 @@ const DropDownList = ({ jsonInput, setInputArray }: Props) => {
                             id={input_name}
                             name={input_name}
                             onChange={handleChange}
+                            defaultValue={jsonInput.value}
                         >
                             <option value="" disabled selected>
                                 {placeholder}

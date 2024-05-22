@@ -63,6 +63,7 @@ from routes.image import Image
 from routes.relaunch_locked_workflow_step_executions import RelaunchLockedWorkflowStepExecutions
 from routes.is_email_service_configured import IsEmailServiceConfigured
 from routes.user_workflow_step_execution_result import UserWorkflowStepExecutionResult
+from routes.restart_user_workflow_execution import RestartUserWorkflowExecution
 class HttpRouteManager:
     def __init__(self, api):
         api.add_resource(Purchase, '/purchase')
@@ -131,3 +132,4 @@ class HttpRouteManager:
         api.add_resource(RelaunchLockedWorkflowStepExecutions, "/relaunch_locked_workflow_step_executions")
         api.add_resource(IsEmailServiceConfigured, "/is_email_service_configured")
         api.add_resource(UserWorkflowStepExecutionResult, "/user_workflow_step_execution_result")
+        api.add_resource(RestartUserWorkflowExecution, "/restart_user_workflow_execution")

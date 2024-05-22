@@ -62,6 +62,7 @@ const Textarea = ({ jsonInput, setInputArray }: Props) => {
               placeholder={placeholder}
               onBlur={handleChangeInput}
               onInput={handleTextareaInput}
+              defaultValue={jsonInput.value}
             />
           </div>
         </div>

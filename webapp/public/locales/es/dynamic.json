@@ -156,7 +156,10 @@
       "cancelEditionButton": "Cancelar",
       "saveEditionButton": "Guardar",
       "editionButton": "Editar",
-      "restartButton": "Reiniciar"
+      "restartButton": "Reiniciar",
+      "restartButtonTooltip": "Vuelve al formulario inicial y modifica las entradas",
+      "editButtonTooltip": "Edita manualmente el resultado del paso proporcionado por Mojo",
+      "validateButtonTooltip": "Valida este paso y continúa el proceso"
     }
   },
   "todos": {

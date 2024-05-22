@@ -20,22 +20,22 @@
   "skipContainerButton": "Passer",
   "onboarding": {
     "termsAndConditions": {
-            "emoji": "😉",
-            "title": "Bienvenue !",
-            "IAgree": "J'accepte",
-            "defaultAgreement": "J'accepte d'interagir avec l'assistant numérique de manière respectueuse et courtoise, en reconnaissant l'importance de la gentillesse dans notre espace numérique",
-            "defaultAgreementThankYou": "Votre coopération nous aide à maintenir un environnement positif pour tous les utilisateurs. Merci de votre compréhension et de votre soutien !",
-            "defaultModalContent": "Veuillez prendre un moment pour prendre connaissance de nos lignes directrices communautaires",
-            "termsModalContent": "Juste avant de commencer, jetez un coup d'œil à nos conditions générales",
-            "termsAndConditions": "les conditions générales",
-            "acceptButtonText": "C'est parti!"
-        },
-        "categorySelection": {
-            "emoji": "👋",
-            "title": "Bonjour de Mojodex!",
-            "content": "Prêt à embarquer pour un voyage impressionnant ? Entrons dans le vif du sujet !",
-            "question": "Qui êtes-vous ?"
-        },
+      "emoji": "😉",
+      "title": "Bienvenue !",
+      "IAgree": "J'accepte",
+      "defaultAgreement": "J'accepte d'interagir avec l'assistant numérique de manière respectueuse et courtoise, en reconnaissant l'importance de la gentillesse dans notre espace numérique",
+      "defaultAgreementThankYou": "Votre coopération nous aide à maintenir un environnement positif pour tous les utilisateurs. Merci de votre compréhension et de votre soutien !",
+      "defaultModalContent": "Veuillez prendre un moment pour prendre connaissance de nos lignes directrices communautaires",
+      "termsModalContent": "Juste avant de commencer, jetez un coup d'œil à nos conditions générales",
+      "termsAndConditions": "les conditions générales",
+      "acceptButtonText": "C'est parti!"
+    },
+    "categorySelection": {
+      "emoji": "👋",
+      "title": "Bonjour de Mojodex!",
+      "content": "Prêt à embarquer pour un voyage impressionnant ? Entrons dans le vif du sujet !",
+      "question": "Qui êtes-vous ?"
+    },
     "nextButton": "Suivant",
     "webUrlInputPage": {
       "emoji": "👋",
@@ -81,7 +81,7 @@
     "title": "🎯\nQue voulez-vous faire aujourd'hui?",
     "selectBusinessTasks": "Sélectionnez la tâche que vous souhaitez réaliser avec Mojo"
   },
-  "startUserTaskStepExecution":{
+  "startUserTaskStepExecution": {
     "stepsIntroduction": "Les étapes suivantes vont être exécutées pour cette tâche:"
   },
   "resources": {
@@ -115,7 +115,8 @@
         "title": "J'y travaille!",
         "textContent": {
           "notifAllowed": "Autorisez les notifications et je vous informerai une fois mon travail terminé",
-          "notNotifAllowed": "Je vous informerai une fois mon travail terminé"
+          "notNotifAllowed": "Je vous informerai une fois mon travail terminé",
+          "webapp": "Cela va prendre un peu de temps, revenez plus tard pour voir mon travail"
         },
         "acceptButtonText": {
           "notifAllowed": "Notifie moi",
@@ -133,7 +134,11 @@
       },
       "editEmoji": "🎙️",
       "editButton": "Éditer",
-      "exportButton": "Exporter"
+      "exportButton": "Exporter",
+      "hubspotIntegration": {
+        "saveAs": "Enregistrer comme ",
+        "in": " dans "
+      }
     },
     "todosTab": {
       "title": "Todos",
@@ -156,7 +161,10 @@
       "cancelEditionButton": "Annuler",
       "saveEditionButton": "Enregistrer",
       "editionButton": "Modifier",
-      "restartButton": "Redémarrer"
+      "restartButton": "Redémarrer",
+      "restartButtonTooltip": "Retourne au formulaire initial et modifie les entrées",
+      "editButtonTooltip": "Modifie manuellement le résultat de l'étape fournie par Mojo",
+      "validateButtonTooltip": "Valide cette étape et poursuit le processus"
     }
   },
   "todos": {
@@ -254,7 +262,7 @@
   "accountDeletion": {
     "appBarTitle": "Suppression de compte",
     "title": "Supprimer le compte",
-    "body": "<Message générique de suppression de compte>",
+    "body": "Si vous souhaitez supprimer définitivement votre compte, cliquez sur le bouton ci-dessous pour envoyer un email à Hoomano demandant la suppression du compte.",
     "requestAccountDeletionButton": "Demander la suppression du compte"
   }
 }

@@ -217,10 +217,10 @@ const Step: React.FC<StepProps> = ({
                                     {isFirstStep ? <Button
                                         variant="outline"
                                         size="middle"
+                                        tooltip={t("userTaskExecution.processTab.restartButtonTooltip")}
                                         onClick={() => {
                                             // change tab => back to "initial data"
                                             onRestart();
-
                                         }}
                                         className="mr-2"
                                     >
@@ -234,6 +234,7 @@ const Step: React.FC<StepProps> = ({
                                                 setEditing(true)
                                             }}
                                         className="mr-2"
+                                        tooltip={t("userTaskExecution.processTab.editButtonTooltip")}
                                     >
                                         {t("userTaskExecution.processTab.editionButton")}
                                     </Button>
@@ -246,7 +247,9 @@ const Step: React.FC<StepProps> = ({
                                         {t("userTaskExecution.processTab.invalidateButton")}
                                         </Button>*/}
 
-                                    <Button variant="primary" size="middle" onClick={() => onContinueStep()}>
+                                    <Button variant="primary" size="middle"
+                                        tooltip={t("userTaskExecution.processTab.validateButtonTooltip")}
+                                        onClick={() => onContinueStep()}>
                                         {t("userTaskExecution.processTab.validateButton")}
                                     </Button>
                                 </div> : null

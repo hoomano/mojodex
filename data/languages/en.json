@@ -161,7 +161,10 @@
 			"cancelEditionButton": "Cancel",
 			"saveEditionButton": "Save",
 			"editionButton": "Edit",
-			"restartButton": "Restart"
+			"restartButton": "Restart",
+			"restartButtonTooltip": "Goes back to the initial form and amend the inputs",
+			"editButtonTooltip": "Manually edit the result of the step provided by Mojo",
+			"validateButtonTooltip": "Validates this step and continues the process"
 		}
 	},
 	"todos": {

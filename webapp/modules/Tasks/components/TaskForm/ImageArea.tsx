@@ -1,7 +1,7 @@
 import React, { Dispatch, SetStateAction, useState, useRef } from 'react';
 import { InputArrayProps, TaskJsonInput } from 'modules/Tasks/interface';
 import Button from 'components/Button';
-import ImagePreview from '../imagePreview';
+import ImagePreview from '../ImagePreview';
 import { useTranslation } from "next-i18next";
 
 interface ImageAreaProps {

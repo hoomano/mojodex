@@ -8,7 +8,7 @@ import { decryptId, encryptId } from "helpers/method";
 import Button from "components/Button";
 import useGetTask from "modules/Tasks/hooks/useGetTask";
 import usePostExecuteTask from "modules/Tasks/hooks/usePostExecuteTask";
-import InputsForm from "./inputsForm";
+import InputsForm from "./InputsForm";
 
 const CreateTaskForm = () => {
   const router = useRouter();

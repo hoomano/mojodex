@@ -2,8 +2,8 @@ import { InputArrayProps, TaskJsonInput } from "modules/Tasks/interface";
 import React, { FunctionComponent, useState } from "react";
 
 import Button from "components/Button";
-import InputsForm from "../TaskForm/inputsForm";
-import ImagePreview from "../imagePreview";
+import InputsForm from "../TaskForm/InputsForm";
+import ImagePreview from "../ImagePreview";
 import useOnWorkflowRestart from "modules/Tasks/hooks/useOnWorkflowRestart";
 import { useTranslation } from "next-i18next";
 

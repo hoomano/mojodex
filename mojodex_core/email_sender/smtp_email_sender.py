@@ -44,7 +44,8 @@ class SMTPEmailSender(EmailSender):
         try:
             # we create connexion
             context = ssl.create_default_context()
-            with smtplib.SMTP_SSL(self.smtp_address, self.smtp_port, context=context) as server:
+            with smtplib.SMTP(self.smtp_address, self.smtp_port) as server:
+                server.starttls(context=context)
                 # account login
                 server.login(self.email_address, self.email_password)
         except Exception as e:
@@ -75,7 +76,8 @@ class SMTPEmailSender(EmailSender):
 
             # connect
             context = ssl.create_default_context()
-            with smtplib.SMTP_SSL(self.smtp_address, self.smtp_port, context=context) as server:
+            with smtplib.SMTP(self.smtp_address, self.smtp_port) as server:
+                server.starttls(context=context)
                 # account login
                 server.login(self.email_address, self.email_password)
 

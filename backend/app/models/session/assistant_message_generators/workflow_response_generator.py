@@ -96,7 +96,7 @@ class WorkflowAssistantResponseGenerator(TaskEnabledAssistantResponseGenerator):
         if text and self.mojo_message_token_stream_callback:
             self.mojo_message_token_stream_callback(text)
 
-    def _generate_message_from_prompt(self, prompt):
+    def _generate_message_from_prompt(self, prompt, user_task_execution_pk=None, task_name_for_system=None):
         """
         Generate a message from a prompt by calling the message generator
         :param prompt: prompt
@@ -114,7 +114,9 @@ class WorkflowAssistantResponseGenerator(TaskEnabledAssistantResponseGenerator):
                                                         temperature=0,
                                                         max_tokens=4000,
                                                         label="CHAT",
-                                                        stream=True, stream_callback=self._token_callback)
+                                                        stream=True, stream_callback=self._token_callback,
+                                                        user_task_execution_pk=self.running_user_task_execution.user_task_execution_pk if self.running_user_task_execution else None,
+                                                        task_name_for_system=self.running_task.name_for_system if self.running_task else None)
 
             return responses[0].strip() if responses else None
         except Exception as e:

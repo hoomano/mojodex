@@ -65,7 +65,7 @@ class AssistantMessageGenerator(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def _generate_message_from_prompt(self, prompt):
+    def _generate_message_from_prompt(self, prompt, user_task_execution_pk=None, task_name_for_system=None):
         """
         Generate a message from the prompt
         :param prompt: prompt
@@ -80,7 +80,7 @@ class AssistantMessageGenerator(ABC):
         :return: handled llm output"""
         raise NotImplementedError
 
-    def generate_message(self):
+    def generate_message(self, user_task_execution_pk=None, task_name_for_system=None):
         """
         Generate a message from the assistant
         :return: message from the assistant"""
@@ -89,7 +89,7 @@ class AssistantMessageGenerator(ABC):
             if placeholder:
                 return placeholder
             prompt = self._render_prompt_from_template()
-            llm_output = self._generate_message_from_prompt(prompt)
+            llm_output = self._generate_message_from_prompt(prompt, user_task_execution_pk=user_task_execution_pk, task_name_for_system=task_name_for_system)
             if llm_output:
                 return self._handle_llm_output(llm_output)
             return None

@@ -27,7 +27,7 @@ class AssistantResponseGenerator(AssistantMessageGenerator, ABC):
             raise Exception(f"AssistantResponseGenerator :: __init__ :: {e}")
 
 
-    def _generate_message_from_prompt(self, prompt):
+    def _generate_message_from_prompt(self, prompt, user_task_execution_pk=None, task_name_for_system=None):
         """
         Generate a message from a prompt by calling the message generator
         :param prompt: prompt
@@ -40,7 +40,9 @@ class AssistantResponseGenerator(AssistantMessageGenerator, ABC):
                                                         temperature=0,
                                                         max_tokens=4000,
                                                         label="CHAT",
-                                                        stream=True, stream_callback=self._token_callback)
+                                                        stream=True, stream_callback=self._token_callback,
+                                                        user_task_execution_pk=user_task_execution_pk,
+                                                        task_name_for_system=task_name_for_system)
 
             return responses[0].strip() if responses else None
         except Exception as e:

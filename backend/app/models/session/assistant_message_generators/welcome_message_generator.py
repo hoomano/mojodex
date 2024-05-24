@@ -63,7 +63,7 @@ class WelcomeMessageGenerator(AssistantMessageGenerator):
         except Exception as e:
             raise Exception(f"{WelcomeMessageGenerator.logger_prefix} _render_prompt_from_template :: {e}")
 
-    def _generate_message_from_prompt(self, prompt):
+    def _generate_message_from_prompt(self, prompt, user_task_execution_pk=None, task_name_for_system=None):
         try:
             messages = [{"role": "system", "content": prompt}]
             responses = model_loader.main_llm.invoke(messages, self.context.user_id, temperature=1, max_tokens=1000, label='WELCOME_MESSAGE_CHAT')

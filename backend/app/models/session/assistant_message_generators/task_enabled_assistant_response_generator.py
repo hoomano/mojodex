@@ -52,13 +52,14 @@ class TaskEnabledAssistantResponseGenerator(AssistantResponseGenerator, ABC):
         except Exception as e:
             print(f"🔴 __give_title_and_summary_task_execution :: {e}")
 
-    def generate_message(self):
+    def generate_message(self, user_task_execution_pk=None, task_name_for_system=None):
         try:
             # call background for title and summary
             if self.running_user_task_execution:
                 server_socket.start_background_task(self.__give_task_execution_title_and_summary,
                                                     self.running_user_task_execution.user_task_execution_pk)
-            message = super().generate_message()
+            message = super().generate_message(user_task_execution_pk=self.running_user_task_execution.user_task_execution_pk if self.running_user_task_execution else None,
+                                               task_name_for_system=self.running_task.name_for_system if self.running_task else None)
             if message and self.running_user_task_execution:
                 message['user_task_execution_pk'] = self.running_user_task_execution.user_task_execution_pk
             return message
@@ -101,10 +102,11 @@ class TaskEnabledAssistantResponseGenerator(AssistantResponseGenerator, ABC):
 
 
     # if requires_vision_llm, override method _generate_message_from_prompt
-    def _generate_message_from_prompt(self, prompt):
+    def _generate_message_from_prompt(self, prompt, user_task_execution_pk=None, task_name_for_system=None):
         try:
             if not self.requires_vision_llm:
-                return super()._generate_message_from_prompt(prompt)
+                return super()._generate_message_from_prompt(prompt, user_task_execution_pk=self.running_user_task_execution.user_task_execution_pk if self.running_user_task_execution else None,
+                                                             task_name_for_system=self.running_task.name_for_system if self.running_task else None)
             
             from models.user_images_file_manager import UserImagesFileManager
             self.user_image_file_manager = UserImagesFileManager()

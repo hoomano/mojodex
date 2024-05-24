@@ -47,13 +47,15 @@ class GeneralChatResponseGenerator(InstructTaskEnabledAssistantResponseGenerator
         except Exception as e:
             raise Exception(f"__spot_task_pk :: {e}")
 
-    def generate_message(self):
+    def generate_message(self, user_task_execution_pk=None, task_name_for_system=None):
         try:
-            message = super().generate_message()
+            message = super().generate_message(user_task_execution_pk=self.running_user_task_execution.user_task_execution_pk if self.running_user_task_execution else None,
+                                               task_name_for_system=self.running_task.name_for_system if self.running_task else None)
             if message:
                 return message
             else:
-                return self.generate_message()
+                return self.generate_message(user_task_execution_pk=self.running_user_task_execution.user_task_execution_pk if self.running_user_task_execution else None,
+                                               task_name_for_system=self.running_task.name_for_system if self.running_task else None)
         except Exception as e:
             raise Exception(f"{GeneralChatState.logger_prefix} generate_message :: {e}")
 

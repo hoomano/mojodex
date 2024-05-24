@@ -222,9 +222,9 @@ class UserTask(Resource):
             }
      
 
-            # other tasks that are not enabled for this user but:
-            # - he used to have it enabled in a previous purchase (user_task exists and enabled = False in this case)
-            # - he never had it enabled (user_task does not exist in this case) and task.visible_for_teasing is true
+            # other tasks that are not enabled for this user but task.visible_for_teasing is true. 2 cases:
+            # - user used to have it enabled in a previous purchase (user_task exists and enabled = False in this case)
+            # - user never had it enabled (user_task does not exist in this case) 
             if len(response["user_tasks"]) < n_user_tasks:
                 total_user_tasks = db.session.query(MdUserTask) \
                 .filter(MdUserTask.enabled == True) \
@@ -264,13 +264,13 @@ class UserTask(Resource):
                     .filter(
                         and_(
                             MdTaskPlatformAssociation.platform_fk == platform_pk,
-                            or_(
-                                MdUserTask.enabled != True, 
-                                and_(
+                             and_(
+                                or_(
+                                    MdUserTask.enabled != True, 
                                     MdUserTask.task_fk.is_(None),
-                                    MdTask.visible_for_teasing == True
-                                )
-                            ) 
+                                ),
+                                        MdTask.visible_for_teasing == True
+                                    )
                         )
                     )).order_by(MdTask.task_pk).limit(
                     n_user_tasks - len(response["user_tasks"])).offset(disabled_tasks_offset).all()

@@ -18,7 +18,7 @@ from mojodex_core.llm_engine.mpt import MPT
 
 class DailyEmailsGenerator(EventsGenerator):
     logger_prefix = "DailyEmailsGenerator::"
-    message_from_mojodex_email = "/data/mails/message_from_mojodex.html"
+    message_from_mojodex_email = "/mojodex_core/mails_templates/message_from_mojodex.html"
     daily_email_text_mpt_filename = "instructions/daily_emails_text_prompt.mpt"
 
     reminder_email_type = "reminder_email"

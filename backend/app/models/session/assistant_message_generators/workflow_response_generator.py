@@ -9,7 +9,7 @@ from models.session.assistant_message_generators.task_enabled_assistant_response
 
 
 class WorkflowAssistantResponseGenerator(TaskEnabledAssistantResponseGenerator):
-    prompt_template_path = "/data/prompts/workflows/run.txt"
+    prompt_template_path = "mojodex_core/prompts/workflows/run.txt"
     user_instruction_start_tag, user_instruction_end_tag = "<user_instruction>", "</user_instruction>"
     ask_for_clarification_start_tag, ask_for_clarification_end_tag = "<ask_for_clarification>", "</ask_for_clarification>"
     no_go_explanation_start_tag, no_go_explanation_end_tag = "<no_go_explanation>", "</no_go_explanation>"

@@ -9,7 +9,7 @@ from models.session.assistant_message_generators.instruct_task_enabled_assistant
 class GeneralChatResponseGenerator(InstructTaskEnabledAssistantResponseGenerator):
     logger_prefix = "GeneralChatResponseGenerator :: "
     # TODO: with @kelly check how to mpt-ize this
-    prompt_template_path = "/data/prompts/home_chat/run.txt"
+    prompt_template_path = "mojodex_core/prompts/home_chat/run.txt"
     user_message_start_tag, user_message_end_tag = "<message_to_user>", "</message_to_user>"
     task_pk_start_tag, task_pk_end_tag = "<task_pk>", "</task_pk>"
 

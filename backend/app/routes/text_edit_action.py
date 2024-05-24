@@ -15,7 +15,7 @@ from packaging import version
 
 class TextEditAction (Resource):
     
-    base_prompt_files_path = "/data/prompts/text_edit_actions"
+    base_prompt_files_path = "mojodex_core/prompts/text_edit_actions"
     error_message_text = "Error executing text edit action"
 
     def __init__(self):

@@ -24,7 +24,7 @@ def generate_reset_password_token(user_id):
 
 
 class Password(Resource):
-    reset_password_mail_template_dir = "/mojodex_core/mails_templates/reset_forgotten_password"
+    reset_password_mail_template_dir = "mojodex_core/mails_templates/reset_forgotten_password"
     error_expired_reset_link="Link expired"
     error_invalid_reset_link="Invalid link"
     wrong_email_error_message="Email not found"

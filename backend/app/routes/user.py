@@ -45,7 +45,7 @@ class User(Resource):
     wrong_email_or_password_error_message = "Wrong email or password."
     error_user_not_registered_with_password="User is not registered with password."
     error_email_already_exists = "Email already exists."
-    change_temporary_password_mails_dir = "/data/mails/change_temporary_password"
+    change_temporary_password_mails_dir = "mojodex_core/mails_templates/change_temporary_password"
 
     def __init__(self):
         self.purchase_manager = PurchaseManager()

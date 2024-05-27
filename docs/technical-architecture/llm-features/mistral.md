@@ -53,6 +53,6 @@ The results are promising, but the full coverage is not yet available.
 - [X] Run basic tests with existing prompts
 - [X] Complete the assessment on all features for `mistral-large`
 - [X] Complete the assessment on all features for `mistral-medium`
-- [ ] Prompt Tuning: `data/prompts/*` has been crafted for GPT-4 and GPT-4 Turbo. We need to craft prompts for Mistral AI more specifically.
+- [ ] Prompt Tuning: `mojodex_core/prompts/*` has been crafted for GPT-4 and GPT-4 Turbo. We need to craft prompts for Mistral AI more specifically.
 - [ ] Explore guardrailing strategies to steer the model to the desired output
 - [ ] For non-supported features, we can explore fine-tuning the model on our own data gathered in `/data/prompts_dataset`

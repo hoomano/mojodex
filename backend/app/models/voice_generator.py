@@ -14,7 +14,7 @@ class VoiceGenerator:
     get_language_mpt_filename = "instructions/get_language.mpt"
 
     # masculine voices
-    available_voices_file = "/data/speech_synthesizer_available_voices.json"
+    available_voices_file = "mojodex_core/speech_synthesizer_available_voices.json"
     selected_voices = {'en': "en-US-RogerNeural", 'fr': "fr-FR-AlainNeural"}
 
     emojis_list = re.compile("["

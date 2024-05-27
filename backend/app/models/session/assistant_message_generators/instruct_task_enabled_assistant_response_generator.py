@@ -20,7 +20,7 @@ class InstructTaskEnabledAssistantResponseGenerator(TaskEnabledAssistantResponse
     logger_prefix = "TaskEnabledAssistantResponseGenerator :: "
 
     # TODO: with @kelly check how to mpt-ize this
-    task_specific_instructions_prompt = "/data/prompts/tasks/task_specific_instructions.txt"
+    task_specific_instructions_prompt = "mojodex_core/prompts/tasks/task_specific_instructions.txt"
 
     def __init__(self, prompt_template_path, mojo_message_token_stream_callback, draft_token_stream_callback, use_message_placeholder, use_draft_placeholder, tag_proper_nouns, chat_context, llm_call_temperature):
         try:

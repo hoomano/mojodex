@@ -16,7 +16,7 @@ from mojodex_core.mail import mojo_mail_client
 
 
 class FreeProductAssociation(Resource):
-    welcome_email_dir = "/data/mails/welcome"
+    welcome_email_dir = "mojodex_core/mails_templates/welcome"
 
     def __init__(self):
         FreeProductAssociation.method_decorators = [authenticate()]

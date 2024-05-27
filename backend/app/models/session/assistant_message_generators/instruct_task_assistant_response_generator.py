@@ -6,7 +6,7 @@ from models.session.assistant_message_state.task_enabled_chat_state import TaskE
 class InstructTaskAssistantResponseGenerator(InstructTaskEnabledAssistantResponseGenerator):
     logger_prefix = "InstructTaskAssistantResponseGenerator :: "
     # TODO: with @kelly check how to mpt-ize this
-    prompt_template_path = "/data/prompts/tasks/run.txt"
+    prompt_template_path = "mojodex_core/prompts/tasks/run.txt"
     
     def __init__(self, mojo_message_token_stream_callback, draft_token_stream_callback, use_message_placeholder, use_draft_placeholder, tag_proper_nouns, user, session_id, user_messages_are_audio, running_user_task_execution_pk):
         try:

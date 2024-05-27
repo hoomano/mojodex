@@ -8,7 +8,7 @@ import os
 
 
 class Language(Resource):
-    languages_dir = "/data/languages"
+    languages_dir = "mojodex_core/languages"
     available_languages_file = "available_languages.json"
     general_backend_error_message = "Oops, something weird has happened. We'll help you by email!"
 

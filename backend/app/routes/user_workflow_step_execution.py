@@ -43,7 +43,7 @@ class UserWorkflowStepExecution(Resource):
                 # # todo => set a status rejected ?
                 # add new message to db
                 current_step_in_validation = workflow_execution.get_step_execution_from_pk(user_workflow_step_execution_pk)
-                with open("/data/prompts/workflows/state.txt", "r") as file:
+                with open("mojodex_core/prompts/workflows/state.txt", "r") as file:
                     template = Template(file.read())
                     text = template.render(
                         before_checkpoint_validated_steps_executions=workflow_execution.get_before_checkpoint_validated_steps_executions(current_step_in_validation),

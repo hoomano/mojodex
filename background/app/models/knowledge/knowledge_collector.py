@@ -19,7 +19,7 @@ class KnowledgeCollector:
 
     @staticmethod
     def get_mojo_knowledge():
-        with open("/data/knowledge/mojo_knowledge.txt", 'r') as f:
+        with open("mojodex_core/prompts/knowledge/mojo_knowledge.txt", 'r') as f:
             return f.read()
 
     @staticmethod

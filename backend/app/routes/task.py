@@ -11,6 +11,8 @@ from models.workflows.steps_library import steps_class
 
 class Task(Resource):
 
+    available_json_inputs_types = "text_area", "image", "drop_down_list"
+
     # Route to create a new task
     # Route used only by Backoffice
     # Protected by a secret
@@ -105,6 +107,8 @@ class Task(Resource):
                                 return {"error": f"json_input for language_code '{language_code}' must contain 'input_name'"}, 400
                             if "type" not in item:
                                 return {"error": f"json_input for language_code '{language_code}' must contain 'type'"}, 400
+                            if item["type"] not in self.available_json_inputs_types:
+                                return {"error": f"json_input for language_code '{language_code}' must contain 'type' in {self.available_json_inputs_types}"}, 400
                             if "description_for_user" not in item:
                                 return {"error": f"json_input for language_code '{language_code}' must contain 'description_for_user'"}, 400
                             if "description_for_system" not in item:
@@ -372,6 +376,27 @@ class Task(Resource):
                         if "language_code" not in translation:
                             return {"error": f"Missing language_code in displayed_data"}, 400
                         language_code = translation["language_code"]
+                        # check translation["json_input"]
+                        json_input = translation["json_input"]
+                        # ensure json_input is a list
+                        if not isinstance(json_input, list):
+                            return {"error": f"json_input for language_code '{language_code}' must be a list of dict"}, 400
+
+                        # ensure each item in json_input contains at least "input_name", "type" "description_for_user", and "description_for_system"
+                        for item in json_input:
+                            if not isinstance(item, dict):
+                                return {"error": f"json_input for language_code '{language_code}' must be a list of dict"}, 400
+                            if "input_name" not in item:
+                                return {"error": f"json_input for language_code '{language_code}' must contain 'input_name'"}, 400
+                            if "type" not in item:
+                                return {"error": f"json_input for language_code '{language_code}' must contain 'type'"}, 400
+                            if item["type"] not in self.available_json_inputs_types:
+                                return {"error": f"json_input for language_code '{language_code}' must contain 'type' in {self.available_json_inputs_types}"}, 400
+                            if "description_for_user" not in item:
+                                return {"error": f"json_input for language_code '{language_code}' must contain 'description_for_user'"}, 400
+                            if "description_for_system" not in item:
+                                return {"error": f"json_input for language_code '{language_code}' must contain 'description_for_system'"}, 400
+
                         try:
                             task_translation = db.session.query(MdTaskDisplayedData).filter(MdTaskDisplayedData.task_fk == task_pk, MdTaskDisplayedData.language_code == language_code).first()
 

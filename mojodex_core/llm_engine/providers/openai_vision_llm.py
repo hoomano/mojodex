@@ -98,23 +98,30 @@ class OpenAIVisionLLM(OpenAILLM):
             n_tokens_conversation = 0
             messages = []
             for index in range(0, len(messages_data)):
+                
                 message_data = messages_data[index]
                 message = {"role": message_data.role, 'content': [
                     {"type": "text", "text": message_data.text}
                 ] 
                 }
+                new_messages = [message]
                 
                 n_text_tokens = self.num_tokens_from_text_messages([message])
 
                 n_image_tokens = 0
                 for image_path in message_data.images_path:
                     encoded_image = self.get_encoded_image(image_path)
-                    message['content'].append({"type": "image_url",
+                    image_data ={"type": "image_url",
                         "image_url": {"url": f"{OpenAIVisionLLM.get_image_message_url_prefix(image_path)};base64,{encoded_image}" }
-                        })
+                        }
+                    # if message's role is "system", we can't add image to the message so we will add a user message with the image
+                    if message_data.role == "system":
+                        new_messages.append({"role": "user", 'content': [image_data]})
+                    else:
+                        message['content'].append(image_data)
                     n_image_tokens += self.num_tokens_from_image(image_path)
 
-                messages.append(message)
+                messages += new_messages
                 
                 if index == 0:
                     n_tokens_prompt += n_text_tokens + n_image_tokens

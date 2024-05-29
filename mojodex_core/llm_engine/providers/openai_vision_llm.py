@@ -22,6 +22,7 @@ class VisionMessagesData:
         
 
 class OpenAIVisionLLM(OpenAILLM):
+    available_vision_models = ["gpt-4o", "gpt-4-vision-preview"]
 
     ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 

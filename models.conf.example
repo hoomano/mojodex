@@ -3,6 +3,15 @@
 
 ### LLMs
 
+# [openai/gpt-4o]
+# OPENAI_API_KEY=
+
+# [azure/gpt-4o]
+# GPT4O_AZURE_OPENAI_API_BASE=
+# GPT4O_AZURE_OPENAI_API_VERSION=
+# GPT4O_AZURE_OPENAI_KEY=
+# GPT4O_AZURE_OPENAI_DEPLOYMENT_ID=
+
 [openai/gpt-4-turbo-preview]
 OPENAI_API_KEY=<your api key here>
 

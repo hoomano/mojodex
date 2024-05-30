@@ -40,7 +40,7 @@ class WorkflowStepExecution:
             self.result = self.workflow_step.execute(self.parameter, self.get_learned_instructions(), initial_parameter,
                                                      past_validated_steps_results, user_id=self.user_id,
                                                      user_task_execution_pk= self.db_object.user_task_execution_fk,
-                                                     task_name_for_system= self.workflow_name)
+                                                     task_name_for_system= self.workflow_name, session_id=session_id)
         except Exception as e:
             self.error_status = {"datetime": datetime.now().isoformat(), "error": str(e)}
             # send email to admin

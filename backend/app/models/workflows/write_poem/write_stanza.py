@@ -20,7 +20,7 @@ class StanzaWriterStep(WorkflowStep):
     def output_keys(self):
         return ['stanza']
     
-    def _execute(self, parameter: dict, learned_instructions: dict, initial_parameter: dict, past_validated_steps_results: List[dict], user_id: str,user_task_execution_pk: int, task_name_for_system: str):
+    def _execute(self, parameter: dict, learned_instructions: dict, initial_parameter: dict, past_validated_steps_results: List[dict], user_id: str,user_task_execution_pk: int, task_name_for_system: str, session_id: str):
         try: 
             # input keys: stanza_topic
             stanza_topic = parameter['stanza_topic']

@@ -169,6 +169,16 @@ class ModelLoader:
                         "deployment_id": provider_conf["gpt4o_azure_openai_deployment_id"],
                         "model_name": model_name
                     }
+                    provider = OpenAILLM(conf)
+                elif model_name == "gpt-4o-vision":
+                    conf = {
+                        "api_key": provider_conf["gpt4o_azure_openai_key"],
+                        "api_base": provider_conf["gpt4o_azure_openai_api_base"],
+                        "api_type": provider_name,
+                        "api_version": provider_conf["gpt4o_azure_openai_api_version"],
+                        "deployment_id": provider_conf["gpt4o_azure_openai_deployment_id"],
+                        "model_name": model_name
+                    }
                     provider = OpenAIVisionLLM(conf)
                 
                 if model_name == "gpt4-turbo":

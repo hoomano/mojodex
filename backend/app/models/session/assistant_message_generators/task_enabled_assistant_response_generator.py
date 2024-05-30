@@ -107,24 +107,21 @@ class TaskEnabledAssistantResponseGenerator(AssistantResponseGenerator, ABC):
             if not self.requires_vision_llm:
                 return super()._generate_message_from_prompt(prompt, user_task_execution_pk=self.running_user_task_execution.user_task_execution_pk if self.running_user_task_execution else None,
                                                              task_name_for_system=self.running_task.name_for_system if self.running_task else None)
-            
+
             from models.user_images_file_manager import UserImagesFileManager
             self.user_image_file_manager = UserImagesFileManager()
             conversation_list = self.context.state.get_conversation_as_list(self.context.session_id)
             input_images = self._get_input_images_names()
             user_id = self.context.user_id
             session_id = self.context.state.running_user_task_execution.session_id
-            
             initial_system_message_data = [VisionMessagesData(role="system", text=prompt, images_path=[self.user_image_file_manager.get_image_file_path(image, user_id, session_id) for image in input_images])]
-            conversation_messages_data = [VisionMessagesData(role=message["role"], text=message["content"][0]["text"], images_path=[]) for message in conversation_list]
-            
+            conversation_messages_data = [VisionMessagesData(role=message["role"], text=message["content"], images_path=[]) for message in conversation_list]
             messages_data = initial_system_message_data + conversation_messages_data
             responses = model_loader.main_vision_llm.invoke(messages_data, self.context.user_id,
                                                         temperature=0,
                                                         max_tokens=4000,
                                                         label="CHAT",
                                                         stream=True, stream_callback=self._token_callback)
-
             return responses[0].strip() if responses else None
         except Exception as e:
             raise Exception(f"_generate_message_from_prompt:: {e}")

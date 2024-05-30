@@ -62,13 +62,21 @@ class ModelLoader:
 
     def get_main_vision_llm_provider(self):
         try:
-            providers = self._get_providers_by_model("gpt-4-vision-preview")
-            if len(providers) == 0:
+            provider = None
+            model_index = 0
+            while provider is None and model_index < len(OpenAIVisionLLM.available_vision_models):
+                model=OpenAIVisionLLM.available_vision_models[model_index]
+                providers = self._get_providers_by_model(model)
+                if len(providers) > 0:
+                    provider = providers[0]
+                else:
+                    model_index += 1
+            if provider is None:
                 logging.error(
                     f"🔴: ERROR: ModelLoader.get_main_vision_llm_provider() >> No vision provider found")
                 return None
-            provider = providers[0]
-            _, _, llm, conf = self._build_provider(provider + '/gpt-4-vision-preview')
+            
+            _, _, llm, conf = self._build_provider(provider + f'/{model}')
             return type(llm)(conf, None)
         except Exception as e:
             logging.error(
@@ -146,12 +154,33 @@ class ModelLoader:
                 }
                 if model_name == OpenAIEmbedding.default_embedding_model:
                     provider = OpenAIEmbedding(conf)
-                elif model_name == "gpt-4-vision-preview":
+                elif model_name in OpenAIVisionLLM.available_vision_models:
                     provider = OpenAIVisionLLM(conf)
                 else:
                     provider = OpenAILLM(conf)
 
             elif provider_name == "azure":
+                if model_name == "gpt-4o":
+                    conf = {
+                        "api_key": provider_conf["gpt4o_azure_openai_key"],
+                        "api_base": provider_conf["gpt4o_azure_openai_api_base"],
+                        "api_type": provider_name,
+                        "api_version": provider_conf["gpt4o_azure_openai_api_version"],
+                        "deployment_id": provider_conf["gpt4o_azure_openai_deployment_id"],
+                        "model_name": model_name
+                    }
+                    provider = OpenAILLM(conf)
+                elif model_name == "gpt-4o-vision":
+                    conf = {
+                        "api_key": provider_conf["gpt4o_azure_openai_key"],
+                        "api_base": provider_conf["gpt4o_azure_openai_api_base"],
+                        "api_type": provider_name,
+                        "api_version": provider_conf["gpt4o_azure_openai_api_version"],
+                        "deployment_id": provider_conf["gpt4o_azure_openai_deployment_id"],
+                        "model_name": model_name
+                    }
+                    provider = OpenAIVisionLLM(conf)
+                
                 if model_name == "gpt4-turbo":
                     conf = {
                         "api_key": provider_conf["gpt4_turbo_azure_openai_key"],

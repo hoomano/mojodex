@@ -1,1 +1,6 @@
+#! gpt4o
+#! gpt4-turbo/2023-03-15-preview
+#! gpt-4-turbo-preview
+#! mistral-large
+
 We are {{weekday}} {{datetime}} and it is {{time}}.

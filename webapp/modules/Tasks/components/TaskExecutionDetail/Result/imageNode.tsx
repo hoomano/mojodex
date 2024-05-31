@@ -214,12 +214,14 @@ export class ImageNode extends DecoratorNode<JSX.Element> {
     decorate(): JSX.Element {
         return (
             <Suspense fallback={null}>
+                <a href={this.__src} target="_blank" rel="noopener noreferrer">
                 <img
                     src={this.__src}
                     alt={this.__altText}
                     width={this.__width}
                     height={this.__height}
-                />
+                    />
+                </a>
             </Suspense>
         );
     }

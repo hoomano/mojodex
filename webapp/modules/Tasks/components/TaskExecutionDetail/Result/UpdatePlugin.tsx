@@ -1,20 +1,16 @@
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
-import { $createParagraphNode, $createTextNode, $getRoot } from "lexical";
 import { useEffect } from "react";
 import {
   $convertFromMarkdownString,
-  $convertToMarkdownString,
-  TRANSFORMERS,
 } from '@lexical/markdown';
+import { MOJODEX_LEXICAL_TRANSFORMERS } from "./lexicalTransformers";
 
 const UpdatePlugin = ({ text }: { text: string }) => {
   const [editor] = useLexicalComposerContext();
 
   useEffect(() => {
     editor.update(() => {
-      console.log('text', typeof text);
-      $convertFromMarkdownString(text, TRANSFORMERS);
-
+      $convertFromMarkdownString(text, MOJODEX_LEXICAL_TRANSFORMERS);
     });
   }, [text]);
 

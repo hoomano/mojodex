@@ -21,13 +21,16 @@ import ToolTip from "components/Tooltip";
 import { debounce } from "helpers/method";
 import { HeadingNode, QuoteNode } from '@lexical/rich-text'
 import { LinkNode } from '@lexical/link'
-import { ListItemNode, ListNode } from '@lexical/list'
-import { MarkNode } from '@lexical/mark'
+import { ListItemNode, ListNode } from '@lexical/list';
+import { LinkPlugin } from '@lexical/react/LexicalLinkPlugin';
+
 import {
-  $convertFromMarkdownString,
   $convertToMarkdownString,
-  TRANSFORMERS,
 } from '@lexical/markdown';
+import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
+import  LexicalClickableLinkPlugin  from '@lexical/react/LexicalClickableLinkPlugin';
+import { MOJODEX_LEXICAL_TRANSFORMERS } from "./lexicalTransformers";
+import { ImageNode } from "./imageNode";
 
 type Props = {
   userTaskExecutionPk: number | undefined;
@@ -93,12 +96,14 @@ const Answer = ({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
+  
   const onChangeText = async (state: EditorState) => {
     const newUpdatedText: string = await new Promise((res) => {
       state.read(() => {
-        const updatedText = $convertToMarkdownString(TRANSFORMERS);
+        const updatedText = $convertToMarkdownString(MOJODEX_LEXICAL_TRANSFORMERS);
         res(updatedText);
       });
+
     });
 
     if (isUserActionRef.current && text !== newUpdatedText) {
@@ -166,6 +171,14 @@ const Answer = ({
 
   const properNounRegex = /\*(.*?)\*/g;
 
+  const urlRegExp = new RegExp(
+    /((([A-Za-z]{3,9}:(?:\/\/)?)(?:[-;:&=+$,\w]+@)?[A-Za-z0-9.-]+|(?:www.|[-;:&=+$,\w]+@)[A-Za-z0-9.-]+)((?:\/[+~%/.\w-_]*)?\??(?:[-+=&;%@.\w_]*)#?(?:[\w]*))?)/,
+  );
+
+  function validateUrl(url: string): boolean {
+    return url === 'https://' || urlRegExp.test(url);
+  }
+
   return (
     <div>
       <div className="relative py-5" style={{ wordWrap: "break-word" }}>
@@ -202,7 +215,7 @@ const Answer = ({
       <div className="bg-background-textbox rounded-md pb-2 overflow-hidden">
         <LexicalComposer
           initialConfig={{
-            nodes: [HeadingNode, QuoteNode, LinkNode, ListNode, ListItemNode],
+            nodes: [HeadingNode, QuoteNode, LinkNode, ListNode, ListItemNode, ImageNode],
             namespace: "Document Content editor",
             theme: {
               paragraph: "mb-1",
@@ -226,7 +239,6 @@ const Answer = ({
             onSaveDraft={onSaveDraft}
             text={text}
           />
-
           <RichTextPlugin
             contentEditable={
               <ContentEditable className="min-h-[450px] outline-none py-[15px] px-2.5 resize-none text-ellipsis" />
@@ -234,6 +246,8 @@ const Answer = ({
             placeholder={null}
             ErrorBoundary={LexicalErrorBoundary}
           />
+          <LinkPlugin validateUrl={validateUrl} />
+          <LexicalClickableLinkPlugin />
           <OnChangePlugin onChange={(state) => {
             onChangeText(state)
           }} />
@@ -241,7 +255,7 @@ const Answer = ({
           <UpdatePlugin
             text={producedText?.text || ""}
           />
-          
+
         </LexicalComposer>
       </div>
       {isLoading ? null : <nav className="flex items-center justify-between border-t border-gray-200 px-4 sm:px-0">

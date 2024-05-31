@@ -7,10 +7,16 @@ from mojodex_core.entities import MdWorkflowStepDisplayedData, MdWorkflowStep, M
 
 class WorkflowStep(ABC):
     logger_prefix = "WorkflowStep :: "
+    types_reserved_key = 'types'
+    reserved_output_keys : List[str] = [types_reserved_key]
 
     def __init__(self, workflow_step):
         try:
             self.db_object = workflow_step
+            # check if output keys do not contain reserved keys
+            for key in self.output_keys:
+                if key in WorkflowStep.reserved_output_keys:
+                    raise Exception(f"__init__ :: output key {key} is reserved")
         except Exception as e:
             raise Exception(f"{self.logger_prefix} :: __init__ :: {e}")
 

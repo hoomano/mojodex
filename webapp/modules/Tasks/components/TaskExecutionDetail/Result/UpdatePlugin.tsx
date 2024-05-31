@@ -1,17 +1,20 @@
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 import { $createParagraphNode, $createTextNode, $getRoot } from "lexical";
 import { useEffect } from "react";
+import {
+  $convertFromMarkdownString,
+  $convertToMarkdownString,
+  TRANSFORMERS,
+} from '@lexical/markdown';
 
 const UpdatePlugin = ({ text }: { text: string }) => {
   const [editor] = useLexicalComposerContext();
 
   useEffect(() => {
     editor.update(() => {
-      const root = $getRoot();
-      root.clear();
-      const p = $createParagraphNode();
-      p.append($createTextNode(text));
-      root.append(p);
+      console.log('text', typeof text);
+      $convertFromMarkdownString(text, TRANSFORMERS);
+
     });
   }, [text]);
 

@@ -19,6 +19,15 @@ import { EditerProducedText } from "modules/Tasks/interface";
 import { FaCopy } from "react-icons/fa";
 import ToolTip from "components/Tooltip";
 import { debounce } from "helpers/method";
+import { HeadingNode, QuoteNode } from '@lexical/rich-text'
+import { LinkNode } from '@lexical/link'
+import { ListItemNode, ListNode } from '@lexical/list'
+import { MarkNode } from '@lexical/mark'
+import {
+  $convertFromMarkdownString,
+  $convertToMarkdownString,
+  TRANSFORMERS,
+} from '@lexical/markdown';
 
 type Props = {
   userTaskExecutionPk: number | undefined;
@@ -87,7 +96,7 @@ const Answer = ({
   const onChangeText = async (state: EditorState) => {
     const newUpdatedText: string = await new Promise((res) => {
       state.read(() => {
-        const updatedText = $getRoot().getTextContent();
+        const updatedText = $convertToMarkdownString(TRANSFORMERS);
         res(updatedText);
       });
     });
@@ -193,6 +202,7 @@ const Answer = ({
       <div className="bg-background-textbox rounded-md pb-2 overflow-hidden">
         <LexicalComposer
           initialConfig={{
+            nodes: [HeadingNode, QuoteNode, LinkNode, ListNode, ListItemNode],
             namespace: "Document Content editor",
             theme: {
               paragraph: "mb-1",
@@ -203,6 +213,7 @@ const Answer = ({
                 italic: "italic",
                 underline: "underline",
                 strikethrough: "line-through",
+
               },
             },
             onError(error) {
@@ -228,8 +239,9 @@ const Answer = ({
           }} />
           <HistoryPlugin />
           <UpdatePlugin
-            text={producedText?.text?.replace(properNounRegex, "$1") || ""}
+            text={producedText?.text || ""}
           />
+          
         </LexicalComposer>
       </div>
       {isLoading ? null : <nav className="flex items-center justify-between border-t border-gray-200 px-4 sm:px-0">

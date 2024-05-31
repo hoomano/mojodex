@@ -27,7 +27,6 @@ import { LinkPlugin } from '@lexical/react/LexicalLinkPlugin';
 import {
   $convertToMarkdownString,
 } from '@lexical/markdown';
-import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 import  LexicalClickableLinkPlugin  from '@lexical/react/LexicalClickableLinkPlugin';
 import { MOJODEX_LEXICAL_TRANSFORMERS } from "./lexicalTransformers";
 import { ImageNode } from "./imageNode";

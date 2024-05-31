@@ -1,3 +1,6 @@
+// This code is highly inspired by the code from the following link:
+// https://github.com/facebook/lexical/blob/main/packages/lexical-playground/src/nodes/ImageNode.tsx
+
 /**
  * Copyright (c) Meta Platforms, Inc. and affiliates.
  *

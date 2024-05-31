@@ -1,6 +1,14 @@
-import { TRANSFORMERS, TextMatchTransformer } from "@lexical/markdown";
+import { TextMatchTransformer } from "@lexical/markdown";
 import { $createImageNode, $isImageNode, ImageNode } from "./imageNode";
+import {
+    ELEMENT_TRANSFORMERS,
+    TEXT_FORMAT_TRANSFORMERS,
+    TEXT_MATCH_TRANSFORMERS,
+    Transformer,
+} from '@lexical/markdown';
 
+// This code is highly inspired by the code from the following link:
+// https://github.com/facebook/lexical/blob/main/packages/lexical-playground/src/nodes/ImageNode.tsx
 export const IMAGE: TextMatchTransformer = {
     dependencies: [ImageNode],
     export: (node) => {
@@ -25,12 +33,6 @@ export const IMAGE: TextMatchTransformer = {
     type: 'text-match',
 };
 
-import {
-    ELEMENT_TRANSFORMERS,
-    TEXT_FORMAT_TRANSFORMERS,
-    TEXT_MATCH_TRANSFORMERS,
-    Transformer,
-} from '@lexical/markdown';
 
 export const MOJODEX_LEXICAL_TRANSFORMERS: Array<Transformer> = [
     IMAGE,

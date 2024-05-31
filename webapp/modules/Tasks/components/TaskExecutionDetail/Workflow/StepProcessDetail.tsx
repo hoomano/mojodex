@@ -8,6 +8,7 @@ function classNames(...classes: string[]) {
 
 interface StepProcessDetailProps {
   stepExecutions: UserTaskExecutionStepExecution[];
+  sessionId: string;
   onInvalidate: any;
   onValidate: any;
   onStepRelaunched: any;
@@ -16,6 +17,7 @@ interface StepProcessDetailProps {
 
 const StepProcessDetail: React.FC<StepProcessDetailProps> = ({
   stepExecutions,
+  sessionId,
   onInvalidate,
   onValidate,
   onStepRelaunched,
@@ -37,7 +39,8 @@ const StepProcessDetail: React.FC<StepProcessDetailProps> = ({
             </div>
           
           <Step
-            stepExecution={stepItem}
+              stepExecution={stepItem}
+              sessionId={sessionId}
             onInvalidate={onInvalidate}
             onValidate={onValidate}
               onStepRelaunched={onStepRelaunched}

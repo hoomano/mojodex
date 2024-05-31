@@ -5,9 +5,10 @@ interface ImageWithHeadersProps {
     sessionId: string;
     filename: string;
     alt: string;
+    height?: number;
 }
 
-const ImagePreview: FunctionComponent<ImageWithHeadersProps> = ({ sessionId, filename, alt }) => {
+const ImagePreview: FunctionComponent<ImageWithHeadersProps> = ({ sessionId, filename, alt, height = 300 }) => {
     const [imgSrc, setImgSrc] = useState("");
     const { update: updateAuthSession, data: session }: any = useSession();
 
@@ -26,7 +27,7 @@ const ImagePreview: FunctionComponent<ImageWithHeadersProps> = ({ sessionId, fil
     }, [sessionId, filename]);
 
     return (
-        <img src={imgSrc} alt={alt} style={{ height: 300, objectFit: "contain" }} />
+        <img src={imgSrc} alt={alt} style={{ height: height, objectFit: "contain" }} />
     );
 };
 

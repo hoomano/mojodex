@@ -24,7 +24,7 @@ export interface UserTaskExecutionStepExecution {
   user_validation_required: boolean;
   validated: boolean;
   parameter: any;
-  result: Array<Map<string, string>>;
+  result: Array<Map<string, any>>;
   error_status: any;
 }
 

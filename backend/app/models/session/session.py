@@ -2,6 +2,8 @@ import os
 from app import db, server_socket, time_manager, socketio_message_sender, main_logger
 
 from models.produced_text_managers.instruct_task_produced_text_manager import InstructTaskProducedTextManager
+
+from models.session.instruct_task_assistant import InstructTaskAssistant
 from mojodex_core.logging_handler import log_error
 from models.session.assistant_message_generators.workflow_response_generator import WorkflowAssistantResponseGenerator
 from models.session.assistant_message_generators.general_chat_response_generator import GeneralChatResponseGenerator
@@ -15,7 +17,6 @@ from functools import wraps
 from sqlalchemy.orm.attributes import flag_modified
 
 class Session:
-    logger_prefix = "Session"
     sessions_storage = "/data/users"
     mojo_messages_audios_storage_dir_name = "mojo_messages_audios"
     agent_message_key, user_message_key = "mojo", "user"
@@ -37,11 +38,11 @@ class Session:
                     self.voice_generator = VoiceGenerator()
                 except Exception as e:
                     self.voice_generator = None
-                    main_logger.error(f"{Session.logger_prefix}:: Can't initialize voice generator")
+                    main_logger.error(f"{self.__class__.__name__}:: Can't initialize voice generator")
             else:
                 self.voice_generator = None
         except Exception as e:
-            raise Exception(f"{Session.logger_prefix} :: __init__ :: {e}")
+            raise Exception(f"{self.__class__.__name__} :: __init__ :: {e}")
 
     def __get_mojo_messages_audio_storage(self):
         """
@@ -149,9 +150,9 @@ class Session:
     def _produced_text_stream_callback(self, partial_text):
         try:
             title = AssistantMessageGenerator.remove_tags_from_text(partial_text.strip(), InstructTaskProducedTextManager.title_start_tag,
-                                                    InstructTaskProducedTextManager.title_end_tag)
+                                                                    InstructTaskProducedTextManager.title_end_tag)
             production = AssistantMessageGenerator.remove_tags_from_text(partial_text.strip(), InstructTaskProducedTextManager.draft_start_tag,
-                                                        InstructTaskProducedTextManager.draft_end_tag)
+                                                                         InstructTaskProducedTextManager.draft_end_tag)
             return {"produced_text_title": title,
                     "produced_text": production,
                     "session_id": self.id,
@@ -257,7 +258,6 @@ class Session:
         self.platform = platform
         return self.__manage_workflow_session(platform, user_workflow_execution_pk, use_message_placeholder, use_draft_placeholder)
 
-
     def process_mojo_message(self, response_message, response_language):
         """
         Processes a mojo message.
@@ -313,14 +313,14 @@ class Session:
         try:
             tag_proper_nouns = platform == "mobile"
             general_chat_response_generator = GeneralChatResponseGenerator(mojo_message_token_stream_callback=self._mojo_message_stream_callback,
-                                                                              draft_token_stream_callback=self._produced_text_stream_callback,
-                                                                              use_message_placeholder=use_message_placeholder,
-                                                                               use_draft_placeholder=use_draft_placeholder,
-                                                                               tag_proper_nouns=tag_proper_nouns,
-                                                                               user=self._get_user(),
-                                                                               session_id=self.id,
-                                                                               user_messages_are_audio= platform=="mobile",
-                                                                               running_user_task_execution_pk=user_task_execution_pk)
+                                                                           draft_token_stream_callback=self._produced_text_stream_callback,
+                                                                           use_message_placeholder=use_message_placeholder,
+                                                                           use_draft_placeholder=use_draft_placeholder,
+                                                                           tag_proper_nouns=tag_proper_nouns,
+                                                                           user=self._get_user(),
+                                                                           session_id=self.id,
+                                                                           user_messages_are_audio= platform=="mobile",
+                                                                           running_user_task_execution_pk=user_task_execution_pk)
             response_message = general_chat_response_generator.generate_message()
             response_language = general_chat_response_generator.context.state.current_language
             return response_message, response_language
@@ -330,10 +330,10 @@ class Session:
     def __manage_task_session(self, platform, user_task_execution_pk, use_message_placeholder=False, use_draft_placeholder=False):
         try:
             # What is the task type ?
-            db_task = db.session.query(MdTask)\
-                .join(MdUserTask, MdTask.task_pk == MdUserTask.task_fk)\
-                .join(MdUserTaskExecution, MdUserTaskExecution.user_task_fk == MdUserTask.user_task_pk)\
-                .filter(MdUserTaskExecution.user_task_execution_pk == user_task_execution_pk)\
+            db_task = db.session.query(MdTask) \
+                .join(MdUserTask, MdTask.task_pk == MdUserTask.task_fk) \
+                .join(MdUserTaskExecution, MdUserTaskExecution.user_task_fk == MdUserTask.user_task_pk) \
+                .filter(MdUserTaskExecution.user_task_execution_pk == user_task_execution_pk) \
                 .first()
             if db_task is None:
                 raise Exception(f"Task of user_task_execution {user_task_execution_pk} not found")
@@ -362,18 +362,17 @@ class Session:
         """
         try:
             tag_proper_nouns = platform == "mobile"
-            task_assistant_response_generator = InstructTaskAssistantResponseGenerator(mojo_message_token_stream_callback=self._mojo_message_stream_callback,
-                                                                              draft_token_stream_callback=self._produced_text_stream_callback,
-                                                                              use_message_placeholder=use_message_placeholder,
-                                                                               use_draft_placeholder=use_draft_placeholder,
-                                                                               tag_proper_nouns=tag_proper_nouns,
-                                                                               user=self._get_user(),
-                                                                               session_id=self.id,
-                                                                               user_messages_are_audio= platform=="mobile",
-                                                                               running_user_task_execution_pk=user_task_execution_pk)
+            user_messages_are_audio = platform == "mobile"
+            instruct_task_assistant = InstructTaskAssistant(mojo_message_token_stream_callback=self._mojo_message_stream_callback,
+                                                            draft_token_stream_callback=self._produced_text_stream_callback,
+                                                            use_message_placeholder=use_message_placeholder,
+                                                            use_draft_placeholder=use_draft_placeholder,
+                                                            tag_proper_nouns=tag_proper_nouns,
+                                                            user_messages_are_audio= user_messages_are_audio,
+                                                            running_user_task_execution_pk=user_task_execution_pk)
 
-            response_message = task_assistant_response_generator.generate_message()
-            response_language = task_assistant_response_generator.context.state.current_language
+            response_message = instruct_task_assistant.generate_message()
+            response_language = instruct_task_assistant.language
             return response_message, response_language
         except Exception as e:
             raise Exception(f"__manage_task_session :: {e}")
@@ -397,12 +396,12 @@ class Session:
         try:
             tag_proper_nouns = platform == "mobile"
             workflow_assistant_response_generator = WorkflowAssistantResponseGenerator(mojo_message_token_stream_callback=self._mojo_message_stream_callback,
-                                                                              use_message_placeholder=use_message_placeholder,
-                                                                               tag_proper_nouns=tag_proper_nouns,
-                                                                               user=self._get_user(),
-                                                                               session_id=self.id,
-                                                                               user_messages_are_audio= platform=="mobile",
-                                                                               running_user_workflow_execution_pk=user_workflow_execution_pk)
+                                                                                       use_message_placeholder=use_message_placeholder,
+                                                                                       tag_proper_nouns=tag_proper_nouns,
+                                                                                       user=self._get_user(),
+                                                                                       session_id=self.id,
+                                                                                       user_messages_are_audio= platform=="mobile",
+                                                                                       running_user_workflow_execution_pk=user_workflow_execution_pk)
 
             response_message = workflow_assistant_response_generator.generate_message()
             response_language = workflow_assistant_response_generator.context.state.current_language

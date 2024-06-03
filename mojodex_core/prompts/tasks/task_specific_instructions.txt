@@ -1,5 +1,5 @@
 TASK TO ACCOMPLISH
-{{task.name_for_system}}: {{task.description}}
+{{task.name_for_system}}: {{task.definition_for_system}}
 
 {%if user_task_inputs%}USER INPUTS
 {{ user_task_inputs | tojson(indent=4) }}{%endif%}

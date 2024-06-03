@@ -34,7 +34,7 @@ class InstructTask:
             raise Exception(f"{self.__class__.__name__} :: name_for_system :: {e}")
 
     @property
-    def description(self):
+    def definition_for_system(self):
         try:
             return self.db_object.definition_for_system
         except Exception as e:

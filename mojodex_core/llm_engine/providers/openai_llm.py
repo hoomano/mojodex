@@ -106,7 +106,7 @@ class OpenAILLM(LLM):
                                     flag_to_stop_streaming = stream_callback(
                                         complete_text)
                                     if flag_to_stop_streaming:
-                                        return None
+                                        return None, None
                                 except Exception as e:
                                     mojo_openai_logger.error(
                                         f"🔴 Error in streamCallback: {e}")
@@ -159,6 +159,8 @@ class OpenAILLM(LLM):
         )
 
         response, finish_reason = self._handle_chat_completion_response(completion, stream, stream_callback)
+        if response is None:
+            return None
         
         if finish_reason == "length" and n_calls < n_additional_calls_if_finish_reason_is_length:
             # recall the function with assistant_message + user_message

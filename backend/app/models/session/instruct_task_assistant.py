@@ -4,15 +4,14 @@ from datetime import datetime
 import requests
 
 from models.session.instruct_task_execution import InstructTaskExecution
-
 from models.knowledge.knowledge_manager import KnowledgeManager
-
-from models.session.assistant_message_generators.assistant_message_generator import \
-    AssistantMessageGenerator
+from models.session.assistant_message_generators.assistant_message_generator import AssistantMessageGenerator
 from models.session.execution_manager import ExecutionManager
 from models.tasks.task_executor import TaskExecutor
 from models.tasks.task_inputs_manager import TaskInputsManager
 from models.tasks.task_tool_manager import TaskToolManager
+
+from models.produced_text_managers.instruct_task_produced_text_manager import InstructTaskProducedTextManager
 from mojodex_core.llm_engine.providers.openai_vision_llm import VisionMessagesData
 from mojodex_core.logging_handler import log_error
 from app import placeholder_generator, model_loader
@@ -20,7 +19,6 @@ from jinja2 import Template
 
 
 class InstructTaskAssistant:
-    logger_prefix = "InstructTaskAssistant"
     prompt_file = "mojodex_core/prompts/tasks/run.txt"
     language_start_tag, language_end_tag = "<language>", "</language>"
 
@@ -36,17 +34,18 @@ class InstructTaskAssistant:
             self.mojo_message_token_stream_callback = mojo_message_token_stream_callback
             self.draft_token_stream_callback = draft_token_stream_callback
             self.task_input_manager = TaskInputsManager(self.instruct_task_execution.session.session_id)
-           # self.task_tool_manager = TaskToolManager(self.instruct_task_execution.session.session_id)
+            # self.task_tool_manager = TaskToolManager(self.instruct_task_execution.session.session_id)
             self.execution_manager = ExecutionManager(self.instruct_task_execution.session.session_id)
-            self.task_executor = TaskExecutor(self.instruct_task_execution.session.session_id, self.instruct_task_execution.user.user_id)
+            self.task_executor = TaskExecutor(self.instruct_task_execution.session.session_id,
+                                              self.instruct_task_execution.user.user_id)
             self.language = None
         except Exception as e:
-            raise Exception(f"{InstructTaskAssistant.logger_prefix} __init__ :: {e}")
+            raise Exception(f"{self.__class__.__name__} __init__ :: {e}")
 
     def generate_message(self):
         try:
             # call background for title and summary
-            server_socket.start_background_task(self.__give_task_execution_title_and_summary,
+            server_socket.start_background_task(self._give_task_execution_title_and_summary,
                                                 self.instruct_task_execution.user_task_execution_pk)
 
             # If placeholder is required, return it
@@ -55,10 +54,6 @@ class InstructTaskAssistant:
 
             # Else, prepare prompt
             prompt = self._render_prompt_from_template()
-
-            # Write prompt to /data/prompt.txt
-            with open("/data/prompt.txt", "w") as f:
-                f.write(prompt)
 
             # Call LLM
             llm_output = self._call_llm(prompt)
@@ -70,9 +65,9 @@ class InstructTaskAssistant:
                 return message
 
         except Exception as e:
-            raise Exception(f"{InstructTaskAssistant.logger_prefix} :: generate_message :: {e}")
+            raise Exception(f"{self.__class__.__name__} :: generate_message :: {e}")
 
-    def __give_task_execution_title_and_summary(self, user_task_execution_pk):
+    def _give_task_execution_title_and_summary(self, user_task_execution_pk):
         try:
             # call background backend /end_user_task_execution to update user task execution title and summary
             uri = f"{os.environ['BACKGROUND_BACKEND_URI']}/user_task_execution_title_and_summary"
@@ -98,6 +93,15 @@ class InstructTaskAssistant:
         except Exception as e:
             raise Exception(f"_handle_placeholder :: {e}")
 
+    def _get_message_placeholder(self):
+        return f"{TaskInputsManager.user_message_start_tag}{placeholder_generator.mojo_message}{TaskInputsManager.user_message_end_tag}"
+
+    def _get_task_execution_placeholder(self):
+        return f"{ExecutionManager.execution_start_tag}" \
+               f"{InstructTaskProducedTextManager.title_start_tag}{placeholder_generator.mojo_draft_title}{InstructTaskProducedTextManager.title_end_tag}" \
+               f"{InstructTaskProducedTextManager.draft_start_tag}{placeholder_generator.mojo_draft_body}{InstructTaskProducedTextManager.draft_end_tag}" \
+               f"{ExecutionManager.execution_end_tag}"
+
     def _render_prompt_from_template(self):
         try:
             mojo_knowledge = KnowledgeManager.get_mojo_knowledge()
@@ -106,16 +110,16 @@ class InstructTaskAssistant:
             with open(self.prompt_file, 'r') as f:
                 prompt_template = Template(f.read())
             return prompt_template.render(mojo_knowledge=mojo_knowledge,
-                                                     global_context=global_context,
-                                                     username=self.instruct_task_execution.user.username,
-                                                     user_company_knowledge=self.instruct_task_execution.user.company_knowledge,
-                                                     infos_to_extract=self.instruct_task_execution.task.infos_to_extract,
-                                                     task_specific_instructions=self.instruct_task_execution.instructions,
-                                                     produced_text_done=self.instruct_task_execution.produced_text_done,
-                                                     audio_message=self.user_messages_are_audio,
-                                                     tag_proper_nouns=self.tag_proper_nouns,
-                                                     language=None
-                                                     )
+                                          global_context=global_context,
+                                          username=self.instruct_task_execution.user.username,
+                                          user_company_knowledge=self.instruct_task_execution.user.company_knowledge,
+                                          infos_to_extract=self.instruct_task_execution.task.infos_to_extract,
+                                          task_specific_instructions=self.instruct_task_execution.instructions,
+                                          produced_text_done=self.instruct_task_execution.produced_text_done,
+                                          audio_message=self.user_messages_are_audio,
+                                          tag_proper_nouns=self.tag_proper_nouns,
+                                          language=None
+                                          )
         except Exception as e:
             raise Exception(f"_render_prompt_from_template :: {e}")
 
@@ -126,9 +130,7 @@ class InstructTaskAssistant:
     def _call_llm(self, prompt):
         try:
             conversation_list = self.instruct_task_execution.session.conversation
-            temperature = 0
-            max_tokens = 4000
-            label = "task_chat"
+            temperature, max_tokens, label = 0, 4000, 'instruct_task_chat_assistant'
             if self.requires_vision_llm:
                 return self._call_vision_llm(prompt, conversation_list, temperature, max_tokens, label)
             messages = [{"role": "system", "content": prompt}] + conversation_list
@@ -179,19 +181,18 @@ class InstructTaskAssistant:
                 text = AssistantMessageGenerator.remove_tags_from_text(partial_text,
                                                                        TaskInputsManager.ask_user_input_start_tag,
                                                                        TaskInputsManager.ask_user_input_end_tag)
-           # elif TaskToolManager.tool_usage_start_tag in partial_text:
-           #     text = AssistantMessageGenerator.remove_tags_from_text(partial_text, TaskToolManager.tool_usage_start_tag,
+            # elif TaskToolManager.tool_usage_start_tag in partial_text:
+            #     text = AssistantMessageGenerator.remove_tags_from_text(partial_text, TaskToolManager.tool_usage_start_tag,
             #                                                           TaskToolManager.tool_usage_end_tag)
             if text and self.mojo_message_token_stream_callback:
                 self.mojo_message_token_stream_callback(text)
 
             elif ExecutionManager.execution_start_tag in partial_text:
                 # take the text between <execution> and </execution>
-                text = AssistantMessageGenerator.remove_tags_from_text(partial_text, ExecutionManager.execution_start_tag,
+                text = AssistantMessageGenerator.remove_tags_from_text(partial_text,
+                                                                       ExecutionManager.execution_start_tag,
                                                                        ExecutionManager.execution_end_tag)
                 self.draft_token_stream_callback(text)
-
-
 
     def _handle_llm_output(self, llm_output):
         try:
@@ -210,8 +211,8 @@ class InstructTaskAssistant:
             if self.language_start_tag in response:
                 try:
                     self.language = AssistantMessageGenerator.remove_tags_from_text(response,
-                                                                                       self.language_start_tag,
-                                                                                       self.language_end_tag).lower()
+                                                                                    self.language_start_tag,
+                                                                                    self.language_end_tag).lower()
                 except Exception as e:
                     pass
         except Exception as e:
@@ -221,7 +222,7 @@ class InstructTaskAssistant:
         try:
             if TaskInputsManager.ask_user_input_start_tag in response:
                 return self.task_input_manager.manage_ask_input_text(response)
-            #if TaskToolManager.tool_usage_start_tag in response:
+            # if TaskToolManager.tool_usage_start_tag in response:
             #    return self.task_tool_manager.manage_tool_usage_text(response,
             #                                                         self.running_user_task_execution.user_task_execution_pk,
             #                                                         self._get_task_tools_json(self.running_task))
@@ -233,7 +234,8 @@ class InstructTaskAssistant:
         try:
             if ExecutionManager.execution_start_tag in response:
                 return self.execution_manager.manage_execution_text(response, self.instruct_task_execution.task,
-                                                                    self.instruct_task_execution.task.get_name_in_language(self.instruct_task_execution.user.language_code),
+                                                                    self.instruct_task_execution.task.get_name_in_language(
+                                                                        self.instruct_task_execution.user.language_code),
                                                                     self.instruct_task_execution.user_task_execution_pk,
                                                                     self.task_executor,
                                                                     use_draft_placeholder=self.use_draft_placeholder)

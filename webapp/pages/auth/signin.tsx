@@ -255,7 +255,7 @@ export default function SignIn({
               }
             </form>
 
-            <div>
+            {providers && Array.isArray(providers) && providers.length > 0 ? <div>
               <div className="relative mt-10">
                 <div
                   className="absolute inset-0 flex items-center"
@@ -274,7 +274,8 @@ export default function SignIn({
                   LoginButton(provider)
                 )}
               </div>
-            </div>
+            </div> : null }
+
           </div>
           <div className="text-white text-sm mt-2"></div>
           {isFromMobile && (

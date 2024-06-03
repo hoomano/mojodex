@@ -34,9 +34,9 @@ class TaskExecutor:
                     "produced_text_pk": produced_text.produced_text_pk,
                     "produced_text_version_pk": produced_text_version.produced_text_version_pk,
                     "user_task_execution_pk": user_task_execution_pk,
-                    "task_name": task_name if task_name else None,
-                    "task_pk": task.task_pk if task else None,
-                    "task_icon": task.icon if task else None,
+                    "task_name": task_name,
+                    "task_pk": task.task_pk,
+                    "task_icon": task.icon,
                     "text_type": text_type,
                     "text": InstructTaskProducedTextManager.remove_tags(execution_text)
                 }

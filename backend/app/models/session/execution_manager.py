@@ -11,16 +11,16 @@ class ExecutionManager:
     def __init__(self, session_id):
         self.logger = MojodexBackendLogger(f"{ExecutionManager.logger_prefix} -- session_id {session_id}")
 
-    def manage_execution_text(self, execution_text, running_task, running_task_displayed_data,
-                              running_user_task_execution, task_executor, use_draft_placeholder=False):
+    def manage_execution_text(self, execution_text, running_task, task_name_for_user,
+                              user_task_execution_pk, task_executor, use_draft_placeholder=False):
         try:
             mojo_text = AssistantMessageGenerator.remove_tags_from_text(execution_text, self.execution_start_tag,
                                                                              self.execution_end_tag)
 
             if running_task:
                 response = task_executor.manage_execution_text(execution_text=mojo_text, task=running_task,
-                                                           task_name=running_task_displayed_data.name_for_user,
-                                                           user_task_execution_pk=running_user_task_execution.user_task_execution_pk,
+                                                           task_name=task_name_for_user,
+                                                           user_task_execution_pk=user_task_execution_pk,
                                                            use_draft_placeholder=use_draft_placeholder)
                 response["text_with_tags"] = execution_text
                 return response

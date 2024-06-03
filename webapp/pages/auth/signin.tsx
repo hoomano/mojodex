@@ -255,7 +255,7 @@ export default function SignIn({
               }
             </form>
 
-            {providers && Array.isArray(providers) && providers.length > 0 ? <div>
+            {Object.values(providers ?? []).length > 0 ? <div>
               <div className="relative mt-10">
                 <div
                   className="absolute inset-0 flex items-center"

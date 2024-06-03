@@ -1,4 +1,6 @@
 import os
+
+import requests
 from app import db, server_socket, time_manager, socketio_message_sender, main_logger
 
 from models.produced_text_managers.instruct_task_produced_text_manager import InstructTaskProducedTextManager
@@ -227,6 +229,11 @@ class Session:
         if "message_pk" not in message:
             self._new_message(message, Session.user_message_key, "user_message")
 
+        # if "user_task_execution_pk" in message and message["user_task_execution_pk"] is not None, let's update task title and summary
+        if "user_task_execution_pk" in message and message["user_task_execution_pk"] is not None:
+            user_task_execution_pk = message["user_task_execution_pk"]
+            server_socket.start_background_task(self._give_task_execution_title_and_summary, user_task_execution_pk)
+
         # Home chat session here ??
         # with response_message = ...
         use_message_placeholder = "use_message_placeholder" in message and message["use_message_placeholder"]
@@ -243,6 +250,19 @@ class Session:
                                               use_draft_placeholder)
         else:
             raise Exception("Unknown message origin")
+
+    def _give_task_execution_title_and_summary(self, user_task_execution_pk):
+        try:
+            # call background backend /end_user_task_execution to update user task execution title and summary
+            uri = f"{os.environ['BACKGROUND_BACKEND_URI']}/user_task_execution_title_and_summary"
+            pload = {'datetime': datetime.now().isoformat(),
+                     'user_task_execution_pk': user_task_execution_pk}
+            internal_request = requests.post(uri, json=pload)
+            if internal_request.status_code != 200:
+                log_error(
+                    f"Error while calling background user_task_execution_title_and_summary : {internal_request.json()}")
+        except Exception as e:
+            print(f"🔴 __give_title_and_summary_task_execution :: {e}")
 
     @user_inputs_processor
     def process_form_input(self, app_version, platform, user_task_execution_pk, use_message_placeholder=False,

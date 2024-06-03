@@ -11,7 +11,7 @@ USER NAME
 {{user_company_knowledge}}{%endif%}
 
 TASKS YOU CAN HELP THE USER WITH{%for task in tasks%}
-- task_pk: {{task.task_pk}} - {{task.name_for_system}}: {{task.description}}{%endfor%}
+- task_pk: {{task.task_pk}} - {{task.name_for_system}}: {{task.definition_for_system}}{%endfor%}
 
 If you can do something for the user that is not listed above, go ahead without a specific task.
 If you want to run a task, make it clear to the user first.

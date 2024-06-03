@@ -4,10 +4,13 @@ from app import db, server_socket, time_manager, socketio_message_sender, main_l
 from models.produced_text_managers.instruct_task_produced_text_manager import InstructTaskProducedTextManager
 
 from models.session.instruct_task_assistant import InstructTaskAssistant
+
+from models.session.home_chat_assistant import HomeChatAssistant
 from mojodex_core.logging_handler import log_error
 from models.session.assistant_message_generators.workflow_response_generator import WorkflowAssistantResponseGenerator
 from models.session.assistant_message_generators.general_chat_response_generator import GeneralChatResponseGenerator
-from models.session.assistant_message_generators.instruct_task_assistant_response_generator import InstructTaskAssistantResponseGenerator
+from models.session.assistant_message_generators.instruct_task_assistant_response_generator import \
+    InstructTaskAssistantResponseGenerator
 from models.session.assistant_message_generators.assistant_message_generator import AssistantMessageGenerator
 from mojodex_core.entities import *
 from datetime import datetime
@@ -16,12 +19,11 @@ from packaging import version
 from functools import wraps
 from sqlalchemy.orm.attributes import flag_modified
 
+
 class Session:
     sessions_storage = "/data/users"
     mojo_messages_audios_storage_dir_name = "mojo_messages_audios"
     agent_message_key, user_message_key = "mojo", "user"
-
-
 
     def __init__(self, session_id):
         """
@@ -115,7 +117,6 @@ class Session:
         except Exception as e:
             raise Exception(f"__get_last_user_message_pk :: {e}")
 
-
     ### STREAM CALLBACKS ###
     def token_stream_callback(event_name):
         """
@@ -128,6 +129,7 @@ class Session:
         Returns:
             function: The wrapped function.
         """
+
         def decorator(stream_callback_func):
             @wraps(stream_callback_func)
             def wrapper(self, partial_text):
@@ -136,7 +138,9 @@ class Session:
                     server_socket.emit(event_name, message, to=self.id)
                 except Exception as e:
                     raise Exception(f"token_stream_callback :: {e}")
+
             return wrapper
+
         return decorator
 
     @token_stream_callback('mojo_token')
@@ -149,9 +153,11 @@ class Session:
     @token_stream_callback('draft_token')
     def _produced_text_stream_callback(self, partial_text):
         try:
-            title = AssistantMessageGenerator.remove_tags_from_text(partial_text.strip(), InstructTaskProducedTextManager.title_start_tag,
+            title = AssistantMessageGenerator.remove_tags_from_text(partial_text.strip(),
+                                                                    InstructTaskProducedTextManager.title_start_tag,
                                                                     InstructTaskProducedTextManager.title_end_tag)
-            production = AssistantMessageGenerator.remove_tags_from_text(partial_text.strip(), InstructTaskProducedTextManager.draft_start_tag,
+            production = AssistantMessageGenerator.remove_tags_from_text(partial_text.strip(),
+                                                                         InstructTaskProducedTextManager.draft_start_tag,
                                                                          InstructTaskProducedTextManager.draft_end_tag)
             return {"produced_text_title": title,
                     "produced_text": production,
@@ -159,7 +165,6 @@ class Session:
                     "text": InstructTaskProducedTextManager.remove_tags(partial_text)}
         except Exception as e:
             raise Exception(f"_produced_text_stream_callback :: {e}")
-
 
     ### STREAM ACKNOWLEDGEMENTS ###
     def set_produced_text_version_read_by_user(self, produced_text_version_pk):
@@ -192,6 +197,7 @@ class Session:
         Returns:
             function: The wrapped function.
         """
+
         @wraps(generate_mojo_message_func)
         def wrapper(self, *args, **kwargs):
             try:
@@ -201,6 +207,7 @@ class Session:
                 db.session.close()
             except Exception as e:
                 self.__process_error_during_message_generation(e)
+
         return wrapper
 
     @user_inputs_processor
@@ -227,16 +234,19 @@ class Session:
 
         if "origin" in message and message["origin"] == "home_chat":
             user_task_execution_pk = message['user_task_execution_pk'] if 'user_task_execution_pk' in message else None
-            return self.__manage_home_chat_session(self.platform, user_task_execution_pk, use_message_placeholder, use_draft_placeholder)
+            return self.__manage_home_chat_session(self.platform, user_task_execution_pk, use_message_placeholder,
+                                                   use_draft_placeholder)
         elif 'user_task_execution_pk' in message and message['user_task_execution_pk'] is not None:
             # For now only task sessions
             user_task_execution_pk = message['user_task_execution_pk']
-            return self.__manage_task_session(self.platform, user_task_execution_pk, use_message_placeholder, use_draft_placeholder)
+            return self.__manage_task_session(self.platform, user_task_execution_pk, use_message_placeholder,
+                                              use_draft_placeholder)
         else:
             raise Exception("Unknown message origin")
 
     @user_inputs_processor
-    def process_form_input(self, app_version, platform, user_task_execution_pk, use_message_placeholder=False, use_draft_placeholder=False):
+    def process_form_input(self, app_version, platform, user_task_execution_pk, use_message_placeholder=False,
+                           use_draft_placeholder=False):
         """
         Processes a form input from the user.
 
@@ -251,12 +261,16 @@ class Session:
             function: The function that manages the task session.
         """
         self.platform = platform
-        return self.__manage_instruct_task_session(self.platform, user_task_execution_pk, use_message_placeholder=use_message_placeholder, use_draft_placeholder=use_draft_placeholder)
+        return self.__manage_instruct_task_session(self.platform, user_task_execution_pk,
+                                                   use_message_placeholder=use_message_placeholder,
+                                                   use_draft_placeholder=use_draft_placeholder)
 
     @user_inputs_processor
-    def process_workflow_step_run_rejection(self, platform, user_workflow_execution_pk, use_message_placeholder=False, use_draft_placeholder=False):
+    def process_workflow_step_run_rejection(self, platform, user_workflow_execution_pk, use_message_placeholder=False,
+                                            use_draft_placeholder=False):
         self.platform = platform
-        return self.__manage_workflow_session(platform, user_workflow_execution_pk, use_message_placeholder, use_draft_placeholder)
+        return self.__manage_workflow_session(platform, user_workflow_execution_pk, use_message_placeholder,
+                                              use_draft_placeholder)
 
     def process_mojo_message(self, response_message, response_language):
         """
@@ -277,14 +291,16 @@ class Session:
             db_message = self._new_message(response_message, Session.agent_message_key, "mojo_message")
             message_pk = db_message.message_pk
             response_message["message_pk"] = message_pk
-            response_message["audio"] = "text" in response_message and self.platform == "mobile" and self.voice_generator is not None
+            response_message[
+                "audio"] = "text" in response_message and self.platform == "mobile" and self.voice_generator is not None
             # Does message contains a produced_text ?
             event_name = 'draft_message' if "produced_text_version_pk" in response_message else 'mojo_message'
-            socketio_message_sender.send_mojo_message_with_ack(response_message, self.id, event_name = event_name)
+            socketio_message_sender.send_mojo_message_with_ack(response_message, self.id, event_name=event_name)
             if response_message["audio"]:
                 output_filename = os.path.join(self.__get_mojo_messages_audio_storage(), f"{message_pk}.mp3")
                 try:
-                    self.voice_generator.text_to_speech(response_message["text"], response_language, self.user_id, output_filename)
+                    self.voice_generator.text_to_speech(response_message["text"], response_language, self.user_id,
+                                                        output_filename)
                 except Exception as e:
                     db_message.in_error_state = datetime.now()
                     log_error(str(e), session_id=self.id)
@@ -294,7 +310,8 @@ class Session:
         except Exception as e:
             raise Exception(f"process_mojo_message :: {e}")
 
-    def __manage_home_chat_session(self, platform, user_task_execution_pk, use_message_placeholder=False, use_draft_placeholder=False):
+    def __manage_home_chat_session(self, platform, user_task_execution_pk, use_message_placeholder=False,
+                                   use_draft_placeholder=False):
         """
         Manages a home chat session.
 
@@ -312,22 +329,24 @@ class Session:
         """
         try:
             tag_proper_nouns = platform == "mobile"
-            general_chat_response_generator = GeneralChatResponseGenerator(mojo_message_token_stream_callback=self._mojo_message_stream_callback,
-                                                                           draft_token_stream_callback=self._produced_text_stream_callback,
-                                                                           use_message_placeholder=use_message_placeholder,
-                                                                           use_draft_placeholder=use_draft_placeholder,
-                                                                           tag_proper_nouns=tag_proper_nouns,
-                                                                           user=self._get_user(),
-                                                                           session_id=self.id,
-                                                                           user_messages_are_audio= platform=="mobile",
-                                                                           running_user_task_execution_pk=user_task_execution_pk)
-            response_message = general_chat_response_generator.generate_message()
-            response_language = general_chat_response_generator.context.state.current_language
+            user_messages_are_audio = platform == "mobile"
+            home_chat_assistant = HomeChatAssistant(
+                mojo_message_token_stream_callback=self._mojo_message_stream_callback,
+                draft_token_stream_callback=self._produced_text_stream_callback,
+                use_message_placeholder=use_message_placeholder,
+                user_id=self.user_id,
+                session_id=self.id,
+                tag_proper_nouns=tag_proper_nouns,
+                user_messages_are_audio=user_messages_are_audio,
+                running_user_task_execution_pk=user_task_execution_pk)
+            response_message = home_chat_assistant.generate_message()
+            response_language = home_chat_assistant.language
             return response_message, response_language
         except Exception as e:
             raise Exception(f"__manage_home_chat_session :: {e}")
 
-    def __manage_task_session(self, platform, user_task_execution_pk, use_message_placeholder=False, use_draft_placeholder=False):
+    def __manage_task_session(self, platform, user_task_execution_pk, use_message_placeholder=False,
+                              use_draft_placeholder=False):
         try:
             # What is the task type ?
             db_task = db.session.query(MdTask) \
@@ -338,13 +357,16 @@ class Session:
             if db_task is None:
                 raise Exception(f"Task of user_task_execution {user_task_execution_pk} not found")
             if db_task.type == "instruct":
-                return self.__manage_instruct_task_session(platform, user_task_execution_pk, use_message_placeholder, use_draft_placeholder)
+                return self.__manage_instruct_task_session(platform, user_task_execution_pk, use_message_placeholder,
+                                                           use_draft_placeholder)
             else:
-                return self.__manage_workflow_session(platform, user_task_execution_pk, use_message_placeholder, use_draft_placeholder)
+                return self.__manage_workflow_session(platform, user_task_execution_pk, use_message_placeholder,
+                                                      use_draft_placeholder)
         except Exception as e:
             raise Exception(f"__manage_task_session :: {e}")
 
-    def __manage_instruct_task_session(self, platform, user_task_execution_pk, use_message_placeholder=False, use_draft_placeholder=False):
+    def __manage_instruct_task_session(self, platform, user_task_execution_pk, use_message_placeholder=False,
+                                       use_draft_placeholder=False):
         """
         Manages a task session.
 
@@ -363,13 +385,14 @@ class Session:
         try:
             tag_proper_nouns = platform == "mobile"
             user_messages_are_audio = platform == "mobile"
-            instruct_task_assistant = InstructTaskAssistant(mojo_message_token_stream_callback=self._mojo_message_stream_callback,
-                                                            draft_token_stream_callback=self._produced_text_stream_callback,
-                                                            use_message_placeholder=use_message_placeholder,
-                                                            use_draft_placeholder=use_draft_placeholder,
-                                                            tag_proper_nouns=tag_proper_nouns,
-                                                            user_messages_are_audio= user_messages_are_audio,
-                                                            running_user_task_execution_pk=user_task_execution_pk)
+            instruct_task_assistant = InstructTaskAssistant(
+                mojo_message_token_stream_callback=self._mojo_message_stream_callback,
+                draft_token_stream_callback=self._produced_text_stream_callback,
+                use_message_placeholder=use_message_placeholder,
+                use_draft_placeholder=use_draft_placeholder,
+                tag_proper_nouns=tag_proper_nouns,
+                user_messages_are_audio=user_messages_are_audio,
+                running_user_task_execution_pk=user_task_execution_pk)
 
             response_message = instruct_task_assistant.generate_message()
             response_language = instruct_task_assistant.language
@@ -377,7 +400,8 @@ class Session:
         except Exception as e:
             raise Exception(f"__manage_task_session :: {e}")
 
-    def __manage_workflow_session(self, platform, user_workflow_execution_pk, use_message_placeholder=False, use_draft_placeholder=False):
+    def __manage_workflow_session(self, platform, user_workflow_execution_pk, use_message_placeholder=False,
+                                  use_draft_placeholder=False):
         """
         Manages a workflow session.
 
@@ -395,13 +419,14 @@ class Session:
         """
         try:
             tag_proper_nouns = platform == "mobile"
-            workflow_assistant_response_generator = WorkflowAssistantResponseGenerator(mojo_message_token_stream_callback=self._mojo_message_stream_callback,
-                                                                                       use_message_placeholder=use_message_placeholder,
-                                                                                       tag_proper_nouns=tag_proper_nouns,
-                                                                                       user=self._get_user(),
-                                                                                       session_id=self.id,
-                                                                                       user_messages_are_audio= platform=="mobile",
-                                                                                       running_user_workflow_execution_pk=user_workflow_execution_pk)
+            workflow_assistant_response_generator = WorkflowAssistantResponseGenerator(
+                mojo_message_token_stream_callback=self._mojo_message_stream_callback,
+                use_message_placeholder=use_message_placeholder,
+                tag_proper_nouns=tag_proper_nouns,
+                user=self._get_user(),
+                session_id=self.id,
+                user_messages_are_audio=platform == "mobile",
+                running_user_workflow_execution_pk=user_workflow_execution_pk)
 
             response_message = workflow_assistant_response_generator.generate_message()
             response_language = workflow_assistant_response_generator.context.state.current_language
@@ -421,7 +446,8 @@ class Session:
         """
         try:
             db.session.rollback()
-            message = socketio_message_sender.send_error("Error during session process_chat_message: " + str(e), self.id, user_message_pk=self.__get_last_user_message_pk())
+            message = socketio_message_sender.send_error("Error during session process_chat_message: " + str(e),
+                                                         self.id, user_message_pk=self.__get_last_user_message_pk())
             self._new_message(message, Session.agent_message_key, 'error')
             db.session.close()
         except Exception as e:
@@ -449,4 +475,3 @@ class Session:
         except Exception as e:
             db.session.rollback()
             raise Exception(f"new_message : {e}")
-

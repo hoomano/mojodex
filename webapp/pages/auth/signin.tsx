@@ -255,7 +255,9 @@ export default function SignIn({
               }
             </form>
 
-            {Object.values(providers ?? []).length > 0 ? <div>
+            {
+              // 2 by default: 'email_password_login' and 'email_password_signup'
+              Object.values(providers ?? []).length > 2 ? <div>
               <div className="relative mt-10">
                 <div
                   className="absolute inset-0 flex items-center"

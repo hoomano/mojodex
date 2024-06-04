@@ -1,48 +1,31 @@
-from app import server_socket
-
 from models.session.instruct_task_execution import InstructTaskExecution
 from models.knowledge.knowledge_manager import KnowledgeManager
-from models.session.assistant_message_generators.assistant_message_generator import AssistantMessageGenerator
-from models.session.execution_manager import ExecutionManager
-from models.tasks.task_executor import TaskExecutor
-from models.tasks.task_inputs_manager import TaskInputsManager
-from models.tasks.task_tool_manager import TaskToolManager
-
-from models.produced_text_managers.instruct_task_produced_text_manager import InstructTaskProducedTextManager
 
 from models.session.chat_assistant import ChatAssistant
 
 from models.tasks.task_manager import TaskManager
-from mojodex_core.llm_engine.providers.openai_vision_llm import VisionMessagesData
 from app import placeholder_generator, model_loader
 from jinja2 import Template
 
+
 class InstructTaskAssistant(ChatAssistant):
     prompt_file = "mojodex_core/prompts/tasks/run.txt"
-
-
 
     def __init__(self, mojo_message_token_stream_callback, draft_token_stream_callback, use_message_placeholder,
                  use_draft_placeholder,
                  tag_proper_nouns, user_messages_are_audio, running_user_task_execution_pk):
         try:
+            super().__init__(mojo_message_token_stream_callback, draft_token_stream_callback, use_message_placeholder,
+                             tag_proper_nouns, user_messages_are_audio)
 
-            super().__init__(mojo_message_token_stream_callback, draft_token_stream_callback, use_message_placeholder, tag_proper_nouns,
-                             user_messages_are_audio)
             self.instruct_task_execution = InstructTaskExecution(running_user_task_execution_pk, self.db_session)
-
             self.use_draft_placeholder = use_draft_placeholder
 
-            #self.task_input_manager = TaskInputsManager(self.instruct_task_execution.session.session_id)
-            # self.task_tool_manager = TaskToolManager(self.instruct_task_execution.session.session_id)
-            self.execution_manager = ExecutionManager(self.instruct_task_execution.session.session_id)
-            #self.task_executor = TaskExecutor(self.instruct_task_execution.session.session_id,
-            #                                  self.instruct_task_execution.user.user_id)
-            self.task_manager = TaskManager(self.instruct_task_execution.session.session_id, self.instruct_task_execution.user.user_id)
+            self.task_manager = TaskManager(self.instruct_task_execution.session.session_id,
+                                            self.instruct_task_execution.user.user_id)
 
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} __init__ :: {e}")
-
 
     def generate_message(self):
         try:
@@ -60,6 +43,8 @@ class InstructTaskAssistant(ChatAssistant):
 
             # Handle LLM output
             if llm_output:
+                with open("/data/response.txt", "w") as f:
+                    f.write(llm_output)
                 message = self._handle_llm_output(llm_output)
                 message['user_task_execution_pk'] = self.instruct_task_execution.user_task_execution_pk
                 return message
@@ -71,7 +56,7 @@ class InstructTaskAssistant(ChatAssistant):
         try:
             placeholder = None
             if self.use_message_placeholder:
-                placeholder = self._get_message_placeholder()
+                placeholder = self.task_manager.task_message_placeholder
             elif self.use_draft_placeholder:
                 placeholder = self.task_manager.task_execution_placeholder
             if placeholder:
@@ -79,10 +64,6 @@ class InstructTaskAssistant(ChatAssistant):
                 return placeholder
         except Exception as e:
             raise Exception(f"_handle_placeholder :: {e}")
-
-    def _get_message_placeholder(self):
-        return f"{TaskInputsManager.user_message_start_tag}{placeholder_generator.mojo_message}{TaskInputsManager.user_message_end_tag}"
-
 
     def _render_prompt_from_template(self):
         try:
@@ -121,26 +102,20 @@ class InstructTaskAssistant(ChatAssistant):
             self.mojo_message_token_stream_callback(partial_text)
 
         else:
-            self.task_manager.manage_task_stream(partial_text, self.mojo_message_token_stream_callback, self.draft_token_stream_callback)
-
-
-    def _manage_execution_tags(self, response):
-        try:
-            if ExecutionManager.execution_start_tag in response:
-                return self.execution_manager.manage_execution_text(response, self.instruct_task_execution.task,
-                                                                    self.instruct_task_execution.task.get_name_in_language(
-                                                                        self.instruct_task_execution.user.language_code),
-                                                                    self.instruct_task_execution.user_task_execution_pk,
-                                                                    self.task_manager.task_executor,
-                                                                    use_draft_placeholder=self.use_draft_placeholder)
-        except Exception as e:
-            raise Exception(f"_manage_execution_tags :: {e}")
+            self.task_manager.manage_task_stream(partial_text, self.mojo_message_token_stream_callback,
+                                                 self.draft_token_stream_callback)
 
     def _manage_response_tags(self, response):
         try:
             execution = self._manage_execution_tags(response)
             if execution:
-                return execution
+                return self.task_manager.task_executor.manage_execution_text(execution_text=execution,
+                                                                             task=self.instruct_task_execution.task,
+                                                                             task_name=self.instruct_task_execution.task.get_name_in_language(
+                                                                                 self.instruct_task_execution.user.language_code),
+                                                                             user_task_execution_pk=self.instruct_task_execution.user_task_execution_pk,
+                                                                             use_draft_placeholder=self.use_draft_placeholder
+                                                                             )
             return self.task_manager.manage_response_task_tags(response)
         except Exception as e:
             raise Exception(f"_manage_response_tags :: {e}")

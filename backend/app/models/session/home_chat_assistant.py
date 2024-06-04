@@ -1,12 +1,7 @@
-from app import server_socket
-
 from models.session.instruct_task_execution import InstructTaskExecution, User
 from models.knowledge.knowledge_manager import KnowledgeManager
 from models.session.assistant_message_generators.assistant_message_generator import AssistantMessageGenerator
 from models.session.execution_manager import ExecutionManager
-from models.tasks.task_executor import TaskExecutor
-from models.tasks.task_inputs_manager import TaskInputsManager
-from models.tasks.task_tool_manager import TaskToolManager
 
 from models.session.assistant_message_generators.general_chat_response_generator import GeneralChatResponseGenerator
 
@@ -37,19 +32,11 @@ class HomeChatAssistant(ChatAssistant):
             self.session = self.instruct_task_execution.session if self.instruct_task_execution else ChatSession(
                 session_id, self.db_session)
 
-            #self.task_input_manager = TaskInputsManager(self.session.session_id)
-            # self.task_tool_manager = TaskToolManager(self.instruct_task_execution.session.session_id)
-            self.execution_manager = ExecutionManager(self.session.session_id)
-            #self.task_executor = TaskExecutor(self.session.session_id,
-            #                                  self.user.user_id)
             self.task_manager = TaskManager(self.session.session_id, self.user.user_id)
 
 
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} __init__ :: {e}")
-
-
-
 
     def generate_message(self):
         try:
@@ -114,7 +101,6 @@ class HomeChatAssistant(ChatAssistant):
         except Exception as e:
             raise Exception(f"_render_prompt_from_template :: {e}")
 
-
     def __spot_task_pk(self, response):
         try:
             if self.task_pk_end_tag in response:
@@ -141,7 +127,6 @@ class HomeChatAssistant(ChatAssistant):
             # if no task is running, eventually we could spot one
             task_pk_spotted, task_pk = self.__spot_task_pk(partial_text)
             if task_pk_spotted:  # task tag spotted
-                print(f"🔵 TASK PK SPOTTED: {task_pk}")
                 if task_pk is not None:  # a task is spotted
                     if not self.instruct_task_execution or task_pk != self.instruct_task_execution.task.task_pk:
                         # if the task is different from the running task, we set the new task
@@ -161,30 +146,24 @@ class HomeChatAssistant(ChatAssistant):
                         # do not stop the stream, this will take effect at next run
 
             if self.user_message_start_tag in partial_text:
-                print(f"🔵 user_message_start_tag")
                 text = AssistantMessageGenerator.remove_tags_from_text(partial_text, self.user_message_start_tag,
                                                                        self.user_message_end_tag)
                 self.mojo_message_token_stream_callback(text)
 
             # else, task specific tags
-            self.task_manager.manage_task_stream(partial_text, self.mojo_message_token_stream_callback, self.draft_token_stream_callback)
-
-    def _manage_execution_tags(self, response):
-        try:
-            if ExecutionManager.execution_start_tag in response:
-                return self.execution_manager.manage_execution_text(response, self.instruct_task_execution.task,
-                                                                    self.instruct_task_execution.task.get_name_in_language(
-                                                                        self.instruct_task_execution.user.language_code),
-                                                                    self.instruct_task_execution.user_task_execution_pk,
-                                                                    self.task_manager.task_executor)
-        except Exception as e:
-            raise Exception(f"_manage_execution_tags :: {e}")
+            self.task_manager.manage_task_stream(partial_text, self.mojo_message_token_stream_callback,
+                                                 self.draft_token_stream_callback)
 
     def _manage_response_tags(self, response):
         try:
             execution = self._manage_execution_tags(response)
             if execution:
-                return execution
+                if self.instruct_task_execution:
+                    return self.task_manager.task_executor.manage_execution_text(execution_text=execution,
+                                                                                 task=self.instruct_task_execution.task,
+                                                                                 task_name=self.instruct_task_execution.task.get_name_in_language(
+                                                                                     self.instruct_task_execution.user.language_code),
+                                                                                 user_task_execution_pk=self.instruct_task_execution.user_task_execution_pk)
             if self.user_message_start_tag in response:
                 text = AssistantMessageGenerator.remove_tags_from_text(response, self.user_message_start_tag,
                                                                        self.user_message_end_tag)

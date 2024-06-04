@@ -53,6 +53,7 @@ class HomeChatAssistant(ChatAssistant):
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} :: generate_message :: {e}")
 
+    @property
     def requires_vision_llm(self):
         return False
 

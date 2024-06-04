@@ -212,6 +212,25 @@ class ChatSession:
         except Exception as e:
             raise Exception(f"{self.__class__.__name__}:: messages: " + str(e))
 
+    def get_conversation_as_string(self, agent_key="Agent", user_key="User", with_tags=True):
+        try:
+            messages = self._db_messages
+            conversation = ""
+            for message in messages:
+                if message.sender == "user":  # Session.user_message_key:
+                    if "text" in message.message:
+                        conversation += f"{user_key}: {message.message['text']}\n"
+                elif message.sender == "mojo":  # Session.agent_message_key:
+                    if "text" in message.message:
+                        if "text_with_tags" in message.message and with_tags:
+                            conversation += f"{agent_key}: {message.message['text_with_tags']}\n"
+                        else:
+                            conversation += f"{agent_key}: {message.message['text']}\n"
+                else:
+                    raise Exception("Unknown message sender")
+            return conversation
+        except Exception as e:
+            raise Exception("_get_conversation_as_string: " + str(e))
 class InstructTaskExecution:
     task_specific_instructions_prompt = "mojodex_core/prompts/tasks/task_specific_instructions.txt"
 

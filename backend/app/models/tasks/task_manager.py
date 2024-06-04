@@ -22,6 +22,10 @@ class TaskManager:
                f"{InstructTaskProducedTextManager.draft_start_tag}{placeholder_generator.mojo_draft_body}{InstructTaskProducedTextManager.draft_end_tag}" \
                f"{ExecutionManager.execution_end_tag}"
 
+    @property
+    def task_message_placeholder(self):
+        return f"{TaskInputsManager.user_message_start_tag}{placeholder_generator.mojo_message}{TaskInputsManager.user_message_end_tag}"
+
 
     def manage_response_task_tags(self, response):
         try:

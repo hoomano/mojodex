@@ -280,6 +280,9 @@ class Session:
         Returns:
             function: The function that manages the task session.
         """
+
+        server_socket.start_background_task(self._give_task_execution_title_and_summary, user_task_execution_pk)
+
         self.platform = platform
         return self.__manage_instruct_task_session(self.platform, user_task_execution_pk,
                                                    use_message_placeholder=use_message_placeholder,

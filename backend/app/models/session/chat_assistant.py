@@ -1,15 +1,12 @@
-import os
-from datetime import datetime
-import requests
-
 from models.session.assistant_message_generators.assistant_message_generator import AssistantMessageGenerator
 
+from models.session.execution_manager import ExecutionManager
 from mojodex_core.llm_engine.providers.openai_vision_llm import VisionMessagesData
-from mojodex_core.logging_handler import log_error
 
 from mojodex_core.db import engine, Session
 from abc import ABC, abstractmethod
 from app import model_loader
+
 
 class ChatAssistant(ABC):
     language_start_tag, language_end_tag = "<user_language>", "</user_language>"
@@ -22,6 +19,7 @@ class ChatAssistant(ABC):
         try:
 
             self.db_session = Session(engine)
+            self.execution_manager = ExecutionManager()
             self.use_message_placeholder = use_message_placeholder
             self.tag_proper_nouns = tag_proper_nouns
             self.user_messages_are_audio = user_messages_are_audio
@@ -44,7 +42,6 @@ class ChatAssistant(ABC):
     def _render_prompt_from_template(self):
         raise NotImplementedError
 
-
     @property
     @abstractmethod
     def requires_vision_llm(self):
@@ -54,13 +51,13 @@ class ChatAssistant(ABC):
     def input_images(self):
         return []
 
-
     def _call_llm(self, conversation_list, user_id, session_id, user_task_execution_pk, task_name_for_system, label):
         try:
             prompt = self._render_prompt_from_template()
             temperature, max_tokens = 0, 4000
             if self.requires_vision_llm:
-                return self.__call_vision_llm(prompt, conversation_list, temperature, max_tokens, label, user_id, session_id, user_task_execution_pk, task_name_for_system)
+                return self.__call_vision_llm(prompt, conversation_list, temperature, max_tokens, label, user_id,
+                                              session_id, user_task_execution_pk, task_name_for_system)
             messages = [{"role": "system", "content": prompt}] + conversation_list
             responses = model_loader.main_llm.invoke(messages, user_id,
                                                      temperature=temperature,
@@ -74,7 +71,8 @@ class ChatAssistant(ABC):
         except Exception as e:
             raise Exception(f"_call_llm :: {e}")
 
-    def __call_vision_llm(self, prompt, conversation_list, temperature, max_tokens, label, user_id, session_id, user_task_execution_pk, task_name_for_system):
+    def __call_vision_llm(self, prompt, conversation_list, temperature, max_tokens, label, user_id, session_id,
+                          user_task_execution_pk, task_name_for_system):
         try:
             from models.user_images_file_manager import UserImagesFileManager
             self.user_image_file_manager = UserImagesFileManager()
@@ -123,6 +121,13 @@ class ChatAssistant(ABC):
                     pass
         except Exception as e:
             raise Exception(f"__manage_response_language_tags:: {e}")
+
+    def _manage_execution_tags(self, response):
+        try:
+            if ExecutionManager.execution_start_tag in response:
+                return self.execution_manager.manage_execution_text(response)
+        except Exception as e:
+            raise Exception(f"_manage_execution_tags :: {e}")
 
     @abstractmethod
     def _manage_response_tags(self, response):

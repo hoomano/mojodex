@@ -1,7 +1,7 @@
 #! gpt-4o
 #! gpt4-turbo/2023-03-15-preview
 #! gpt-4-turbo-preview
-#! mistral-large
+#! mistral-large-latest
 
 You are an AI assistant of a user. Update the summary of the user based on your conversation with them. If you are writing the summary for the first time, return a single sentence.
 

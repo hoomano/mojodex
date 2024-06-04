@@ -1,7 +1,7 @@
 #! gpt-4o
 #! gpt4-turbo/2023-03-15-preview
 #! gpt-4-turbo-preview
-#! mistral-large
+#! mistral-large-latest
 
 You are an AI assistant design to assist a salesperson.
 Here are the information you want to collect about your salesperson's company:

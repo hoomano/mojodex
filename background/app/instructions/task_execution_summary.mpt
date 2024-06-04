@@ -3,7 +3,7 @@
 #! gpt-4-turbo-preview
 #! gpt4-32k
 #! gpt-4
-#! mistral-large
+#! mistral-large-latest
 #! mistral-medium
 #! mistral:instruct
 #! mistral-tiny

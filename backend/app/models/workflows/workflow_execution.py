@@ -279,12 +279,6 @@ class WorkflowExecution:
         except Exception as e:
             raise Exception(f"validate_step_execution :: {e}")
 
-    def _find_checkpoint_step(self):
-        for step in reversed(self.past_accepted_steps_executions):
-            if step.is_checkpoint:
-                return step
-        return None
-
     def _get_last_step_execution(self):
         try:
             db_step_execution = self.db_session.query(MdUserWorkflowStepExecution) \
@@ -328,31 +322,6 @@ class WorkflowExecution:
                 .first()
         except Exception as e:
             raise Exception(f"_db_user_workflow :: {e}")
-
-    def get_before_checkpoint_validated_steps_executions(self, current_step_in_validation: WorkflowStepExecution) -> List[WorkflowStepExecution]:
-        try:
-            if current_step_in_validation.workflow_step.is_checkpoint:
-                return self.past_accepted_steps_executions
-            checkpoint_step = self._find_checkpoint_step()
-            if not checkpoint_step:
-                return []
-            checkpoint_step_index = self.past_accepted_steps_executions.index(checkpoint_step)
-            return self.past_accepted_steps_executions[:checkpoint_step_index]
-        except Exception as e:
-            raise Exception(f"before_checkpoint_steps_executions :: {e}")
-
-    def get_after_checkpoint_validated_steps_executions(self, current_step_in_validation: WorkflowStepExecution) -> List[WorkflowStepExecution]:
-        try:
-            if current_step_in_validation.workflow_step.is_checkpoint:
-                return []
-            checkpoint_step = self._find_checkpoint_step()
-            if not checkpoint_step:
-                return self.past_accepted_steps_executions
-            checkpoint_step_index = self.past_accepted_steps_executions.index(checkpoint_step)
-            return self.past_accepted_steps_executions[checkpoint_step_index:]
-        except Exception as e:
-            raise Exception(f"after_checkpoint_to_current_steps_executions :: {e}")
-
 
     def get_steps_execution_json(self):
         try:

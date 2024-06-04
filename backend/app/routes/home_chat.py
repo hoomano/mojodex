@@ -1,9 +1,10 @@
 import os
+import time
+
 from flask import request
 from flask_restful import Resource
 from models.assistant.session import Session as SessionModel
-from app import authenticate, db, server_socket
-
+from app import authenticate, db, server_socket, placeholder_generator
 from models.knowledge.knowledge_manager import KnowledgeManager
 
 from models.assistant.models.instruct_task_execution import User
@@ -72,8 +73,11 @@ class HomeChat(Resource):
         except Exception as e:
             raise Exception(f"__get_this_week_task_executions :: {e}")
 
-    def _generate_welcome_message(self, user_id):
+
+    def _generate_welcome_message(self, user_id, session_id):
         try:
+            start_time = time.time()
+
             user = User(user_id, db.session)
             previous_conversations = self.__get_this_week_home_conversations(user_id)
             welcome_message_mpt = MPT(self.welcome_message_mpt_filename,
@@ -84,12 +88,33 @@ class HomeChat(Resource):
                                   first_time_this_week=len(previous_conversations) == 0,
                                   user_task_executions=self.__get_this_week_task_executions(user_id),
                                   previous_conversations=previous_conversations,
-                                  language=user.language_code)
+                                  language=user.language_code,)
+
+            print(f"👉 Preprocessing: {start_time - time.time()} seconds")
+
+            start_time = time.time()
+
+            def welcome_message_stream_callback(partial_text):
+                header = ChatAssistant.remove_tags_from_text(partial_text,
+                                                             self.message_header_start_tag,
+                                                             self.message_header_end_tag)
+                if header != "":
+                    print(f"💛 Time: {start_time - time.time()} seconds")
+                body = ChatAssistant.remove_tags_from_text(partial_text,
+                                                           self.message_body_start_tag,
+                                                           self.message_body_end_tag)
+                server_socket.emit('welcome_message_token',
+                                   {'text': partial_text, 'header': header, 'body': body, 'session_id': session_id},
+                                   to=session_id)
 
             responses = welcome_message_mpt.run(user_id=user_id, temperature=0, max_tokens=1000,
-                                                  user_task_execution_pk=None,
-                                                  task_name_for_system=None)
+                                                stream=True,
+                                                stream_callback=welcome_message_stream_callback)
+            # message = "<message_header>Welcome! 👋</message_header><message_body>This is a welcome message placeholder.</message_body>"
+
             message = responses[0].strip()
+            #placeholder_generator.stream(message, welcome_message_stream_callback)
+
             header = ChatAssistant.remove_tags_from_text(message,
                                                                    self.message_header_start_tag,
                                                                    self.message_header_end_tag)
@@ -98,12 +123,15 @@ class HomeChat(Resource):
                                                                  self.message_body_end_tag)
             return {"header": header,
                     "body": body,
-                    "text": f"{header}\n{body}"}
+                    "text": f"{header}\n{body}",
+                    "text_with_tags": message}
         except Exception as e:
             raise Exception(f"_generate_welcome_message : {e}")
 
-    def __create_home_chat(self, app_version, platform, user_id, week, close_db=True, use_message_placeholder=False):
+    def _create_db_home_chat(self, user_id, platform):
         try:
+            week = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0) - timedelta(
+                days=datetime.now().weekday())
             session_creation = self.session_creator.create_session(user_id, platform, "chat")
             if "error" in session_creation[0]:
                 raise Exception(session_creation[0]["error"])
@@ -111,13 +139,33 @@ class HomeChat(Resource):
             home_chat = MdHomeChat(session_id=session_id, user_id=user_id, week=week)
             db.session.add(home_chat)
             db.session.commit()
-            message = self._generate_welcome_message(user_id)
-            db_message = MdMessage(session_id=session_id, message=message, sender=SessionModel.agent_message_key,
+            return home_chat
+        except Exception as e:
+            raise Exception(f"_create_db_home_chat : {e}")
+
+    def _write_welcome_message_async(self, home_chat, user_id):
+        try:
+
+            message = self._generate_welcome_message(user_id, home_chat.session_id)
+
+
+            db_message = MdMessage(session_id=home_chat.session_id, message=message,
+                                   sender=SessionModel.agent_message_key,
                                    event_name='home_chat_message', creation_date=datetime.now(),
                                    message_date=datetime.now())
             db.session.add(db_message)
             db.session.commit()
+            message["session_id"] = home_chat.session_id
+            message["message_pk"] = db_message.message_pk
+            server_socket.emit('welcome_message', message, to=home_chat.session_id)
+            db.session.close()
+        except Exception as e:
+            raise Exception(f"_write_welcome_message : {e}")
 
+    def _create_home_chat(self, platform, user_id, close_db=True):
+        try:
+            home_chat=self._create_db_home_chat(user_id, platform)
+            self._write_welcome_message(home_chat, user_id)
             if close_db:
                 db.session.close()
         except Exception as e:
@@ -128,7 +176,7 @@ class HomeChat(Resource):
             self.__create_home_chat("0.0.0", "mobile", user_id, week=week, close_db=True)
         db.session.close()
 
-    def __get_this_week_last_pre_prepared_home_chat(self, user_id, use_message_placeholder):
+    def _get_this_week_last_pre_prepared_home_chat(self, user_id):
         try:
             week_start = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0) - timedelta(
                 days=datetime.now().weekday())
@@ -160,26 +208,25 @@ class HomeChat(Resource):
             return {"error": f"Missing field: {e}"}, 400
 
         try:
-            this_week = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0) - timedelta(
-                days=datetime.now().weekday())
-            if use_message_placeholder:
-                self.__create_home_chat(app_version, platform, user_id, week=this_week, close_db=False,
-                                        use_message_placeholder=True)
-            # Then get last prepared home chat
-            result = self.__get_this_week_last_pre_prepared_home_chat(user_id, use_message_placeholder)
-            if result is None:
-                self.__create_home_chat(app_version, platform, user_id, week=this_week, close_db=False)
-                result = self.__get_this_week_last_pre_prepared_home_chat(user_id, use_message_placeholder)
-            home_chat, first_message = result
+            # TODO: manage placeholder case
 
-            home_chat.start_date = datetime.now()
+            # Testing purpose
+            result = None #self._get_this_week_last_pre_prepared_home_chat(user_id)
+            if result is None:
+                # create a home chat
+                home_chat = self._create_db_home_chat(user_id, platform)
+                first_message = None # not ready yet, we will write it in background with streaming
+                server_socket.start_background_task(self._write_welcome_message_async, home_chat, user_id)
+            else:
+                home_chat, first_message = result
+                home_chat.start_date = datetime.now()
             db.session.commit()
 
             return {
                 "home_chat_pk": home_chat.home_chat_pk,
-                "session_id": first_message.session_id,
-                "message_pk": first_message.message_pk,
-                "message": first_message.message
+                "session_id": home_chat.session_id,
+                "message_pk": first_message.message_pk if first_message else None,
+                "message": first_message.message if first_message else None
             }, 200
         except Exception as e:
             db.session.rollback()

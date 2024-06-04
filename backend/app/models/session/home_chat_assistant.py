@@ -1,17 +1,10 @@
-from models.session.instruct_task_execution import InstructTaskExecution, User
+from models.session.instruct_task_execution import InstructTaskExecution, User, ChatSession
 from models.knowledge.knowledge_manager import KnowledgeManager
 from models.session.assistant_message_generators.assistant_message_generator import AssistantMessageGenerator
-from models.session.execution_manager import ExecutionManager
-
 from models.session.assistant_message_generators.general_chat_response_generator import GeneralChatResponseGenerator
-
-from models.session.instruct_task_execution import ChatSession
-
 from models.session.chat_assistant import ChatAssistant
-
 from app import placeholder_generator, model_loader
 from jinja2 import Template
-
 from models.tasks.task_manager import TaskManager
 
 

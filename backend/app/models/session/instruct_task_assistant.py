@@ -1,8 +1,6 @@
 from models.session.instruct_task_execution import InstructTaskExecution
 from models.knowledge.knowledge_manager import KnowledgeManager
-
 from models.session.chat_assistant import ChatAssistant
-
 from models.tasks.task_manager import TaskManager
 from app import placeholder_generator, model_loader
 from jinja2 import Template

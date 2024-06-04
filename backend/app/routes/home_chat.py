@@ -1,16 +1,16 @@
 import os
 from flask import request
 from flask_restful import Resource
-from models.session.session import Session as SessionModel
+from models.assistant.session import Session as SessionModel
 from app import authenticate, db, server_socket
 
 from models.knowledge.knowledge_manager import KnowledgeManager
 
-from models.session.instruct_task_execution import User
+from models.assistant.models.instruct_task_execution import User
 
-from models.session.instruct_task_execution import ChatSession
+from models.assistant.models.instruct_task_execution import ChatSession
 
-from models.session.assistant_message_generators.welcome_message_generator import WelcomeMessageGenerator
+from models.assistant.chat_assistant import ChatAssistant
 from mojodex_core.llm_engine.mpt import MPT
 from mojodex_core.logging_handler import log_error
 from datetime import datetime, timedelta
@@ -24,6 +24,8 @@ from sqlalchemy import extract, text, func, and_
 
 class HomeChat(Resource):
     welcome_message_mpt_filename = "instructions/welcome_message.mpt"
+    message_header_start_tag, message_header_end_tag = "<message_header>", "</message_header>"
+    message_body_start_tag, message_body_end_tag = "<message_body>", "</message_body>"
 
     def __init__(self):
         HomeChat.method_decorators = [authenticate(methods=["GET", "POST"])]
@@ -88,12 +90,12 @@ class HomeChat(Resource):
                                                   user_task_execution_pk=None,
                                                   task_name_for_system=None)
             message = responses[0].strip()
-            header = WelcomeMessageGenerator.remove_tags_from_text(message,
-                                                                   WelcomeMessageGenerator.message_header_start_tag,
-                                                                   WelcomeMessageGenerator.message_header_end_tag)
-            body = WelcomeMessageGenerator.remove_tags_from_text(message,
-                                                                 WelcomeMessageGenerator.message_body_start_tag,
-                                                                 WelcomeMessageGenerator.message_body_end_tag)
+            header = ChatAssistant.remove_tags_from_text(message,
+                                                                   self.message_header_start_tag,
+                                                                   self.message_header_end_tag)
+            body = ChatAssistant.remove_tags_from_text(message,
+                                                                 self.message_body_start_tag,
+                                                                 self.message_body_end_tag)
             return {"header": header,
                     "body": body,
                     "text": f"{header}\n{body}"}
@@ -109,10 +111,6 @@ class HomeChat(Resource):
             home_chat = MdHomeChat(session_id=session_id, user_id=user_id, week=week)
             db.session.add(home_chat)
             db.session.commit()
-            #user = db.session.query(MdUser).filter(MdUser.user_id == user_id).first()
-
-            # first message
-            # home_chat_manager = WelcomeMessageGenerator(user=user, use_message_placeholder=use_message_placeholder)
             message = self._generate_welcome_message(user_id)
             db_message = MdMessage(session_id=session_id, message=message, sender=SessionModel.agent_message_key,
                                    event_name='home_chat_message', creation_date=datetime.now(),

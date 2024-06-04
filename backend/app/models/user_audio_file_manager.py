@@ -1,7 +1,7 @@
 import glob
 from pydub import AudioSegment
 import os
-from models.session.session import Session as SessionModel
+from models.assistant.session import Session as SessionModel
 
 from mojodex_backend_logger import MojodexBackendLogger
 

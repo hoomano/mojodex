@@ -1,6 +1,4 @@
-from models.session.assistant_message_generators.assistant_message_generator import AssistantMessageGenerator
-
-from models.session.execution_manager import ExecutionManager
+from models.assistant.execution_manager import ExecutionManager
 from mojodex_core.llm_engine.providers.openai_vision_llm import VisionMessagesData
 
 from mojodex_core.db import engine, Session
@@ -10,6 +8,22 @@ from app import model_loader
 
 class ChatAssistant(ABC):
     language_start_tag, language_end_tag = "<user_language>", "</user_language>"
+
+    @staticmethod
+    def remove_tags_from_text(text, start_tag, end_tag):
+        """
+        Remove tags from text
+        :param text: text
+        :param start_tag: start tag
+        :param end_tag: end tag
+
+        :return: text without tags
+        """
+        try:
+            return text.split(start_tag)[1].split(end_tag)[0].strip() if start_tag in text else ""
+        except Exception as e:
+            raise Exception(
+                f"ChatAssistant: remove_tags_from_text :: text: {text} - start_tag: {start_tag} - end_tag: {end_tag} - {e}")
 
     def __del__(self):
         self.db_session.close()
@@ -114,7 +128,7 @@ class ChatAssistant(ABC):
         try:
             if self.language_start_tag in response:
                 try:
-                    self.language = AssistantMessageGenerator.remove_tags_from_text(response,
+                    self.language = self.remove_tags_from_text(response,
                                                                                     self.language_start_tag,
                                                                                     self.language_end_tag).lower()
                 except Exception as e:

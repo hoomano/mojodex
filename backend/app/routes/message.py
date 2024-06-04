@@ -7,7 +7,7 @@ from app import db, authenticate
 from mojodex_core.logging_handler import log_error
 from mojodex_core.entities import *
 
-from models.session.session import Session
+from models.assistant.session import Session
 from sqlalchemy import or_
 
 

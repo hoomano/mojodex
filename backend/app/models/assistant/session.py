@@ -2,18 +2,12 @@ import os
 
 import requests
 from app import db, server_socket, time_manager, socketio_message_sender, main_logger
-
 from models.produced_text_managers.instruct_task_produced_text_manager import InstructTaskProducedTextManager
+from models.assistant.instruct_task_assistant import InstructTaskAssistant
+from models.assistant.home_chat_assistant import HomeChatAssistant
 
-from models.session.instruct_task_assistant import InstructTaskAssistant
-
-from models.session.home_chat_assistant import HomeChatAssistant
+from models.assistant.chat_assistant import ChatAssistant
 from mojodex_core.logging_handler import log_error
-from models.session.assistant_message_generators.workflow_response_generator import WorkflowAssistantResponseGenerator
-from models.session.assistant_message_generators.general_chat_response_generator import GeneralChatResponseGenerator
-from models.session.assistant_message_generators.instruct_task_assistant_response_generator import \
-    InstructTaskAssistantResponseGenerator
-from models.session.assistant_message_generators.assistant_message_generator import AssistantMessageGenerator
 from mojodex_core.entities import *
 from datetime import datetime
 from models.voice_generator import VoiceGenerator
@@ -29,8 +23,8 @@ class Session:
 
     def __init__(self, session_id):
         """
-        A session is a full interaction between the user and Mojo
-        :param session_id: id of the session
+        A assistant is a full interaction between the user and Mojo
+        :param session_id: id of the assistant
         """
         try:
             self.id = session_id
@@ -53,8 +47,8 @@ class Session:
         This private method is used to get the storage path for Mojo messages audio files.
 
         It first checks if the user's storage directory exists, if not, it creates it.
-        Then it checks if the session's storage directory exists within the user's storage directory, if not, it creates it.
-        Finally, it checks if the Mojo messages audio storage directory exists within the session's storage directory, if not, it creates it.
+        Then it checks if the assistant's storage directory exists within the user's storage directory, if not, it creates it.
+        Finally, it checks if the Mojo messages audio storage directory exists within the assistant's storage directory, if not, it creates it.
 
         Returns:
             str: The path to the Mojo messages audio storage directory.
@@ -78,13 +72,13 @@ class Session:
 
     def _get_user(self):
         """
-        This private method is used to get the user associated with the current session.
+        This private method is used to get the user associated with the current assistant.
 
-        It performs a database query to fetch the user whose user_id matches the user_id of the current session.
-        The query joins the MdUser and MdSession tables on the user_id field and filters the results by the session_id of the current session.
+        It performs a database query to fetch the user whose user_id matches the user_id of the current assistant.
+        The query joins the MdUser and MdSession tables on the user_id field and filters the results by the session_id of the current assistant.
 
         Returns:
-            MdUser: The user object associated with the current session. If no user is found, it returns None.
+            MdUser: The user object associated with the current assistant. If no user is found, it returns None.
 
         Raises:
             Exception: If any error occurs while querying the database.
@@ -97,13 +91,13 @@ class Session:
 
     def __get_last_user_message_pk(self):
         """
-        This private method is used to get the primary key of the last message sent by the user in the current session.
+        This private method is used to get the primary key of the last message sent by the user in the current assistant.
 
-        It performs a database query on the MdMessage table, filtering the results by the session_id of the current session and the sender being 'user'.
+        It performs a database query on the MdMessage table, filtering the results by the session_id of the current assistant and the sender being 'user'.
         The results are then ordered by the message_date in descending order, and the first result is selected.
 
         Returns:
-            int: The primary key of the last user message in the current session. If no message is found, it returns None.
+            int: The primary key of the last user message in the current assistant. If no message is found, it returns None.
 
         Raises:
             Exception: If any error occurs while performing the database query.
@@ -155,12 +149,12 @@ class Session:
     @token_stream_callback('draft_token')
     def _produced_text_stream_callback(self, partial_text):
         try:
-            title = AssistantMessageGenerator.remove_tags_from_text(partial_text.strip(),
-                                                                    InstructTaskProducedTextManager.title_start_tag,
-                                                                    InstructTaskProducedTextManager.title_end_tag)
-            production = AssistantMessageGenerator.remove_tags_from_text(partial_text.strip(),
-                                                                         InstructTaskProducedTextManager.draft_start_tag,
-                                                                         InstructTaskProducedTextManager.draft_end_tag)
+            title = ChatAssistant.remove_tags_from_text(partial_text.strip(),
+                                                        InstructTaskProducedTextManager.title_start_tag,
+                                                        InstructTaskProducedTextManager.title_end_tag)
+            production = ChatAssistant.remove_tags_from_text(partial_text.strip(),
+                                                             InstructTaskProducedTextManager.draft_start_tag,
+                                                             InstructTaskProducedTextManager.draft_end_tag)
             return {"produced_text_title": title,
                     "produced_text": production,
                     "session_id": self.id,
@@ -221,7 +215,7 @@ class Session:
             message (dict): The message from the user.
 
         Returns:
-            function: The function that manages the chat session.
+            function: The function that manages the chat assistant.
         """
         app_version = version.parse(message["version"]) if "version" in message else version.parse("0.0.0")
         self.platform = message["platform"] if "platform" in message else "webapp"
@@ -234,7 +228,7 @@ class Session:
             user_task_execution_pk = message["user_task_execution_pk"]
             server_socket.start_background_task(self._give_task_execution_title_and_summary, user_task_execution_pk)
 
-        # Home chat session here ??
+        # Home chat assistant here ??
         # with response_message = ...
         use_message_placeholder = "use_message_placeholder" in message and message["use_message_placeholder"]
         use_draft_placeholder = "use_draft_placeholder" in message and message["use_draft_placeholder"]
@@ -278,7 +272,7 @@ class Session:
             use_draft_placeholder (bool, optional): Whether to use a draft placeholder. Defaults to False.
 
         Returns:
-            function: The function that manages the task session.
+            function: The function that manages the task assistant.
         """
 
         server_socket.start_background_task(self._give_task_execution_title_and_summary, user_task_execution_pk)
@@ -287,13 +281,6 @@ class Session:
         return self.__manage_instruct_task_session(self.platform, user_task_execution_pk,
                                                    use_message_placeholder=use_message_placeholder,
                                                    use_draft_placeholder=use_draft_placeholder)
-
-    @user_inputs_processor
-    def process_workflow_step_run_rejection(self, platform, user_workflow_execution_pk, use_message_placeholder=False,
-                                            use_draft_placeholder=False):
-        self.platform = platform
-        return self.__manage_workflow_session(platform, user_workflow_execution_pk, use_message_placeholder,
-                                              use_draft_placeholder)
 
     def process_mojo_message(self, response_message, response_language):
         """
@@ -336,7 +323,7 @@ class Session:
     def __manage_home_chat_session(self, platform, user_task_execution_pk, use_message_placeholder=False,
                                    use_draft_placeholder=False):
         """
-        Manages a home chat session.
+        Manages a home chat assistant.
 
         Args:
             platform (str): The platform the user is on.
@@ -383,15 +370,14 @@ class Session:
                 return self.__manage_instruct_task_session(platform, user_task_execution_pk, use_message_placeholder,
                                                            use_draft_placeholder)
             else:
-                return self.__manage_workflow_session(platform, user_task_execution_pk, use_message_placeholder,
-                                                      use_draft_placeholder)
+                raise Exception(f"Can't chat with task of type {db_task.type}")
         except Exception as e:
             raise Exception(f"__manage_task_session :: {e}")
 
     def __manage_instruct_task_session(self, platform, user_task_execution_pk, use_message_placeholder=False,
                                        use_draft_placeholder=False):
         """
-        Manages a task session.
+        Manages a task assistant.
 
         Args:
             platform (str): The platform the user is on.
@@ -423,40 +409,6 @@ class Session:
         except Exception as e:
             raise Exception(f"__manage_task_session :: {e}")
 
-    def __manage_workflow_session(self, platform, user_workflow_execution_pk, use_message_placeholder=False,
-                                  use_draft_placeholder=False):
-        """
-        Manages a workflow session.
-
-        Args:
-            platform (str): The platform the user is on.
-            user_workflow_execution_pk (str): The primary key of the running user task execution if any
-            use_message_placeholder (bool, optional): Whether to use a message placeholder. Defaults to False.
-            use_draft_placeholder (bool, optional): Whether to use a draft placeholder. Defaults to False.
-
-        Returns:
-            tuple: The response message and response language.
-
-        Raises:
-            Exception: If there is an error during management.
-        """
-        try:
-            tag_proper_nouns = platform == "mobile"
-            workflow_assistant_response_generator = WorkflowAssistantResponseGenerator(
-                mojo_message_token_stream_callback=self._mojo_message_stream_callback,
-                use_message_placeholder=use_message_placeholder,
-                tag_proper_nouns=tag_proper_nouns,
-                user=self._get_user(),
-                session_id=self.id,
-                user_messages_are_audio=platform == "mobile",
-                running_user_workflow_execution_pk=user_workflow_execution_pk)
-
-            response_message = workflow_assistant_response_generator.generate_message()
-            response_language = workflow_assistant_response_generator.context.state.current_language
-            return response_message, response_language
-        except Exception as e:
-            raise Exception(f"__manage_workflow_session :: {e}")
-
     def __process_error_during_message_generation(self, e):
         """
         Processes an error that occurs during message generation.
@@ -469,7 +421,7 @@ class Session:
         """
         try:
             db.session.rollback()
-            message = socketio_message_sender.send_error("Error during session process_chat_message: " + str(e),
+            message = socketio_message_sender.send_error("Error during assistant process_chat_message: " + str(e),
                                                          self.id, user_message_pk=self.__get_last_user_message_pk())
             self._new_message(message, Session.agent_message_key, 'error')
             db.session.close()

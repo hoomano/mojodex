@@ -1,7 +1,5 @@
-from models.session.assistant_message_generators.assistant_message_generator import \
-    AssistantMessageGenerator
-
 from mojodex_backend_logger import MojodexBackendLogger
+
 
 
 class ExecutionManager:
@@ -12,7 +10,8 @@ class ExecutionManager:
 
     def manage_execution_text(self, execution_text):
         try:
-            mojo_text = AssistantMessageGenerator.remove_tags_from_text(execution_text, self.execution_start_tag,
+            from models.assistant.chat_assistant import ChatAssistant
+            mojo_text = ChatAssistant.remove_tags_from_text(execution_text, self.execution_start_tag,
                                                                              self.execution_end_tag)
             return mojo_text
         except Exception as e:

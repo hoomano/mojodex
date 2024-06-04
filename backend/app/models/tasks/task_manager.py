@@ -3,10 +3,9 @@ from models.tasks.task_inputs_manager import TaskInputsManager
 from models.tasks.task_executor import TaskExecutor
 
 from models.produced_text_managers.instruct_task_produced_text_manager import InstructTaskProducedTextManager
-from models.session.execution_manager import ExecutionManager
+from models.assistant.execution_manager import ExecutionManager
 from app import placeholder_generator
-
-from models.session.assistant_message_generators.assistant_message_generator import AssistantMessageGenerator
+from models.assistant.chat_assistant import ChatAssistant
 
 
 class TaskManager:
@@ -44,7 +43,7 @@ class TaskManager:
         try:
             text = None
             if TaskInputsManager.ask_user_input_start_tag in partial_text:
-                text = AssistantMessageGenerator.remove_tags_from_text(partial_text,
+                text = ChatAssistant.remove_tags_from_text(partial_text,
                                                                        TaskInputsManager.ask_user_input_start_tag,
                                                                        TaskInputsManager.ask_user_input_end_tag)
             # elif TaskToolManager.tool_usage_start_tag in partial_text:
@@ -55,7 +54,7 @@ class TaskManager:
 
             elif ExecutionManager.execution_start_tag in partial_text:
                 # take the text between <execution> and </execution>
-                text = AssistantMessageGenerator.remove_tags_from_text(partial_text,
+                text = ChatAssistant.remove_tags_from_text(partial_text,
                                                                        ExecutionManager.execution_start_tag,
                                                                        ExecutionManager.execution_end_tag)
                 draft_token_stream_callback(text)

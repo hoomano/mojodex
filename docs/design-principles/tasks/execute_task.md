@@ -96,7 +96,7 @@ class UserTaskExecutionRun(Resource):
         user_task_execution.start_date = datetime.now()
         db.session.commit()
         [...]
-        from models.session.session import Session as SessionModel
+        from models.assistant.session import Session as SessionModel
         session = SessionModel(user_task_execution.session_id)
         def launch_process(session, app_version, platform, user_task_execution_pk, use_message_placeholder, use_draft_placeholder):
             session.process_form_input( app_version, platform, user_task_execution_pk, use_message_placeholder=use_message_placeholder, use_draft_placeholder=use_draft_placeholder)
@@ -149,7 +149,7 @@ class UserMessage(Resource):
     [...]
     def put(self, user_id):
         [...]
-        from models.session import Session as SessionModel
+        from models.assistant import Session as SessionModel
         session = SessionModel(session_id)
 
         session_message = {"text": message.message["text"], "message_pk": message.message_pk,

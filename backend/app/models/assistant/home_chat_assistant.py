@@ -1,8 +1,6 @@
-from models.session.instruct_task_execution import InstructTaskExecution, User, ChatSession
+from models.assistant.models.instruct_task_execution import InstructTaskExecution, User, ChatSession
 from models.knowledge.knowledge_manager import KnowledgeManager
-from models.session.assistant_message_generators.assistant_message_generator import AssistantMessageGenerator
-from models.session.assistant_message_generators.general_chat_response_generator import GeneralChatResponseGenerator
-from models.session.chat_assistant import ChatAssistant
+from models.assistant.chat_assistant import ChatAssistant
 from app import placeholder_generator, model_loader
 from jinja2 import Template
 from models.tasks.task_manager import TaskManager
@@ -69,7 +67,7 @@ class HomeChatAssistant(ChatAssistant):
             raise Exception(f"_handle_placeholder :: {e}")
 
     def _get_message_placeholder(self):
-        return f"{GeneralChatResponseGenerator.user_message_start_tag}{placeholder_generator.mojo_message}{GeneralChatResponseGenerator.user_message_end_tag}"
+        return f"{self.user_message_start_tag}{placeholder_generator.mojo_message}{self.user_message_end_tag}"
 
     def _render_prompt_from_template(self):
         try:
@@ -139,7 +137,7 @@ class HomeChatAssistant(ChatAssistant):
                         # do not stop the stream, this will take effect at next run
 
             if self.user_message_start_tag in partial_text:
-                text = AssistantMessageGenerator.remove_tags_from_text(partial_text, self.user_message_start_tag,
+                text = ChatAssistant.remove_tags_from_text(partial_text, self.user_message_start_tag,
                                                                        self.user_message_end_tag)
                 self.mojo_message_token_stream_callback(text)
 
@@ -158,7 +156,7 @@ class HomeChatAssistant(ChatAssistant):
                                                                                      self.instruct_task_execution.user.language_code),
                                                                                  user_task_execution_pk=self.instruct_task_execution.user_task_execution_pk)
             if self.user_message_start_tag in response:
-                text = AssistantMessageGenerator.remove_tags_from_text(response, self.user_message_start_tag,
+                text = ChatAssistant.remove_tags_from_text(response, self.user_message_start_tag,
                                                                        self.user_message_end_tag)
                 return {"text": text, 'text_with_tags': response}
             return self.task_manager.manage_response_task_tags(response)

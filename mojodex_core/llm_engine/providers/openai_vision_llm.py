@@ -19,7 +19,7 @@ class VisionMessagesData:
         self.role = role
         self.text = text
         self.images_path = images_path
-        
+
 
 class OpenAIVisionLLM(OpenAILLM):
     available_vision_models = ["gpt-4o-vision", "gpt-4-vision-preview"]
@@ -32,7 +32,7 @@ class OpenAIVisionLLM(OpenAILLM):
     def _image_resize(self, width, height):
         try:
             # images are first scaled to fit within a 2048 x 2048 square
-            max_size=2048
+            max_size = 2048
             aspect_ratio = width / height
             if max(width, height) > max_size:
                 if aspect_ratio > 1:
@@ -51,12 +51,12 @@ class OpenAIVisionLLM(OpenAILLM):
             return width, height
         except Exception as e:
             raise Exception(f"_image_resize : {e}")
-        
+
     def num_tokens_from_image(self, image_path: str):
         try:
             with Image.open(image_path) as img:
                 original_width, original_height = img.size
-            
+
             # According to https://platform.openai.com/docs/guides/vision
             resized_width, resized_height = self._image_resize(original_width, original_height)
             # Finally, we count how many 512px squares the image consists of
@@ -69,8 +69,7 @@ class OpenAIVisionLLM(OpenAILLM):
             return total
         except Exception as e:
             raise Exception(f"num_tokens_from_image : {e}")
-            
-    
+
     @staticmethod
     def get_image_message_url_prefix(image_name):
         try:
@@ -85,35 +84,38 @@ class OpenAIVisionLLM(OpenAILLM):
     def get_encoded_image(self, image_path):
         try:
             with open(image_path, "rb") as image_file:
-                 return base64.b64encode(image_file.read()).decode('utf-8')
+                return base64.b64encode(image_file.read()).decode('utf-8')
         except Exception as e:
             raise Exception(f"_get_encoded_image :: {e}")
-    
-    def recursive_invoke(self, messages_data: List[VisionMessagesData], user_id, temperature, max_tokens, label, frequency_penalty, presence_penalty,
-                       stream=False, stream_callback=None, user_task_execution_pk=None, task_name_for_system=None,
-                         n_additional_calls_if_finish_reason_is_length=0, **kwargs):
-        
+
+    def _recursive_invoke(self, messages_data: List[VisionMessagesData], user_id: str, temperature: float,
+                          max_tokens: int, label: str,
+                          stream: bool = False, stream_callback=None, user_task_execution_pk: int = None,
+                          task_name_for_system: str = None, frequency_penalty: float = 0, presence_penalty: float = 0,
+                          n_additional_calls_if_finish_reason_is_length: int = 0, **kwargs):
+
         try:
             n_tokens_prompt = 0
             n_tokens_conversation = 0
             messages = []
             for index in range(0, len(messages_data)):
-                
+
                 message_data = messages_data[index]
                 message = {"role": message_data.role, 'content': [
                     {"type": "text", "text": message_data.text}
-                ] 
-                }
+                ]
+                           }
                 new_messages = [message]
-                
+
                 n_text_tokens = self.num_tokens_from_text_messages([message])
 
                 n_image_tokens = 0
                 for image_path in message_data.images_path:
                     encoded_image = self.get_encoded_image(image_path)
-                    image_data ={"type": "image_url",
-                        "image_url": {"url": f"{OpenAIVisionLLM.get_image_message_url_prefix(image_path)};base64,{encoded_image}" }
-                        }
+                    image_data = {"type": "image_url",
+                                  "image_url": {
+                                      "url": f"{OpenAIVisionLLM.get_image_message_url_prefix(image_path)};base64,{encoded_image}"}
+                                  }
                     # if message's role is "system", we can't add image to the message so we will add a user message with the image
                     if message_data.role == "system":
                         new_messages.append({"role": "user", 'content': [image_data]})
@@ -122,39 +124,30 @@ class OpenAIVisionLLM(OpenAILLM):
                     n_image_tokens += self.num_tokens_from_image(image_path)
 
                 messages += new_messages
-                
+
                 if index == 0:
                     n_tokens_prompt += n_text_tokens + n_image_tokens
                 else:
                     n_tokens_conversation += n_text_tokens + n_image_tokens
 
-            try:
-                if not os.path.exists(os.path.join(self.dataset_dir, "chat", label)):
-                    os.mkdir(os.path.join(self.dataset_dir, "chat", label))
-            except Exception as e:
-                log_error(f"Error creating directory for dataset chat/{label}", notify_admin=False)
-
-
             responses = self._call_completion_with_rate_limit_management(messages, user_id, temperature, max_tokens,
                                                                          frequency_penalty, presence_penalty,
-                                                                        stream, stream_callback,
-                                                                        n_additional_calls_if_finish_reason_is_length,
-                                                                        **kwargs)
+                                                                         stream, stream_callback,
+                                                                         n_additional_calls_if_finish_reason_is_length,
+                                                                         **kwargs)
 
             if responses is None:
                 return None
 
-            #n_tokens_response = self.num_tokens_from_messages(
-            #    [{'role': 'assistant', 'content': responses[0]}])
+            n_tokens_response = self.num_tokens_from_text_messages([{'role': 'assistant', 'content': responses[0]}])
 
-            #self.tokens_costs_manager.on_tokens_counted(user_id, n_tokens_prompt, n_tokens_conversation, n_tokens_response,
-            #                                            self.name, label, user_task_execution_pk, task_name_for_system)
+            self.tokens_costs_manager.on_tokens_counted(user_id, n_tokens_prompt, n_tokens_conversation,
+                                                        n_tokens_response,
+                                                        self.name, label, user_task_execution_pk, task_name_for_system)
             self._write_in_dataset({"temperature": temperature, "max_tokens": max_tokens, "n_responses": 1,
                                     "frequency_penalty": frequency_penalty, "presence_penalty": presence_penalty,
-                                    "messages": messages, "responses": responses}, task_name_for_system, "chat", label=label)
+                                    "messages": messages, "responses": responses}, task_name_for_system, "chat",
+                                   label=label)
             return responses
         except Exception as e:
-            log_error(
-                f"Error in Mojodex OpenAI chat for user_id: {user_id} - label: {label} user_task_execution_pk: {user_task_execution_pk} - task_name_for_system: {task_name_for_system}: {e}", notify_admin=True)
-            raise Exception(
-                f"🔴 Error in Mojodex OpenAI recursive_invoke() > label: {label} {e} - model: {self.name}")
+            raise Exception(f"_recursive_invoke: {e}")

@@ -9,10 +9,4 @@ Your user wants to write a poem about {{poem_topic}}.
 
 Write a stanza of this poem about {{stanza_topic}}.
 
-{%if learned_instructions%}Here is the list of your previous tries. Every try has been rejected the user. For each try, the user provided an instruction to improve the next try.
-{{learned_instructions|tojson(indent=4)}}
-Let's give this another try. Ensure to take into account every user's instructions.
-Write a stanza of this poem about {{stanza_topic}}.{%endif%}
-
-
 No talk, only stanza.

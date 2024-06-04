@@ -215,62 +215,18 @@ def _ask_for_validation(self):
 
 ### 4. User validation
 #### 4.1. User validates
-If the user validates the result of the run, the route POST `/user_workflow_execution_step_execution`is called with value `validated` set to `True`. This route updates the `user_workflow_execution_step_execution` instance in the database and triggers the next step execution with `workflow.run` in a dedicated thread.
+When the user validates the result of the run, the route POST `/user_workflow_execution_step_execution`is called with value `validated` set to `True`. This route updates the `user_workflow_execution_step_execution` instance in the database and triggers the next step execution with `workflow.run` in a dedicated thread.
 ```python
 class UserWorkflowStepExecution(Resource):
     [...]
     def post(self, user_id):
         [...]
         workflow_execution = WorkflowExecution(user_workflow_execution.user_workflow_execution_pk)
-        if validated:
-            workflow_execution.validate_step_execution(user_workflow_step_execution_pk)
-            server_socket.start_background_task(workflow_execution.run)
+        
+        workflow_execution.validate_step_execution(user_workflow_step_execution_pk)
+        server_socket.start_background_task(workflow_execution.run)
         [...]
 ```
             
-#### 4.2. User does not validate
-If the user does not validate the result of the run, the route POST `/user_workflow_execution_step_execution`is called with value `validated` set to `False`. 
-This route adds a system message in the workflow execution's session to store a view of the workflow state at this point in the conversation. This message contains the achieved step until current checkpoint and the current steps executions after current checkpoints (steps that can still be re-executed).
-
-Then, the user will send a message using common route PUT `user_message`. This message will be eventually transcripted if it was audio and transfer to a session through method `process_chat_message`.
-
-The process chat message will decode the message and send it to `WorflowResponseGenerator`located in `backend/app/models/session/assistant_message_generators`. This class will generate the assistant response to user request from on going workflow's conversation (including the system messages).
-
-The goal of the assistant is to capture the new user instruction to re-execute the step with the same input but a new orientation.
-To do that, the LLM can answer with 3 types of tags:
-
-- <no_go_explanation>: If the user asked the assistant to edit something in ACHIEVED STEPS, the assistant will explain why it is not possible to edit this past checkpoint steps.
-- <ask_for_clarification>: If the user is not clear enough in its request for re-execution, the assistant will ask for clarification until it gets a clear instruction.
-- <inform_user> coming along with <user_instruction>: once the assistant caught the user instruction, it will respond by encapsulating the user instruction in a <user_instruction> tag and add a message to inform the user that the instruction has been taken into account into <inform_user> tag.
-
-Once the assistant capture the user instruction, it will:
-- Invalidate the step
-- Launch a new run of the workflow in a dedicated thread
-
-The invalidation method is as follow:
-```python
-class WorkflowExecution:
-    [...]
-    def invalidate_current_step(self, learned_instruction):
-        [...]
-        current_step_in_validation = self._get_last_step_execution() # the step execution we went to invalidate is the last one
-        current_step_in_validation.invalidate(self.db_object.session_id) # set validated to False in database and send socketio message to client
-
-        if current_step_in_validation.workflow_step.is_checkpoint: # if this step is the checkpoint, it is the one that will learn from this failure
-            current_step_in_validation.learn_instruction(learned_instruction)
-            return
-        
-        # If the step in validation is not a checkpoint, find the previous one that is a checkpoint
-        checkpoint_step = self._find_checkpoint_step()
-        # for all step in self.validated_steps_executions after checkpoint_step, invalidate them
-        checkpoint_step_index = self.validated_steps_executions.index(checkpoint_step)
-        for validated_step in self.validated_steps_executions[checkpoint_step_index:]:
-            validated_step.invalidate(self.db_object.session_id)
-            # remove from validated_steps_executions
-            self.validated_steps_executions.remove(validated_step)
-
-        # checkpoint_step learns from this failure
-        checkpoint_step.learn_instruction(learned_instruction)
-```
 
 ![complete_user_workflow_execution_flow](../../images/workflow_execution/complete_user_workflow_execution_flow.png)

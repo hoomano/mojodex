@@ -298,26 +298,6 @@ class WorkflowExecution:
         except Exception as e:
             raise Exception(f"_last_step_execution :: {e}")
 
-    def invalidate_current_step(self, learned_instruction):
-        try:
-            current_step_in_validation = self._get_last_step_execution()
-            current_step_in_validation.invalidate(self.db_object.session_id)
-            if current_step_in_validation.workflow_step.is_checkpoint:
-                current_step_in_validation.learn_instruction(learned_instruction)
-                return
-
-            # find checkpoint step
-            checkpoint_step = self._find_checkpoint_step()
-            # for all step in self.validated_steps_executions after checkpoint_step, invalidate them
-            checkpoint_step_index = self.past_accepted_steps_executions.index(checkpoint_step)
-            for validated_step in self.past_accepted_steps_executions[checkpoint_step_index:]:
-                validated_step.invalidate(self.db_object.session_id)
-                # remove from validated_steps_executions
-                self.past_accepted_steps_executions.remove(validated_step)
-            checkpoint_step.learn_instruction(learned_instruction)
-        except Exception as e:
-            raise Exception(f"invalidate_current_step :: {e}")
-    
     def restart(self):
         try:
             current_step_in_validation = self._get_last_step_execution()

@@ -1,3 +1,7 @@
+#! gpt-4o
+#! gpt4-turbo/2023-03-15-preview
+#! gpt-4-turbo-preview
+
 YOUR CONTEXT
 {{mojo_knowledge}}
 
@@ -14,7 +18,7 @@ USER NAME
 {%if audio_message%}The user's messages are transcriptions of audio messages.{%endif%}
 
 {%if not produced_text_done%}Answer in following format:
-{%if language is none%}<user_language><2 letters language code></user_language>{%endif%}
+<user_language><2 letters language code></user_language>
 {%for info in infos_to_extract%}<missing_{{info.info_name}}><yes/no></missing_{{info.info_name}}>
 {%endfor%}<missing_primary_info><yes/no></missing_primary_info>
 {if <missing_primary_info> == yes}
@@ -27,6 +31,6 @@ USER NAME
 {%else%}Always use <execution> and </execution> tags when you write a task delivery or edition of a task delivery.{%endif%}
 
 {%if tag_proper_nouns%}Tag EVERY proper noun with '*': *PROPER NOUN*. Also tag EVERY word that may have been misunderstood by the transcription system and could be a proper noun with the same '*' tag.{%endif%}
-{%if language is none%}Speak same language as the user.{%else%}Use language {{language}}.{%endif%}
+Speak same language as the user.
 Ensure you include all tags required by answer format.
 No talk, just follow answer format. Remember to use required tags.

@@ -1,4 +1,5 @@
 from models.assistant.execution_manager import ExecutionManager
+
 from mojodex_core.llm_engine.providers.openai_vision_llm import VisionMessagesData
 
 from mojodex_core.db import engine, Session
@@ -52,8 +53,9 @@ class ChatAssistant(ABC):
     def _handle_placeholder(self):
         raise NotImplementedError
 
+    @property
     @abstractmethod
-    def _render_prompt_from_template(self):
+    def _mpt(self):
         raise NotImplementedError
 
     @property
@@ -65,32 +67,29 @@ class ChatAssistant(ABC):
     def input_images(self):
         return []
 
-    def _call_llm(self, conversation_list, user_id, session_id, user_task_execution_pk, task_name_for_system, label):
+    def _call_llm(self, conversation_list, user_id, session_id, user_task_execution_pk, task_name_for_system):
         try:
-            prompt = self._render_prompt_from_template()
             temperature, max_tokens = 0, 4000
             if self.requires_vision_llm:
-                return self.__call_vision_llm(prompt, conversation_list, temperature, max_tokens, label, user_id,
+                return self.__call_vision_llm(conversation_list, temperature, max_tokens, user_id,
                                               session_id, user_task_execution_pk, task_name_for_system)
-            messages = [{"role": "system", "content": prompt}] + conversation_list
-            responses = model_loader.main_llm.invoke(messages, user_id,
-                                                     temperature=temperature,
-                                                     max_tokens=max_tokens,
-                                                     label=label,
-                                                     stream=True, stream_callback=self._token_callback,
-                                                     user_task_execution_pk=user_task_execution_pk,
-                                                     task_name_for_system=task_name_for_system)
+            responses = self._mpt.chat(conversation_list, user_id,
+                                         temperature=temperature,
+                                         max_tokens=max_tokens,
+                                         stream=True, stream_callback=self._token_callback,
+                                         user_task_execution_pk=user_task_execution_pk,
+                                         task_name_for_system=task_name_for_system)
 
             return responses[0].strip() if responses else None
         except Exception as e:
             raise Exception(f"_call_llm :: {e}")
 
-    def __call_vision_llm(self, prompt, conversation_list, temperature, max_tokens, label, user_id, session_id,
+    def __call_vision_llm(self, conversation_list, temperature, max_tokens, user_id, session_id,
                           user_task_execution_pk, task_name_for_system):
         try:
             from models.user_images_file_manager import UserImagesFileManager
             self.user_image_file_manager = UserImagesFileManager()
-            initial_system_message_data = [VisionMessagesData(role="system", text=prompt, images_path=[
+            initial_system_message_data = [VisionMessagesData(role="system", text=self._mpt.prompt, images_path=[
                 self.user_image_file_manager.get_image_file_path(image, user_id, session_id)
                 for image in self.input_images])]
             conversation_messages_data = [
@@ -100,7 +99,7 @@ class ChatAssistant(ABC):
             responses = model_loader.main_vision_llm.invoke(messages_data, user_id,
                                                             temperature=temperature,
                                                             max_tokens=max_tokens,
-                                                            label=label,
+                                                            label=self._mpt.label,
                                                             stream=True, stream_callback=self._token_callback,
                                                             user_task_execution_pk=user_task_execution_pk,
                                                             task_name_for_system=task_name_for_system)
@@ -129,8 +128,8 @@ class ChatAssistant(ABC):
             if self.language_start_tag in response:
                 try:
                     self.language = self.remove_tags_from_text(response,
-                                                                                    self.language_start_tag,
-                                                                                    self.language_end_tag).lower()
+                                                               self.language_start_tag,
+                                                               self.language_end_tag).lower()
                 except Exception as e:
                     pass
         except Exception as e:

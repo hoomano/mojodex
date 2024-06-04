@@ -1,13 +1,13 @@
 from models.assistant.models.instruct_task_execution import InstructTaskExecution, User, ChatSession
 from models.knowledge.knowledge_manager import KnowledgeManager
 from models.assistant.chat_assistant import ChatAssistant
-from app import placeholder_generator, model_loader
-from jinja2 import Template
+from app import placeholder_generator
 from models.tasks.task_manager import TaskManager
+from mojodex_core.llm_engine.mpt import MPT
 
 
 class HomeChatAssistant(ChatAssistant):
-    prompt_file = "mojodex_core/prompts/home_chat/run.txt"
+    mpt_file = "instructions/home_chat_run.mpt"
     user_message_start_tag, user_message_end_tag = "<message_to_user>", "</message_to_user>"
     task_pk_start_tag, task_pk_end_tag = "<task_pk>", "</task_pk>"
 
@@ -38,8 +38,7 @@ class HomeChatAssistant(ChatAssistant):
             # Call LLM
             llm_output = self._call_llm(self.session.conversation, self.user.user_id, self.session.session_id,
                                         user_task_execution_pk=self.instruct_task_execution.user_task_execution_pk if self.instruct_task_execution else None,
-                                        task_name_for_system=self.instruct_task_execution.task.name_for_system if self.instruct_task_execution else None,
-                                        label='home_chat_assistant')
+                                        task_name_for_system=self.instruct_task_execution.task.name_for_system if self.instruct_task_execution else None)
 
             # Handle LLM output
             if llm_output:
@@ -69,28 +68,25 @@ class HomeChatAssistant(ChatAssistant):
     def _get_message_placeholder(self):
         return f"{self.user_message_start_tag}{placeholder_generator.mojo_message}{self.user_message_end_tag}"
 
-    def _render_prompt_from_template(self):
+    @property
+    def _mpt(self):
         try:
             mojo_knowledge = KnowledgeManager.get_mojo_knowledge()
             global_context = KnowledgeManager.get_global_context_knowledge()
 
-            with open(self.prompt_file, 'r') as f:
-                prompt_template = Template(f.read())
-            return prompt_template.render(mojo_knowledge=mojo_knowledge,
-                                          global_context=global_context,
-                                          username=self.user.username,
-                                          user_company_knowledge=self.user.company_knowledge,
-                                          tasks=self.user.available_instruct_tasks,
-                                          running_task=self.instruct_task_execution.task if self.instruct_task_execution else None,
-                                          infos_to_extract=self.instruct_task_execution.task.infos_to_extract if self.instruct_task_execution else None,
-                                          task_specific_instructions=self.instruct_task_execution.instructions if self.instruct_task_execution else None,
-                                          produced_text_done=self.instruct_task_execution.produced_text_done if self.instruct_task_execution else None,
-                                          audio_message=self.user_messages_are_audio,
-                                          tag_proper_nouns=self.tag_proper_nouns,
-                                          language=None
-                                          )
+            return MPT(self.mpt_file, mojo_knowledge=mojo_knowledge,
+                       global_context=global_context,
+                       username=self.user.username,
+                       user_company_knowledge=self.user.company_knowledge,
+                       tasks=self.user.available_instruct_tasks,
+                       running_task=self.instruct_task_execution.task if self.instruct_task_execution else None,
+                       infos_to_extract=self.instruct_task_execution.task.infos_to_extract if self.instruct_task_execution else None,
+                       task_specific_instructions=self.instruct_task_execution.instructions if self.instruct_task_execution else None,
+                       produced_text_done=self.instruct_task_execution.produced_text_done if self.instruct_task_execution else None,
+                       audio_message=self.user_messages_are_audio,
+                       tag_proper_nouns=self.tag_proper_nouns)
         except Exception as e:
-            raise Exception(f"_render_prompt_from_template :: {e}")
+            raise Exception(f"_mpt :: {e}")
 
     def __spot_task_pk(self, response):
         try:
@@ -138,7 +134,7 @@ class HomeChatAssistant(ChatAssistant):
 
             if self.user_message_start_tag in partial_text:
                 text = ChatAssistant.remove_tags_from_text(partial_text, self.user_message_start_tag,
-                                                                       self.user_message_end_tag)
+                                                           self.user_message_end_tag)
                 self.mojo_message_token_stream_callback(text)
 
             # else, task specific tags
@@ -157,7 +153,7 @@ class HomeChatAssistant(ChatAssistant):
                                                                                  user_task_execution_pk=self.instruct_task_execution.user_task_execution_pk)
             if self.user_message_start_tag in response:
                 text = ChatAssistant.remove_tags_from_text(response, self.user_message_start_tag,
-                                                                       self.user_message_end_tag)
+                                                           self.user_message_end_tag)
                 return {"text": text, 'text_with_tags': response}
             return self.task_manager.manage_response_task_tags(response)
         except Exception as e:

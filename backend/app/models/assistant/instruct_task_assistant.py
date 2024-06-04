@@ -2,12 +2,12 @@ from models.assistant.models.instruct_task_execution import InstructTaskExecutio
 from models.knowledge.knowledge_manager import KnowledgeManager
 from models.assistant.chat_assistant import ChatAssistant
 from models.tasks.task_manager import TaskManager
-from app import placeholder_generator, model_loader
-from jinja2 import Template
+from app import placeholder_generator
+from mojodex_core.llm_engine.mpt import MPT
 
 
 class InstructTaskAssistant(ChatAssistant):
-    prompt_file = "mojodex_core/prompts/tasks/run.txt"
+    mpt_file = "instructions/task_run.mpt"
 
     def __init__(self, mojo_message_token_stream_callback, draft_token_stream_callback, use_message_placeholder,
                  use_draft_placeholder,
@@ -36,13 +36,10 @@ class InstructTaskAssistant(ChatAssistant):
                                         self.instruct_task_execution.user.user_id,
                                         self.instruct_task_execution.session.session_id,
                                         user_task_execution_pk=self.instruct_task_execution.user_task_execution_pk,
-                                        task_name_for_system=self.instruct_task_execution.task.name_for_system,
-                                        label='instruct_task_chat_assistant')
+                                        task_name_for_system=self.instruct_task_execution.task.name_for_system)
 
             # Handle LLM output
             if llm_output:
-                with open("/data/response.txt", "w") as f:
-                    f.write(llm_output)
                 message = self._handle_llm_output(llm_output)
                 message['user_task_execution_pk'] = self.instruct_task_execution.user_task_execution_pk
                 return message
@@ -63,26 +60,23 @@ class InstructTaskAssistant(ChatAssistant):
         except Exception as e:
             raise Exception(f"_handle_placeholder :: {e}")
 
-    def _render_prompt_from_template(self):
+    @property
+    def _mpt(self):
         try:
             mojo_knowledge = KnowledgeManager.get_mojo_knowledge()
             global_context = KnowledgeManager.get_global_context_knowledge()
 
-            with open(self.prompt_file, 'r') as f:
-                prompt_template = Template(f.read())
-            return prompt_template.render(mojo_knowledge=mojo_knowledge,
-                                          global_context=global_context,
-                                          username=self.instruct_task_execution.user.username,
-                                          user_company_knowledge=self.instruct_task_execution.user.company_knowledge,
-                                          infos_to_extract=self.instruct_task_execution.task.infos_to_extract,
-                                          task_specific_instructions=self.instruct_task_execution.instructions,
-                                          produced_text_done=self.instruct_task_execution.produced_text_done,
-                                          audio_message=self.user_messages_are_audio,
-                                          tag_proper_nouns=self.tag_proper_nouns,
-                                          language=None
-                                          )
+            return MPT(self.mpt_file, mojo_knowledge=mojo_knowledge,
+                       global_context=global_context,
+                       username=self.instruct_task_execution.user.username,
+                       user_company_knowledge=self.instruct_task_execution.user.company_knowledge,
+                       infos_to_extract=self.instruct_task_execution.task.infos_to_extract,
+                       task_specific_instructions=self.instruct_task_execution.instructions,
+                       produced_text_done=self.instruct_task_execution.produced_text_done,
+                       audio_message=self.user_messages_are_audio,
+                       tag_proper_nouns=self.tag_proper_nouns)
         except Exception as e:
-            raise Exception(f"_render_prompt_from_template :: {e}")
+            raise Exception(f"_mpt :: {e}")
 
     @property
     def requires_vision_llm(self):

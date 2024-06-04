@@ -225,7 +225,7 @@ To fix the problem:
 2. Check the MPT file's shebangs for compatibility with the providers.""")
             if model.name not in self.models:
                 self.logger.warning(f"{self} does not contain model: {model.name} in its dashbangs")
-
+            print(f"Running MPT {self} with model: {model.name}")
             return model.invoke(messages, user_id, temperature,
                                 max_tokens, label=self.label,
                                 stream=stream, stream_callback=stream_callback,

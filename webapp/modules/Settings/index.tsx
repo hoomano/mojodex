@@ -111,9 +111,31 @@ const Settings = () => {
           </span>
         </div>
 
-        <div className="text-xl font-bold my-3">
-          {t("account.securitySectionTitle")}
+        <div className="bg-[#F3F4F6] px-3 py-2 w-[250px] rounded-md flex justify-between items-center mt-2 cursor-pointer">
+          <span>{t("account.languageButton")}</span>
+          {isLoading ? (
+            <div className="button-loader"></div>
+          ) : (
+            <select
+              value={router.locale}
+              onChange={handleLanguageChange}
+              className="text-gray-400 text-sm py-1 rounded-md pr-7 bg-transparent focus:ring-0"
+            >
+              {languageInfo?.available_languages &&
+                Object.entries(languageInfo.available_languages).map(
+                  ([key, value]) => (
+                    <option key={key} value={key}>
+                      {value as any}
+                    </option>
+                  )
+                )}
+            </select>
+          )}
         </div>
+
+        {(termsOfUseLink || dataPolicyLink) && <div className="text-xl font-bold my-3">
+          {t("account.securitySectionTitle")}
+        </div>}
 
 
         {
@@ -143,27 +165,7 @@ const Settings = () => {
           </div>
         }
 
-        <div className="bg-[#F3F4F6] px-3 py-2 w-[250px] rounded-md flex justify-between items-center mt-2 cursor-pointer">
-          <span>{t("account.languageButton")}</span>
-          {isLoading ? (
-            <div className="button-loader"></div>
-          ) : (
-            <select
-              value={router.locale}
-              onChange={handleLanguageChange}
-              className="text-gray-400 text-sm py-1 rounded-md pr-7 bg-transparent focus:ring-0"
-            >
-              {languageInfo?.available_languages &&
-                Object.entries(languageInfo.available_languages).map(
-                  ([key, value]) => (
-                    <option key={key} value={key}>
-                      {value as any}
-                    </option>
-                  )
-                )}
-            </select>
-          )}
-        </div>
+
       </div>
     </div>
   );

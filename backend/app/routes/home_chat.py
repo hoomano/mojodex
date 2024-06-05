@@ -162,15 +162,6 @@ class HomeChat(Resource):
         except Exception as e:
             raise Exception(f"_write_welcome_message : {e}")
 
-    def _create_home_chat(self, platform, user_id, close_db=True):
-        try:
-            home_chat=self._create_db_home_chat(user_id, platform)
-            self._write_welcome_message(home_chat, user_id)
-            if close_db:
-                db.session.close()
-        except Exception as e:
-            raise Exception(f"__create_home_chat : {e}")
-
     def __create_home_chat_by_batches(self, user_ids, week):
         for user_id in user_ids:
             self.__create_home_chat("0.0.0", "mobile", user_id, week=week, close_db=True)

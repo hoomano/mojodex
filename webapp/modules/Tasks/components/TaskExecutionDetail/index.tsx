@@ -123,6 +123,7 @@ const DraftDetail = () => {
       title: `${t("userTaskExecution.processTab.title")}`,
       component: (
         <StepProcessDetail stepExecutions={workflowStepExecutions!}
+          sessionId={currentTask!.session_id}
           onInvalidate={() => setChatIsVisible(true)}
           onValidate={(stepExecutionPk: number) => onStepExecutionValidated(stepExecutionPk)}
           onStepRelaunched={(stepExecutionPk: number) => onStepRelaunched(stepExecutionPk)}

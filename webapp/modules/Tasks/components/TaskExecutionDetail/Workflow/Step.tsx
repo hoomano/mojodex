@@ -10,11 +10,12 @@ import { CheckCircleIcon, ExclamationCircleIcon } from '@heroicons/react/24/soli
 import BeatLoader from "react-spinners/BeatLoader";
 import { useTranslation } from "next-i18next";
 import { useState } from "react";
-
+import StepResult from "./StepResult";
 
 
 interface StepProps {
     stepExecution: UserTaskExecutionStepExecution;
+    sessionId: string;
     onInvalidate: any;
     onValidate: any;
     onStepRelaunched: any;
@@ -24,6 +25,7 @@ interface StepProps {
 
 const Step: React.FC<StepProps> = ({
     stepExecution,
+    sessionId,
     onInvalidate,
     onValidate,
     onStepRelaunched,
@@ -173,32 +175,13 @@ const Step: React.FC<StepProps> = ({
                                         </div>
                                     )
                             }
-                            {
-                                // we want to iterate on each result that is a JSON object and display key value pairs
-                                stepExecution.result?.map((resultItem, resultIndex) => (
-                                    Object.entries(resultItem).map(([key, value]) => (
-                                        editing ? (
-                                            // If the step is in editing mode, render an input field with the result text as its value
-                                            <p className="flex-auto py-0.5 text-sm leading-5 text-gray-900">
-                                                <span className="font-medium text-gray-400">{key}:</span><br />
-                                                <TextareaAutosize
-                                                    className="flex-auto py-0.5 text-sm leading-5 text-gray-900 resize-none w-full"
-                                                    value={editedResult[resultIndex].get(key) || value?.toString()}
-                                                    onChange={event => {
-                                                        const newResult = [...editedResult];
-                                                        newResult[resultIndex].set(key, event.target.value);
-                                                        setEditedResult(newResult);
-                                                    }}
-
-                                                />
-                                            </p>
-                                        ) : <p className="flex-auto py-0.5 text-sm leading-5 text-gray-900">
-                                            <span className="font-medium text-gray-400">{key}:</span><br />
-                                            <pre style={{ whiteSpace: "pre-wrap", wordWrap: "break-word" }}>{value?.toString()}</pre>
-                                        </p>
-                                    ))
-                                ))
-                            }
+                        <StepResult
+                            stepExecutionResult={stepExecution.result}
+                            sessionId={sessionId}
+                            editing={editing}
+                            editedResult={editedResult}
+                            setEditedResult={setEditedResult}
+                        />
                             {editing ? <div className="text-end pt-2">
                                 <Button
                                     variant="outline"

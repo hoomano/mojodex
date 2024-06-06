@@ -3,6 +3,7 @@ import { Dispatch, SetStateAction } from "react";
 import DropDownList from "./DropDownList";
 import ImageArea from "./ImageArea";
 import Textarea from "./TextArea";
+import MultipleImagesArea from "./MultipleImagesArea";
 
 interface InputsFormProps {
     jsonInputs: TaskJsonInput[];
@@ -16,7 +17,16 @@ const InputsForm = ({ jsonInputs, setInputArray, sessionId }: InputsFormProps) =
        
         {jsonInputs.map((input) => {
             
-                switch (input.type) {
+            switch (input.type) {
+                case 'mulitple_images':
+                    return (
+                        <MultipleImagesArea
+                            key={input.input_name}
+                            jsonInput={input}
+                            setInputArray={setInputArray}
+                            sessionId={sessionId}
+                        />
+                    );
                     case 'image':
                         return (
                             <ImageArea

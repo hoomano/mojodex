@@ -104,3 +104,10 @@ class InstructTaskExecution:
             return input_images
         except Exception as e:
             raise Exception(f"{self.__class__.__name__}:: images_input_names :: {e}")
+
+    @property
+    def task_name_in_user_language(self):
+        try:
+            return self.task.get_task_name_in_language(self.user.language_code)
+        except Exception as e:
+            raise Exception(f"{self.__class__.__name__} :: get_task_name_in_user_language :: {e}")

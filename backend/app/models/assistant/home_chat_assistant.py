@@ -149,8 +149,7 @@ class HomeChatAssistant(ChatAssistant):
                 if self.instruct_task_execution:
                     return self.task_manager.task_executor.manage_execution_text(execution_text=execution,
                                                                                  task=self.instruct_task_execution.task,
-                                                                                 task_name=self.instruct_task_execution.task.get_name_in_language(
-                                                                                     self.instruct_task_execution.user.language_code),
+                                                                                 task_name=self.instruct_task_execution.task_name_in_user_language,
                                                                                  user_task_execution_pk=self.instruct_task_execution.user_task_execution_pk)
             if self.user_message_start_tag in response:
                 text = ChatAssistant.remove_tags_from_text(response, self.user_message_start_tag,

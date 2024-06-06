@@ -30,10 +30,10 @@ class ChatAssistant(ABC):
         self.db_session.close()
 
     def __init__(self, mojo_message_token_stream_callback, draft_token_stream_callback,
-                 tag_proper_nouns, user_messages_are_audio, temperature=0, max_tokens=4000):
+                 tag_proper_nouns, user_messages_are_audio, db_session, temperature=0, max_tokens=4000):
         try:
 
-            self.db_session = Session(engine)
+            self.db_session = db_session
             self.execution_manager = ExecutionManager()
             self.tag_proper_nouns = tag_proper_nouns
             self.user_messages_are_audio = user_messages_are_audio

@@ -7,6 +7,8 @@ from models.assistant.instruct_task_assistant import InstructTaskAssistant
 from models.assistant.home_chat_assistant import HomeChatAssistant
 
 from models.assistant.chat_assistant import ChatAssistant
+
+from models.assistant.models.instruct_task_execution import InstructTaskExecution
 from mojodex_core.logging_handler import log_error
 from mojodex_core.entities import *
 from datetime import datetime
@@ -14,7 +16,8 @@ from models.voice_generator import VoiceGenerator
 from packaging import version
 from functools import wraps
 from sqlalchemy.orm.attributes import flag_modified
-
+from mojodex_core.db import engine
+from mojodex_core.db import Session as DbSession
 
 class Session:
     sessions_storage = "/data/users"
@@ -30,6 +33,8 @@ class Session:
             self.id = session_id
             user = self._get_user()
             self.user_id = user.user_id
+
+            self.db_session = DbSession(engine)
             self.platform = None
             if 'SPEECH_KEY' in os.environ and 'SPEECH_REGION' in os.environ:
                 try:
@@ -223,10 +228,13 @@ class Session:
         if "message_pk" not in message:
             self._new_message(message, Session.user_message_key, "user_message")
 
+        instruct_task_execution = None
         # if "user_task_execution_pk" in message and message["user_task_execution_pk"] is not None, let's update task title and summary
         if "user_task_execution_pk" in message and message["user_task_execution_pk"] is not None:
             user_task_execution_pk = message["user_task_execution_pk"]
-            server_socket.start_background_task(self._give_task_execution_title_and_summary, user_task_execution_pk)
+            instruct_task_execution = InstructTaskExecution(user_task_execution_pk, self.db_session)
+            instruct_task_execution.generate_title_and_summary()
+            #server_socket.start_background_task(self._give_task_execution_title_and_summary, user_task_execution_pk)
 
         # Home chat assistant here ??
         # with response_message = ...
@@ -234,13 +242,11 @@ class Session:
         use_draft_placeholder = "use_draft_placeholder" in message and message["use_draft_placeholder"]
 
         if "origin" in message and message["origin"] == "home_chat":
-            user_task_execution_pk = message['user_task_execution_pk'] if 'user_task_execution_pk' in message else None
-            return self.__manage_home_chat_session(self.platform, user_task_execution_pk, use_message_placeholder,
-                                                   use_draft_placeholder)
+            return self.__manage_home_chat_session(self.platform, instruct_task_execution, use_message_placeholder)
+
         elif 'user_task_execution_pk' in message and message['user_task_execution_pk'] is not None:
             # For now only task sessions
-            user_task_execution_pk = message['user_task_execution_pk']
-            return self.__manage_task_session(self.platform, user_task_execution_pk, use_message_placeholder,
+            return self.__manage_task_session(self.platform, instruct_task_execution, use_message_placeholder,
                                               use_draft_placeholder)
         else:
             raise Exception("Unknown message origin")
@@ -274,11 +280,12 @@ class Session:
         Returns:
             function: The function that manages the task assistant.
         """
-
-        server_socket.start_background_task(self._give_task_execution_title_and_summary, user_task_execution_pk)
+        instruct_task_execution = InstructTaskExecution(user_task_execution_pk, self.db_session)
+        instruct_task_execution.generate_title_and_summary()
+        #server_socket.start_background_task(self._give_task_execution_title_and_summary, user_task_execution_pk)
 
         self.platform = platform
-        return self.__manage_instruct_task_session(self.platform, user_task_execution_pk,
+        return self.__manage_instruct_task_session(self.platform, instruct_task_execution,
                                                    use_message_placeholder=use_message_placeholder,
                                                    use_draft_placeholder=use_draft_placeholder)
 
@@ -320,8 +327,7 @@ class Session:
         except Exception as e:
             raise Exception(f"process_mojo_message :: {e}")
 
-    def __manage_home_chat_session(self, platform, user_task_execution_pk, use_message_placeholder=False,
-                                   use_draft_placeholder=False):
+    def __manage_home_chat_session(self, platform: str, instruct_task_execution: InstructTaskExecution, use_message_placeholder: bool =False):
         """
         Manages a home chat assistant.
 
@@ -348,34 +354,36 @@ class Session:
                 session_id=self.id,
                 tag_proper_nouns=tag_proper_nouns,
                 user_messages_are_audio=user_messages_are_audio,
-                running_user_task_execution_pk=user_task_execution_pk)
+                running_user_task_execution=instruct_task_execution,
+                db_session=self.db_session
+            )
             response_message = home_chat_assistant.generate_message()
             response_language = home_chat_assistant.language
             return response_message, response_language
         except Exception as e:
             raise Exception(f"__manage_home_chat_session :: {e}")
 
-    def __manage_task_session(self, platform, user_task_execution_pk, use_message_placeholder=False,
-                              use_draft_placeholder=False):
+    def __manage_task_session(self, platform: str, instruct_task_execution: InstructTaskExecution, use_message_placeholder: bool = False,
+                              use_draft_placeholder: bool = False):
         try:
             # What is the task type ?
             db_task = db.session.query(MdTask) \
                 .join(MdUserTask, MdTask.task_pk == MdUserTask.task_fk) \
                 .join(MdUserTaskExecution, MdUserTaskExecution.user_task_fk == MdUserTask.user_task_pk) \
-                .filter(MdUserTaskExecution.user_task_execution_pk == user_task_execution_pk) \
+                .filter(MdUserTaskExecution.user_task_execution_pk == instruct_task_execution.user_task_execution_pk) \
                 .first()
             if db_task is None:
-                raise Exception(f"Task of user_task_execution {user_task_execution_pk} not found")
+                raise Exception(f"Task of user_task_execution {instruct_task_execution.user_task_execution_pk} not found")
             if db_task.type == "instruct":
-                return self.__manage_instruct_task_session(platform, user_task_execution_pk, use_message_placeholder,
+                return self.__manage_instruct_task_session(platform, instruct_task_execution, use_message_placeholder,
                                                            use_draft_placeholder)
             else:
                 raise Exception(f"Can't chat with task of type {db_task.type}")
         except Exception as e:
             raise Exception(f"__manage_task_session :: {e}")
 
-    def __manage_instruct_task_session(self, platform, user_task_execution_pk, use_message_placeholder=False,
-                                       use_draft_placeholder=False):
+    def __manage_instruct_task_session(self, platform: str, instruct_task_execution: InstructTaskExecution, use_message_placeholder: bool = False,
+                                       use_draft_placeholder: bool = False):
         """
         Manages a task assistant.
 
@@ -401,7 +409,7 @@ class Session:
                 use_draft_placeholder=use_draft_placeholder,
                 tag_proper_nouns=tag_proper_nouns,
                 user_messages_are_audio=user_messages_are_audio,
-                running_user_task_execution_pk=user_task_execution_pk)
+                running_user_task_execution=instruct_task_execution)
 
             response_message = instruct_task_assistant.generate_message()
             response_language = instruct_task_assistant.language

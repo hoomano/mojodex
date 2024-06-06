@@ -11,12 +11,13 @@ class InstructTaskAssistant(ChatAssistant):
 
     def __init__(self, mojo_message_token_stream_callback, draft_token_stream_callback, use_message_placeholder,
                  use_draft_placeholder,
-                 tag_proper_nouns, user_messages_are_audio, running_user_task_execution_pk):
+                 tag_proper_nouns, user_messages_are_audio, running_user_task_execution):
         try:
-            super().__init__(mojo_message_token_stream_callback, draft_token_stream_callback,
-                             tag_proper_nouns, user_messages_are_audio)
 
-            self.instruct_task_execution = InstructTaskExecution(running_user_task_execution_pk, self.db_session)
+            super().__init__(mojo_message_token_stream_callback, draft_token_stream_callback,
+                             tag_proper_nouns, user_messages_are_audio, running_user_task_execution.db_session)
+
+            self.instruct_task_execution = running_user_task_execution
             self.use_message_placeholder = use_message_placeholder
             self.use_draft_placeholder = use_draft_placeholder
 

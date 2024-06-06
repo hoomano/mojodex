@@ -12,12 +12,11 @@ class HomeChatAssistant(ChatAssistant):
     task_pk_start_tag, task_pk_end_tag = "<task_pk>", "</task_pk>"
 
     def __init__(self, mojo_message_token_stream_callback, draft_token_stream_callback, use_message_placeholder,
-                 user_id, session_id, tag_proper_nouns, user_messages_are_audio, running_user_task_execution_pk):
+                 user_id, session_id, tag_proper_nouns, user_messages_are_audio, running_user_task_execution, db_session):
         try:
             super().__init__(mojo_message_token_stream_callback, draft_token_stream_callback,
-                             tag_proper_nouns, user_messages_are_audio)
-            self.instruct_task_execution = InstructTaskExecution(
-                running_user_task_execution_pk, self.db_session) if running_user_task_execution_pk else None
+                             tag_proper_nouns, user_messages_are_audio, db_session)
+            self.instruct_task_execution = running_user_task_execution if running_user_task_execution else None
             self.user = self.instruct_task_execution.user if self.instruct_task_execution else User(user_id,
                                                                                                     self.db_session)
             self.session = self.instruct_task_execution.session if self.instruct_task_execution else ChatSession(
@@ -122,10 +121,10 @@ class HomeChatAssistant(ChatAssistant):
                                                                                                    self.session,
                                                                                                    self.db_session)
                         # associate previous user message to this task
-                        self.session.associate_last_user_message_with_user_task_execution_pk(
-                            self.instruct_task_execution.user_task_execution_pk)
+                        if self.session.last_user_message:
+                            self.session.last_user_message.user_task_execution_pk = self.instruct_task_execution.user_task_execution_pk
 
-                        # TODO: give task_execution a title and a summary
+                        self.instruct_task_execution.generate_title_and_summary()
                         return True  # we stop the stream
                 else:  # task is null
                     if self.instruct_task_execution:

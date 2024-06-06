@@ -1,5 +1,6 @@
+from models.assistant.models.message import Message
 from mojodex_core.entities import MdMessage
-from sqlalchemy.orm.attributes import flag_modified
+
 class ChatSession:
     def __init__(self, session_id, db_session):
         self.session_id = session_id
@@ -14,25 +15,13 @@ class ChatSession:
             raise Exception("_db_messages: " + str(e))
 
     @property
-    def _last_user_message(self):
+    def last_user_message(self):
         try:
             from models.assistant.session import Session as SessionModel
-            return next((message for message in self._db_messages[::-1] if message.sender == SessionModel.user_message_key), None)
+            db_message = next((message for message in self._db_messages[::-1] if message.sender == SessionModel.user_message_key), None)
+            return Message(db_message.message_pk, self.db_session) if db_message else None
         except Exception as e:
             raise Exception(f"_last_user_message :: {e}")
-
-    def associate_last_user_message_with_user_task_execution_pk(self, user_task_execution_pk):
-        try:
-            last_user_message = self._last_user_message
-            if last_user_message:
-                new_message = last_user_message.message
-
-                new_message['user_task_execution_pk'] = user_task_execution_pk
-                last_user_message.message = new_message
-                flag_modified(last_user_message, "message")
-                self.db_session.commit()
-        except Exception as e:
-            raise Exception(f"__associate_previous_user_message :: {e}")
 
     @property
     def conversation(self):

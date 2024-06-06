@@ -5,9 +5,8 @@ from flask import request
 from flask_restful import Resource
 from app import db, authenticate
 from mojodex_core.logging_handler import log_error
-from mojodex_core.entities import *
 from flask import send_file
-from models.user_images_file_manager import UserImagesFileManager
+from models.user_storage_manager.user_images_file_manager import UserImagesFileManager
 
 class Image(Resource):
     def __init__(self):

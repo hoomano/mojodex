@@ -62,15 +62,9 @@ class MojoMessage(Resource):
             message_db.message["message_pk"] = message_db.message_pk
 
             try:
-                user_storage = os.path.join(SessionModel.sessions_storage, session.user_id)
-                if not os.path.exists(user_storage):
-                    os.makedirs(user_storage, exist_ok=True)
-                session_storage = os.path.join(user_storage, session_id)
-                if not os.path.exists(session_storage):
-                    os.makedirs(session_storage, exist_ok=True)
-                mojo_messages_audio_storage = os.path.join(session_storage, "mojo_messages_audios")
-                if not os.path.exists(mojo_messages_audio_storage):
-                    os.makedirs(mojo_messages_audio_storage, exist_ok=True)
+                from models.user_storage_manager.user_audio_file_manager import UserAudioFileManager
+                user_audio_file_manager = UserAudioFileManager()
+                mojo_messages_audio_storage = user_audio_file_manager.get_mojo_messages_audio_storage(self.user_id, self.id)
                 output_filename = os.path.join(mojo_messages_audio_storage, f"{message_db.message_pk}.mp3")
 
 

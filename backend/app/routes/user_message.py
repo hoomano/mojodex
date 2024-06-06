@@ -6,9 +6,8 @@ from app import db, authenticate, server_socket, time_manager, main_logger
 from mojodex_core.logging_handler import log_error
 from mojodex_core.entities import *
 from models.assistant.session import Session
-from models.user_audio_file_manager import UserAudioFileManager
+from models.user_storage_manager.user_audio_file_manager import UserAudioFileManager
 from packaging import version
-from sqlalchemy.orm.attributes import flag_modified
 
 
 class UserMessage(Resource):

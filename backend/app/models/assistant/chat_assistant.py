@@ -1,8 +1,5 @@
 from models.assistant.execution_manager import ExecutionManager
-
 from mojodex_core.llm_engine.providers.openai_vision_llm import VisionMessagesData
-
-from mojodex_core.db import engine, Session
 from abc import ABC, abstractmethod
 from app import model_loader
 
@@ -86,10 +83,10 @@ class ChatAssistant(ABC):
     def __call_vision_llm(self, conversation_list, temperature, max_tokens, user_id, session_id,
                           user_task_execution_pk, task_name_for_system):
         try:
-            from models.user_images_file_manager import UserImagesFileManager
-            self.user_image_file_manager = UserImagesFileManager()
+            from models.user_storage_manager.user_images_file_manager import UserImagesFileManager
+            user_image_file_manager = UserImagesFileManager()
             initial_system_message_data = [VisionMessagesData(role="system", text=self._mpt.prompt, images_path=[
-                self.user_image_file_manager.get_image_file_path(image, user_id, session_id)
+                user_image_file_manager.get_image_file_path(image, user_id, session_id)
                 for image in self.input_images])]
             conversation_messages_data = [
                 VisionMessagesData(role=message["role"], text=message["content"], images_path=[]) for message in
@@ -104,7 +101,7 @@ class ChatAssistant(ABC):
                                                             task_name_for_system=task_name_for_system)
             return responses[0].strip() if responses else None
         except Exception as e:
-            raise Exception(f"_generate_message_from_prompt:: {e}")
+            raise Exception(f"__call_vision_llm:: {e}")
 
     @abstractmethod
     def _token_callback(self, partial_text):

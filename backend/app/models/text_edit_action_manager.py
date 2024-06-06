@@ -178,17 +178,10 @@ class TextEditActionManager:
     def __text_to_speech(self, message, db_message):
 
         try:
-            # Check if the user has a folder to store the audio and create it if not
-            user_storage = os.path.join(Session.sessions_storage, self.user_id)
-            if not os.path.exists(user_storage):
-                os.makedirs(user_storage, exist_ok=True)
-            session_storage = os.path.join(user_storage, self.session_id)
-            if not os.path.exists(session_storage):
-                os.makedirs(session_storage, exist_ok=True)
-            mojo_messages_audio_storage = os.path.join(
-                session_storage, "mojo_messages_audios")
-            if not os.path.exists(mojo_messages_audio_storage):
-                os.makedirs(mojo_messages_audio_storage, exist_ok=True)
+            from models.user_storage_manager.user_audio_file_manager import UserAudioFileManager
+            user_audio_file_manager = UserAudioFileManager()
+            mojo_messages_audio_storage = user_audio_file_manager.get_mojo_messages_audio_storage(
+                self.user_id, self.session_id)
 
             # Define the output filename
             output_filename = os.path.join(

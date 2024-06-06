@@ -1,6 +1,5 @@
 import os
 
-import requests
 from app import db, server_socket, time_manager, socketio_message_sender, main_logger
 from models.produced_text_managers.instruct_task_produced_text_manager import InstructTaskProducedTextManager
 from models.assistant.instruct_task_assistant import InstructTaskAssistant
@@ -20,8 +19,6 @@ from mojodex_core.db import engine
 from mojodex_core.db import Session as DbSession
 
 class Session:
-    sessions_storage = "/data/users"
-    mojo_messages_audios_storage_dir_name = "mojo_messages_audios"
     agent_message_key, user_message_key = "mojo", "user"
 
     def __init__(self, session_id):
@@ -47,33 +44,6 @@ class Session:
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} :: __init__ :: {e}")
 
-    def __get_mojo_messages_audio_storage(self):
-        """
-        This private method is used to get the storage path for Mojo messages audio files.
-
-        It first checks if the user's storage directory exists, if not, it creates it.
-        Then it checks if the assistant's storage directory exists within the user's storage directory, if not, it creates it.
-        Finally, it checks if the Mojo messages audio storage directory exists within the assistant's storage directory, if not, it creates it.
-
-        Returns:
-            str: The path to the Mojo messages audio storage directory.
-
-        Raises:
-            Exception: If any error occurs while checking for or creating the directories.
-        """
-        try:
-            user_storage = os.path.join(Session.sessions_storage, self.user_id)
-            if not os.path.exists(user_storage):
-                os.makedirs(user_storage, exist_ok=True)
-            session_storage = os.path.join(user_storage, self.id)
-            if not os.path.exists(session_storage):
-                os.makedirs(session_storage, exist_ok=True)
-            mojo_messages_audio_storage = os.path.join(session_storage, Session.mojo_messages_audios_storage_dir_name)
-            if not os.path.exists(mojo_messages_audio_storage):
-                os.makedirs(mojo_messages_audio_storage, exist_ok=True)
-            return mojo_messages_audio_storage
-        except Exception as e:
-            raise Exception(f"__get_mojo_messages_audio_storage :: {e}")
 
     def _get_user(self):
         """
@@ -300,7 +270,9 @@ class Session:
             event_name = 'draft_message' if "produced_text_version_pk" in response_message else 'mojo_message'
             socketio_message_sender.send_mojo_message_with_ack(response_message, self.id, event_name=event_name)
             if response_message["audio"]:
-                output_filename = os.path.join(self.__get_mojo_messages_audio_storage(), f"{message_pk}.mp3")
+                from models.user_storage_manager.user_audio_file_manager import UserAudioFileManager
+                user_audio_file_manager = UserAudioFileManager()
+                output_filename = os.path.join(user_audio_file_manager.get_mojo_messages_audio_storage(self.user_id, self.id), f"{message_pk}.mp3")
                 try:
                     self.voice_generator.text_to_speech(response_message["text"], response_language, self.user_id,
                                                         output_filename)

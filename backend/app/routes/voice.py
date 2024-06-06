@@ -6,6 +6,8 @@ from flask import request
 from flask_restful import Resource
 from models.assistant.session import Session as SessionModel
 from app import db, authenticate
+
+from models.user_storage_manager.user_storage_manager import UserStorageManager
 from mojodex_core.logging_handler import log_error
 from mojodex_core.entities import *
 from flask import send_file
@@ -43,14 +45,12 @@ class Voice(Resource):
                     return {"error": f"Invalid message message_pk for user: {message_pk}"}, 400
                 filename=message_pk
                 session_id = message.session_id
-            user_storage = os.path.join(SessionModel.sessions_storage, user_id)
-            session_storage = os.path.join(user_storage, session_id) if message_pk is not None else None
+            from models.user_storage_manager.user_audio_file_manager import UserAudioFileManager
+            user_audio_file_manager = UserAudioFileManager()
             if message_pk and message.sender == SessionModel.user_message_key:
-                audio_storage = os.path.join(session_storage, "user_messages_audios")
+                audio_storage = user_audio_file_manager.get_user_messages_audio_storage(user_id, session_id)
             elif message_pk and message.sender == SessionModel.agent_message_key:
-                audio_storage = os.path.join(session_storage, "mojo_messages_audios")
-            elif message_pk is None:
-                audio_storage = os.path.join(user_storage, "welcome_text_audios")
+                audio_storage = user_audio_file_manager.get_mojo_messages_audio_storage(user_id, session_id)
             file_pattern = os.path.join(audio_storage, f"{filename}.*")
             matching_files = glob.glob(file_pattern)
             if len(matching_files) == 0:

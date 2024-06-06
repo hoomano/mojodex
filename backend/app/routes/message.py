@@ -17,11 +17,13 @@ class Message(Resource):
         Message.method_decorators = [authenticate()]
 
     @staticmethod
-    def has_audio_file(session_storage, message_pk, sender):
+    def has_audio_file(message_pk, sender, user_id, session_id):
+        from models.user_storage_manager.user_audio_file_manager import UserAudioFileManager
+        user_audio_file_manager = UserAudioFileManager()
         if sender == Session.user_message_key:
-            audio_storage = os.path.join(session_storage, "user_messages_audios")
+            audio_storage = user_audio_file_manager.get_user_messages_audio_storage(user_id, session_id)
         else:
-            audio_storage = os.path.join(session_storage, "mojo_messages_audios")
+            audio_storage = user_audio_file_manager.get_mojo_messages_audio_storage(user_id, session_id)
         files = [os.path.join(audio_storage, f'{message_pk}.{ext}') for ext in ('wav', 'mp3', 'm4a')]
         return any(glob.glob(file) for file in files)
 
@@ -66,12 +68,7 @@ class Message(Resource):
             if offset_direction == "newer":
                 messages = reversed(messages)
 
-            user_storage = os.path.join(Session.sessions_storage, user_id)
-            if not os.path.exists(user_storage):
-                os.makedirs(user_storage, exist_ok=True)
-            session_storage = os.path.join(user_storage, session_id)
-            if not os.path.exists(session_storage):
-                os.makedirs(session_storage, exist_ok=True)
+
 
             return_messages = []
             for message in messages:
@@ -79,7 +76,7 @@ class Message(Resource):
                     "message_pk": message.message_pk,
                     "sender": message.sender,
                     "message": message.message,
-                    "audio": Message.has_audio_file(session_storage, message.message_pk, message.sender),
+                    "audio": Message.has_audio_file(message.message_pk, message.sender, user_id, session_id),
                     "in_error_state": message.in_error_state is not None
                 })
                 if message.read_by_user is None:

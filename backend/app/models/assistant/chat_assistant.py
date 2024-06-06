@@ -29,13 +29,12 @@ class ChatAssistant(ABC):
     def __del__(self):
         self.db_session.close()
 
-    def __init__(self, mojo_message_token_stream_callback, draft_token_stream_callback, use_message_placeholder,
+    def __init__(self, mojo_message_token_stream_callback, draft_token_stream_callback,
                  tag_proper_nouns, user_messages_are_audio):
         try:
 
             self.db_session = Session(engine)
             self.execution_manager = ExecutionManager()
-            self.use_message_placeholder = use_message_placeholder
             self.tag_proper_nouns = tag_proper_nouns
             self.user_messages_are_audio = user_messages_are_audio
             self.mojo_message_token_stream_callback = mojo_message_token_stream_callback
@@ -47,10 +46,6 @@ class ChatAssistant(ABC):
 
     @abstractmethod
     def generate_message(self):
-        raise NotImplementedError
-
-    @abstractmethod
-    def _handle_placeholder(self):
         raise NotImplementedError
 
     @property

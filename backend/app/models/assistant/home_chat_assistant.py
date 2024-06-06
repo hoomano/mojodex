@@ -14,7 +14,7 @@ class HomeChatAssistant(ChatAssistant):
     def __init__(self, mojo_message_token_stream_callback, draft_token_stream_callback, use_message_placeholder,
                  user_id, session_id, tag_proper_nouns, user_messages_are_audio, running_user_task_execution_pk):
         try:
-            super().__init__(mojo_message_token_stream_callback, draft_token_stream_callback, use_message_placeholder,
+            super().__init__(mojo_message_token_stream_callback, draft_token_stream_callback,
                              tag_proper_nouns, user_messages_are_audio)
             self.instruct_task_execution = InstructTaskExecution(
                 running_user_task_execution_pk, self.db_session) if running_user_task_execution_pk else None
@@ -22,7 +22,7 @@ class HomeChatAssistant(ChatAssistant):
                                                                                                     self.db_session)
             self.session = self.instruct_task_execution.session if self.instruct_task_execution else ChatSession(
                 session_id, self.db_session)
-
+            self.use_message_placeholder = use_message_placeholder
             self.task_manager = TaskManager(self.session.session_id, self.user.user_id)
 
 

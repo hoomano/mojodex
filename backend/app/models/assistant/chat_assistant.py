@@ -30,7 +30,7 @@ class ChatAssistant(ABC):
         self.db_session.close()
 
     def __init__(self, mojo_message_token_stream_callback, draft_token_stream_callback,
-                 tag_proper_nouns, user_messages_are_audio):
+                 tag_proper_nouns, user_messages_are_audio, temperature=0, max_tokens=4000):
         try:
 
             self.db_session = Session(engine)
@@ -39,6 +39,8 @@ class ChatAssistant(ABC):
             self.user_messages_are_audio = user_messages_are_audio
             self.mojo_message_token_stream_callback = mojo_message_token_stream_callback
             self.draft_token_stream_callback = draft_token_stream_callback
+            self.default_temperature = temperature
+            self.default_max_tokens = max_tokens
             self.language = None
 
         except Exception as e:
@@ -62,9 +64,11 @@ class ChatAssistant(ABC):
     def input_images(self):
         return []
 
-    def _call_llm(self, conversation_list, user_id, session_id, user_task_execution_pk, task_name_for_system):
+    def _call_llm(self, conversation_list, user_id, session_id, user_task_execution_pk, task_name_for_system,
+                  temperature=None, max_tokens=None):
         try:
-            temperature, max_tokens = 0, 4000
+            temperature = temperature if temperature else self.default_temperature
+            max_tokens = max_tokens if max_tokens else self.default_max_tokens
             if self.requires_vision_llm:
                 return self.__call_vision_llm(conversation_list, temperature, max_tokens, user_id,
                                               session_id, user_task_execution_pk, task_name_for_system)

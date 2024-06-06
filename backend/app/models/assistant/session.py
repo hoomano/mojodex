@@ -251,19 +251,6 @@ class Session:
         else:
             raise Exception("Unknown message origin")
 
-    def _give_task_execution_title_and_summary(self, user_task_execution_pk):
-        try:
-            # call background backend /end_user_task_execution to update user task execution title and summary
-            uri = f"{os.environ['BACKGROUND_BACKEND_URI']}/user_task_execution_title_and_summary"
-            pload = {'datetime': datetime.now().isoformat(),
-                     'user_task_execution_pk': user_task_execution_pk}
-            internal_request = requests.post(uri, json=pload)
-            if internal_request.status_code != 200:
-                log_error(
-                    f"Error while calling background user_task_execution_title_and_summary : {internal_request.json()}")
-        except Exception as e:
-            print(f"🔴 __give_title_and_summary_task_execution :: {e}")
-
     @user_inputs_processor
     def process_form_input(self, app_version, platform, user_task_execution_pk, use_message_placeholder=False,
                            use_draft_placeholder=False):
@@ -282,7 +269,6 @@ class Session:
         """
         instruct_task_execution = InstructTaskExecution(user_task_execution_pk, self.db_session)
         instruct_task_execution.generate_title_and_summary()
-        #server_socket.start_background_task(self._give_task_execution_title_and_summary, user_task_execution_pk)
 
         self.platform = platform
         return self.__manage_instruct_task_session(self.platform, instruct_task_execution,

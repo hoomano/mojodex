@@ -1,5 +1,5 @@
 from app import db
-from models.session.assistant_message_generators.assistant_message_generator import AssistantMessageGenerator
+from models.assistant.chat_assistant import ChatAssistant
 from mojodex_core.entities import MdTaskToolExecution
 from mojodex_backend_logger import MojodexBackendLogger
 
@@ -22,8 +22,8 @@ class TaskToolManager:
 
     def manage_tool_usage_text(self, text, user_task_execution_pk, task_tool_associations_json):
         try:
-            mojo_text = AssistantMessageGenerator.remove_tags_from_text(text, self.tool_usage_start_tag, self.tool_usage_end_tag)
-            tool_name = AssistantMessageGenerator.remove_tags_from_text(text, self.tool_name_start_tag, self.tool_name_end_tag)
+            mojo_text = ChatAssistant.remove_tags_from_text(text, self.tool_usage_start_tag, self.tool_usage_end_tag)
+            tool_name = ChatAssistant.remove_tags_from_text(text, self.tool_name_start_tag, self.tool_name_end_tag)
             task_tool_execution = MdTaskToolExecution(
                 task_tool_association_fk=self._find_task_tool_association(tool_name, task_tool_associations_json)['task_tool_association_pk'],
                 user_task_execution_fk=user_task_execution_pk)

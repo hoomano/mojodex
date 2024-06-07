@@ -1,4 +1,4 @@
-from models.user_images_file_manager import UserImagesFileManager
+from models.user_storage_manager.user_images_file_manager import UserImagesFileManager
 
 
 class UserTaskExecutionInputsManager:

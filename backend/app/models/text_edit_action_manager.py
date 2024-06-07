@@ -1,15 +1,16 @@
 import os
 from datetime import datetime
-from models.session.assistant_message_generators.assistant_message_generator import AssistantMessageGenerator
 
 from models.produced_text_managers.instruct_task_produced_text_manager import InstructTaskProducedTextManager
 
-from models.session.execution_manager import ExecutionManager
+from models.assistant.execution_manager import ExecutionManager
+
+from models.assistant.chat_assistant import ChatAssistant
 from mojodex_core.entities import *
 from app import db, server_socket, main_logger, socketio_message_sender
 from mojodex_core.logging_handler import log_error
 
-from models.session.session import Session
+from models.assistant.session import Session
 from models.voice_generator import VoiceGenerator
 from models.produced_text_managers.produced_text_manager import ProducedTextManager
 
@@ -150,7 +151,7 @@ class TextEditActionManager:
 
     def __get_title_without_tags(self, edited_text):
         try:
-            return AssistantMessageGenerator.remove_tags_from_text(
+            return ChatAssistant.remove_tags_from_text(
                 text=edited_text.strip(),
                 start_tag=InstructTaskProducedTextManager.title_start_tag,
                 end_tag=InstructTaskProducedTextManager.title_end_tag
@@ -160,7 +161,7 @@ class TextEditActionManager:
 
     def __get_draft_without_tags(self, edited_text):
         try:
-            return AssistantMessageGenerator.remove_tags_from_text(
+            return ChatAssistant.remove_tags_from_text(
                 text=edited_text.strip(),
                 start_tag=InstructTaskProducedTextManager.draft_start_tag,
                 end_tag=InstructTaskProducedTextManager.draft_end_tag
@@ -177,17 +178,10 @@ class TextEditActionManager:
     def __text_to_speech(self, message, db_message):
 
         try:
-            # Check if the user has a folder to store the audio and create it if not
-            user_storage = os.path.join(Session.sessions_storage, self.user_id)
-            if not os.path.exists(user_storage):
-                os.makedirs(user_storage, exist_ok=True)
-            session_storage = os.path.join(user_storage, self.session_id)
-            if not os.path.exists(session_storage):
-                os.makedirs(session_storage, exist_ok=True)
-            mojo_messages_audio_storage = os.path.join(
-                session_storage, "mojo_messages_audios")
-            if not os.path.exists(mojo_messages_audio_storage):
-                os.makedirs(mojo_messages_audio_storage, exist_ok=True)
+            from models.user_storage_manager.user_audio_file_manager import UserAudioFileManager
+            user_audio_file_manager = UserAudioFileManager()
+            mojo_messages_audio_storage = user_audio_file_manager.get_mojo_messages_audio_storage(
+                self.user_id, self.session_id)
 
             # Define the output filename
             output_filename = os.path.join(

@@ -1,3 +1,5 @@
+from typing import List, Any
+
 import jinja2
 import re
 
@@ -30,7 +32,7 @@ class MPT:
         self.logger = MojodexCoreLogger(
             f"MPT - {filepath}")
         self.filepath = filepath
-        
+
         try:
             from mojodex_core.llm_engine.providers.model_loader import ModelLoader
             self.available_models, _ = ModelLoader().providers
@@ -49,7 +51,6 @@ class MPT:
                 self.logger.info(f"Forced model not found: {forced_model}")
         else:
             self.forced_model = None
-
 
         # store the other arguments for later use
         self.kwargs = kwargs
@@ -195,9 +196,14 @@ class MPT:
         """
         return f"MPT: {self.filepath}"
 
-    def run(self, **kwargs):
+    @property
+    def label(self):
+        return self.filepath.split('/')[-1].split('.')[0]
+
+    def _run(self, messages: List[Any], user_id: str, temperature: float, max_tokens: int, stream: bool = False,
+             stream_callback=None, user_task_execution_pk: int = None, task_name_for_system: str = None, **kwargs):
         """
-        Run the prompt to the appropriate model.
+        Call appropriate LLM model with given list of messages.
 
         Returns:
             str: The result of the LLM call.
@@ -205,14 +211,11 @@ class MPT:
         try:
             # for each model in the shebangs, in order, check if there is a provider for it
             # if there is, call it with the prompt
-
             if self.forced_model is not None:
-                self.logger.info(
-                    f"Running prompt with forced model: {self.forced_model.name}")
-                return self.forced_model.invoke_from_mpt(self, **kwargs)
-
+                self.logger.info(f"Running prompt with forced model: {self.forced_model.name}")
+                model = self.forced_model
             elif self.matching_model is not None:
-                return self.matching_model.invoke_from_mpt(self, **kwargs)
+                model = self.matching_model
             else:
                 raise Exception(f"""{self} > No matching provider <> model found:
 providers: {self.available_models}
@@ -220,7 +223,45 @@ MPT's compatibility list: {self.models}
 To fix the problem:
 1. Check the providers in the models.conf file.
 2. Check the MPT file's shebangs for compatibility with the providers.""")
-
+            if model.name not in self.models:
+                self.logger.warning(f"{self} does not contain model: {model.name} in its dashbangs")
+            print(f"Running MPT {self} with model: {model.name}")
+            return model.invoke(messages, user_id, temperature,
+                                max_tokens, label=self.label,
+                                stream=stream, stream_callback=stream_callback,
+                                user_task_execution_pk=user_task_execution_pk,
+                                task_name_for_system=task_name_for_system, **kwargs)
         except Exception as e:
-            self.logger.error(f"Error running MPT: {self} > {e}")
-            return None
+            raise Exception(f"_run : {e}")
+
+    def run(self, user_id: str, temperature: float, max_tokens: int, stream: bool = False,
+            stream_callback=None, user_task_execution_pk: int = None, task_name_for_system: str = None, **kwargs):
+        """
+        Call appropriate LLM model with prompt as single "user" (role) message to simulate instruct model.
+
+        Returns:
+            str: The result of the LLM call.
+        """
+        try:
+            return self._run([{"role": "user", "content": self.prompt}], user_id, temperature, max_tokens, stream,
+                             stream_callback, user_task_execution_pk, task_name_for_system, **kwargs)
+        except Exception as e:
+            raise Exception(f"{self.__class__.__name__} - {self} :: run: {e}")
+
+    def chat(self, conversation: List[Any], user_id: str, temperature: float, max_tokens: int, stream: bool = False,
+             stream_callback=None, user_task_execution_pk: int = None, task_name_for_system: str = None, **kwargs):
+        """
+        Call appropriate LLM model with messages made of :
+            - prompt as first system message
+            - messages from conversation between user and assistant as following messages
+
+        Returns:
+            str: The result of the LLM call.
+        """
+        try:
+            first_system_message = {"role": "system", "content": self.prompt}
+            # Note: on Mistral, if there is only first_system_message, this role will be changed to "user" by the LLM_engine
+            return self._run([first_system_message] + conversation, user_id, temperature, max_tokens, stream,
+                             stream_callback, user_task_execution_pk, task_name_for_system, **kwargs)
+        except Exception as e:
+            raise Exception(f"{self.__class__.__name__} - {self} :: chat: {e}")

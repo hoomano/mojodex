@@ -19,7 +19,7 @@ class SocketioMessageSender:
             main_logger.error(f"Session {session_id} not found in db", None)
             return
 
-        from models.session.session import Session as SessionModel
+        from models.assistant.session import Session as SessionModel
         session = SessionModel(session_id)
         if "message_pk" in data and data["message_pk"]:
             message_pk = int(data["message_pk"])

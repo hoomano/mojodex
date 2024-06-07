@@ -1,5 +1,6 @@
-from models.session.assistant_message_generators.assistant_message_generator import AssistantMessageGenerator
+
 from mojodex_backend_logger import MojodexBackendLogger
+from models.assistant.chat_assistant import ChatAssistant
 
 
 class TaskInputsManager:
@@ -12,7 +13,7 @@ class TaskInputsManager:
 
     def manage_ask_input_text(self, ask_input_text):
         try:
-            mojo_text = AssistantMessageGenerator.remove_tags_from_text(ask_input_text, self.ask_user_input_start_tag, self.ask_user_input_end_tag)
+            mojo_text = ChatAssistant.remove_tags_from_text(ask_input_text, self.ask_user_input_start_tag, self.ask_user_input_end_tag)
             return {"text": mojo_text,
                     "text_with_tags": ask_input_text}
         except Exception as e:

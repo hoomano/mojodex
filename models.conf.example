@@ -42,7 +42,7 @@ OPENAI_API_KEY=<your api key here>
 # [openai/gpt-4-vision-preview]
 # OPENAI_API_KEY=
 
-# [mistral/mistral-large]
+# [mistral/mistral-large-latest]
 # MISTRAL_API_KEY=
 
 # [mistral/mistral-medium]
@@ -51,7 +51,7 @@ OPENAI_API_KEY=<your api key here>
 # [mistral/mistral-tiny]
 # MISTRAL_API_KEY=
 
-# [azure/mistral-large]
+# [azure/mistral-large-latest]
 # MISTRAL_AZURE_API_BASE=
 # MISTRAL_AZURE_API_KEY=
 

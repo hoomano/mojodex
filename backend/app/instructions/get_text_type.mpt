@@ -1,7 +1,7 @@
-#! gpt4o
+#! gpt-4o
 #! gpt4-turbo/2023-03-15-preview
 #! gpt-4-turbo-preview
-#! mistral-large
+#! mistral-large-latest
 
 You are a text classifier. You specialize in classifying text depending on their type.
 Any text can be classified into one of those categories:

@@ -211,7 +211,7 @@ class ModelLoader:
                         "model_name": model_name
                     }
                     provider = OpenAIVisionLLM(conf)
-                elif model_name == "mistral-large":
+                elif model_name == "mistral-large-latest":
                     conf = {
                         "api_key": provider_conf["mistral_azure_api_key"],
                         "endpoint": provider_conf["mistral_azure_api_base"],

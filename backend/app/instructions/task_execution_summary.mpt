@@ -23,7 +23,7 @@ USER NAME
 Here is the task achieved by your user.
 -------
 TASK TO ACCOMPLISH
-{{task_name}}: {{task_definition}}
+{{task.name_for_system}}: {{task.definition_for_system}}
 
 USER INPUTS
 {{ user_task_inputs | tojson(indent=4) }}

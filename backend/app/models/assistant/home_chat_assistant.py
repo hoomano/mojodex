@@ -111,10 +111,10 @@ class HomeChatAssistant(ChatAssistant):
 
         else:
 
-            # if no task is running, eventually we could spot one
+            # At any time we need to check if the assistant has detected the task_pk tag and if yes, what is the detected task_pk 
             task_pk_spotted, task_pk = self.__spot_task_pk(partial_text)
-            if task_pk_spotted:  # task tag spotted
-                if task_pk is not None:  # a task is spotted
+            if task_pk_spotted:  # task tag detected
+                if task_pk is not None:  # a task is running
                     if not self.instruct_task_execution or task_pk != self.instruct_task_execution.task.task_pk:
                         # if the task is different from the running task, we set the new task
                         self.instruct_task_execution = InstructTaskExecution.create_from_user_task(self.user, task_pk,
@@ -126,7 +126,7 @@ class HomeChatAssistant(ChatAssistant):
 
                         self.instruct_task_execution.generate_title_and_summary()
                         return True  # we stop the stream
-                else:  # task is null
+                else:  # detected task is null
                     if self.instruct_task_execution:
                         # if the task is null and a task is running, we stop the task
                         self.instruct_task_execution = None

@@ -110,32 +110,7 @@ const TaskInputs: FunctionComponent<TaskInputsProps> = ({ user_task_execution_pk
                                 </>
                         
                         }
-                    }/*(
-                        <li key={index} className="relative flex flex-col">
-                            <h1 className="text-xl font-bold mb-2">{input.description_for_user}</h1>
-                            
-
-                            {
-                                input.type === "image" ? (
-                                <>
-                                    <p>{input.value}</p>
-                                    <ImagePreview sessionId={sessionId} filename={input.value!} alt={input.description_for_user} />
-                                </>
-                            ) : (
-                                <>
-
-                                    <p className="text-sm text-justify">
-                                        {input.value?.split('\n').map((line: string, index: number) => (
-                                            <React.Fragment key={index}>
-                                                {line}
-                                                <br />
-                                            </React.Fragment>
-                                        ))}
-                                    </p>
-                                </>
-                            )}
-                        </li>
-                    )*/)}
+                    })}
                 </ul>}
         </div>
     );

@@ -33,7 +33,6 @@ const CreateTaskForm = () => {
     usePostExecuteTask();
 
   const generateAnswerHandler = () => {
-    console.log("generateAnswerHandler", inputArray);
     if (taskExecutionPK && sessionId && taskType) {
       executeTaskMutation(
         {

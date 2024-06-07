@@ -94,7 +94,7 @@ class InstructTaskExecution:
     def has_images_inputs(self):
         try:
             for input in self.user_task_inputs:
-                if input["type"] == "image":
+                if input["type"] in ["image", "multiple_images"]:
                     return True
             return False
         except Exception as e:
@@ -103,7 +103,12 @@ class InstructTaskExecution:
     @property
     def images_input_names(self):
         try:
-            input_images = [input["value"] for input in self.user_task_inputs if input["type"] == "image"]
+            input_images = []
+            for task_input in self.user_task_inputs:
+                if task_input["type"] == "image":
+                    input_images.append(task_input["value"])
+                elif task_input["type"] == "multiple_images":
+                    input_images += task_input["value"]
             return input_images
         except Exception as e:
             raise Exception(f"{self.__class__.__name__}:: images_input_names :: {e}")

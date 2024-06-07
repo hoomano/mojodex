@@ -32,20 +32,26 @@ export const getTaskConfigs = ({
 }: any): Promise<TaskConfigAPIResponse> =>
   axiosClient.put(apiRoutes.taskConfigs, { user_task_pk: queryKey[1] });
 
+function isFileArray(value: any): value is File[] {
+  return Array.isArray(value) && value.every(item => item instanceof File);
+}
 
 const addUserInputsToForm = (userInputsFromForm: any[], formData: FormData) => {
   const json_inputs: any = [];
   userInputsFromForm.forEach((input: any) => {
-    if (!(input.input_value instanceof File)) {
-      json_inputs.push({
-        "input_name": input.input_name,
-        "input_value": input.input_value.toString()
-      });
-    } else if ((input.input_value instanceof File)) {
+    if ((input.input_value instanceof File)) {
       formData.append(input.input_name, input.input_value);
       json_inputs.push({
         "input_name": input.input_name,
         "input_value": input.input_value.name
+      });
+      
+    }
+
+    else {
+      json_inputs.push({
+        "input_name": input.input_name,
+        "input_value": input.input_value.toString()
       });
     }
   });

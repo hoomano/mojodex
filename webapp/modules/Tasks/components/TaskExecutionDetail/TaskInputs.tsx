@@ -92,7 +92,7 @@ const TaskInputs: FunctionComponent<TaskInputsProps> = ({ user_task_execution_pk
                                 <>
 
                                     <p className="text-sm text-justify">
-                                        {input.value?.split('\n').map((line, index) => (
+                                        {input.value?.split('\n').map((line: string, index: number) => (
                                             <React.Fragment key={index}>
                                                 {line}
                                                 <br />

@@ -4,6 +4,8 @@ from models.user_images_file_manager import UserImagesFileManager
 class UserTaskExecutionInputsManager:
 
     drop_down_type = "drop_down_list"
+    image_type = "image"
+    multiple_images_type = "multiple_images"
 
     def __init__(self):
          self.user_image_file_manager = UserImagesFileManager()
@@ -20,6 +22,7 @@ class UserTaskExecutionInputsManager:
                     raise KeyError("inputs must be a list of dicts")
                 if "input_name" not in filled_input or "input_value" not in filled_input:
                     raise KeyError("inputs must be a list of dicts with keys input_name and input_value")
+                print(f"🔵 {filled_input['input_name']}")
                 # look for corresponding input in json_input_values
                 for input in user_task_execution_json_input_values:
                     if input["input_name"] == filled_input["input_name"]:
@@ -28,13 +31,26 @@ class UserTaskExecutionInputsManager:
                             if filled_input["input_value"] not in possible_values:
                                 return {"error": f"Invalid value for input {input['input_name']}"}, 400
                         input["value"] = filled_input["input_value"]
+                    elif "_".join(filled_input["input_name"].split("_")[:-1]) == input["input_name"]:
+                        if input["type"] == self.multiple_images_type:
+                            if input["value"] is None:
+                                input["value"] = [filled_input["input_value"]]
+                            else:
+                                input["value"].append(filled_input["input_value"])
 
             for image_input in files:
                 # look for corresponding input in json_input_values
                 for input in user_task_execution_json_input_values:
-                    if input["input_name"] == image_input:
-                        filename = input["value"]
-                        self.user_image_file_manager.store_image_file(files[image_input], filename, user_id, session_id)
+                    if input["type"] == self.image_type:
+                        if input["input_name"] == image_input:
+                            filename = input["value"]
+                            self.user_image_file_manager.store_image_file(files[image_input], filename, user_id, session_id)
+                    if input["type"] == self.multiple_images_type:
+                        image_name = "_".join(image_input.split("_")[:-1])
+                        image_index = int(image_input.split("_")[-1])
+                        if input["input_name"] == image_name:
+                            filename = input["value"][image_index]
+                            self.user_image_file_manager.store_image_file(files[image_input], filename, user_id, session_id)
 
             return user_task_execution_json_input_values
         except Exception as e:

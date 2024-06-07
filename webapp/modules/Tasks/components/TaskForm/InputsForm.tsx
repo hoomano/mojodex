@@ -18,7 +18,7 @@ const InputsForm = ({ jsonInputs, setInputArray, sessionId }: InputsFormProps) =
         {jsonInputs.map((input) => {
             
             switch (input.type) {
-                case 'mulitple_images':
+                case 'multiple_images':
                     return (
                         <MultipleImagesArea
                             key={input.input_name}

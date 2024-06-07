@@ -87,6 +87,8 @@ class TaskEnabledAssistantResponseGenerator(AssistantResponseGenerator, ABC):
             for input in self.running_user_task_execution.json_input_values:
                 if input["type"] == "image":
                     return True
+                if input["type"] == "multiple_images":
+                    return True
             return False
         except Exception as e:
             raise Exception(f"requires_vision_llm :: {e}")
@@ -94,8 +96,12 @@ class TaskEnabledAssistantResponseGenerator(AssistantResponseGenerator, ABC):
 
     def _get_input_images_names(self):
         try:
-            input_images = [input["value"] for input in self.running_user_task_execution.json_input_values if
-                            input["type"] == "image"]
+            input_images = []
+            for task_input in self.running_user_task_execution.json_input_values:
+                if task_input["type"] == "image":
+                    input_images.append(task_input["value"])
+                elif task_input["type"] == "multiple_images":
+                    input_images += task_input["value"]
             return input_images
         except Exception as e:
             raise Exception(f"_get_input_images_paths :: {e}")
@@ -112,6 +118,7 @@ class TaskEnabledAssistantResponseGenerator(AssistantResponseGenerator, ABC):
             self.user_image_file_manager = UserImagesFileManager()
             conversation_list = self.context.state.get_conversation_as_list(self.context.session_id)
             input_images = self._get_input_images_names()
+            print(f"🟠 input_images: {input_images}")
             user_id = self.context.user_id
             session_id = self.context.state.running_user_task_execution.session_id
             initial_system_message_data = [VisionMessagesData(role="system", text=prompt, images_path=[self.user_image_file_manager.get_image_file_path(image, user_id, session_id) for image in input_images])]

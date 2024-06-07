@@ -16,20 +16,19 @@ import UpdatePlugin from "./UpdatePlugin";
 import useDeleteProducedText from "modules/ProducedTexts/hooks/useDeleteProducedText";
 import useSaveDraft from "modules/ProducedTexts/hooks/useSaveProducedText";
 import { EditerProducedText } from "modules/Tasks/interface";
-import { FaCopy } from "react-icons/fa";
-import ToolTip from "components/Tooltip";
 import { debounce } from "helpers/method";
 import { HeadingNode, QuoteNode } from '@lexical/rich-text'
 import { LinkNode } from '@lexical/link'
 import { ListItemNode, ListNode } from '@lexical/list';
 import { LinkPlugin } from '@lexical/react/LexicalLinkPlugin';
-
-import {
-  $convertToMarkdownString,
-} from '@lexical/markdown';
-import  LexicalClickableLinkPlugin  from '@lexical/react/LexicalClickableLinkPlugin';
+import { CodeNode } from '@lexical/code';
+import { $convertToMarkdownString } from '@lexical/markdown';
+import LexicalClickableLinkPlugin from '@lexical/react/LexicalClickableLinkPlugin';
 import { MOJODEX_LEXICAL_TRANSFORMERS } from "./lexicalTransformers";
 import { ImageNode } from "./imageNode";
+import { MarkdownShortcutPlugin } from '@lexical/react/LexicalMarkdownShortcutPlugin';
+import { HorizontalRuleNode } from '@lexical/react/LexicalHorizontalRuleNode';
+import CopyButton from "./CopyButton";
 
 type Props = {
   userTaskExecutionPk: number | undefined;
@@ -56,7 +55,7 @@ const Answer = ({
 
   const [text, setText] = useState("");
   const [title, setTitle] = useState("");
-  const [copied, setCopied] = useState(false);
+
 
   const deleteDraft = useDeleteProducedText();
   const saveDraft = useSaveDraft();
@@ -77,25 +76,7 @@ const Answer = ({
     }, 0);
   }, [producedText]);
 
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      const code = event.which || event.keyCode;
 
-      let charCode = String.fromCharCode(code).toLowerCase();
-
-      if ((event.ctrlKey || event.metaKey) && charCode === "c") {
-        setTimeout(() => {
-          navigator.clipboard.writeText(window.getSelection() as any);
-        }, 100);
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, []);
-
-  
   const onChangeText = async (state: EditorState) => {
     const newUpdatedText: string = await new Promise((res) => {
       state.read(() => {
@@ -163,10 +144,8 @@ const Answer = ({
     }
   };
 
-  const copyProducedTextHandler = () => {
-    navigator.clipboard.writeText(producedText?.text);
-    setCopied(true);
-  };
+
+
 
   const properNounRegex = /\*(.*?)\*/g;
 
@@ -214,7 +193,7 @@ const Answer = ({
       <div className="bg-background-textbox rounded-md pb-2 overflow-hidden">
         <LexicalComposer
           initialConfig={{
-            nodes: [HeadingNode, QuoteNode, LinkNode, ListNode, ListItemNode, ImageNode],
+            nodes: [HeadingNode, QuoteNode, LinkNode, ListNode, ListItemNode, ImageNode, HorizontalRuleNode, CodeNode],
             namespace: "Document Content editor",
             theme: {
               paragraph: "mb-1",
@@ -250,10 +229,24 @@ const Answer = ({
           <OnChangePlugin onChange={(state) => {
             onChangeText(state)
           }} />
+          <MarkdownShortcutPlugin transformers={MOJODEX_LEXICAL_TRANSFORMERS} />
           <HistoryPlugin />
           <UpdatePlugin
             text={producedText?.text || ""}
           />
+          {(
+            <div className="mt-5 flex gap-2">
+              {isLoading || !producedText.producedTextPk ? (
+                <Button className="min-w-[100px]" variant="outline" disabled>
+                  <BeatLoader color="#3763E7" />
+                </Button>
+              ) : (
+                <>
+                  <CopyButton />
+                </>
+              )}
+            </div>
+          )}
 
         </LexicalComposer>
       </div>
@@ -279,29 +272,7 @@ const Answer = ({
           </a>
         </div> : null}
       </nav>}
-      {(
-        <div className="mt-5 flex gap-2">
-          {isLoading || !producedText.producedTextPk ? (
-            <Button className="min-w-[100px]" variant="outline" disabled>
-              <BeatLoader color="#3763E7" />
-            </Button>
-          ) : (
-            <>
-              <ToolTip
-                tooltip={copied ? "copied!\n" : "copy"}
-              >
-                <Button
-                  variant="outline"
-                  className="flex gap-2 items-center border-gray-lighter text-gray-lighter"
-                  onClick={copyProducedTextHandler}
-                >
-                  <FaCopy className="text-gray-dark" /> Copy
-                </Button>
-              </ToolTip>
-            </>
-          )}
-        </div>
-      )}
+
 
 
 

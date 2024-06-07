@@ -22,7 +22,6 @@ class UserTaskExecutionInputsManager:
                     raise KeyError("inputs must be a list of dicts")
                 if "input_name" not in filled_input or "input_value" not in filled_input:
                     raise KeyError("inputs must be a list of dicts with keys input_name and input_value")
-                print(f"🔵 {filled_input['input_name']}")
                 # look for corresponding input in json_input_values
                 for input in user_task_execution_json_input_values:
                     if input["input_name"] == filled_input["input_name"]:

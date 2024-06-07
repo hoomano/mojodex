@@ -118,7 +118,6 @@ class TaskEnabledAssistantResponseGenerator(AssistantResponseGenerator, ABC):
             self.user_image_file_manager = UserImagesFileManager()
             conversation_list = self.context.state.get_conversation_as_list(self.context.session_id)
             input_images = self._get_input_images_names()
-            print(f"🟠 input_images: {input_images}")
             user_id = self.context.user_id
             session_id = self.context.state.running_user_task_execution.session_id
             initial_system_message_data = [VisionMessagesData(role="system", text=prompt, images_path=[self.user_image_file_manager.get_image_file_path(image, user_id, session_id) for image in input_images])]

@@ -6,6 +6,7 @@ import InputsForm from "../TaskForm/InputsForm";
 import ImagePreview from "../ImagePreview";
 import useOnWorkflowRestart from "modules/Tasks/hooks/useOnWorkflowRestart";
 import { useTranslation } from "next-i18next";
+import MultipleImagesArea from "../TaskForm/MultipleImagesArea";
 
 interface TaskInputsProps {
     user_task_execution_pk: number;
@@ -79,20 +80,27 @@ const TaskInputs: FunctionComponent<TaskInputsProps> = ({ user_task_execution_pk
                     </div>
                 </div>
                 : <ul role="list" className="space-y-6 w-full">
-                    {inputs?.map((input, index) => (
-                        <li key={index} className="relative flex flex-col">
-                            <h1 className="text-xl font-bold mb-2">{input.description_for_user}</h1>
-
-                            {input.type === "image" ? (
-                                <>
+                    {inputs?.map((input, index) => { 
+                        switch (input.type) {
+                            case 'multiple_images':
+                                return <div>
+                                    <p>{input.input_name}</p>
+                                    {(input.value.map((image: string, index: number) => {
+                                    return (
+                                        <div key={index} className="flex flex-col">
+                                            <ImagePreview sessionId={sessionId} filename={image} alt={input.description_for_user} />
+                                        </div>
+                                    )
+                                }))}</div>
+                            case 'image':
+                                return <>
                                     <p>{input.value}</p>
                                     <ImagePreview sessionId={sessionId} filename={input.value!} alt={input.description_for_user} />
                                 </>
-                            ) : (
-                                <>
-
+                            default:
+                                return <>
                                     <p className="text-sm text-justify">
-                                        {input.value?.split('\n').map((line, index) => (
+                                        {input.value?.split('\n').map((line: string, index: number) => (
                                             <React.Fragment key={index}>
                                                 {line}
                                                 <br />
@@ -100,9 +108,9 @@ const TaskInputs: FunctionComponent<TaskInputsProps> = ({ user_task_execution_pk
                                         ))}
                                     </p>
                                 </>
-                            )}
-                        </li>
-                    ))}
+                        
+                        }
+                    })}
                 </ul>}
         </div>
     );

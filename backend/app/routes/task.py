@@ -11,7 +11,7 @@ from models.workflows.steps_library import steps_class
 
 class Task(Resource):
 
-    available_json_inputs_types = "text_area", "image", "drop_down_list"
+    available_json_inputs_types = "text_area", "image", "drop_down_list", 'multiple_images'
 
     # Route to create a new task
     # Route used only by Backoffice

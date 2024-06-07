@@ -49,7 +49,7 @@ export interface TaskJsonInput {
   description_for_system: string;
   placeholder: string;
   type: string;
-  value: string | undefined;
+  value: any | undefined;
   possible_values: TaskJsonInputPossibleValues[] | undefined;
 }
 
@@ -62,7 +62,7 @@ export interface TaskConfigAPIResponse {
 
 export interface InputArrayProps {
   input_name: string;
-  input_value: string | File;
+  input_value: string | File | File[];
 }
 
 export interface NewlyCreatedTaskInfo {

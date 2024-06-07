@@ -87,6 +87,8 @@ class TaskEnabledAssistantResponseGenerator(AssistantResponseGenerator, ABC):
             for input in self.running_user_task_execution.json_input_values:
                 if input["type"] == "image":
                     return True
+                if input["type"] == "multiple_images":
+                    return True
             return False
         except Exception as e:
             raise Exception(f"requires_vision_llm :: {e}")
@@ -94,8 +96,12 @@ class TaskEnabledAssistantResponseGenerator(AssistantResponseGenerator, ABC):
 
     def _get_input_images_names(self):
         try:
-            input_images = [input["value"] for input in self.running_user_task_execution.json_input_values if
-                            input["type"] == "image"]
+            input_images = []
+            for task_input in self.running_user_task_execution.json_input_values:
+                if task_input["type"] == "image":
+                    input_images.append(task_input["value"])
+                elif task_input["type"] == "multiple_images":
+                    input_images += task_input["value"]
             return input_images
         except Exception as e:
             raise Exception(f"_get_input_images_paths :: {e}")

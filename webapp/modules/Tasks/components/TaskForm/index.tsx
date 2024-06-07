@@ -33,7 +33,7 @@ const CreateTaskForm = () => {
     usePostExecuteTask();
 
   const generateAnswerHandler = () => {
-    if (inputArray.length == tasksForm.length && taskExecutionPK && sessionId && taskType) {
+    if (taskExecutionPK && sessionId && taskType) {
       executeTaskMutation(
         {
           datetime: new Date().toISOString(),

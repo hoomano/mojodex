@@ -43,12 +43,20 @@ export interface TaskJsonInputPossibleValues {
   displayed_text: string;
 }
 
+// create enum for TaskJsonInput.type
+export enum TaskJsonInputType {
+  TEXTAREA = "text_area",
+  IMAGE = "image",
+  MULTIPLE_IMAGES = "multiple_images",
+  DROP_DOWN_LIST = "drop_down_list"
+}
+
 export interface TaskJsonInput {
   input_name: string;
   description_for_user: string;
   description_for_system: string;
   placeholder: string;
-  type: string;
+  type: TaskJsonInputType;
   value: any | undefined;
   possible_values: TaskJsonInputPossibleValues[] | undefined;
 }

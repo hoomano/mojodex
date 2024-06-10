@@ -1,4 +1,4 @@
-import { TaskJsonInput, InputArrayProps } from "modules/Tasks/interface";
+import { TaskJsonInput, InputArrayProps, TaskJsonInputType } from "modules/Tasks/interface";
 import { Dispatch, SetStateAction } from "react";
 import DropDownList from "./DropDownList";
 import ImageArea from "./ImageArea";
@@ -18,7 +18,7 @@ const InputsForm = ({ jsonInputs, setInputArray, sessionId }: InputsFormProps) =
         {jsonInputs.map((input) => {
             
             switch (input.type) {
-                case 'multiple_images':
+                case TaskJsonInputType.MULTIPLE_IMAGES:
                     return (
                         <MultipleImagesArea
                             key={input.input_name}
@@ -27,7 +27,7 @@ const InputsForm = ({ jsonInputs, setInputArray, sessionId }: InputsFormProps) =
                             sessionId={sessionId}
                         />
                     );
-                    case 'image':
+                case TaskJsonInputType.IMAGE:
                         return (
                             <ImageArea
                                 key={input.input_name}
@@ -36,7 +36,7 @@ const InputsForm = ({ jsonInputs, setInputArray, sessionId }: InputsFormProps) =
                                 sessionId={sessionId}
                             />
                         );
-                    case 'drop_down_list':
+                case TaskJsonInputType.DROP_DOWN_LIST:
                         return (
                             <DropDownList
                                 key={input.input_name}

@@ -80,7 +80,7 @@ class OpenAILLM(LLM):
             num_tokens += 2  # every reply is primed with <im_start>assistant
             return num_tokens
         except Exception as e:
-            raise Exception(f"🔴 Error in num_tokens_from_text_messages : {e}")
+            raise Exception(f"num_tokens_from_text_messages : {e}")
 
     def _handle_chat_completion_response(self, completion, stream, stream_callback):
         try:

@@ -33,11 +33,17 @@ const CreateTaskForm = () => {
     usePostExecuteTask();
 
   const generateAnswerHandler = () => {
-    if (taskExecutionPK && sessionId && taskType) {
+    //check inputArray contain every dict with key that were in tasksForm;
+    for (let i = 0; i < tasksForm.length; i++) {
+      if (!inputArray.find((input) => input.input_name === tasksForm[i].input_name)) {
+        alert("Field missing: " + tasksForm[i].input_name);
+        return;
+      }
+    }
       executeTaskMutation(
         {
           datetime: new Date().toISOString(),
-          user_task_execution_pk: taskExecutionPK,
+          user_task_execution_pk: taskExecutionPK!,
           inputs: inputArray,
         },
         {
@@ -48,10 +54,6 @@ const CreateTaskForm = () => {
           },
         }
       );
-
-    } else {
-      alert("Field missing");
-    }
   };
 
   return (

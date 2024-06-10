@@ -1,4 +1,4 @@
-import { InputArrayProps, TaskJsonInput } from "modules/Tasks/interface";
+import { InputArrayProps, TaskJsonInput, TaskJsonInputType } from "modules/Tasks/interface";
 import React, { FunctionComponent, useState } from "react";
 
 import Button from "components/Button";
@@ -6,7 +6,6 @@ import InputsForm from "../TaskForm/InputsForm";
 import ImagePreview from "../ImagePreview";
 import useOnWorkflowRestart from "modules/Tasks/hooks/useOnWorkflowRestart";
 import { useTranslation } from "next-i18next";
-import MultipleImagesArea from "../TaskForm/MultipleImagesArea";
 
 interface TaskInputsProps {
     user_task_execution_pk: number;
@@ -82,9 +81,9 @@ const TaskInputs: FunctionComponent<TaskInputsProps> = ({ user_task_execution_pk
                 : <ul role="list" className="space-y-6 w-full">
                     {inputs?.map((input, index) => { 
                         switch (input.type) {
-                            case 'multiple_images':
+                            case TaskJsonInputType.MULTIPLE_IMAGES:
                                 return <div>
-                                    <p>{input.input_name}</p>
+                                    <h1>{input.input_name}</h1>
                                     {(input.value.map((image: string, index: number) => {
                                     return (
                                         <div key={index} className="flex flex-col">
@@ -92,13 +91,15 @@ const TaskInputs: FunctionComponent<TaskInputsProps> = ({ user_task_execution_pk
                                         </div>
                                     )
                                 }))}</div>
-                            case 'image':
+                            case TaskJsonInputType.IMAGE:
                                 return <>
+                                    <h1>{input.input_name}</h1>
                                     <p>{input.value}</p>
                                     <ImagePreview sessionId={sessionId} filename={input.value!} alt={input.description_for_user} />
                                 </>
                             default:
                                 return <>
+                                    <h1>{input.input_name}</h1>
                                     <p className="text-sm text-justify">
                                         {input.value?.split('\n').map((line: string, index: number) => (
                                             <React.Fragment key={index}>

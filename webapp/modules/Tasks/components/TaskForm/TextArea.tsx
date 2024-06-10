@@ -21,18 +21,24 @@ const Textarea = ({ jsonInput, setInputArray }: Props) => {
         const existingIndex = updatedInputArray.findIndex(
           (line) => line.input_name === inputName
         );
-
-        if (existingIndex === -1) {
-          updatedInputArray.push({
-            input_name: inputName,
-            input_value: inputValue,
-          });
+        if (inputValue != "") {
+          if (existingIndex === -1) {
+            updatedInputArray.push({
+              input_name: inputName,
+              input_value: inputValue,
+            });
+          } else {
+            updatedInputArray[existingIndex] = {
+              input_name: inputName,
+              input_value: inputValue,
+            };
+          }
         } else {
-          updatedInputArray[existingIndex] = {
-            input_name: inputName,
-            input_value: inputValue,
-          };
+          if (existingIndex !== -1) {
+            updatedInputArray.splice(existingIndex, 1);
+          }
         }
+        
 
         return updatedInputArray;
       });

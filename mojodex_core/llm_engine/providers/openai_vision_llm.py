@@ -88,7 +88,7 @@ class OpenAIVisionLLM(OpenAILLM):
         except Exception as e:
             raise Exception(f"_get_encoded_image :: {e}")
 
-    def _recursive_invoke(self, messages_data: List[VisionMessagesData], user_id: str, temperature: float,
+    def recursive_invoke(self, messages_data: List[VisionMessagesData], user_id: str, temperature: float,
                           max_tokens: int, label: str,
                           stream: bool = False, stream_callback=None, user_task_execution_pk: int = None,
                           task_name_for_system: str = None, frequency_penalty: float = 0, presence_penalty: float = 0,
@@ -150,4 +150,4 @@ class OpenAIVisionLLM(OpenAILLM):
                                    label=label)
             return responses
         except Exception as e:
-            raise Exception(f"_recursive_invoke: {e}")
+            raise Exception(f"recursive_invoke: {e}")

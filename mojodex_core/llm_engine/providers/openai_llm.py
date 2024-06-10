@@ -80,7 +80,7 @@ class OpenAILLM(LLM):
             num_tokens += 2  # every reply is primed with <im_start>assistant
             return num_tokens
         except Exception as e:
-            raise Exception(f"🔴 Error in num_tokens_from_text_messages : {e}")
+            raise Exception(f"num_tokens_from_text_messages : {e}")
 
     def _handle_chat_completion_response(self, completion, stream, stream_callback):
         try:
@@ -175,7 +175,7 @@ class OpenAILLM(LLM):
                stream: bool = False, stream_callback=None, user_task_execution_pk: int = None,
                task_name_for_system: str = None, frequency_penalty: float = 0, presence_penalty: float = 0, **kwargs):
         try:
-            return self._recursive_invoke(messages, user_id, temperature, max_tokens, label,
+            return self.recursive_invoke(messages, user_id, temperature, max_tokens, label,
                                           frequency_penalty=frequency_penalty, presence_penalty=presence_penalty,
                                           stream=stream, stream_callback=stream_callback,
                                           user_task_execution_pk=user_task_execution_pk,
@@ -208,7 +208,7 @@ class OpenAILLM(LLM):
         except Exception as e:
             raise Exception(f"_call_completion_with_rate_limit_management : {e}")
 
-    def _recursive_invoke(self, messages: List[Any], user_id: str, temperature: float, max_tokens: int, label: str,
+    def recursive_invoke(self, messages: List[Any], user_id: str, temperature: float, max_tokens: int, label: str,
                           stream: bool = False, stream_callback=None, user_task_execution_pk: int = None,
                           task_name_for_system: str = None, frequency_penalty: float = 0, presence_penalty: float = 0,
                           n_additional_calls_if_finish_reason_is_length: int = 0, **kwargs):
@@ -238,4 +238,4 @@ class OpenAILLM(LLM):
                                    label=label)
             return responses
         except Exception as e:
-            raise Exception(f"_recursive_invoke: {e}")
+            raise Exception(f"{self.__class__.__name__} : recursive_invoke: {e}")

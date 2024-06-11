@@ -14,8 +14,8 @@ class UserTaskExecution(EntityController):
     def __init__(self, user_task_execution_pk: int, db_session: DbSession, task: Task = None, user: User = None, session: Session = None):
         super().__init__(MdUserTaskExecution, user_task_execution_pk, db_session)
         self.task = task if task else self._create_task_controller()
-        self.user = user if user else User(self.db_object.user_id, self.db_session)
-        self.session = session if session else Session(self.db_object.session_id, self.db_session)
+        self.user = user if user else User(self.user_task.user_id, self.db_session)
+        self.session = session if session else Session(self.session_id, self.db_session)
 
 
     def _create_task_controller(self):
@@ -39,6 +39,14 @@ class UserTaskExecution(EntityController):
     @property
     def user_task_execution_pk(self):
         return self.pk
+
+    @property
+    def user_task_fk(self):
+        return self.db_object.user_task_fk
+
+    @property
+    def session_id(self):
+        return self.db_object.session_id
 
     @property
     def user_task_inputs(self):

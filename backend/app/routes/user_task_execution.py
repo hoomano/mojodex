@@ -601,7 +601,7 @@ class UserTaskExecution(Resource):
                         result["MdUserTaskExecution"].user_task_fk),
                     "working_on_todos": result["MdUserTaskExecution"].todos_extracted is None,
                     "step_executions": workflow_execution.get_steps_execution_json() if result["MdTask"].type == "workflow" else None,
-                    "steps": workflow_execution.workflow.get_json_steps_with_translation(result["language_code"]) if result["MdTask"].type == "workflow" else None
+                    "steps": workflow_execution.task.get_json_steps_with_translation(result["language_code"]) if result["MdTask"].type == "workflow" else None
                 }, 200
 
             n_user_task_executions = min(50,
@@ -717,7 +717,7 @@ class UserTaskExecution(Resource):
             def get_workflow_specific_data(row):
                 workflow_execution = WorkflowExecution(row["MdUserTaskExecution"].user_task_execution_pk)
                 return {
-                    "steps": workflow_execution.workflow.get_json_steps_with_translation(row["language_code"]),
+                    "steps": workflow_execution.task.get_json_steps_with_translation(row["language_code"]),
                     "step_executions": workflow_execution.get_steps_execution_json()
                 }
 

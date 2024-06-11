@@ -4,9 +4,9 @@ from flask_restful import Resource
 from models.assistant.session import Session as SessionModel
 from app import authenticate, db, server_socket
 
-from models.knowledge.knowledge_manager import KnowledgeManager
+from mojodex_core.knowledge_manager import knowledge_manager
 
-from mojodex_core.entities_controllers.user import User
+from models.assistant.entities_controllers.assistant_user_controller import AssistantUserController
 from mojodex_core.entities_controllers.session import Session
 
 from models.assistant.chat_assistant import ChatAssistant
@@ -73,11 +73,11 @@ class HomeChat(Resource):
 
     def _generate_welcome_message(self, user_id):
         try:
-            user = User(user_id, db.session)
+            user = AssistantUserController(user_id, db.session)
             previous_conversations = self.__get_this_week_home_conversations(user_id)
             welcome_message_mpt = MPT(self.welcome_message_mpt_filename,
-                                  mojo_knowledge=KnowledgeManager.get_mojo_knowledge(),
-                                  global_context=KnowledgeManager.get_global_context_knowledge(),
+                                  mojo_knowledge=knowledge_manager.mojodex_knowledge,
+                                  global_context=knowledge_manager.global_context_knowledge,
                                   username=user.username,
                                   tasks=user.available_instruct_tasks,
                                   first_time_this_week=len(previous_conversations) == 0,

@@ -5,10 +5,10 @@ from app import db, authenticate
 from mojodex_core.logging_handler import log_error
 from mojodex_core.entities import *
 
-from models.knowledge.knowledge_manager import KnowledgeManager
+from mojodex_core.knowledge_manager import knowledge_manager
 from sqlalchemy import func, or_
 from sqlalchemy.orm.attributes import flag_modified
-
+from mojodex_core.entities_controllers.user import User
 from mojodex_core.llm_engine.mpt import MPT
 
 
@@ -18,11 +18,11 @@ class Vocabulary(Resource):
     def __init__(self):
         Vocabulary.method_decorators = [authenticate()]
 
-    def __tag_proper_nouns(self, message_text, mojo_knowledge, global_context, username, user_company_knowledge,
+    def __tag_proper_nouns(self, message_text, username, user_company_knowledge,
                            task_definition_for_system, user_id, user_task_execution_pk, task_name_for_system):
         try:
-            proper_nouns_tagger_mpt = MPT(Vocabulary.proper_nouns_tagger_mpt_filename, mojo_knowledge=mojo_knowledge,
-                                          global_context=global_context,
+            proper_nouns_tagger_mpt = MPT(Vocabulary.proper_nouns_tagger_mpt_filename, mojo_knowledge=knowledge_manager.mojodex_knowledge,
+                                          global_context=knowledge_manager.global_context_knowledge,
                                           username=username,
                                           user_company_knowledge=user_company_knowledge,
                                           task_name_for_system=task_name_for_system,
@@ -32,9 +32,11 @@ class Vocabulary(Resource):
             responses = proper_nouns_tagger_mpt.run(user_id=user_id, temperature=0, max_tokens=2000,
                                                     user_task_execution_pk=user_task_execution_pk,
                                                     task_name_for_system=task_name_for_system)
-            return responses[0]
+            if responses:
+                return responses[0]
+            return None
         except Exception as e:
-            raise Exception(f"Error in correcting __tag_proper_nouns: {e}")
+            raise Exception(f"__tag_proper_nouns: {e}")
 
     def post(self, user_id):
 
@@ -85,15 +87,15 @@ class Vocabulary(Resource):
                 return {"error": "Message text not found"}, 404
 
             message_text = md_message.message['text']
-            mojo_knowledge = KnowledgeManager.get_mojo_knowledge()
-            global_context = KnowledgeManager.get_global_context_knowledge()
-            user_company_knowledge = KnowledgeManager.get_user_company_knowledge(
-                user_id)
-            username = KnowledgeManager.get_user_name(user_id)
-            tagged_message = self.__tag_proper_nouns(message_text, mojo_knowledge, global_context, username,
-                                                     user_company_knowledge,
+
+            user = User(user_id, db.session)
+            tagged_message = self.__tag_proper_nouns(message_text, user.username,
+                                                     user.company_knowledge,
                                                      task_definition_for_system, user_id, user_task_execution_pk,
                                                      task_name_for_system)
+            if tagged_message is None:
+                log_error(f"Error tagging proper nouns in route /vocabulary - __tag_proper_nouns returned None", notify_admin=True)
+                return {"tagged_text": message_text}, 200
 
             # update md_message.message['text']
             md_message.message['text'] = tagged_message

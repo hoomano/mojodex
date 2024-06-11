@@ -1,4 +1,4 @@
-from models.knowledge.knowledge_manager import KnowledgeManager
+from mojodex_core.knowledge_manager import knowledge_manager
 from models.assistant.chat_assistant import ChatAssistant
 from models.tasks.task_manager import TaskManager
 from app import placeholder_generator
@@ -64,11 +64,8 @@ class InstructTaskAssistant(ChatAssistant):
     @property
     def _mpt(self):
         try:
-            mojo_knowledge = KnowledgeManager.get_mojo_knowledge()
-            global_context = KnowledgeManager.get_global_context_knowledge()
-
-            return MPT(self.mpt_file, mojo_knowledge=mojo_knowledge,
-                       global_context=global_context,
+            return MPT(self.mpt_file, mojo_knowledge=knowledge_manager.mojodex_knowledge,
+                       global_context=knowledge_manager.global_context_knowledge,
                        username=self.instruct_task_execution.user.username,
                        user_company_knowledge=self.instruct_task_execution.user.company_knowledge,
                        infos_to_extract=self.instruct_task_execution.task.infos_to_extract,

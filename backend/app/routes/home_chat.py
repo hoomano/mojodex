@@ -6,9 +6,8 @@ from app import authenticate, db, server_socket
 
 from models.knowledge.knowledge_manager import KnowledgeManager
 
-from models.assistant.models.instruct_task_execution import User
-
-from models.assistant.models.instruct_task_execution import ChatSession
+from mojodex_core.entities_controllers.user import User
+from mojodex_core.entities_controllers.session import Session
 
 from models.assistant.chat_assistant import ChatAssistant
 from mojodex_core.llm_engine.mpt import MPT
@@ -45,7 +44,7 @@ class HomeChat(Resource):
 
             return [{
                 "date": session.creation_date,
-                "conversation": ChatSession(session.session_id, db.session).get_conversation_as_string(agent_key="YOU", user_key="USER",
+                "conversation": Session(session.session_id, db.session).get_conversation_as_string(agent_key="YOU", user_key="USER",
                                                                   with_tags=False)
             } for session in sessions]
 

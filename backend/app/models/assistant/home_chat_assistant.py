@@ -1,8 +1,10 @@
-from models.assistant.models.instruct_task_execution import InstructTaskExecution, User, ChatSession
+from models.assistant.entities_controllers.instruct_task_execution import InstructTaskExecution, AssistantUserController
 from models.knowledge.knowledge_manager import KnowledgeManager
 from models.assistant.chat_assistant import ChatAssistant
 from app import placeholder_generator
 from models.tasks.task_manager import TaskManager
+
+from mojodex_core.entities_controllers.session import Session
 from mojodex_core.llm_engine.mpt import MPT
 
 
@@ -17,9 +19,9 @@ class HomeChatAssistant(ChatAssistant):
             super().__init__(mojo_message_token_stream_callback, draft_token_stream_callback,
                              tag_proper_nouns, user_messages_are_audio, db_session)
             self.instruct_task_execution = running_user_task_execution if running_user_task_execution else None
-            self.user = self.instruct_task_execution.user if self.instruct_task_execution else User(user_id,
+            self.user = self.instruct_task_execution.user if self.instruct_task_execution else AssistantUserController(user_id,
                                                                                                     self.db_session)
-            self.session = self.instruct_task_execution.session if self.instruct_task_execution else ChatSession(
+            self.session = self.instruct_task_execution.session if self.instruct_task_execution else Session(
                 session_id, self.db_session)
             self.use_message_placeholder = use_message_placeholder
             self.task_manager = TaskManager(self.session.session_id, self.user.user_id)
@@ -35,7 +37,7 @@ class HomeChatAssistant(ChatAssistant):
                 return self._handle_placeholder()
 
             # Call LLM
-            llm_output = self._call_llm(self.session.conversation, self.user.user_id, self.session.session_id,
+            llm_output = self._call_llm(self.session.conversation_list, self.user.user_id, self.session.session_id,
                                         user_task_execution_pk=self.instruct_task_execution.user_task_execution_pk if self.instruct_task_execution else None,
                                         task_name_for_system=self.instruct_task_execution.task.name_for_system if self.instruct_task_execution else None)
 

@@ -7,7 +7,7 @@ from models.assistant.home_chat_assistant import HomeChatAssistant
 
 from models.assistant.chat_assistant import ChatAssistant
 
-from models.assistant.models.instruct_task_execution import InstructTaskExecution
+from models.assistant.entities_controllers.instruct_task_execution import InstructTaskExecution
 from mojodex_core.logging_handler import log_error
 from mojodex_core.entities import *
 from datetime import datetime
@@ -203,8 +203,7 @@ class Session:
         if "user_task_execution_pk" in message and message["user_task_execution_pk"] is not None:
             user_task_execution_pk = message["user_task_execution_pk"]
             instruct_task_execution = InstructTaskExecution(user_task_execution_pk, self.db_session)
-            instruct_task_execution.generate_title_and_summary()
-            #server_socket.start_background_task(self._give_task_execution_title_and_summary, user_task_execution_pk)
+            server_socket.start_background_task(instruct_task_execution.generate_title_and_summary)
 
         # Home chat assistant here ??
         # with response_message = ...
@@ -238,7 +237,7 @@ class Session:
             function: The function that manages the task assistant.
         """
         instruct_task_execution = InstructTaskExecution(user_task_execution_pk, self.db_session)
-        instruct_task_execution.generate_title_and_summary()
+        server_socket.start_background_task(instruct_task_execution.generate_title_and_summary)
 
         self.platform = platform
         return self.__manage_instruct_task_session(self.platform, instruct_task_execution,

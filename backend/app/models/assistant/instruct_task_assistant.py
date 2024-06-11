@@ -1,4 +1,3 @@
-from models.assistant.models.instruct_task_execution import InstructTaskExecution
 from models.knowledge.knowledge_manager import KnowledgeManager
 from models.assistant.chat_assistant import ChatAssistant
 from models.tasks.task_manager import TaskManager
@@ -34,7 +33,7 @@ class InstructTaskAssistant(ChatAssistant):
                 return self._handle_placeholder()
 
             # Call LLM
-            llm_output = self._call_llm(self.instruct_task_execution.session.conversation,
+            llm_output = self._call_llm(self.instruct_task_execution.session.conversation_list,
                                         self.instruct_task_execution.user.user_id,
                                         self.instruct_task_execution.session.session_id,
                                         user_task_execution_pk=self.instruct_task_execution.user_task_execution_pk,

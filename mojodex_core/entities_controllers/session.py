@@ -1,10 +1,15 @@
-from models.assistant.models.message import Message
-from mojodex_core.entities import MdMessage
+from mojodex_core.entities import MdMessage, MdSession
+from mojodex_core.entities_controllers.entity_controller import EntityController
+from mojodex_core.entities_controllers.message import Message
 
-class ChatSession:
+
+class Session(EntityController):
     def __init__(self, session_id, db_session):
-        self.session_id = session_id
-        self.db_session = db_session
+        super().__init__(MdSession, session_id, db_session)
+
+    @property
+    def session_id(self):
+        return self.pk
 
     @property
     def _db_messages(self):
@@ -24,7 +29,7 @@ class ChatSession:
             raise Exception(f"_last_user_message :: {e}")
 
     @property
-    def conversation(self):
+    def conversation_list(self):
         try:
             user_key = "user"
             agent_key = "assistant"

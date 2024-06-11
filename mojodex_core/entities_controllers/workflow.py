@@ -1,19 +1,11 @@
 from mojodex_core.entities import MdWorkflowStep, MdWorkflowStepDisplayedData
+from mojodex_core.db import Session
 from sqlalchemy.sql.functions import coalesce
+from mojodex_core.entities_controllers.task import Task
+class Workflow(Task):
 
-
-class Workflow:
-    def __init__(self, db_object, db_session):
-        self.db_object = db_object
-        self.db_session = db_session
-
-    @property
-    def name_for_system(self):
-        return self.db_object.name_for_system
-
-    @property
-    def definition_for_system(self):
-        return self.db_object.definition_for_system
+    def __init__(self, task_pk: int, db_session: Session):
+        super().__init__(task_pk, db_session)
 
 
     @property

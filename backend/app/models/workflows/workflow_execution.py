@@ -3,7 +3,7 @@ import requests
 import os
 from app import server_socket, socketio_message_sender
 from models.workflows.step_execution import WorkflowStepExecution
-from models.workflows.workflow import Workflow
+from mojodex_core.entities_controllers.workflow import Workflow
 
 from models.produced_text_managers.workflow_produced_text_manager import WorkflowProducedTextManager
 from mojodex_core.entities import MdUserTaskExecution, MdUserTask, MdUserWorkflowStepExecutionResult, MdWorkflowStep, MdTask, \

@@ -1,18 +1,10 @@
 from mojodex_core.entities import MdMessage
 from sqlalchemy.orm.attributes import flag_modified
-
-class Message:
+from mojodex_core.entities_controllers.entity_controller import EntityController
+class Message(EntityController):
 
     def __init__(self, message_pk, db_session):
-        self.message_pk = message_pk
-        self.db_session = db_session
-        self.db_object = self._get_db_object(message_pk)
-
-    def _get_db_object(self, message_pk):
-        try:
-            return self.db_session.query(MdMessage).filter(MdMessage.message_pk == message_pk).first()
-        except Exception as e:
-            raise Exception(f"{self.__class__.__name__} :: _get_db_object :: {e}")
+        super().__init__(MdMessage, message_pk, db_session)
 
     @property
     def user_task_execution_pk(self):

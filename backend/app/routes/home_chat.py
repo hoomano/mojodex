@@ -6,9 +6,6 @@ from app import authenticate, db, server_socket
 
 from models.knowledge.knowledge_manager import KnowledgeManager
 
-from models.assistant.models.instruct_task_execution import User
-
-from models.assistant.models.instruct_task_execution import ChatSession
 
 from models.assistant.chat_assistant import ChatAssistant
 from mojodex_core.llm_engine.mpt import MPT
@@ -21,7 +18,8 @@ from models.session_creator import SessionCreator
 
 from sqlalchemy import extract, text, func, and_
 
-
+from mojodex_core.entities.session import Session
+from mojodex_core.entities.user import User
 class HomeChat(Resource):
     welcome_message_mpt_filename = "instructions/welcome_message.mpt"
     message_header_start_tag, message_header_end_tag = "<message_header>", "</message_header>"
@@ -45,7 +43,7 @@ class HomeChat(Resource):
 
             return [{
                 "date": session.creation_date,
-                "conversation": ChatSession(session.session_id, db.session).get_conversation_as_string(agent_key="YOU", user_key="USER",
+                "conversation": Session(session.session_id, db.session).get_conversation_as_string(agent_key="YOU", user_key="USER",
                                                                   with_tags=False)
             } for session in sessions]
 

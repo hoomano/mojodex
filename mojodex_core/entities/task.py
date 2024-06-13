@@ -1,9 +1,10 @@
 from abc import ABC
 
+from mojodex_core.entities.abstract_entity import AbstractEntity
 from mojodex_core.entities.db_base_entities import MdTask, MdTaskDisplayedData
 from sqlalchemy.orm import object_session
 from sqlalchemy import func, or_
-class Task(MdTask, ABC):
+class Task(MdTask, ABC, metaclass=AbstractEntity):
 
     def _get_displayed_data_in_language(self, language_code):
         try:

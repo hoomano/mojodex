@@ -1,3 +1,4 @@
+from mojodex_core.entities.abstract_entity import AbstractEntity
 from mojodex_core.entities.db_base_entities import MdUserTask, MdTaskDisplayedData
 from sqlalchemy.orm import object_session
 
@@ -7,7 +8,7 @@ from mojodex_core.entities.task import Task
 from abc import ABC, abstractmethod
 
 
-class UserTask(MdUserTask, ABC):
+class UserTask(MdUserTask, ABC, metaclass=AbstractEntity):
 
     @property
     def user(self):

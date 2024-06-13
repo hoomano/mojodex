@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 
+from mojodex_core.entities.abstract_entity import AbstractEntity
 from mojodex_core.entities.db_base_entities import MdUserTaskExecution, MdProducedText
 from sqlalchemy.orm import object_session
 
@@ -9,7 +10,7 @@ from mojodex_core.entities.user_task import UserTask
 from mojodex_core.llm_engine.mpt import MPT
 
 
-class UserTaskExecution(MdUserTaskExecution, ABC):
+class UserTaskExecution(MdUserTaskExecution, ABC, metaclass=AbstractEntity):
 
     @property
     def produced_text_done(self):

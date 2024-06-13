@@ -4,6 +4,7 @@ from mojodex_core.entities.abstract_entity import AbstractEntity
 from mojodex_core.entities.db_base_entities import MdUserTaskExecution, MdProducedText
 from sqlalchemy.orm import object_session
 
+from mojodex_core.entities.session import Session
 from mojodex_core.knowledge_manager import knowledge_manager
 
 from mojodex_core.entities.user_task import UserTask
@@ -16,7 +17,7 @@ class UserTaskExecution(MdUserTaskExecution, ABC, metaclass=AbstractEntity):
     def produced_text_done(self):
         try:
             session = object_session(self)
-            return session.query(MdProducedText).filter(MdProducedText.user_task_execution_fk == self.pk).count() > 1
+            return session.query(MdProducedText).filter(MdProducedText.user_task_execution_fk == self.user_task_execution_pk).count() > 1
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} :: produced_text_done :: {e}")
 
@@ -73,15 +74,23 @@ class UserTaskExecution(MdUserTaskExecution, ABC, metaclass=AbstractEntity):
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} :: task :: {e}")
 
+    @property
+    def session(self):
+        try:
+            session = object_session(self)
+            return session.query(Session).filter(Session.session_id == self.session_id).first()
+        except Exception as e:
+            raise Exception(f"{self.__class__} :: session :: {e}")
+
     def generate_title_and_summary(self):
         try:
             task_execution_summary = MPT("instructions/task_execution_summary.mpt",
                                          mojo_knowledge=knowledge_manager.mojodex_knowledge,
                                          global_context=knowledge_manager.global_context_knowledge,
-                                         username=self.user.username,
-                                         user_company_knowledge=self.user.company_knowledge,
+                                         username=self.user.name,
+                                         user_company_knowledge=self.user.company_description,
                                          task=self.task,
-                                         user_task_inputs=self.user_task_inputs,
+                                         user_task_inputs=self.json_input_values,
                                          user_messages_conversation=self.session.get_conversation_as_string())
 
             responses = task_execution_summary.run(user_id=self.user.user_id,

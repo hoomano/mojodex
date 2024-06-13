@@ -201,9 +201,8 @@ class Session:
         # if "user_task_execution_pk" in message and message["user_task_execution_pk"] is not None, let's update task title and summary
         if "user_task_execution_pk" in message and message["user_task_execution_pk"] is not None:
             user_task_execution_pk = message["user_task_execution_pk"]
-            instruct_task_execution = InstructTaskExecution(user_task_execution_pk, self.db_session)
-            instruct_task_execution.generate_title_and_summary()
-            #server_socket.start_background_task(self._give_task_execution_title_and_summary, user_task_execution_pk)
+            instruct_task_execution = db.session.query(InstructTaskExecution).get(user_task_execution_pk)
+            server_socket.start_background_task(instruct_task_execution.generate_title_and_summary)
 
         # Home chat assistant here ??
         # with response_message = ...
@@ -236,8 +235,8 @@ class Session:
         Returns:
             function: The function that manages the task assistant.
         """
-        instruct_task_execution = InstructTaskExecution(user_task_execution_pk, self.db_session)
-        instruct_task_execution.generate_title_and_summary()
+        instruct_task_execution = db.session.query(InstructTaskExecution).get(user_task_execution_pk)
+        server_socket.start_background_task(instruct_task_execution.generate_title_and_summary)
 
         self.platform = platform
         return self.__manage_instruct_task_session(self.platform, instruct_task_execution,
@@ -366,7 +365,8 @@ class Session:
                 use_draft_placeholder=use_draft_placeholder,
                 tag_proper_nouns=tag_proper_nouns,
                 user_messages_are_audio=user_messages_are_audio,
-                running_user_task_execution=instruct_task_execution)
+                running_user_task_execution=instruct_task_execution,
+                db_session=self.db_session)
 
             response_message = instruct_task_assistant.generate_message()
             response_language = instruct_task_assistant.language

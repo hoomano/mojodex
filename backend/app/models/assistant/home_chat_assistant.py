@@ -5,6 +5,7 @@ from models.assistant.chat_assistant import ChatAssistant
 from app import placeholder_generator
 from models.tasks.task_manager import TaskManager
 
+from mojodex_core.entities.session import Session
 from mojodex_core.entities.user import User
 
 from mojodex_core.entities.instruct_user_task_execution import InstructTaskExecution
@@ -84,8 +85,8 @@ class HomeChatAssistant(ChatAssistant):
 
             return MPT(self.mpt_file, mojo_knowledge=mojo_knowledge,
                        global_context=global_context,
-                       username=self.user.username,
-                       user_company_knowledge=self.user.company_knowledge,
+                       username=self.user.name,
+                       user_company_knowledge=self.user.company_description,
                        tasks=self.user.available_instruct_tasks,
                        running_task=self.instruct_task_execution.task if self.instruct_task_execution else None,
                        infos_to_extract=self.instruct_task_execution.task.infos_to_extract if self.instruct_task_execution else None,

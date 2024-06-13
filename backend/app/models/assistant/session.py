@@ -4,10 +4,9 @@ from app import db, server_socket, time_manager, socketio_message_sender, main_l
 from models.produced_text_managers.instruct_task_produced_text_manager import InstructTaskProducedTextManager
 from models.assistant.instruct_task_assistant import InstructTaskAssistant
 from models.assistant.home_chat_assistant import HomeChatAssistant
-
 from models.assistant.chat_assistant import ChatAssistant
 
-from models.assistant.models.instruct_task_execution import InstructTaskExecution
+from mojodex_core.entities.instruct_user_task_execution import InstructTaskExecution
 from mojodex_core.logging_handler import log_error
 from mojodex_core.entities import *
 from datetime import datetime

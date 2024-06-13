@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from mojodex_core.entities import MdUserTaskExecution, MdProducedText
 from sqlalchemy.orm import object_session
 
-from mojodex_core.entities.task import Task
+from mojodex_core.knowledge_manager import knowledge_manager
 
 from mojodex_core.entities.user_task import UserTask
 from mojodex_core.llm_engine.mpt import MPT
@@ -56,7 +56,7 @@ class UserTaskExecution(MdUserTaskExecution, ABC):
             session = object_session(self)
             return session.query(UserTask).filter(UserTask.user_task_pk == self.user_task_fk).first()
         except Exception as e:
-            raise Exception(f"{self.__class__.__name__}")
+            raise Exception(f"{self.__class__.__name__} :: user_task :: {e}")
 
     @property
     def user(self):
@@ -75,8 +75,8 @@ class UserTaskExecution(MdUserTaskExecution, ABC):
     def generate_title_and_summary(self):
         try:
             task_execution_summary = MPT("instructions/task_execution_summary.mpt",
-                                         mojo_knowledge="todo",
-                                         global_context="todo",
+                                         mojo_knowledge=knowledge_manager.mojodex_knowledge,
+                                         global_context=knowledge_manager.global_context_knowledge,
                                          username=self.user.username,
                                          user_company_knowledge=self.user.company_knowledge,
                                          task=self.task,

@@ -1,4 +1,3 @@
-from models.assistant.models.instruct_task_execution import InstructTaskExecution
 from models.knowledge.knowledge_manager import KnowledgeManager
 from models.assistant.chat_assistant import ChatAssistant
 from models.tasks.task_manager import TaskManager

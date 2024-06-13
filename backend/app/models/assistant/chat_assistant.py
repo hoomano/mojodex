@@ -23,9 +23,6 @@ class ChatAssistant(ABC):
             raise Exception(
                 f"ChatAssistant: remove_tags_from_text :: text: {text} - start_tag: {start_tag} - end_tag: {end_tag} - {e}")
 
-    def __del__(self):
-        self.db_session.close()
-
     def __init__(self, mojo_message_token_stream_callback, draft_token_stream_callback,
                  tag_proper_nouns, user_messages_are_audio, db_session, temperature=0, max_tokens=4000):
         try:

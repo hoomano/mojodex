@@ -10,7 +10,6 @@ from mojodex_core.entities.db_base_entities import *
 from app import db, server_socket, main_logger, socketio_message_sender
 from mojodex_core.logging_handler import log_error
 
-from models.assistant.session import Session
 from models.voice_generator import VoiceGenerator
 from models.produced_text_managers.produced_text_manager import ProducedTextManager
 

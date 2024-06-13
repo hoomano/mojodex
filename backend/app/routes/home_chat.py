@@ -1,13 +1,14 @@
 import os
 from flask import request
 from flask_restful import Resource
-from models.assistant.session import Session as SessionModel
 from app import authenticate, db, server_socket
 
 from models.knowledge.knowledge_manager import KnowledgeManager
 
 
 from models.assistant.chat_assistant import ChatAssistant
+
+from mojodex_core.entities.message import Message
 from mojodex_core.llm_engine.mpt import MPT
 from mojodex_core.logging_handler import log_error
 from datetime import datetime, timedelta
@@ -110,7 +111,7 @@ class HomeChat(Resource):
             db.session.commit()
             user = db.session.query(User).get(user_id)
             message = self._generate_welcome_message(user)
-            db_message = MdMessage(session_id=session_id, message=message, sender=SessionModel.agent_message_key,
+            db_message = MdMessage(session_id=session_id, message=message, sender=Message.agent_message_key,
                                    event_name='home_chat_message', creation_date=datetime.now(),
                                    message_date=datetime.now())
             db.session.add(db_message)

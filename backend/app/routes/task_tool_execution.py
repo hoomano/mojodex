@@ -3,8 +3,9 @@ import os
 import requests
 from flask import request
 from flask_restful import Resource
-from models.assistant.session import Session as SessionModel
 from app import db, authenticate
+
+from mojodex_core.entities.message import Message
 from mojodex_core.logging_handler import log_error
 from mojodex_core.entities.db_base_entities import *
 from datetime import datetime
@@ -53,7 +54,7 @@ class TaskToolExecution(Resource):
                 .first()[0]
 
             message = {'text':"OK"}
-            user_message = MdMessage(session_id=session_id, sender=SessionModel.user_message_key, event_name='user_message',
+            user_message = MdMessage(session_id=session_id, sender=Message.user_message_key, event_name='user_message',
                                 message=message,
                                 creation_date=datetime.now(), message_date=datetime.now())
             db.session.add(user_message)

@@ -7,6 +7,7 @@ from mojodex_core.entities.db_base_entities import MdUserTask, MdUserWorkflowSte
 from mojodex_core.db import engine, Session
 from typing import List
 
+from mojodex_core.entities.user_task_execution import generate_title_and_summary
 from mojodex_core.entities.user_workflow_execution import UserWorkflowExecution
 from sqlalchemy import case, and_
 
@@ -27,7 +28,6 @@ class WorkflowProcessController:
             self._current_step = None
         except Exception as e:
             raise Exception(f"{self.logger_prefix} :: __init__ :: {e}")
-
 
     def _generate_new_step_execution(self, step, parameter: dict):
         try:
@@ -112,7 +112,6 @@ class WorkflowProcessController:
         except Exception as e:
             raise Exception(f"_get_next_step_execution_to_run :: {e}")
 
-
     def get_formatted_initial_parameters(self):
         # self.json_inputs is [{"input_name": "<input_name>", "default_value": "<value>"}]'
         # initial_parameters is {"<input_name>": "<value>", ...}
@@ -120,21 +119,17 @@ class WorkflowProcessController:
             return {input["input_name"]: input["value"] for input in self.workflow_execution.json_input_values}
         except Exception as e:
             raise Exception(f"get_formatted_initial_parameters :: {e}")
+
     def run(self):
         try:
             if not self.workflow_execution.title:
-                server_socket.start_background_task(self.workflow_execution.generate_title_and_summary)
+                server_socket.start_background_task(generate_title_and_summary, self.workflow_execution.user_task_execution_pk)
             next_step_execution_to_run = self._get_next_step_execution_to_run()
             if not next_step_execution_to_run:
                 self.end_workflow_execution()
                 return
-            past_valid_step_executions = [{
-                "result": step.result,
-                "instruction": step.learned_instruction,
-                "parameter": step.parameter
-            } for step in self.workflow_execution.past_valid_step_executions]
-            self.execute_step(next_step_execution_to_run, self.get_formatted_initial_parameters(), past_valid_step_executions,
-                                               self.workflow_execution.session_id)
+
+            self.execute_step(next_step_execution_to_run)
 
             self._send_ended_step_event()
             if not next_step_execution_to_run.workflow_step.user_validation_required and next_step_execution_to_run.error_status is None:
@@ -174,7 +169,8 @@ class WorkflowProcessController:
                     # When `MdWorkflowStep.user_validation_required` is `True`, we check that `MdUserWorkflowStepExecution.validated` is also `True`
                     [
                         (
-                        MdWorkflowStep.user_validation_required == True, UserWorkflowStepExecution.validated == True),
+                            MdWorkflowStep.user_validation_required == True,
+                            UserWorkflowStepExecution.validated == True),
                     ],
                     # if `user_validation_required` is `False`, we don't care about the `validated` status, and the `MdUserWorkflowStepExecution` will be included in the results regardless of its `validated` value.
                     else_=True
@@ -187,7 +183,8 @@ class WorkflowProcessController:
             production = "\n\n".join(
                 [list(step.result[0].values())[0] for step in validated_last_step_executions[::-1]])
 
-            produced_text_manager = WorkflowProducedTextManager(self.workflow_execution.session_id, self.workflow_execution.user.user_id,
+            produced_text_manager = WorkflowProducedTextManager(self.workflow_execution.session_id,
+                                                                self.workflow_execution.user.user_id,
                                                                 self.workflow_execution.user_task_execution_pk)
             produced_text, produced_text_version = produced_text_manager.save(production,
                                                                               text_type_pk=self.workflow_execution.task.output_text_type_fk, )
@@ -200,10 +197,10 @@ class WorkflowProcessController:
         try:
             step_execution_json = self._current_step.to_json()
             step_execution_json["session_id"] = self.workflow_execution.session_id
-            server_socket.emit('workflow_step_execution_ended', step_execution_json, to=self.workflow_execution.session_id)
+            server_socket.emit('workflow_step_execution_ended', step_execution_json,
+                               to=self.workflow_execution.session_id)
         except Exception as e:
             raise Exception(f"_send_ended_step_event :: {e}")
-
 
     def validate_step_execution(self, step_execution_pk: int):
         try:
@@ -212,12 +209,6 @@ class WorkflowProcessController:
             self.workflow_execution.past_valid_step_executions.append(step_execution)
         except Exception as e:
             raise Exception(f"validate_step_execution :: {e}")
-
-    def _find_checkpoint_step(self):
-        for step in reversed(self.workflow_execution.past_valid_step_executions):
-            if step.is_checkpoint:
-                return step
-        return None
 
     def invalidate_current_step(self, learned_instruction):
         try:
@@ -228,7 +219,7 @@ class WorkflowProcessController:
                 return
 
             # find checkpoint step
-            checkpoint_step = self._find_checkpoint_step()
+            checkpoint_step = self.workflow_execution.checkpoint_step
             # for all step in self.validated_steps_executions after checkpoint_step, invalidate them
             checkpoint_step_index = self.workflow_execution.past_valid_step_executions.index(checkpoint_step)
             for validated_step in self.workflow_execution.past_valid_step_executions[checkpoint_step_index:]:
@@ -261,11 +252,11 @@ class WorkflowProcessController:
             raise Exception(f"restart :: {e}")
 
     def get_before_checkpoint_validated_steps_executions(self, current_step_in_validation: UserWorkflowStepExecution) -> \
-    List[UserWorkflowStepExecution]:
+            List[UserWorkflowStepExecution]:
         try:
             if current_step_in_validation.workflow_step.is_checkpoint:
                 return self.workflow_execution.past_valid_step_executions
-            checkpoint_step = self._find_checkpoint_step()
+            checkpoint_step = self.workflow_execution.checkpoint_step
             if not checkpoint_step:
                 return []
             checkpoint_step_index = self.workflow_execution.past_valid_step_executions.index(checkpoint_step)
@@ -274,11 +265,11 @@ class WorkflowProcessController:
             raise Exception(f"before_checkpoint_steps_executions :: {e}")
 
     def get_after_checkpoint_validated_steps_executions(self, current_step_in_validation: UserWorkflowStepExecution) -> \
-    List[UserWorkflowStepExecution]:
+            List[UserWorkflowStepExecution]:
         try:
             if current_step_in_validation.workflow_step.is_checkpoint:
                 return []
-            checkpoint_step = self._find_checkpoint_step()
+            checkpoint_step = self.workflow_execution.checkpoint_step
             if not checkpoint_step:
                 return self.workflow_execution.past_valid_step_executions
             checkpoint_step_index = self.workflow_execution.past_valid_step_executions.index(checkpoint_step)
@@ -286,22 +277,34 @@ class WorkflowProcessController:
         except Exception as e:
             raise Exception(f"after_checkpoint_to_current_steps_executions :: {e}")
 
-    def execute_step(self, workflow_step_execution: UserWorkflowStepExecution, initial_parameter: dict, past_validated_steps_results: List[dict], session_id: str):
+    def get_formatted_past_validated_steps_results(self):
         try:
+            return [{
+                "result": step.result,
+                "instruction": step.learned_instruction,
+                "parameter": step.parameter
+            } for step in self.workflow_execution.past_valid_step_executions]
+        except Exception as e:
+            raise Exception(f"get_formatted_past_validated_steps_results :: {e}")
+
+    def execute_step(self, workflow_step_execution: UserWorkflowStepExecution):
+        try:
+
             step_json = workflow_step_execution.to_json()
-            step_json["session_id"] = session_id
-            server_socket.emit('workflow_step_execution_started', step_json, to=session_id)
-            workflow_step_execution.result = workflow_step_execution.workflow_step.execute(workflow_step_execution.parameter,
-                                                                                           workflow_step_execution.get_learned_instructions(), initial_parameter,
-                                                     past_validated_steps_results, user_id=workflow_step_execution.user_task_execution.user.user_id,
-                                                     user_task_execution_pk= self.workflow_execution.user_task_execution_pk,
-                                                     task_name_for_system= self.workflow_execution.task.name_for_system, session_id=session_id)
+            step_json["session_id"] = self.workflow_execution.session_id
+            server_socket.emit('workflow_step_execution_started', step_json, to=self.workflow_execution.session_id)
+            workflow_step_execution.result = workflow_step_execution.workflow_step.execute(
+                workflow_step_execution.parameter,
+                workflow_step_execution.get_learned_instructions(), self.get_formatted_initial_parameters(),
+                self.get_formatted_past_validated_steps_results(),
+                user_id=workflow_step_execution.user_task_execution.user.user_id,
+                user_task_execution_pk=self.workflow_execution.user_task_execution_pk,
+                task_name_for_system=self.workflow_execution.task.name_for_system,
+                session_id=self.workflow_execution.session_id)
         except Exception as e:
             workflow_step_execution.error_status = {"datetime": datetime.now().isoformat(), "error": str(e)}
             self.db_session.commit()
             # send email to admin
             print(f"🔴 {self.logger_prefix} - execute_step :: {e}")
-            send_technical_error_email(f"Error while executing step {workflow_step_execution.user_workflow_step_execution_pk} for user {workflow_step_execution.user_task_execution.user.user_id} : {e}")
-
-
-
+            send_technical_error_email(
+                f"Error while executing step {workflow_step_execution.user_workflow_step_execution_pk} for user {workflow_step_execution.user_task_execution.user.user_id} : {e}")

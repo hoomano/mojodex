@@ -3,7 +3,7 @@ from sqlalchemy.orm.attributes import flag_modified
 from sqlalchemy.orm import object_session
 
 class Message(MdMessage):
-
+    agent_message_key, user_message_key = "mojo", "user"
 
     @property
     def user_task_execution_pk(self):

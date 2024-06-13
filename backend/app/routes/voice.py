@@ -4,10 +4,9 @@ import time
 
 from flask import request
 from flask_restful import Resource
-from models.assistant.session import Session as SessionModel
 from app import db, authenticate
 
-from models.user_storage_manager.user_storage_manager import UserStorageManager
+from mojodex_core.entities.message import Message
 from mojodex_core.logging_handler import log_error
 from mojodex_core.entities.db_base_entities import *
 from flask import send_file
@@ -47,14 +46,14 @@ class Voice(Resource):
                 session_id = message.session_id
             from models.user_storage_manager.user_audio_file_manager import UserAudioFileManager
             user_audio_file_manager = UserAudioFileManager()
-            if message_pk and message.sender == SessionModel.user_message_key:
+            if message_pk and message.sender == Message.user_message_key:
                 audio_storage = user_audio_file_manager.get_user_messages_audio_storage(user_id, session_id)
-            elif message_pk and message.sender == SessionModel.agent_message_key:
+            elif message_pk and message.sender == Message.agent_message_key:
                 audio_storage = user_audio_file_manager.get_mojo_messages_audio_storage(user_id, session_id)
             file_pattern = os.path.join(audio_storage, f"{filename}.*")
             matching_files = glob.glob(file_pattern)
             if len(matching_files) == 0:
-                if message_pk and message.sender == SessionModel.agent_message_key:
+                if message_pk and message.sender == Message.agent_message_key:
                     # audio could be still processing or in error
                     if not message.in_error_state:
                         return {"status": "processing"}, 200

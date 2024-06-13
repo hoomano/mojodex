@@ -11,7 +11,7 @@ from models.assistant.chat_assistant import ChatAssistant
 from mojodex_core.llm_engine.mpt import MPT
 from mojodex_core.logging_handler import log_error
 from datetime import datetime, timedelta
-from mojodex_core.entities.db_base_entities import *
+from mojodex_core.entities.db_base_entities import MdHomeChat, MdMessage, MdUserTaskExecution, MdUserTask, MdTask
 from packaging import version
 
 from models.session_creator import SessionCreator
@@ -33,17 +33,17 @@ class HomeChat(Resource):
         try:
             # 1. get list of this week's home_chat sessions
             week_start_date = datetime.now().date() - timedelta(days=datetime.now().date().weekday())
-            sessions = db.session.query(MdSession)\
-            .join(MdHomeChat, MdSession.session_id == MdHomeChat.session_id)\
+            sessions = db.session.query(Session)\
+            .join(MdHomeChat, Session.session_id == MdHomeChat.session_id)\
             .filter(and_(MdHomeChat.start_date.isnot(None), MdHomeChat.start_date >= week_start_date))\
-            .filter(MdSession.user_id == user_id)\
+            .filter(Session.user_id == user_id)\
                 .all()
             if not sessions:
                 return []
 
             return [{
                 "date": session.creation_date,
-                "conversation": Session(session.session_id, db.session).get_conversation_as_string(agent_key="YOU", user_key="USER",
+                "conversation": session.get_conversation_as_string(agent_key="YOU", user_key="USER",
                                                                   with_tags=False)
             } for session in sessions]
 
@@ -70,21 +70,20 @@ class HomeChat(Resource):
         except Exception as e:
             raise Exception(f"__get_this_week_task_executions :: {e}")
 
-    def _generate_welcome_message(self, user_id):
+    def _generate_welcome_message(self, user: User):
         try:
-            user = User(user_id, db.session)
-            previous_conversations = self.__get_this_week_home_conversations(user_id)
+            previous_conversations = self.__get_this_week_home_conversations(user.user_id)
             welcome_message_mpt = MPT(self.welcome_message_mpt_filename,
                                   mojo_knowledge=KnowledgeManager.get_mojo_knowledge(),
                                   global_context=KnowledgeManager.get_global_context_knowledge(),
-                                  username=user.username,
+                                  username=user.name,
                                   tasks=user.available_instruct_tasks,
                                   first_time_this_week=len(previous_conversations) == 0,
-                                  user_task_executions=self.__get_this_week_task_executions(user_id),
+                                  user_task_executions=self.__get_this_week_task_executions(user.user_id),
                                   previous_conversations=previous_conversations,
                                   language=user.language_code)
 
-            responses = welcome_message_mpt.run(user_id=user_id, temperature=0, max_tokens=1000,
+            responses = welcome_message_mpt.run(user_id=user.user_id, temperature=0, max_tokens=1000,
                                                   user_task_execution_pk=None,
                                                   task_name_for_system=None)
             message = responses[0].strip()
@@ -109,7 +108,8 @@ class HomeChat(Resource):
             home_chat = MdHomeChat(session_id=session_id, user_id=user_id, week=week)
             db.session.add(home_chat)
             db.session.commit()
-            message = self._generate_welcome_message(user_id)
+            user = db.session.query(User).get(user_id)
+            message = self._generate_welcome_message(user)
             db_message = MdMessage(session_id=session_id, message=message, sender=SessionModel.agent_message_key,
                                    event_name='home_chat_message', creation_date=datetime.now(),
                                    message_date=datetime.now())

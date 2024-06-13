@@ -1,8 +1,10 @@
 from datetime import datetime
-from models.workflows.workflow_execution import WorkflowExecution
 from flask import request
 from flask_restful import Resource
 from app import db, authenticate, server_socket
+
+from models.workflows.workflow_process_controller import WorkflowProcessController
+from mojodex_core.entities.user_workflow_execution import UserWorkflowExecution
 from mojodex_core.logging_handler import log_error
 from mojodex_core.entities.db_base_entities import *
 from jinja2 import Template
@@ -34,20 +36,20 @@ class UserWorkflowStepExecution(Resource):
                 .first()
             if not user_task_execution:
                 return {"error": "Workflow execution not found for this user"}, 404
-            
-            workflow_execution = WorkflowExecution(user_task_execution.user_task_execution_pk)
+
+            workflow_process_controller = WorkflowProcessController(user_task_execution.user_task_execution_pk)
             if validated:
-                workflow_execution.validate_step_execution(user_workflow_step_execution_pk)
-                server_socket.start_background_task(workflow_execution.run)
+                workflow_process_controller.validate_step_execution(user_workflow_step_execution_pk)
+                server_socket.start_background_task(workflow_process_controller.run)
             else:
                 # # todo => set a status rejected ?
                 # add new message to db
-                current_step_in_validation = workflow_execution.get_step_execution_from_pk(user_workflow_step_execution_pk)
+                current_step_in_validation = db.session.query(UserWorkflowStepExecution).get(user_workflow_step_execution_pk)
                 with open("mojodex_core/prompts/workflows/state.txt", "r") as file:
                     template = Template(file.read())
                     text = template.render(
-                        before_checkpoint_validated_steps_executions=workflow_execution.get_before_checkpoint_validated_steps_executions(current_step_in_validation),
-                        after_checkpoint_validated_steps_executions=workflow_execution.get_after_checkpoint_validated_steps_executions(current_step_in_validation),
+                        before_checkpoint_validated_steps_executions=workflow_process_controller.get_before_checkpoint_validated_steps_executions(current_step_in_validation),
+                        after_checkpoint_validated_steps_executions=workflow_process_controller.get_after_checkpoint_validated_steps_executions(current_step_in_validation),
                         current_step=current_step_in_validation,
                         )
                     
@@ -85,9 +87,9 @@ class UserWorkflowStepExecution(Resource):
             if not user_task_execution:
                 return {"error": "Workflow execution not found for this user"}, 404
             
-            workflow_execution = WorkflowExecution(user_task_execution.user_task_execution_pk)
+            workflow_process_controller = WorkflowProcessController(user_task_execution.user_task_execution_pk)
         
-            server_socket.start_background_task(workflow_execution.run)
+            server_socket.start_background_task(workflow_process_controller.run)
 
             return {"message": "Workflow relaunched"}, 200
         except Exception as e:

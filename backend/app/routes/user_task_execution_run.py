@@ -5,7 +5,7 @@ from models.user_task_execution_inputs_manager import UserTaskExecutionInputsMan
 from flask import request
 from flask_restful import Resource
 from app import db, authenticate, server_socket
-from models.workflows.workflow_execution import WorkflowExecution
+from models.workflows.workflow_process_controller import WorkflowProcessController
 from mojodex_core.logging_handler import log_error
 from mojodex_core.entities.db_base_entities import MdUserTaskExecution, MdTask, MdUserTask
 from sqlalchemy.orm.attributes import flag_modified
@@ -88,7 +88,7 @@ class UserTaskExecutionRun(Resource):
 
                 server_socket.start_background_task(launch_process, session, app_version, platform, user_task_execution_pk, use_message_placeholder, use_draft_placeholder)
             else:
-                workflow_execution = WorkflowExecution(user_task_execution_pk)
+                workflow_execution = WorkflowProcessController(user_task_execution_pk)
                 server_socket.start_background_task(workflow_execution.run)
 
             return {"success": "ok"}, 200

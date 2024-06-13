@@ -1,6 +1,6 @@
-from models.workflows.step import WorkflowStep
-from typing import List
 
+from typing import List
+from mojodex_core.entities.workflow_step import WorkflowStep
 from mojodex_core.llm_engine.mpt import MPT
         
 
@@ -25,6 +25,7 @@ class StanzaWriterStep(WorkflowStep):
             # input keys: stanza_topic
             stanza_topic = parameter['stanza_topic']
             poem_topic = initial_parameter['poem_topic']
+
             write_poem_stanza_mpt = MPT(StanzaWriterStep.write_poem_stanza_filename, poem_topic=poem_topic, stanza_topic=stanza_topic,
                                         learned_instructions=learned_instructions, past_validated_steps_results=past_validated_steps_results)
             responses = write_poem_stanza_mpt.run(user_id=user_id, temperature=0, max_tokens=1000, user_task_execution_pk=user_task_execution_pk, task_name_for_system=task_name_for_system)

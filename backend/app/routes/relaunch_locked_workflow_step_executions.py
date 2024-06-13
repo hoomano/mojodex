@@ -1,10 +1,11 @@
 from datetime import datetime, timedelta
 import os
-from models.workflows.workflow_execution import WorkflowExecution
 from sqlalchemy.orm.attributes import flag_modified
 import pytz
 from flask import request
 from flask_restful import Resource
+
+from models.workflows.workflow_process_controller import WorkflowProcessController
 from mojodex_core.logging_handler import log_error
 from mojodex_core.entities.db_base_entities import MdUserTaskExecution, MdUserWorkflowStepExecution, MdUserWorkflowStepExecutionResult
 from app import db, server_socket
@@ -58,8 +59,8 @@ class RelaunchLockedWorkflowStepExecutions(Resource):
 
             # relaunch these steps
             for step in locked_steps:
-                workflow_execution = WorkflowExecution(step.user_task_execution_fk)
-                server_socket.start_background_task(workflow_execution.run)
+                workflow_process_controller = WorkflowProcessController(step.user_task_execution_fk)
+                server_socket.start_background_task(workflow_process_controller.run)
 
             return {"user_workflow_step_executions_pk": user_workflow_step_executions_pk}, 200
 

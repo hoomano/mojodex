@@ -1,7 +1,7 @@
 from mojodex_core.entities.user_task import UserTask
-from mojodex_core.entities.instruct_task import InstructTask
 from sqlalchemy.orm import object_session
 
+from mojodex_core.entities.workflow import Workflow
 
 
 class UserWorkflow(UserTask):

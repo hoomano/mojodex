@@ -1,10 +1,10 @@
-from datetime import datetime
 import json
 from models.user_task_execution_inputs_manager import UserTaskExecutionInputsManager
-from models.workflows.workflow_execution import WorkflowExecution
 from flask import request
 from flask_restful import Resource
 from app import db, authenticate, server_socket
+
+from models.workflows.workflow_process_controller import WorkflowProcessController
 from mojodex_core.logging_handler import log_error
 from mojodex_core.entities.db_base_entities import MdUserTaskExecution, MdTask, MdUserTask
 from sqlalchemy.orm.attributes import flag_modified
@@ -52,8 +52,8 @@ class RestartUserWorkflowExecution(Resource):
             db.session.commit()
 
             # Invalidate current step
-            workflow_execution = WorkflowExecution(user_task_execution_pk)
-            server_socket.start_background_task(workflow_execution.restart)
+            workflow_process_controller = WorkflowProcessController(user_task_execution_pk)
+            server_socket.start_background_task(workflow_process_controller.restart)
 
             return {"message": "Workflow restarted"}, 200
         except Exception as e:

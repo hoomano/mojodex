@@ -7,7 +7,7 @@ from mojodex_core.logging_handler import log_error
 from mojodex_core.entities.db_base_entities import *
 from sqlalchemy import func
 from sqlalchemy.orm.attributes import flag_modified
-from models.workflows.steps_library import steps_class
+from mojodex_core.steps_library import steps_class
 
 class Task(Resource):
 

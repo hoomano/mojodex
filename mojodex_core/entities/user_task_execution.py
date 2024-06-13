@@ -70,7 +70,6 @@ class UserTaskExecution(MdUserTaskExecution, ABC, metaclass=AbstractEntity):
     @property
     def task(self):
         try:
-            print("ici")
             return self.user_task.task
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} :: task :: {e}")
@@ -85,6 +84,8 @@ class UserTaskExecution(MdUserTaskExecution, ABC, metaclass=AbstractEntity):
 
     def generate_title_and_summary(self):
         try:
+            session = object_session(self)
+            print(f"👉 generate_title_and_summary : {session}")
             task_execution_summary = MPT("instructions/task_execution_summary.mpt",
                                          mojo_knowledge=knowledge_manager.mojodex_knowledge,
                                          global_context=knowledge_manager.global_context_knowledge,
@@ -102,7 +103,6 @@ class UserTaskExecution(MdUserTaskExecution, ABC, metaclass=AbstractEntity):
             response = responses[0]
             self.title = response.split("<title>")[1].split("</title>")[0]
             self.summary = response.split("<summary>")[1].split("</summary>")[0]
-            session = object_session(self)
             session.commit()
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} :: generate_title_and_summary :: {e}")

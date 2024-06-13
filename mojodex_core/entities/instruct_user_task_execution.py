@@ -7,14 +7,15 @@ from mojodex_core.entities.instruct_user_task import InstructUserTask
 class InstructTaskExecution(UserTaskExecution):
     task_specific_instructions_prompt = "mojodex_core/prompts/tasks/task_specific_instructions.txt"
 
-
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
     @property
     def user_task(self):
         try:
             session = object_session(self)
-            return session.query(InstructUserTask).filter(InstructUserTask.user_task_pk == self.user_task_fk).first()
+            return session.query(InstructUserTask).get(self.user_task_fk)
         except Exception as e:
-            raise Exception(f"{self.__class__.__name__}")
+            raise Exception(f"{self.__class__.__name__}:: user_task :: {e}")
 
     @property
     def instructions(self):

@@ -70,6 +70,7 @@ class UserTaskExecution(MdUserTaskExecution, ABC, metaclass=AbstractEntity):
     @property
     def task(self):
         try:
+            print("ici")
             return self.user_task.task
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} :: task :: {e}")

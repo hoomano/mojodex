@@ -16,10 +16,10 @@ class Message(MdMessage):
     def user_task_execution_pk(self, user_task_execution_pk):
         try:
             session = object_session(self)
-            new_message = self.db_object.message
+            new_message = self.message
             new_message['user_task_execution_pk'] = user_task_execution_pk
             self.message = new_message
-            flag_modified(self.db_object, "message")
+            flag_modified(self, "message")
             session.commit()
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} :: user_task_execution_pk :: {e}")

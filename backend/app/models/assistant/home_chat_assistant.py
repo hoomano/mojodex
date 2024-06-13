@@ -26,10 +26,9 @@ class HomeChatAssistant(ChatAssistant):
             super().__init__(mojo_message_token_stream_callback, draft_token_stream_callback,
                              tag_proper_nouns, user_messages_are_audio, db_session)
             self.instruct_task_execution = running_user_task_execution if running_user_task_execution else None
-            self.user = self.instruct_task_execution.user if self.instruct_task_execution else self.db_session.query(
-                User).filter(User.user_id == user_id).first()
+            self.user = self.instruct_task_execution.user if self.instruct_task_execution else self.db_session.query(User).get(user_id)
             self.session = self.instruct_task_execution.session if self.instruct_task_execution else self.db_session.query(
-                Session).filter(Session.session_id == session_id).first()
+                Session).get(session_id)
             self.use_message_placeholder = use_message_placeholder
             self.task_manager = TaskManager(self.session.session_id, self.user.user_id)
 
@@ -123,6 +122,7 @@ class HomeChatAssistant(ChatAssistant):
                 json_input_values=user_task.json_input_in_user_language,
                 session_id=self.session.session_id,
             )
+            self.db_session.add(self.instruct_task_execution)
             self.db_session.commit()
         except Exception as e:
             raise Exception(f"_create_user_task_execution :: {e}")
@@ -142,7 +142,7 @@ class HomeChatAssistant(ChatAssistant):
                 if task_pk is not None:  # a task is running
                     if not self.instruct_task_execution or task_pk != self.instruct_task_execution.task.task_pk:
                         # if the task is different from the running task, we set the new task
-                        self.instruct_task_execution = self._create_user_task_execution(task_pk)
+                        self._create_user_task_execution(task_pk)
                         # associate previous user message to this task
                         if self.session.last_user_message:
                             self.session.last_user_message.user_task_execution_pk = self.instruct_task_execution.user_task_execution_pk

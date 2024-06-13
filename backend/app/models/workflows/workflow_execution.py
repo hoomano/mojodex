@@ -6,7 +6,7 @@ from models.workflows.step_execution import WorkflowStepExecution
 from models.workflows.workflow import Workflow
 
 from models.produced_text_managers.workflow_produced_text_manager import WorkflowProducedTextManager
-from mojodex_core.entities import MdUserTaskExecution, MdUserTask, MdUserWorkflowStepExecutionResult, MdWorkflowStep, MdTask, \
+from mojodex_core.entities.db_base_entities import MdUserTaskExecution, MdUserTask, MdUserWorkflowStepExecutionResult, MdWorkflowStep, MdTask, \
     MdUserWorkflowStepExecution
 from mojodex_core.db import engine, Session
 from typing import List

@@ -5,7 +5,7 @@ from app import db, authenticate, time_manager
 
 from models.workflows.workflow_execution import WorkflowExecution
 from mojodex_core.logging_handler import log_error
-from mojodex_core.entities import *
+from mojodex_core.entities.db_base_entities import *
 from datetime import datetime
 from models.session_creator import SessionCreator
 from sqlalchemy import func, and_, or_, text

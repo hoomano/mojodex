@@ -1,7 +1,7 @@
 from flask import request
 from flask_restful import Resource
 from app import db, executor
-from mojodex_core.entities import *
+from mojodex_core.entities.db_base_entities import *
 
 from background_logger import BackgroundLogger
 

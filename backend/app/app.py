@@ -45,7 +45,7 @@ from functools import wraps
 import jwt
 
 from datetime import datetime
-from mojodex_core.entities import *
+from mojodex_core.entities.db_base_entities import *
 
 from mojodex_backend_logger import MojodexBackendLogger
 

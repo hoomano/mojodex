@@ -1,7 +1,7 @@
 import os
 
 from app import db, language_retriever, conversation_retriever
-from mojodex_core.entities import *
+from mojodex_core.entities.db_base_entities import *
 from background_logger import BackgroundLogger
 from gantry.logger.eval_logger import EvalLogger
 from models.task_tool_execution.tools.google_search import GoogleSearchTool

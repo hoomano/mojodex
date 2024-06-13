@@ -1,6 +1,6 @@
 import os
 from mojodex_core.db import db_session
-from mojodex_core.entities import MdUserVocabulary
+from mojodex_core.entities.db_base_entities import MdUserVocabulary
 from mojodex_core.costs_manager.whisper_costs_manager import WhisperCostsManager
 
 

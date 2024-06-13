@@ -1,6 +1,6 @@
 from app import db
 from models.assistant.chat_assistant import ChatAssistant
-from mojodex_core.entities import MdTaskToolExecution
+from mojodex_core.entities.db_base_entities import MdTaskToolExecution
 from mojodex_backend_logger import MojodexBackendLogger
 
 

@@ -9,7 +9,7 @@ from app import db, authenticate
 
 from models.user_storage_manager.user_storage_manager import UserStorageManager
 from mojodex_core.logging_handler import log_error
-from mojodex_core.entities import *
+from mojodex_core.entities.db_base_entities import *
 from flask import send_file
 from packaging import version
 

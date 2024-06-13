@@ -1,7 +1,7 @@
 from models.produced_text_managers.produced_text_manager import ProducedTextManager
 from mojodex_backend_logger import MojodexBackendLogger
 from app import db
-from mojodex_core.entities import MdProducedText
+from mojodex_core.entities.db_base_entities import MdProducedText
 
 class InstructTaskProducedTextManager(ProducedTextManager):
     logger_prefix = "📝 InstructTaskProducedTextManager"

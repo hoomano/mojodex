@@ -1,6 +1,6 @@
 from sqlalchemy.orm import object_session
 from models.assistant.models.message import Message
-from mojodex_core.entities import MdSession
+from mojodex_core.entities.db_base_entities import MdSession
 
 class Session(MdSession):
 

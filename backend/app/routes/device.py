@@ -1,6 +1,6 @@
 from app import authenticate, db
 from mojodex_core.logging_handler import log_error
-from mojodex_core.entities import *
+from mojodex_core.entities.db_base_entities import *
 from flask import request
 from flask_restful import Resource
 from datetime import datetime

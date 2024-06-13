@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from typing import List
 from mojodex_core.db import Session
 from sqlalchemy import or_, func
-from mojodex_core.entities import MdWorkflowStepDisplayedData, MdWorkflowStep, MdUserTask, MdUser
+from mojodex_core.entities.db_base_entities import MdWorkflowStepDisplayedData, MdWorkflowStep, MdUserTask, MdUser
 
 
 class WorkflowStep(ABC):

@@ -1,6 +1,6 @@
 from datetime import datetime
 from app import server_socket
-from mojodex_core.entities import MdUserWorkflowStepExecutionResult, MdUserWorkflowStepExecution, MdWorkflowStep
+from mojodex_core.entities.db_base_entities import MdUserWorkflowStepExecutionResult, MdUserWorkflowStepExecution, MdWorkflowStep
 from typing import List
 from models.workflows.steps_library import steps_class
 from mojodex_core.mail import send_technical_error_email

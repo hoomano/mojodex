@@ -6,7 +6,7 @@ from flask import request
 from flask_restful import Resource
 from app import authenticate, db
 from mojodex_core.logging_handler import log_error
-from mojodex_core.entities import MdPurchase, MdProduct, MdProductCategory, MdUser, MdEvent
+from mojodex_core.entities.db_base_entities import MdPurchase, MdProduct, MdProductCategory, MdUser, MdEvent
 from models.purchase_manager import PurchaseManager
 
 from mojodex_core.mail import send_admin_email

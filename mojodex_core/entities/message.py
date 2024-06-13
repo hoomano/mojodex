@@ -1,4 +1,4 @@
-from mojodex_core.entities import MdMessage
+from mojodex_core.entities.db_base_entities import MdMessage
 from sqlalchemy.orm.attributes import flag_modified
 from sqlalchemy.orm import object_session
 

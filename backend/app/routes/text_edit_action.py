@@ -7,7 +7,7 @@ from app import db, authenticate, server_socket
 
 from models.produced_text_managers.instruct_task_produced_text_manager import InstructTaskProducedTextManager
 from mojodex_core.logging_handler import log_error
-from mojodex_core.entities import *
+from mojodex_core.entities.db_base_entities import *
 
 from models.text_edit_action_manager import TextEditActionManager
 from sqlalchemy.sql.functions import coalesce

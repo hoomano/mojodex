@@ -6,7 +6,7 @@ from models.produced_text_managers.instruct_task_produced_text_manager import In
 from models.assistant.execution_manager import ExecutionManager
 
 from models.assistant.chat_assistant import ChatAssistant
-from mojodex_core.entities import *
+from mojodex_core.entities.db_base_entities import *
 from app import db, server_socket, main_logger, socketio_message_sender
 from mojodex_core.logging_handler import log_error
 

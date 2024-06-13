@@ -14,7 +14,7 @@ from models.assistant.chat_assistant import ChatAssistant
 from mojodex_core.llm_engine.mpt import MPT
 from mojodex_core.logging_handler import log_error
 from datetime import datetime, timedelta
-from mojodex_core.entities import *
+from mojodex_core.entities.db_base_entities import *
 from packaging import version
 
 from models.session_creator import SessionCreator

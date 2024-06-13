@@ -1,4 +1,4 @@
-from mojodex_core.entities import MdUser, MdTask, MdUserTask
+from mojodex_core.entities.db_base_entities import MdUser, MdTask, MdUserTask
 from sqlalchemy.orm import object_session
 
 class User(MdUser):

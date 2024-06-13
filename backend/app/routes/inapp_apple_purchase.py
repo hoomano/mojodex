@@ -7,7 +7,7 @@ from flask import request
 from flask_restful import Resource
 from datetime import datetime
 from app import authenticate, db
-from mojodex_core.entities import *
+from mojodex_core.entities.db_base_entities import *
 from models.purchase_manager import PurchaseManager
 from mojodex_backend_logger import MojodexBackendLogger
 from appstoreserverlibrary.models.Environment import Environment

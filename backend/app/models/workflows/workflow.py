@@ -1,4 +1,4 @@
-from mojodex_core.entities import MdWorkflowStep, MdWorkflowStepDisplayedData
+from mojodex_core.entities.db_base_entities import MdWorkflowStep, MdWorkflowStepDisplayedData
 from sqlalchemy.sql.functions import coalesce
 
 

@@ -46,7 +46,7 @@ This generates a call to PUT `/user_workflow_execution` to the backend (`backend
 This call creates a User Workflow Execution instance in the database and a `session` if not already exists (which is the case in current Mojodex implementations).
 
 ```python
-from mojodex_core.entities import MdUserWorkflowExecution
+from mojodex_core.entities.db_base_entities import MdUserWorkflowExecution
 [...]
 class UserWorkflowExecution(Resource):
     [...]

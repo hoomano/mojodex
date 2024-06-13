@@ -2,7 +2,7 @@ import time
 
 from app import db, main_logger, server_socket, executor
 from mojodex_core.logging_handler import log_error
-from mojodex_core.entities import *
+from mojodex_core.entities.db_base_entities import *
 
 class SocketioMessageSender:
     def __init__(self):

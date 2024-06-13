@@ -1,6 +1,6 @@
 from abc import ABC
 
-from mojodex_core.entities import MdTask, MdTaskDisplayedData
+from mojodex_core.entities.db_base_entities import MdTask, MdTaskDisplayedData
 from sqlalchemy.orm import object_session
 from sqlalchemy import func, or_
 class Task(MdTask, ABC):

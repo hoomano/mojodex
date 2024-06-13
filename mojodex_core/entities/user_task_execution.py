@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from mojodex_core.entities import MdUserTaskExecution, MdProducedText
+from mojodex_core.entities.db_base_entities import MdUserTaskExecution, MdProducedText
 from sqlalchemy.orm import object_session
 
 from mojodex_core.knowledge_manager import knowledge_manager

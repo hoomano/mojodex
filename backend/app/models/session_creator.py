@@ -1,6 +1,6 @@
 from app import db
 from mojodex_core.logging_handler import log_error
-from mojodex_core.entities import *
+from mojodex_core.entities.db_base_entities import *
 from datetime import datetime
 import hashlib
 import random

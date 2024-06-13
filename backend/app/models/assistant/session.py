@@ -8,7 +8,7 @@ from models.assistant.chat_assistant import ChatAssistant
 
 from mojodex_core.entities.instruct_user_task_execution import InstructTaskExecution
 from mojodex_core.logging_handler import log_error
-from mojodex_core.entities import *
+from mojodex_core.entities.db_base_entities import *
 from datetime import datetime
 from models.voice_generator import VoiceGenerator
 from packaging import version

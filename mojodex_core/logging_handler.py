@@ -2,7 +2,7 @@ import logging
 import os
 from datetime import datetime
 
-from mojodex_core.entities import MdError
+from mojodex_core.entities.db_base_entities import MdError
 try:
     from mojodex_core.db import db_session
 except ImportError:

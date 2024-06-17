@@ -60,7 +60,6 @@ class OpenAISTT:
         except Exception as e:
             raise Exception(f"__get_audio_file_duration:  {e}")
 
-
     @with_db_session
     def __get_user_vocabulary(self, user_id, db_session):
         try:
@@ -73,11 +72,14 @@ class OpenAISTT:
 
     # calculate the number of tokens in a given string
     def _num_tokens_from_string(self, string):
-        # https://github.com/openai/openai-cookbook/blob/main/examples/How_to_count_tokens_with_tiktoken.ipynb
-        """Returns the number of tokens in a text string."""
-        encoding = tiktoken.get_encoding("p50k_base")
-        num_tokens = len(encoding.encode(string))
-        return num_tokens
+        try:
+            # https://github.com/openai/openai-cookbook/blob/main/examples/How_to_count_tokens_with_tiktoken.ipynb
+            """Returns the number of tokens in a text string."""
+            encoding = tiktoken.get_encoding("p50k_base")
+            num_tokens = len(encoding.encode(string))
+            return num_tokens
+        except Exception as e:
+            raise Exception(f"_num_tokens_from_string:  {e}")
 
     def transcript(self, audio_file_path, user_id, user_task_execution_pk=None, task_name_for_system=None):
         file_duration = self.__get_audio_file_duration(audio_file_path)
@@ -85,6 +87,8 @@ class OpenAISTT:
         audio_file = open(audio_file_path, "rb")
         try:
             vocab = self.__get_user_vocabulary(user_id)
+            print(f"🟢 vocab: {vocab}")
+            print(f"🟢 type(vocab): {type(vocab)}")
             # check size of vocab tokens
             n_tokens_vocab = self._num_tokens_from_string(vocab)
             if n_tokens_vocab > 244: # from whisper doc: https://platform.openai.com/docs/guides/speech-to-text/prompting

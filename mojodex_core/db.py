@@ -29,8 +29,9 @@ def with_db_session(func):
     def wrapper(self, *args, **kwargs):
         try:
             db_session = Session(engine)
-            func(self, *args, db_session=db_session, **kwargs)
+            result = func(self, *args, db_session=db_session, **kwargs)
             db_session.close()
+            return result
         except Exception as e:
             raise Exception(f"with_db_session :: {e}")
 

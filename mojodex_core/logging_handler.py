@@ -2,6 +2,7 @@ import logging
 import os
 from datetime import datetime
 
+from mojodex_core.db import with_db_session
 from mojodex_core.entities.db_base_entities import MdError
 
 class EmojiFormatter(logging.Formatter):
@@ -44,7 +45,8 @@ class MojodexCoreLogger(logging.Logger):
 
 core_logger = MojodexCoreLogger("core_logger")
 
-def log_error(db_session, error_message, session_id=None, notify_admin=False):
+@with_db_session
+def log_error(error_message, db_session, session_id=None, notify_admin=False):
     try:
         core_logger.error(error_message)
         error = MdError(session_id=session_id, message=str(error_message),

@@ -74,7 +74,24 @@
   },
   "userTaskExecutionList": {
     "appBarTitle": "Tâches",
-    "taskNotFound": "🤔\nIl semble qu'il n'y ait rien de tel dans l'historique de vos tâches..."
+    "taskNotFound": "🤔\nIl semble qu'il n'y ait rien de tel dans l'historique de vos tâches...",
+    "removeButton": "Supprimer",
+    "deleteSuccess": "Tâche supprimée",
+    "searchTaskPlaceholder": "rechercher",
+    "date": {
+      "now": "Maintenant",
+      "sunday": "Dim.",
+      "monday": "Lun.",
+      "tuesday": "Mar.",
+      "wednesday": "Mer.",
+      "thursday": "Jeu.",
+      "friday": "Ven.",
+      "saturday": "Sam.",
+      "beforeTimeAgo": "Il y a",
+      "minutes": "min",
+      "hours": "h",
+      "afterTimeAgo": ""
+    }
   },
   "newUserTaskExecution": {
     "appBarTitle": "Tâches",
@@ -135,6 +152,8 @@
       "editEmoji": "🎙️",
       "editButton": "Éditer",
       "exportButton": "Exporter",
+      "copyButton": "Copier",
+      "copySuccess": "Copié !",
       "hubspotIntegration": {
         "saveAs": "Enregistrer comme ",
         "in": " dans "
@@ -165,6 +184,10 @@
       "restartButtonTooltip": "Retourne au formulaire initial et modifie les entrées",
       "editButtonTooltip": "Modifie manuellement le résultat de l'étape fournie par Mojo",
       "validateButtonTooltip": "Valide cette étape et poursuit le processus"
+    },
+    "loading": {
+      "title": "Génération de la réponse...",
+      "subtitle": "Veuillez patienter un instant"
     }
   },
   "todos": {
@@ -203,6 +226,12 @@
       "name": "Nom",
       "button": "Créer un compte",
       "otherProviders": "Ou continuer avec"
+    },
+    "forgotPassword": {
+      "title": "Mot de passe oublié",
+      "emailAddress": "Adresse email",
+      "button": "Envoyer un email de réinitialisation",
+      "alert": "Vérifiez vos courriers pour réinitialiser votre mot de passe."
     }
   },
   "calendar": {

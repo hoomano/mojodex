@@ -74,7 +74,24 @@
   },
 	"userTaskExecutionList": {
 		"appBarTitle": "Tasks",
-		"taskNotFound": "🤔\nIt seems there is no such thing in your task history..."
+		"taskNotFound": "🤔\nIt seems there is no such thing in your task history...",
+		"removeButton": "Remove",
+		"deleteSuccess": "User task execution deleted successfully.",
+		"searchTaskPlaceholder": "search",
+		"date": {
+			"now": "Now",
+			"sunday": "Sun.",
+			"monday": "Mon.",
+			"tuesday": "Tue.",
+			"wednesday": "Wed.",
+			"thursday": "Thu.",
+			"friday": "Fri.",
+			"saturday": "Sat.",
+			"beforeTimeAgo": "",
+			"minutes": "min",
+			"hours": "h",
+			"afterTimeAgo": "ago"
+		}
 	},
     "newUserTaskExecution": {
 		"appBarTitle": "Tasks",
@@ -135,6 +152,8 @@
 			"editEmoji": "🎙️",
 			"editButton": "Edit",
 			"exportButton": "Export",
+			"copyButton": "Copy",
+			"copySuccess": "Copied!",
 			"hubspotIntegration":{
 				"saveAs": "Save as ",
 				"in": " in "
@@ -165,6 +184,10 @@
 			"restartButtonTooltip": "Goes back to the initial form and amend the inputs",
 			"editButtonTooltip": "Manually edit the result of the step provided by Mojo",
 			"validateButtonTooltip": "Validates this step and continues the process"
+		},
+		"loading": {
+			"title": "Generating an answer...",
+			"subtitle": "Please wait a moment"
 		}
 	},
 	"todos": {
@@ -203,6 +226,12 @@
 			"name": "Name",
 			"button": "Sign up",
 			"otherProviders": "Or continue with"
+		},
+		"forgotPassword": {
+			"title": "Forgot password",
+			"emailAddress": "Email address",
+			"button": "Send reset link",
+			"alert": "Please check your email to reset your password."
 		}
 	},
 	"calendar": {

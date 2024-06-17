@@ -74,15 +74,32 @@
     },
     "userTaskExecutionList": {
         "appBarTitle": "Tareas",
-        "taskNotFound": "🤔\nParece que no hay nada similar a lo que buscar en tu historial..."
+        "taskNotFound": "🤔\nParece que no hay nada similar a lo que buscar en tu historial...",
+        "removeButton": "Borrar",
+        "deleteSuccess": "Ejecución de tarea de usuario eliminada con éxito.",
+        "searchTaskPlaceholder": "buscar",
+        "date": {
+            "now": "Ahora",
+            "sunday": "Dom.",
+            "monday": "Lun.",
+            "tuesday": "Mar.",
+            "wednesday": "Miér.",
+            "thursday": "Jue.",
+            "friday": "Vier.",
+            "saturday": "Sáb.",
+            "beforeTimeAgo": "Hace",
+            "minutes": "min",
+            "hours": "h",
+            "afterTimeAgo": ""
+        }
     },
     "newUserTaskExecution": {
         "appBarTitle": "Tareas",
         "title": "🎯\nQue le gustaria hacer hoy?",
         "selectBusinessTasks": "Selecciona una de las tareas empresariales que te gustaría conseguir con Mojo"
     },
-    "startUserTaskStepExecution":{
-      "stepsIntroduction": "Para esta tarea se ejecutarán los siguientes pasos:"
+    "startUserTaskStepExecution": {
+        "stepsIntroduction": "Para esta tarea se ejecutarán los siguientes pasos:"
     },
     "resources": {
         "resourcesTitle": "recursos",
@@ -135,6 +152,8 @@
             "editEmoji": "🎙️",
             "editButton": "Editar",
             "exportButton": "Exportar",
+            "copyButton": "Copiar",
+            "copySuccess": "Copiado !",
             "hubspotIntegration": {
                 "saveAs": "Guardar como ",
                 "in": " en "
@@ -165,7 +184,11 @@
             "restartButtonTooltip": "Vuelve al formulario inicial y modifica las entradas",
             "editButtonTooltip": "Edita manualmente el resultado del paso proporcionado por Mojo",
             "validateButtonTooltip": "Valida este paso y continúa el proceso"
-        }
+        },
+            "loading": {
+                "title": "Generación de respuesta...",
+                "subtitle": "Por favor, espere un momento"
+            }
     },
     "todos": {
         "appBarTitle": "Por hacer",
@@ -203,6 +226,12 @@
             "name": "Nombre",
             "button": "Registrarse",
             "otherProviders": "O continuar con"
+        },
+        "forgotPassword": {
+            "title": "Contraseña olvidada",
+            "emailAddress": "Dirección de correo electrónico",
+            "button": "Enviar un correo electrónico de restablecimiento",
+            "alert": "Por favor, comprueba tu correo electrónico para restablecer tu contraseña"
         }
     },
     "calendar": {

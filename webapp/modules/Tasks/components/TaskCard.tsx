@@ -7,6 +7,7 @@ import cachedAPIName from "helpers/constants/cachedAPIName";
 import { EllipsisVerticalIcon } from "@heroicons/react/24/outline";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrash } from "@fortawesome/free-solid-svg-icons";
+import { useTranslation } from "react-i18next";
 
 type Props = {
   title: string;
@@ -43,6 +44,7 @@ const TaskCard = ({
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const { showAlert } = useAlert();
   const deleteUserTaskExecution = useDeleteUserTaskExecution();
+  const { t } = useTranslation("dynamic");
 
   useEffect(() => {
     const calculateTimeAgo = () => {
@@ -58,13 +60,19 @@ const TaskCard = ({
       const days = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
 
       if (minutes < 1) {
-        setTimeAgo("now");
+        setTimeAgo(t('userTaskExecutionList.date.now'));
       } else if (hours < 1) {
-        setTimeAgo(`${minutes}min ago`);
+        setTimeAgo(`${t('userTaskExecutionList.date.afterTimeAgo')} ${minutes}${t('userTaskExecutionList.date.minutes')} ${t('userTaskExecutionList.date.afterTimeAgo')}`);
       } else if (days < 1) {
-        setTimeAgo(`${hours}h ago`);
+        setTimeAgo(`${t('userTaskExecutionList.date.beforeTimeAgo')}${hours}${t('userTaskExecutionList.date.hours')} ${t('userTaskExecutionList.date.afterTimeAgo')}`);
       } else if (days <= 7) {
-        const dayOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][
+        const dayOfWeek = [t('userTaskExecutionList.date.sunday'),
+          t('userTaskExecutionList.date.monday'),
+          t('userTaskExecutionList.date.tuesday'),
+          t('userTaskExecutionList.date.wednesday'),
+          t('userTaskExecutionList.date.thursday'),
+          t('userTaskExecutionList.date.friday'),
+          t('userTaskExecutionList.date.saturday')][
           providedDate?.getDay()
         ];
         const timeString = `${dayOfWeek} ${providedDate?.toLocaleTimeString(
@@ -87,14 +95,14 @@ const TaskCard = ({
     deleteUserTaskExecution.mutate(userTaskExecutionPk, {
       onSuccess: () => {
         showAlert({
-          title: "User task execution deleted successfully.",
+          title: t('userTaskExecutionList.deleteSuccess'),
           type: "success",
         });
         invalidateQuery([cachedAPIName.USER_TASK_EXECUTION]);
       },
       onError: () => {
         showAlert({
-          title: "Something went wrong!",
+          title: t('errorMessages.globalSnackBarMessage'),
           type: "error",
         });
       },
@@ -161,7 +169,7 @@ const TaskCard = ({
                 }
               >
                 <FontAwesomeIcon icon={faTrash} />
-                <button className="ml-2 font-semibold">Remove</button>
+                <button className="ml-2 font-semibold">{t("userTaskExecutionList.removeButton")}</button>
               </div>
             )}
           </>

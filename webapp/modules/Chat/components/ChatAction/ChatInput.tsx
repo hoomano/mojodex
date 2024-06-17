@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect, useContext } from "react";
 import ChatSendButton from "./ChatSendButton";
 
 import globalContext, { GlobalContextType } from "helpers/GlobalContext";
+import { useTranslation } from "next-i18next";
 
 interface ChatInputType {
   prompt?: string;
@@ -27,14 +28,15 @@ const ChatInput = ({
   onSend,
 }: ChatInputType) => {
 
+  const { t } = useTranslation('dynamic');
   const [message, setMessage] = useState(prompt);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
   const { setGlobalState } = useContext(globalContext) as GlobalContextType;
 
   const placeholder = inputDisabled
-    ? "Waiting for answer..."
-    : "Write your message here...";
+    ? t("userTaskExecution.chatTab.waitingMessage")
+    : t("userTaskExecution.chatTab.messagePlaceholder");
 
   // Focus the textarea when the component is mounted
   useEffect(() => {
@@ -117,7 +119,7 @@ const ChatInput = ({
       <div className="w-1/12" />
 
       <form className="flex grow py-2 mb-1 items-end">
-        
+
 
         <textarea
           ref={textareaRef}

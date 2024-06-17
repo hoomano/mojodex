@@ -29,7 +29,7 @@ import { ImageNode } from "./imageNode";
 import { MarkdownShortcutPlugin } from '@lexical/react/LexicalMarkdownShortcutPlugin';
 import { HorizontalRuleNode } from '@lexical/react/LexicalHorizontalRuleNode';
 import CopyButton from "./CopyButton";
-
+import { useTranslation } from "next-i18next";
 type Props = {
   userTaskExecutionPk: number | undefined;
   producedText: EditerProducedText;
@@ -52,6 +52,7 @@ const Answer = ({
   onSaveNewProducedTextVersion
 }: Props) => {
   const router = useRouter();
+  const { t } = useTranslation('dynamic');
 
   const [text, setText] = useState("");
   const [title, setTitle] = useState("");
@@ -258,7 +259,7 @@ const Answer = ({
             className="inline-flex items-center border-t-2 border-transparent pr-1 pt-4 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700"
           >
             <ArrowLongLeftIcon className="mr-3 h-5 w-5 text-gray-400" aria-hidden="true" />
-            Previous
+            {t("previousButton")}
           </a>
         </div> : null}
         {showNextButton ? <div className="-mt-px flex w-0 flex-1 justify-end">
@@ -267,7 +268,7 @@ const Answer = ({
             onClick={onGetNextProducedText}
             className="inline-flex items-center border-t-2 border-transparent pl-1 pt-4 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700"
           >
-            Next
+            {t("nextButton")}
             <ArrowLongRightIcon className="ml-3 h-5 w-5 text-gray-400" aria-hidden="true" />
           </a>
         </div> : null}

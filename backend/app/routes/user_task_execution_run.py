@@ -79,7 +79,7 @@ class UserTaskExecutionRun(Resource):
 
             if task.type =="instruct":
                 # Launch the process
-                from models.assistant.session import SessionController
+                from models.assistant.session_controller import SessionController
                 session = SessionController(user_task_execution.session_id)
 
                 def launch_process(session, app_version, platform, user_task_execution_pk, use_message_placeholder, use_draft_placeholder):

@@ -1,5 +1,5 @@
 from mojodex_core.entities.db_base_entities import MdWorkflowStep
-from mojodex_core.entities.user_task_execution import UserTaskExecution
+from mojodex_core.entities.abstract_entities.user_task_execution import UserTaskExecution
 from mojodex_core.entities.user_workflow import UserWorkflow
 from mojodex_core.entities.user_workflow_step_execution import UserWorkflowStepExecution
 from sqlalchemy.orm import object_session

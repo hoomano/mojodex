@@ -1,5 +1,5 @@
 import os
-from mojodex_core.db import db_session
+from mojodex_core.db import with_db_session
 from mojodex_core.entities.db_base_entities import MdUserVocabulary
 from mojodex_core.costs_manager.whisper_costs_manager import WhisperCostsManager
 
@@ -61,7 +61,8 @@ class OpenAISTT:
             raise Exception(f"__get_audio_file_duration:  {e}")
 
 
-    def __get_user_vocabulary(self, user_id):
+    @with_db_session
+    def __get_user_vocabulary(self, user_id, db_session):
         try:
             user_vocabulary = db_session.query(MdUserVocabulary).filter(MdUserVocabulary.user_id == user_id).order_by(
                 MdUserVocabulary.creation_date.desc()).limit(50).all()

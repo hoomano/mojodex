@@ -7,7 +7,7 @@ from app import db, authenticate, server_socket, time_manager, main_logger
 from mojodex_core.entities.message import Message
 from mojodex_core.logging_handler import log_error
 from mojodex_core.entities.db_base_entities import *
-from models.assistant.session import SessionController
+from models.assistant.session_controller import SessionController
 from models.user_storage_manager.user_audio_file_manager import UserAudioFileManager
 from packaging import version
 

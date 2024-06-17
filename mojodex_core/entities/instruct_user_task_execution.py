@@ -1,6 +1,6 @@
 from jinja2 import Template
 from sqlalchemy.orm import object_session
-from mojodex_core.entities.user_task_execution import UserTaskExecution
+from mojodex_core.entities.abstract_entities.user_task_execution import UserTaskExecution
 from mojodex_core.entities.instruct_user_task import InstructUserTask
 
 

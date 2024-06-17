@@ -132,7 +132,7 @@ from http_routes import *
 
 HttpRouteManager(api)
 
-from models.assistant.session import SessionController
+from models.assistant.session_controller import SessionController
 
 from user_task_execution_purchase_updater import UserTaskExecutionPurchaseUpdater
 

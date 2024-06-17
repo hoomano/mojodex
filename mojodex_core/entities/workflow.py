@@ -1,6 +1,6 @@
 
 from mojodex_core.entities.db_base_entities import MdWorkflowStepDisplayedData, MdWorkflowStep
-from mojodex_core.entities.task import Task
+from mojodex_core.entities.abstract_entities.task import Task
 from sqlalchemy.orm import object_session
 from sqlalchemy.sql.functions import coalesce
 

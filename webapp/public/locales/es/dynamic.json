@@ -127,6 +127,8 @@
     },
     "chatTab": {
       "title": "Chat",
+      "messagePlaceholder": "Escribe aquí tu mensaje...",
+      "waitingMessage": "Esperando respuesta...",
       "notificationValidation": {
         "emoji": "👍",
         "title": "Trabajo en ello!",

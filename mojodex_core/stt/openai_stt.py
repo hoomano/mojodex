@@ -87,8 +87,6 @@ class OpenAISTT:
         audio_file = open(audio_file_path, "rb")
         try:
             vocab = self.__get_user_vocabulary(user_id)
-            print(f"🟢 vocab: {vocab}")
-            print(f"🟢 type(vocab): {type(vocab)}")
             # check size of vocab tokens
             n_tokens_vocab = self._num_tokens_from_string(vocab)
             if n_tokens_vocab > 244: # from whisper doc: https://platform.openai.com/docs/guides/speech-to-text/prompting

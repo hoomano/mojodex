@@ -6,13 +6,12 @@ from models.produced_text_managers.workflow_produced_text_manager import Workflo
 from mojodex_core.entities.db_base_entities import MdUserTask, MdUserWorkflowStepExecutionResult, MdWorkflowStep
 from mojodex_core.db import engine, Session
 from typing import List
-
-from mojodex_core.entities.user_task_execution import generate_title_and_summary
 from mojodex_core.entities.user_workflow_execution import UserWorkflowExecution
 from sqlalchemy import case, and_
 
 from mojodex_core.entities.user_workflow_step_execution import UserWorkflowStepExecution
 from mojodex_core.mail import send_technical_error_email
+from mojodex_core.task_execution_title_summary_generator import TaskExecutionTitleSummaryGenerator
 
 
 class WorkflowProcessController:
@@ -123,7 +122,7 @@ class WorkflowProcessController:
     def run(self):
         try:
             if not self.workflow_execution.title:
-                server_socket.start_background_task(generate_title_and_summary, self.workflow_execution.user_task_execution_pk)
+                server_socket.start_background_task(TaskExecutionTitleSummaryGenerator.generate_title_and_summary, self.workflow_execution.user_task_execution_pk)
             next_step_execution_to_run = self._get_next_step_execution_to_run()
             if not next_step_execution_to_run:
                 self.end_workflow_execution()

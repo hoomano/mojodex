@@ -1,10 +1,15 @@
 from abc import ABC
 
-from mojodex_core.entities.abstract_entity import AbstractEntity
+from mojodex_core.entities.abstract_entities.abstract_entity import AbstractEntity
 from mojodex_core.entities.db_base_entities import MdTask, MdTaskDisplayedData
 from sqlalchemy.orm import object_session
 from sqlalchemy import func, or_
+
 class Task(MdTask, ABC, metaclass=AbstractEntity):
+    """Task entity class is an abstract class.
+    It should be instanciated as an InstructTask or Workflow.
+    
+    This is true for default constructor usage but also when retrieving data from the database: `db.session.query(InstructTask).all()`"""
 
     def _get_displayed_data_in_language(self, language_code):
         try:

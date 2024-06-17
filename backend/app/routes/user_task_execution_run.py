@@ -91,6 +91,12 @@ class UserTaskExecutionRun(Resource):
                 workflow_execution = WorkflowProcessController(user_task_execution_pk)
                 server_socket.start_background_task(workflow_execution.run)
 
+
+            # Normally, flask_socketio will close db.session automatically after the request is done 
+            # (https://flask.palletsprojects.com/en/2.3.x/patterns/sqlalchemy/) "Flask will automatically remove database sessions at the end of the request or when the application shuts down."
+            # But if its not the case because of the background task launched in this route, errors like `QueuePool limit of size 5 overflow 10 reached` may happen in the backend logs and cause issues.
+            # In this case, add here `db.session.close()` to close the session manually.
+
             return {"success": "ok"}, 200
 
         except Exception as e:

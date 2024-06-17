@@ -1,11 +1,17 @@
 from abc import ABC, abstractmethod
 from typing import List
 
-from mojodex_core.entities.abstract_entity import AbstractEntity
+from mojodex_core.entities.abstract_entities.abstract_entity import AbstractEntity
 from mojodex_core.entities.db_base_entities import MdWorkflowStep, MdWorkflowStepDisplayedData
 from sqlalchemy.orm import object_session
 from sqlalchemy import func, or_
+
 class WorkflowStep(MdWorkflowStep, ABC, metaclass=AbstractEntity):
+    """WorkflowStep entity class is an abstract class.
+    It should be instanciated as a class listed in `mojodex_core/steps_library.py`.
+    
+    This is true for default constructor usage but also when retrieving data from the database: `db.session.query(...)...`"""
+
     types_reserved_key = 'types'
     reserved_output_keys: List[str] = [types_reserved_key]
 

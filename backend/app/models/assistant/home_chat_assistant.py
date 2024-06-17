@@ -11,8 +11,8 @@ from mojodex_core.entities.user import User
 from mojodex_core.entities.instruct_user_task_execution import InstructTaskExecution
 
 from mojodex_core.entities.instruct_user_task import InstructUserTask
-from mojodex_core.entities.user_task_execution import generate_title_and_summary
 from mojodex_core.llm_engine.mpt import MPT
+from mojodex_core.task_execution_title_summary_generator import TaskExecutionTitleSummaryGenerator
 
 
 class HomeChatAssistant(ChatAssistant):
@@ -148,7 +148,7 @@ class HomeChatAssistant(ChatAssistant):
                         if self.session.last_user_message:
                             self.session.last_user_message.user_task_execution_pk = self.instruct_task_execution.user_task_execution_pk
 
-                        server_socket.start_background_task(generate_title_and_summary, self.instruct_task_execution.user_task_execution_pk)
+                        server_socket.start_background_task(TaskExecutionTitleSummaryGenerator.generate_title_and_summary, self.instruct_task_execution.user_task_execution_pk)
                         return True  # we stop the stream
                 else:  # detected task is null
                     if self.instruct_task_execution:

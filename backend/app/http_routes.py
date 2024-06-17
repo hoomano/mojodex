@@ -34,14 +34,12 @@ from routes.timezone import Timezone
 from routes.product import Product
 from routes.product_task_association import ProductTaskAssociation
 from routes.manual_purchase import ManualPurchase
-from routes.task_tool_execution import TaskToolExecution
 from routes.mojo_message import MojoMessage
 from routes.inapp_apple_purchase import InAppApplePurchase
 from routes.todos import Todos
 from routes.extract_todos import ExtractTodos
 from routes.todo_scheduling import TodosScheduling
 from routes.todo_daily_emails import TodoDailyEmails
-from routes.task_tool_query import TaskToolQuery
 from routes.vocabulary import Vocabulary
 from routes.product_category import ProductCategory
 from routes.associate_free_product import FreeProductAssociation
@@ -49,8 +47,6 @@ from routes.free_users_engagement import FreeUsersEngagementChecker
 from routes.retrieve_produced_text import RetrieveProducedText
 from routes.calendar_suggestion_notification import CalendarSuggestionNotifications
 from routes.home_chat import HomeChat
-from routes.tool import Tool
-from routes.task_tool import TaskTool
 from routes.task_json import TaskJson
 from routes.integrations.hubspot import Hubspot
 from routes.user_workflow_step_execution import UserWorkflowStepExecution
@@ -103,14 +99,12 @@ class HttpRouteManager:
         api.add_resource(Product, "/product")
         api.add_resource(ProductTaskAssociation, "/product_task_association")
         api.add_resource(ManualPurchase, "/manual_purchase")
-        api.add_resource(TaskToolExecution, "/task_tool_execution")
         api.add_resource(MojoMessage, "/mojo_message")
         api.add_resource(InAppApplePurchase, "/in_app_apple_purchase")
         api.add_resource(Todos, "/todos")
         api.add_resource(ExtractTodos, "/extract_todos")
         api.add_resource(TodosScheduling, "/todos_scheduling")
         api.add_resource(TodoDailyEmails, "/todo_daily_emails")
-        api.add_resource(TaskToolQuery, "/task_tool_query")
         api.add_resource(Vocabulary, "/vocabulary")
         api.add_resource(ProductCategory, "/product_category")
         api.add_resource(FreeProductAssociation, "/associate_free_product")
@@ -118,8 +112,6 @@ class HttpRouteManager:
         api.add_resource(RetrieveProducedText, "/retrieve_produced_text")
         api.add_resource(CalendarSuggestionNotifications, "/calendar_suggestion_notifications")
         api.add_resource(HomeChat, "/home_chat")
-        api.add_resource(Tool, "/tool")
-        api.add_resource(TaskTool, "/task_tool")
         api.add_resource(TaskJson, "/task_json")
         api.add_resource(Hubspot, "/integrations/hubspot")
         api.add_resource(UserWorkflowStepExecution, "/user_workflow_step_execution")

@@ -28,8 +28,7 @@ class InstructTaskExecution(UserTaskExecution):
                                    title_start_tag="<title>",#InstructTaskProducedTextManager.title_start_tag,
                                    title_end_tag="</title>",#InstructTaskProducedTextManager.title_end_tag,
                                    draft_start_tag="<draft>",#InstructTaskProducedTextManager.draft_start_tag,
-                                   draft_end_tag="</draft>"#InstructTaskProducedTextManager.draft_end_tag,
-                                   # task_tool_associations=task_tool_associations
+                                   draft_end_tag="</draft>"#InstructTaskProducedTextManager.draft_end_tag
                                    )
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} :: instructions :: {e}")

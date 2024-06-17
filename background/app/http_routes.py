@@ -3,7 +3,6 @@ from routes.parse_website import ParseWebsite
 from routes.update_document import UpdateDocument
 from routes.first_session_message import FirstSessionMessage
 from routes.event_generation import EventsGeneration
-from routes.task_tool_execution import TaskToolExecution
 from routes.extract_todos import ExtractTodos
 from routes.reschedule_todo import RescheduleTodo
 class HttpRouteManager:
@@ -13,6 +12,5 @@ class HttpRouteManager:
         api.add_resource(UpdateDocument, '/update_document')
         api.add_resource(FirstSessionMessage, '/first_session_message')
         api.add_resource(EventsGeneration, '/events_generation')
-        api.add_resource(TaskToolExecution, '/task_tool_execution')
         api.add_resource(ExtractTodos, '/extract_todos')
         api.add_resource(RescheduleTodo, '/reschedule_todo')

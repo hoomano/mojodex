@@ -50,10 +50,10 @@ class Document(Resource):
         try:
             secret = request.headers['Authorization']
             if secret != os.environ["MOJODEX_BACKGROUND_SECRET"]:
-                log_error(f"Error updating tool_execution : Authentication error : Wrong secret")
+                log_error(f"Error updating document : Authentication error : Wrong secret")
                 return {"error": "Authentication error : Wrong secret"}, 403
         except KeyError:
-            log_error(f"Error updating tool_execution  : Missing Authorization secret in headers")
+            log_error(f"Error updating document  : Missing Authorization secret in headers")
             return {"error": f"Missing Authorization secret in headers"}, 403
 
         if not request.is_json:

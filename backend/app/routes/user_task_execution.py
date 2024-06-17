@@ -291,56 +291,6 @@ class UserTaskExecution(Resource):
 
         try:
 
-            def get_task_tool_executions(user_task_execution_pk):
-                try:
-                    query_sub = db.session.query(
-                        MdTaskToolQuery.task_tool_execution_fk,
-                        MdTaskToolQuery.task_tool_query_pk.label("task_tool_query_pks"),
-                        func.array_agg(MdTaskToolQuery.query).label("queries"),
-                        func.array_agg(MdTaskToolQuery.result).label("results")
-                    ).group_by(MdTaskToolQuery.task_tool_execution_fk, MdTaskToolQuery.task_tool_query_pk).subquery()
-
-                    aggregated_sub = db.session.query(
-                        query_sub.c.task_tool_execution_fk,
-                        func.array_agg(query_sub.c.task_tool_query_pks).label("agg_task_tool_query_pks"),
-                        func.array_agg(query_sub.c.queries).label("agg_queries"),
-                        func.array_agg(query_sub.c.results).label("agg_results")
-                    ).group_by(query_sub.c.task_tool_execution_fk).subquery()
-
-                    results = db.session.query(
-                        MdTaskToolExecution.task_tool_execution_pk,
-                        MdTool.name.label("tool_name"),
-                        aggregated_sub.c.agg_task_tool_query_pks.label("ttq_pk"),
-                        aggregated_sub.c.agg_queries.label("qs"),
-                        aggregated_sub.c.agg_results.label("rs")
-                    ).join(
-                        MdTaskToolAssociation,
-                        MdTaskToolExecution.task_tool_association_fk == MdTaskToolAssociation.task_tool_association_pk
-                    ).join(
-                        MdTool,
-                        MdTaskToolAssociation.tool_fk == MdTool.tool_pk
-                    ).outerjoin(
-                        aggregated_sub,
-                        MdTaskToolExecution.task_tool_execution_pk == aggregated_sub.c.task_tool_execution_fk
-                    ).filter(
-                        MdTaskToolExecution.user_task_execution_fk == user_task_execution_pk
-                    ).all()
-
-                    results = [result._asdict() for result in results]
-
-                    results_list = [{
-                        "task_tool_execution_pk": row["task_tool_execution_pk"],
-                        "tool_name": row["tool_name"],
-                        "queries": [{"query": q, "result": r, "task_tool_query_pk": ttq_pk}
-                                    for ttq_pk, qs, rs in zip(row["ttq_pk"], row["qs"], row["rs"])
-                                    for q, r in zip(qs, rs)
-                                    ] if row["ttq_pk"] else []
-                    } for row in results]
-
-                    return results_list
-                except Exception as e:
-                    raise Exception(f"__get_task_tool_executions: {e}")
-
             def recover_text_edit_actions(user_task_pk):
                 try:
                     # Subquery for user_language_code
@@ -593,8 +543,6 @@ class UserTaskExecution(Resource):
                     "produced_text_production": result["produced_text_production"],
                     "produced_text_version_pk": result["produced_text_version_pk"],
                     "produced_text_version_index": result["produced_text_version_index"],
-                    "task_tool_executions": get_task_tool_executions(
-                        result["MdUserTaskExecution"].user_task_execution_pk),
                     "text_edit_actions": recover_text_edit_actions(
                         result["MdUserTaskExecution"].user_task_fk),
                     "working_on_todos": result["MdUserTaskExecution"].todos_extracted is None,
@@ -746,7 +694,6 @@ class UserTaskExecution(Resource):
                 "produced_text_production": row["produced_text_production"],
                 "produced_text_version_pk": row["produced_text_version_pk"],
                 "produced_text_version_index": row["produced_text_version_index"],
-                "task_tool_executions": get_task_tool_executions(row["MdUserTaskExecution"].user_task_execution_pk),
                 "text_edit_actions": recover_text_edit_actions(row["MdUserTaskExecution"].user_task_fk),
                 "working_on_todos": row["MdUserTaskExecution"].todos_extracted is None,
                 **(get_workflow_specific_data(row) if row["MdTask"].type == "workflow" else {})

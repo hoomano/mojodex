@@ -1,16 +1,14 @@
-from models.assistant.models.message import Message
-from mojodex_core.entities import MdMessage
+from sqlalchemy.orm import object_session
+from mojodex_core.entities.message import Message
+from mojodex_core.entities.db_base_entities import MdSession
 
-class ChatSession:
-    def __init__(self, session_id, db_session):
-        self.session_id = session_id
-        self.db_session = db_session
+class Session(MdSession):
 
     @property
-    def _db_messages(self):
+    def messages(self):
         try:
-            return self.db_session.query(MdMessage).filter(MdMessage.session_id == self.session_id).order_by(
-                MdMessage.message_date).all()
+            session = object_session(self)
+            return session.query(Message).filter(Message.session_id == self.session_id).order_by(Message.message_date).all()
         except Exception as e:
             raise Exception("_db_messages: " + str(e))
 
@@ -18,8 +16,8 @@ class ChatSession:
     def last_user_message(self):
         try:
             from models.assistant.session import Session as SessionModel
-            db_message = next((message for message in self._db_messages[::-1] if message.sender == SessionModel.user_message_key), None)
-            return Message(db_message.message_pk, self.db_session) if db_message else None
+            last_user_message = next((message for message in self.messages[::-1] if message.sender == SessionModel.user_message_key), None)
+            return last_user_message
         except Exception as e:
             raise Exception(f"_last_user_message :: {e}")
 
@@ -28,7 +26,7 @@ class ChatSession:
         try:
             user_key = "user"
             agent_key = "assistant"
-            messages = self._db_messages
+            messages = self.messages
             conversation = []
             for message in messages:
                 if message.sender == "user":  # Session.user_message_key:
@@ -50,7 +48,7 @@ class ChatSession:
 
     def get_conversation_as_string(self, agent_key="Agent", user_key="User", with_tags=True):
         try:
-            messages = self._db_messages
+            messages = self.messages
             conversation = ""
             for message in messages:
                 if message.sender == "user":  # Session.user_message_key:

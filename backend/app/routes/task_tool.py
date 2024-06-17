@@ -2,7 +2,7 @@ import os
 
 from flask import request
 from flask_restful import Resource
-from mojodex_core.entities import MdTool, MdTask, MdTaskToolAssociation
+from mojodex_core.entities.db_base_entities import MdTool, MdTask, MdTaskToolAssociation
 from sqlalchemy import func
 from app import db
 

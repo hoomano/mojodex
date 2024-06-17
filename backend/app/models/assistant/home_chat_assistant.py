@@ -1,9 +1,18 @@
-from models.assistant.models.instruct_task_execution import InstructTaskExecution, User, ChatSession
+from datetime import datetime
+
 from models.knowledge.knowledge_manager import KnowledgeManager
 from models.assistant.chat_assistant import ChatAssistant
-from app import placeholder_generator
+from app import placeholder_generator, server_socket
 from models.tasks.task_manager import TaskManager
+
+from mojodex_core.entities.session import Session
+from mojodex_core.entities.user import User
+
+from mojodex_core.entities.instruct_user_task_execution import InstructTaskExecution
+
+from mojodex_core.entities.instruct_user_task import InstructUserTask
 from mojodex_core.llm_engine.mpt import MPT
+from mojodex_core.task_execution_title_summary_generator import TaskExecutionTitleSummaryGenerator
 
 
 class HomeChatAssistant(ChatAssistant):
@@ -12,15 +21,15 @@ class HomeChatAssistant(ChatAssistant):
     task_pk_start_tag, task_pk_end_tag = "<task_pk>", "</task_pk>"
 
     def __init__(self, mojo_message_token_stream_callback, draft_token_stream_callback, use_message_placeholder,
-                 user_id, session_id, tag_proper_nouns, user_messages_are_audio, running_user_task_execution, db_session):
+                 user_id, session_id, tag_proper_nouns, user_messages_are_audio, running_user_task_execution,
+                 db_session):
         try:
             super().__init__(mojo_message_token_stream_callback, draft_token_stream_callback,
                              tag_proper_nouns, user_messages_are_audio, db_session)
             self.instruct_task_execution = running_user_task_execution if running_user_task_execution else None
-            self.user = self.instruct_task_execution.user if self.instruct_task_execution else User(user_id,
-                                                                                                    self.db_session)
-            self.session = self.instruct_task_execution.session if self.instruct_task_execution else ChatSession(
-                session_id, self.db_session)
+            self.user = self.instruct_task_execution.user if self.instruct_task_execution else self.db_session.query(User).get(user_id)
+            self.session = self.instruct_task_execution.session if self.instruct_task_execution else self.db_session.query(
+                Session).get(session_id)
             self.use_message_placeholder = use_message_placeholder
             self.task_manager = TaskManager(self.session.session_id, self.user.user_id)
 
@@ -76,8 +85,8 @@ class HomeChatAssistant(ChatAssistant):
 
             return MPT(self.mpt_file, mojo_knowledge=mojo_knowledge,
                        global_context=global_context,
-                       username=self.user.username,
-                       user_company_knowledge=self.user.company_knowledge,
+                       username=self.user.name,
+                       user_company_knowledge=self.user.company_description,
                        tasks=self.user.available_instruct_tasks,
                        running_task=self.instruct_task_execution.task if self.instruct_task_execution else None,
                        infos_to_extract=self.instruct_task_execution.task.infos_to_extract if self.instruct_task_execution else None,
@@ -102,6 +111,23 @@ class HomeChatAssistant(ChatAssistant):
         except Exception as e:
             raise Exception(f"__spot_task_pk :: {e}")
 
+    def _create_user_task_execution(self, task_pk):
+        try:
+            user_task = self.db_session.query(InstructUserTask) \
+                .filter(InstructUserTask.task_fk == task_pk) \
+                .filter(InstructUserTask.user_id == self.user.user_id) \
+                .first()
+            self.instruct_task_execution = InstructTaskExecution(
+                user_task_fk=user_task.user_task_pk,
+                start_date=datetime.now(),
+                json_input_values=user_task.json_input_in_user_language,
+                session_id=self.session.session_id,
+            )
+            self.db_session.add(self.instruct_task_execution)
+            self.db_session.commit()
+        except Exception as e:
+            raise Exception(f"_create_user_task_execution :: {e}")
+
     def _token_callback(self, partial_text):
         partial_text = partial_text.strip()
 
@@ -117,14 +143,12 @@ class HomeChatAssistant(ChatAssistant):
                 if task_pk is not None:  # a task is running
                     if not self.instruct_task_execution or task_pk != self.instruct_task_execution.task.task_pk:
                         # if the task is different from the running task, we set the new task
-                        self.instruct_task_execution = InstructTaskExecution.create_from_user_task(self.user, task_pk,
-                                                                                                   self.session,
-                                                                                                   self.db_session)
+                        self._create_user_task_execution(task_pk)
                         # associate previous user message to this task
                         if self.session.last_user_message:
                             self.session.last_user_message.user_task_execution_pk = self.instruct_task_execution.user_task_execution_pk
 
-                        self.instruct_task_execution.generate_title_and_summary()
+                        server_socket.start_background_task(TaskExecutionTitleSummaryGenerator.generate_title_and_summary, self.instruct_task_execution.user_task_execution_pk)
                         return True  # we stop the stream
                 else:  # detected task is null
                     if self.instruct_task_execution:

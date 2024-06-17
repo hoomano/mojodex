@@ -1,6 +1,6 @@
 import os
 
-from mojodex_core.entities import *
+from mojodex_core.entities.db_base_entities import *
 from app import db
 
 

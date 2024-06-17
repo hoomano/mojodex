@@ -5,11 +5,10 @@ from flask import request
 from flask_restful import Resource
 from app import db, authenticate
 from mojodex_core.logging_handler import log_error
-from mojodex_core.entities import *
+from mojodex_core.entities.db_base_entities import *
 
-from models.assistant.session import Session
 from sqlalchemy import or_
-
+from mojodex_core.entities.message import Message as MessageEntity
 
 class Message(Resource):
 
@@ -20,7 +19,7 @@ class Message(Resource):
     def has_audio_file(message_pk, sender, user_id, session_id):
         from models.user_storage_manager.user_audio_file_manager import UserAudioFileManager
         user_audio_file_manager = UserAudioFileManager()
-        if sender == Session.user_message_key:
+        if sender == MessageEntity.user_message_key:
             audio_storage = user_audio_file_manager.get_user_messages_audio_storage(user_id, session_id)
         else:
             audio_storage = user_audio_file_manager.get_mojo_messages_audio_storage(user_id, session_id)

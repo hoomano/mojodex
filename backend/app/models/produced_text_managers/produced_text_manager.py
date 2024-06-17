@@ -3,7 +3,7 @@ from datetime import datetime
 
 from app import db, timing_logger
 import time
-from mojodex_core.entities import MdProducedText, MdMessage, MdProducedTextVersion, MdTextType
+from mojodex_core.entities.db_base_entities import MdProducedText, MdMessage, MdProducedTextVersion, MdTextType
 
 from mojodex_backend_logger import MojodexBackendLogger
 

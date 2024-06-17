@@ -14,9 +14,9 @@ Let's give this another try. Ensure to take into account every user's instructio
 
 Write the list of the topic of each stanza.{%endif%}
 Answer in the following format:
-Topic of stanza 1
-Topic of stanza 2
+<Topic of stanza 1>
+<Topic of stanza 2>
 ...
-Topic of stanza n
+<Topic of stanza n>
 
 No talk, only list of topics.

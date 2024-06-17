@@ -1,6 +1,6 @@
 import os
-from mojodex_core.db import db_session
-from mojodex_core.entities import MdUserVocabulary
+from mojodex_core.db import with_db_session
+from mojodex_core.entities.db_base_entities import MdUserVocabulary
 from mojodex_core.costs_manager.whisper_costs_manager import WhisperCostsManager
 
 
@@ -60,8 +60,8 @@ class OpenAISTT:
         except Exception as e:
             raise Exception(f"__get_audio_file_duration:  {e}")
 
-
-    def __get_user_vocabulary(self, user_id):
+    @with_db_session
+    def __get_user_vocabulary(self, user_id, db_session):
         try:
             user_vocabulary = db_session.query(MdUserVocabulary).filter(MdUserVocabulary.user_id == user_id).order_by(
                 MdUserVocabulary.creation_date.desc()).limit(50).all()
@@ -72,11 +72,14 @@ class OpenAISTT:
 
     # calculate the number of tokens in a given string
     def _num_tokens_from_string(self, string):
-        # https://github.com/openai/openai-cookbook/blob/main/examples/How_to_count_tokens_with_tiktoken.ipynb
-        """Returns the number of tokens in a text string."""
-        encoding = tiktoken.get_encoding("p50k_base")
-        num_tokens = len(encoding.encode(string))
-        return num_tokens
+        try:
+            # https://github.com/openai/openai-cookbook/blob/main/examples/How_to_count_tokens_with_tiktoken.ipynb
+            """Returns the number of tokens in a text string."""
+            encoding = tiktoken.get_encoding("p50k_base")
+            num_tokens = len(encoding.encode(string))
+            return num_tokens
+        except Exception as e:
+            raise Exception(f"_num_tokens_from_string:  {e}")
 
     def transcript(self, audio_file_path, user_id, user_task_execution_pk=None, task_name_for_system=None):
         file_duration = self.__get_audio_file_duration(audio_file_path)

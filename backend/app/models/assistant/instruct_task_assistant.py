@@ -1,4 +1,3 @@
-from models.assistant.models.instruct_task_execution import InstructTaskExecution
 from models.knowledge.knowledge_manager import KnowledgeManager
 from models.assistant.chat_assistant import ChatAssistant
 from models.tasks.task_manager import TaskManager
@@ -11,11 +10,11 @@ class InstructTaskAssistant(ChatAssistant):
 
     def __init__(self, mojo_message_token_stream_callback, draft_token_stream_callback, use_message_placeholder,
                  use_draft_placeholder,
-                 tag_proper_nouns, user_messages_are_audio, running_user_task_execution):
+                 tag_proper_nouns, user_messages_are_audio, running_user_task_execution, db_session):
         try:
 
             super().__init__(mojo_message_token_stream_callback, draft_token_stream_callback,
-                             tag_proper_nouns, user_messages_are_audio, running_user_task_execution.db_session)
+                             tag_proper_nouns, user_messages_are_audio, db_session)
 
             self.instruct_task_execution = running_user_task_execution
             self.use_message_placeholder = use_message_placeholder
@@ -70,8 +69,8 @@ class InstructTaskAssistant(ChatAssistant):
 
             return MPT(self.mpt_file, mojo_knowledge=mojo_knowledge,
                        global_context=global_context,
-                       username=self.instruct_task_execution.user.username,
-                       user_company_knowledge=self.instruct_task_execution.user.company_knowledge,
+                       username=self.instruct_task_execution.user.name,
+                       user_company_knowledge=self.instruct_task_execution.user.company_description,
                        infos_to_extract=self.instruct_task_execution.task.infos_to_extract,
                        task_specific_instructions=self.instruct_task_execution.instructions,
                        produced_text_done=self.instruct_task_execution.produced_text_done,

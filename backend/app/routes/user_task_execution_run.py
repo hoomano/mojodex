@@ -5,9 +5,9 @@ from models.user_task_execution_inputs_manager import UserTaskExecutionInputsMan
 from flask import request
 from flask_restful import Resource
 from app import db, authenticate, server_socket
-from models.workflows.workflow_execution import WorkflowExecution
+from models.workflows.workflow_process_controller import WorkflowProcessController
 from mojodex_core.logging_handler import log_error
-from mojodex_core.entities import MdUserTaskExecution, MdTask, MdUserTask
+from mojodex_core.entities.db_base_entities import MdUserTaskExecution, MdTask, MdUserTask
 from sqlalchemy.orm.attributes import flag_modified
 from packaging import version
 
@@ -79,8 +79,8 @@ class UserTaskExecutionRun(Resource):
 
             if task.type =="instruct":
                 # Launch the process
-                from models.assistant.session import Session as SessionModel
-                session = SessionModel(user_task_execution.session_id)
+                from models.assistant.session_controller import SessionController
+                session = SessionController(user_task_execution.session_id)
 
                 def launch_process(session, app_version, platform, user_task_execution_pk, use_message_placeholder, use_draft_placeholder):
                     session.process_form_input( app_version, platform, user_task_execution_pk, use_message_placeholder=use_message_placeholder, use_draft_placeholder=use_draft_placeholder)
@@ -88,8 +88,14 @@ class UserTaskExecutionRun(Resource):
 
                 server_socket.start_background_task(launch_process, session, app_version, platform, user_task_execution_pk, use_message_placeholder, use_draft_placeholder)
             else:
-                workflow_execution = WorkflowExecution(user_task_execution_pk)
+                workflow_execution = WorkflowProcessController(user_task_execution_pk)
                 server_socket.start_background_task(workflow_execution.run)
+
+
+            # Normally, flask_socketio will close db.session automatically after the request is done 
+            # (https://flask.palletsprojects.com/en/2.3.x/patterns/sqlalchemy/) "Flask will automatically remove database sessions at the end of the request or when the application shuts down."
+            # But if its not the case because of the background task launched in this route, errors like `QueuePool limit of size 5 overflow 10 reached` may happen in the backend logs and cause issues.
+            # In this case, add here `db.session.close()` to close the session manually.
 
             return {"success": "ok"}, 200
 

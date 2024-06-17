@@ -1,7 +1,7 @@
 from app import db
 from models.produced_text_managers.instruct_task_produced_text_manager import InstructTaskProducedTextManager
 
-from mojodex_core.entities import MdTextType
+from mojodex_core.entities.db_base_entities import MdTextType
 from mojodex_backend_logger import MojodexBackendLogger
 
 

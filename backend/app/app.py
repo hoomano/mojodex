@@ -45,7 +45,7 @@ from functools import wraps
 import jwt
 
 from datetime import datetime
-from mojodex_core.entities import *
+from mojodex_core.entities.db_base_entities import *
 
 from mojodex_backend_logger import MojodexBackendLogger
 
@@ -132,7 +132,7 @@ from http_routes import *
 
 HttpRouteManager(api)
 
-from models.assistant.session import Session as SessionModel
+from models.assistant.session_controller import SessionController
 
 from user_task_execution_purchase_updater import UserTaskExecutionPurchaseUpdater
 
@@ -145,7 +145,6 @@ def index():
     message = f"Welcome to Mojodex Backend Service."
     return message
 
-
 def resume_session(session_id):
     # get session from db
     session_db = db.session.query(MdSession).filter(MdSession.session_id == session_id).first()
@@ -155,7 +154,7 @@ def resume_session(session_id):
         return
     join_room(session_id)
     userTaskExecutionPurchaseUpdater.join_room(session_id)
-    session = SessionModel(session_id)
+    session = SessionController(session_id)
 
     return session
 

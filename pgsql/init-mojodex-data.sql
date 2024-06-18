@@ -236,32 +236,6 @@ INSERT INTO public.md_task_platform_association VALUES (10, 6, 1);
 
 
 --
--- Data for Name: md_tool; Type: TABLE DATA; Schema: public; Owner: assistant_db_user
---
-
-INSERT INTO public.md_tool VALUES (1, 'google_search', 'Make some research on Google');
-INSERT INTO public.md_tool VALUES (2, 'internal_memory', 'Retrieve past tasks you helped the user with.');
-
-
---
--- Data for Name: md_task_tool_association; Type: TABLE DATA; Schema: public; Owner: assistant_db_user
---
-
-
-
---
--- Data for Name: md_task_tool_execution; Type: TABLE DATA; Schema: public; Owner: assistant_db_user
---
-
-
-
---
--- Data for Name: md_task_tool_query; Type: TABLE DATA; Schema: public; Owner: assistant_db_user
---
-
-
-
---
 -- Data for Name: md_text_edit_action; Type: TABLE DATA; Schema: public; Owner: assistant_db_user
 --
 
@@ -305,6 +279,12 @@ INSERT INTO public.md_tool VALUES (2, 'internal_memory', 'Retrieve past tasks yo
 
 --
 -- Data for Name: md_user_workflow_step_execution; Type: TABLE DATA; Schema: public; Owner: assistant_db_user
+--
+
+
+
+--
+-- Data for Name: md_user_workflow_step_execution_result; Type: TABLE DATA; Schema: public; Owner: assistant_db_user
 --
 
 
@@ -356,6 +336,14 @@ SELECT pg_catalog.setval('public.md_document_seq', 1, false);
 
 SELECT pg_catalog.setval('public.md_error_seq', 1, true);
 
+
+--
+-- Name: md_evaluation_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
+--
+
+SELECT pg_catalog.setval('public.md_evaluation_seq', 1, false);
+
+
 --
 -- Name: md_event_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
 --
@@ -382,6 +370,20 @@ SELECT pg_catalog.setval('public.md_platform_seq', 2, true);
 --
 
 SELECT pg_catalog.setval('public.md_predefined_action_displayed_data_seq', 1, false);
+
+
+--
+-- Name: md_process_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
+--
+
+SELECT pg_catalog.setval('public.md_process_seq', 1, false);
+
+
+--
+-- Name: md_process_step_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
+--
+
+SELECT pg_catalog.setval('public.md_process_step_seq', 1, false);
 
 
 --
@@ -469,27 +471,6 @@ SELECT pg_catalog.setval('public.md_task_seq', 6, true);
 
 
 --
--- Name: md_task_tool_association_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
---
-
-SELECT pg_catalog.setval('public.md_task_tool_association_seq', 1, false);
-
-
---
--- Name: md_task_tool_execution_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
---
-
-SELECT pg_catalog.setval('public.md_task_tool_execution_seq', 1, false);
-
-
---
--- Name: md_task_tool_query_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
---
-
-SELECT pg_catalog.setval('public.md_task_tool_query_seq', 1, false);
-
-
---
 -- Name: md_text_edit_action_displayed_data_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
 --
 
@@ -532,20 +513,6 @@ SELECT pg_catalog.setval('public.md_todo_seq', 1, false);
 
 
 --
--- Name: md_tool_execution_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
---
-
-SELECT pg_catalog.setval('public.md_tool_execution_seq', 1, false);
-
-
---
--- Name: md_tool_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
---
-
-SELECT pg_catalog.setval('public.md_tool_seq', 2, false);
-
-
---
 -- Name: md_user_task_execution_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
 --
 
@@ -571,6 +538,13 @@ SELECT pg_catalog.setval('public.md_user_task_seq', 6, true);
 --
 
 SELECT pg_catalog.setval('public.md_user_vocabulary_pk_seq', 1, false);
+
+
+--
+-- Name: md_user_workflow_step_execution_result_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
+--
+
+SELECT pg_catalog.setval('public.md_user_workflow_step_execution_result_seq', 1, false);
 
 
 --

@@ -778,80 +778,6 @@ CREATE TABLE public.md_task_predefined_action_association (
 
 
 --
--- Name: md_task_tool_association_seq; Type: SEQUENCE; Schema: public; Owner: -
---
-
-CREATE SEQUENCE public.md_task_tool_association_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
---
--- Name: md_task_tool_association; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE public.md_task_tool_association (
-    task_tool_association_pk integer DEFAULT nextval('public.md_task_tool_association_seq'::regclass) NOT NULL,
-    task_fk integer NOT NULL,
-    tool_fk integer NOT NULL,
-    usage_description text NOT NULL
-);
-
-
---
--- Name: md_task_tool_execution_seq; Type: SEQUENCE; Schema: public; Owner: -
---
-
-CREATE SEQUENCE public.md_task_tool_execution_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
---
--- Name: md_task_tool_execution; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE public.md_task_tool_execution (
-    task_tool_execution_pk integer DEFAULT nextval('public.md_task_tool_execution_seq'::regclass) NOT NULL,
-    task_tool_association_fk integer NOT NULL,
-    user_task_execution_fk integer NOT NULL,
-    user_validation timestamp with time zone
-);
-
-
---
--- Name: md_task_tool_query_seq; Type: SEQUENCE; Schema: public; Owner: -
---
-
-CREATE SEQUENCE public.md_task_tool_query_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
---
--- Name: md_task_tool_query; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE public.md_task_tool_query (
-    task_tool_query_pk integer DEFAULT nextval('public.md_task_tool_query_seq'::regclass) NOT NULL,
-    task_tool_execution_fk integer NOT NULL,
-    creation_date timestamp with time zone DEFAULT now() NOT NULL,
-    query json NOT NULL,
-    result_date timestamp with time zone,
-    result json
-);
-
-
---
 -- Name: md_text_edit_action_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -999,41 +925,6 @@ CREATE SEQUENCE public.md_todo_scheduling_seq
 
 
 --
--- Name: md_tool_seq; Type: SEQUENCE; Schema: public; Owner: -
---
-
-CREATE SEQUENCE public.md_tool_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
---
--- Name: md_tool; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE public.md_tool (
-    tool_pk integer DEFAULT nextval('public.md_tool_seq'::regclass) NOT NULL,
-    name character varying(255) NOT NULL,
-    definition text NOT NULL
-);
-
-
---
--- Name: md_tool_execution_seq; Type: SEQUENCE; Schema: public; Owner: -
---
-
-CREATE SEQUENCE public.md_tool_execution_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
---
 -- Name: md_user; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -1110,7 +1001,6 @@ CREATE TABLE public.md_user_task_execution (
     end_date timestamp without time zone,
     summary text,
     title character varying(255),
-    tool_execution_generated boolean DEFAULT false NOT NULL,
     predefined_action_from_user_task_execution_fk integer,
     todos_extracted timestamp with time zone,
     deleted_by_user timestamp with time zone,
@@ -1378,14 +1268,6 @@ ALTER TABLE ONLY public.md_task_predefined_action_association
 
 
 --
--- Name: md_task_tool_query md_task_tool_query_pkey; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.md_task_tool_query
-    ADD CONSTRAINT md_task_tool_query_pkey PRIMARY KEY (task_tool_query_pk);
-
-
---
 -- Name: md_text_edit_action_displayed_data md_text_edit_action_displayed_data_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1543,30 +1425,6 @@ ALTER TABLE ONLY public.md_session
 
 ALTER TABLE ONLY public.md_task
     ADD CONSTRAINT task_pkey PRIMARY KEY (task_pk);
-
-
---
--- Name: md_task_tool_association task_tool_association_pkey; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.md_task_tool_association
-    ADD CONSTRAINT task_tool_association_pkey PRIMARY KEY (task_tool_association_pk);
-
-
---
--- Name: md_task_tool_execution task_tool_execution_pkey; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.md_task_tool_execution
-    ADD CONSTRAINT task_tool_execution_pkey PRIMARY KEY (task_tool_execution_pk);
-
-
---
--- Name: md_tool tool_pkey; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.md_tool
-    ADD CONSTRAINT tool_pkey PRIMARY KEY (tool_pk);
 
 
 --
@@ -1770,14 +1628,6 @@ ALTER TABLE ONLY public.md_predefined_action_displayed_data
 
 
 --
--- Name: md_task_tool_query md_task_tool_execution_fk_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.md_task_tool_query
-    ADD CONSTRAINT md_task_tool_execution_fk_fkey FOREIGN KEY (task_tool_execution_fk) REFERENCES public.md_task_tool_execution(task_tool_execution_pk);
-
-
---
 -- Name: md_text_edit_action_text_type_association md_text_edit_action_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1927,38 +1777,6 @@ ALTER TABLE ONLY public.md_purchase
 
 ALTER TABLE ONLY public.md_session
     ADD CONSTRAINT session_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.md_user(user_id);
-
-
---
--- Name: md_task_tool_association task_tool_association_task_fk_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.md_task_tool_association
-    ADD CONSTRAINT task_tool_association_task_fk_fkey FOREIGN KEY (task_fk) REFERENCES public.md_task(task_pk);
-
-
---
--- Name: md_task_tool_association task_tool_association_tool_fk_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.md_task_tool_association
-    ADD CONSTRAINT task_tool_association_tool_fk_fkey FOREIGN KEY (tool_fk) REFERENCES public.md_tool(tool_pk);
-
-
---
--- Name: md_task_tool_execution task_tool_execution_task_tool_association_fk_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.md_task_tool_execution
-    ADD CONSTRAINT task_tool_execution_task_tool_association_fk_fkey FOREIGN KEY (task_tool_association_fk) REFERENCES public.md_task_tool_association(task_tool_association_pk);
-
-
---
--- Name: md_task_tool_execution task_tool_execution_user_task_execution_fk_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.md_task_tool_execution
-    ADD CONSTRAINT task_tool_execution_user_task_execution_fk_fkey FOREIGN KEY (user_task_execution_fk) REFERENCES public.md_user_task_execution(user_task_execution_pk);
 
 
 --

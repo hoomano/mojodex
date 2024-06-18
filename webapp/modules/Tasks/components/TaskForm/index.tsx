@@ -35,7 +35,7 @@ const CreateTaskForm = () => {
   const generateAnswerHandler = () => {
     //check inputArray contain every dict with key that were in tasksForm;
     for (let i = 0; i < tasksForm.length; i++) {
-      if (!inputArray.find((input) => input.input_name === tasksForm[i].input_name)) {
+      if (!inputArray.find((input) => input.input_name === tasksForm[i].input_name || input.input_name.split("_").slice(0, -1).join("_") == tasksForm[i].input_name)) {
         alert("Field missing: " + tasksForm[i].input_name);
         return;
       }

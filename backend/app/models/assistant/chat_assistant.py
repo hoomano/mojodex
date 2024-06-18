@@ -67,8 +67,6 @@ class ChatAssistant(ABC):
             if self.requires_vision_llm:
                 return self.__call_vision_llm(conversation_list, temperature, max_tokens, user_id,
                                               session_id, user_task_execution_pk, task_name_for_system)
-            with open("/data/prompt.txt", "w") as f:
-                f.write(self._mpt.prompt)
             responses = self._mpt.chat(conversation_list, user_id,
                                          temperature=temperature,
                                          max_tokens=max_tokens,

@@ -1,9 +1,11 @@
 from datetime import datetime
 
+from jinja2 import Template
+
 from app import server_socket, socketio_message_sender
 
 from models.produced_text_managers.workflow_produced_text_manager import WorkflowProducedTextManager
-from mojodex_core.entities.db_base_entities import MdUserTask, MdUserWorkflowStepExecutionResult, MdWorkflowStep
+from mojodex_core.entities.db_base_entities import MdMessage, MdUserTask, MdUserWorkflowStepExecutionResult, MdWorkflowStep
 from mojodex_core.db import engine, Session
 from typing import List
 from mojodex_core.entities.user_workflow_execution import UserWorkflowExecution
@@ -142,6 +144,8 @@ class WorkflowProcessController:
 
     def end_workflow_execution(self):
         try:
+            
+            self.add_state_message()
             produced_text, produced_text_version = self._generate_produced_text()
             server_socket.emit('workflow_execution_produced_text', {
                 "user_task_execution_pk": self.workflow_execution.user_task_execution_pk,
@@ -153,6 +157,7 @@ class WorkflowProcessController:
             }, to=self.workflow_execution.session_id)
         except Exception as e:
             raise Exception(f"end_workflow_execution :: {e}")
+            
 
     def _generate_produced_text(self):
         try:
@@ -200,6 +205,24 @@ class WorkflowProcessController:
                                to=self.workflow_execution.session_id)
         except Exception as e:
             raise Exception(f"_send_ended_step_event :: {e}")
+
+
+    def add_state_message(self):
+        try:
+            # add state message to conversation
+            with open("mojodex_core/prompts/workflows/state.txt") as f:
+                template = Template(f.read())
+                current_step_in_validation = self.workflow_execution.last_step_execution if self.workflow_execution.last_step_execution.validated == None else None
+                state_message = template.render(past_validated_steps_executions=self.workflow_execution.past_valid_step_executions, current_step=current_step_in_validation)
+                
+                system_message = MdMessage(
+                                session_id=self.workflow_execution.session_id, sender='system', event_name='worflow_step_execution_rejection', message={'text': state_message},
+                                creation_date=datetime.now(), message_date=datetime.now()
+                )
+                self.db_session.add(system_message)
+                self.db_session.commit()
+        except Exception as e:
+            raise Exception(f"add_state_message :: {e}")
 
     def validate_step_execution(self, step_execution_pk: int):
         try:

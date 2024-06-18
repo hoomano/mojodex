@@ -75,6 +75,7 @@ class WorkflowAssistant(ChatAssistant):
                        infos_to_extract=self.workflow_execution.task.infos_to_extract,
                        workflow=self.workflow_execution.task,
                        user_workflow_inputs=self.workflow_execution.json_input_values,
+                       produced_text_done=self.workflow_execution.produced_text_done,
                        audio_message=self.user_messages_are_audio,
                        tag_proper_nouns=self.tag_proper_nouns)
         except Exception as e:

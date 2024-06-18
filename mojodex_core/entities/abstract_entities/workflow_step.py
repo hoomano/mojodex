@@ -20,10 +20,6 @@ class WorkflowStep(MdWorkflowStep, ABC, metaclass=AbstractEntity):
     def definition_for_system(self) -> str:
         raise NotImplementedError
 
-    @property
-    def name_for_system(self) -> str:
-        return self.name_for_system
-
     def _get_displayed_data(self, language_code):
         try:
             session = object_session(self)

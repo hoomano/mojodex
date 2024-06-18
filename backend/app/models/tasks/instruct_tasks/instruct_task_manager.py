@@ -1,5 +1,3 @@
-from models.tasks.task_inputs_manager import TaskInputsManager
-
 from models.tasks.task_executor import TaskExecutor
 
 from models.produced_text_managers.instruct_task_produced_text_manager import InstructTaskProducedTextManager
@@ -7,11 +5,13 @@ from models.assistant.execution_manager import ExecutionManager
 from app import placeholder_generator
 from models.assistant.chat_assistant import ChatAssistant
 
+from models.tasks.tag_manager import TagManager
 
-class TaskManager:
+
+class InstructTaskManager:
 
     def __init__(self, session_id, user_id):
-        self.task_input_manager = TaskInputsManager(session_id)
+        self.task_input_manager = TagManager("ask_user_primary_info", "Hello world!")
         self.task_executor = TaskExecutor(session_id, user_id)
 
     @property
@@ -23,13 +23,12 @@ class TaskManager:
 
     @property
     def task_message_placeholder(self):
-        return f"{TaskInputsManager.user_message_start_tag}{placeholder_generator.mojo_message}{TaskInputsManager.user_message_end_tag}"
-
+        return self.task_input_manager.placeholder
 
     def manage_response_task_tags(self, response):
         try:
-            if TaskInputsManager.ask_user_input_start_tag in response:
-                return self.task_input_manager.manage_ask_input_text(response)
+            if self.task_input_manager.start_tag in response:
+                return self.task_input_manager.manage_text(response)
             # if TaskToolManager.tool_usage_start_tag in response:
             #    return self.task_tool_manager.manage_tool_usage_text(response,
             #                                                         self.running_user_task_execution.user_task_execution_pk,
@@ -38,14 +37,13 @@ class TaskManager:
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} :: manage_response_task_tags :: {e}")
 
-
     def manage_task_stream(self, partial_text, mojo_message_token_stream_callback, draft_token_stream_callback):
         try:
             text = None
-            if TaskInputsManager.ask_user_input_start_tag in partial_text:
+            if self.task_input_manager.start_tag in partial_text:
                 text = ChatAssistant.remove_tags_from_text(partial_text,
-                                                                       TaskInputsManager.ask_user_input_start_tag,
-                                                                       TaskInputsManager.ask_user_input_end_tag)
+                                                           self.task_input_manager.start_tag,
+                                                           self.task_input_manager.end_tag)
             # elif TaskToolManager.tool_usage_start_tag in partial_text:
             #     text = AssistantMessageGenerator.remove_tags_from_text(partial_text, TaskToolManager.tool_usage_start_tag,
             #                                                           TaskToolManager.tool_usage_end_tag)
@@ -55,8 +53,8 @@ class TaskManager:
             elif ExecutionManager.execution_start_tag in partial_text:
                 # take the text between <execution> and </execution>
                 text = ChatAssistant.remove_tags_from_text(partial_text,
-                                                                       ExecutionManager.execution_start_tag,
-                                                                       ExecutionManager.execution_end_tag)
+                                                           ExecutionManager.execution_start_tag,
+                                                           ExecutionManager.execution_end_tag)
                 draft_token_stream_callback(text)
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} :: manage_task_stream :: {e}")

@@ -29,7 +29,9 @@ class UserWorkflowExecution(UserTaskExecution):
     @property
     def past_valid_step_executions(self):
         try:
+            print("🔵")
             session = object_session(self)
+            print("🔵🔵")
             return session.query(UserWorkflowStepExecution) \
                 .join(MdWorkflowStep, UserWorkflowStepExecution.workflow_step_fk == MdWorkflowStep.workflow_step_pk) \
                 .filter(

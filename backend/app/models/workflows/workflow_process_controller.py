@@ -128,7 +128,7 @@ class WorkflowProcessController:
                 self.end_workflow_execution()
                 return
 
-            self.execute_step(next_step_execution_to_run)
+            self._execute_step(next_step_execution_to_run)
 
             self._send_ended_step_event()
             if not next_step_execution_to_run.workflow_step.user_validation_required and next_step_execution_to_run.error_status is None:
@@ -248,9 +248,8 @@ class WorkflowProcessController:
         except Exception as e:
             raise Exception(f"get_formatted_past_validated_steps_results :: {e}")
 
-    def execute_step(self, workflow_step_execution: UserWorkflowStepExecution):
+    def _execute_step(self, workflow_step_execution: UserWorkflowStepExecution):
         try:
-
             step_json = workflow_step_execution.to_json()
             step_json["session_id"] = self.workflow_execution.session_id
             server_socket.emit('workflow_step_execution_started', step_json, to=self.workflow_execution.session_id)
@@ -266,6 +265,6 @@ class WorkflowProcessController:
             workflow_step_execution.error_status = {"datetime": datetime.now().isoformat(), "error": str(e)}
             self.db_session.commit()
             # send email to admin
-            print(f"🔴 {self.logger_prefix} - execute_step :: {e}")
+            print(f"🔴 {self.logger_prefix} - _execute_step :: {e}")
             send_technical_error_email(
                 f"Error while executing step {workflow_step_execution.user_workflow_step_execution_pk} for user {workflow_step_execution.user_task_execution.user.user_id} : {e}")

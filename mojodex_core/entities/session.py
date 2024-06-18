@@ -60,8 +60,6 @@ class Session(MdSession):
                             conversation += f"{agent_key}: {message.message['text_with_tags']}\n"
                         else:
                             conversation += f"{agent_key}: {message.message['text']}\n"
-                else:
-                    raise Exception("Unknown message sender")
             return conversation
         except Exception as e:
             raise Exception("_get_conversation_as_string: " + str(e))

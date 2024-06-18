@@ -3,6 +3,8 @@ import Button from "components/Button";
 import useForgotPassword from "helpers/hooks/useForgotPassword";
 import useAlert from "helpers/hooks/useAlert";
 import AuthError from "components/Error/AuthError";
+import { useTranslation } from "react-i18next";
+import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 
 const initialFormValue = { email: "" };
 
@@ -11,6 +13,7 @@ export default function ForgotPassword() {
   const [formData, setFormData] = useState(initialFormValue);
   const [errorShow, setErrorShow] = useState("");
   const { showAlert } = useAlert();
+  const { t } = useTranslation("dynamic");
 
   const resetFormHandler = () => {
     setFormData(initialFormValue);
@@ -29,7 +32,7 @@ export default function ForgotPassword() {
     forgotPassword.mutate(formData.email, {
       onSuccess: () => {
         showAlert({
-          title: "Please check your email to reset password",
+          title: t("account.forgotPassword.emailAddress"),
           type: "success",
         });
         resetFormHandler();
@@ -49,7 +52,7 @@ export default function ForgotPassword() {
           alt="Mojodex"
         />
         <h2 className="mt-6 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">
-          Forgot Password
+          {t("account.forgotPassword.title")}
         </h2>
       </div>
 
@@ -67,7 +70,7 @@ export default function ForgotPassword() {
                 htmlFor="email"
                 className="block text-sm font-medium leading-6 text-gray-900"
               >
-                Email address
+                {t("account.forgotPassword.emailAddress")}
               </label>
               <div className="mt-2">
                 <input
@@ -89,7 +92,7 @@ export default function ForgotPassword() {
                 className="flex w-full justify-center"
                 type="submit"
               >
-                Send confirmation email
+                {t("account.forgotPassword.button")}
               </Button>
             </div>
           </form>
@@ -97,4 +100,12 @@ export default function ForgotPassword() {
       </div>
     </div>
   );
+}
+
+export async function getStaticProps({ locale }: any) {
+  return {
+    props: {
+      ...(await serverSideTranslations(locale, ["common", "home", "dynamic"])),
+    },
+  };
 }

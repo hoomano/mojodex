@@ -3,7 +3,7 @@ from datetime import datetime
 
 import requests
 from app import db, language_retriever, conversation_retriever
-from mojodex_core.entities import *
+from mojodex_core.entities.db_base_entities import *
 
 from models.user_task_execution import UserTaskExecution
 from models.knowledge.knowledge_collector import KnowledgeCollector

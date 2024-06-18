@@ -34,7 +34,7 @@ const StepResult: React.FC<StepResultProps> = ({
     const { t } = useTranslation('dynamic');
 
 
-    function renderNotEditingResultItem(key: string, value: string, resultItem: Map<string, string>) {
+    function renderNotEditingResultItem(key: string, value: string | string[], resultItem: Map<string, string>) {
         // if key is 'types', return nothing
         if (key === 'types') {
             return;
@@ -47,9 +47,22 @@ const StepResult: React.FC<StepResultProps> = ({
             let types = resultItemMap.get('types');
             let typesMap = new Map(Object.entries(types));
             if (typesMap.has(key) && typesMap.get(key) === 'image') {
+                // value is string
+                value = value as string;
                 return <p className="flex-auto py-0.5 text-sm leading-5 text-gray-900">
                     <span className="font-medium text-gray-400">{key}:</span><br />
                     <ImagePreview sessionId={sessionId} filename={value} alt={value} height={800} />
+                </p>;
+            } else if (typesMap.has(key) && typesMap.get(key) === 'multiple_images') {
+                // value is string[]
+                value = value as string[];
+                return <p className="flex-auto py-0.5 text-sm leading-5 text-gray-900">
+                    <span className="font-medium text-gray-400">{key}:</span><br />
+                    <div className="flex flex-row flex-wrap">
+                        {value.map((filename, index) => (
+                            <ImagePreview key={index} sessionId={sessionId} filename={filename} alt={filename} height={400} />
+                        ))}
+                    </div>
                 </p>;
             }
         }
@@ -60,7 +73,7 @@ const StepResult: React.FC<StepResultProps> = ({
         </p>;
     }
 
-    function renderEditingResultItem(key: string, value: string, resultItem: Map<string, any>, resultIndex: number) {
+    function renderEditingResultItem(key: string, value: string | string[], resultItem: Map<string, any>, resultIndex: number) {
         // if key is 'types', return nothing
         if (key === 'types') {
             return;
@@ -69,9 +82,21 @@ const StepResult: React.FC<StepResultProps> = ({
             let types = resultItem.get('types');
             let typesMap = new Map(Object.entries(types));
             if (typesMap.has(key) && typesMap.get(key) === 'image') {
+                value = value as string;
                 return <p className="flex-auto py-0.5 text-sm leading-5 text-gray-900">
                     <span className="font-medium text-gray-400">{key}:</span><br />
                     <ImagePreview sessionId={sessionId} filename={value} alt={value} height={800} />
+                </p>;
+            } else if (typesMap.has(key) && typesMap.get(key) === 'multiple_images') {
+                // value is string[]
+                value = value as string[];
+                return <p className="flex-auto py-0.5 text-sm leading-5 text-gray-900">
+                    <span className="font-medium text-gray-400">{key}:</span><br />
+                    <div className="flex flex-row flex-wrap">
+                        {value.map((filename, index) => (
+                            <ImagePreview key={index} sessionId={sessionId} filename={filename} alt={filename} height={400} />
+                        ))}
+                    </div>
                 </p>;
             }
         }

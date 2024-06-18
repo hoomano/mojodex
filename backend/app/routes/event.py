@@ -6,7 +6,7 @@ from flask_restful import Resource
 from app import db
 from push_notification_sender import push_notification_sender
 from mojodex_core.logging_handler import log_error
-from mojodex_core.entities import *
+from mojodex_core.entities.db_base_entities import *
 from mojodex_core.mail import mojo_mail_client
 
 

@@ -2,10 +2,9 @@ import os
 from flask import request
 from flask_restful import Resource
 from app import db, authenticate, time_manager
-
-from models.workflows.workflow_execution import WorkflowExecution
+from mojodex_core.entities.user_workflow_execution import UserWorkflowExecution
 from mojodex_core.logging_handler import log_error
-from mojodex_core.entities import *
+from mojodex_core.entities.db_base_entities import *
 from datetime import datetime
 from models.session_creator import SessionCreator
 from sqlalchemy import func, and_, or_, text
@@ -562,9 +561,8 @@ class UserTaskExecution(Resource):
                               MdUser.language_code
                               )
                     .first())._asdict()
-
                 if result["MdTask"].type == "workflow":
-                    workflow_execution = WorkflowExecution(user_task_execution_pk)
+                    workflow_execution = db.session.query(UserWorkflowExecution).get(result["MdUserTaskExecution"].user_task_execution_pk)
                 else:
                     workflow_execution = None
 
@@ -601,7 +599,7 @@ class UserTaskExecution(Resource):
                         result["MdUserTaskExecution"].user_task_fk),
                     "working_on_todos": result["MdUserTaskExecution"].todos_extracted is None,
                     "step_executions": workflow_execution.get_steps_execution_json() if result["MdTask"].type == "workflow" else None,
-                    "steps": workflow_execution.workflow.get_json_steps_with_translation(result["language_code"]) if result["MdTask"].type == "workflow" else None
+                    "steps": workflow_execution.task.get_json_steps_with_translation(result["language_code"]) if result["MdTask"].type == "workflow" else None
                 }, 200
 
             n_user_task_executions = min(50,
@@ -715,9 +713,9 @@ class UserTaskExecution(Resource):
             result = [row._asdict() for row in result]
 
             def get_workflow_specific_data(row):
-                workflow_execution = WorkflowExecution(row["MdUserTaskExecution"].user_task_execution_pk)
+                workflow_execution = db.session.query(UserWorkflowExecution).get(row["MdUserTaskExecution"].user_task_execution_pk)
                 return {
-                    "steps": workflow_execution.workflow.get_json_steps_with_translation(row["language_code"]),
+                    "steps": workflow_execution.task.get_json_steps_with_translation(row["language_code"]),
                     "step_executions": workflow_execution.get_steps_execution_json()
                 }
 

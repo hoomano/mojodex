@@ -1,6 +1,6 @@
 
 from background_logger import BackgroundLogger
-from mojodex_core.entities import MdMessage
+from mojodex_core.entities.db_base_entities import MdMessage
 
 
 class ConversationRetriever:

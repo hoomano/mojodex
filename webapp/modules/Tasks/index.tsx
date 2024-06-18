@@ -103,7 +103,7 @@ const Tasks = () => {
           <div className="flex items-center gap-3">
             <input
               type="text"
-              placeholder="search"
+              placeholder={t("userTaskExecutionList.searchTaskPlaceholder")}
               className="rounded-md"
               value={searchTask}
               onChange={(e) => {

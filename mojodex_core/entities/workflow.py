@@ -1,30 +1,37 @@
-from mojodex_core.entities import MdWorkflowStep, MdWorkflowStepDisplayedData
+
+from mojodex_core.entities.db_base_entities import MdWorkflowStepDisplayedData, MdWorkflowStep
+from mojodex_core.entities.abstract_entities.task import Task
+from sqlalchemy.orm import object_session
 from sqlalchemy.sql.functions import coalesce
 
 
-class Workflow:
-    def __init__(self, db_object, db_session):
-        self.db_object = db_object
-        self.db_session = db_session
+from mojodex_core.steps_library import steps_class
 
-    @property
-    def name_for_system(self):
-        return self.db_object.name_for_system
 
-    @property
-    def definition_for_system(self):
-        return self.db_object.definition_for_system
+class Workflow(Task):
 
 
     @property
-    def db_steps(self):
-        return self.db_session.query(MdWorkflowStep) \
-            .filter(MdWorkflowStep.task_fk == self.db_object.task_pk) \
-            .order_by(MdWorkflowStep.rank.asc()).all()
+    def steps(self):
+        try:
+            session = object_session(self)
+            steps = []
+            md_steps = session.query(MdWorkflowStep) \
+                .filter(MdWorkflowStep.task_fk == self.task_pk) \
+                .order_by(MdWorkflowStep.rank.asc()).all()
+            for md_step in md_steps:
+                step_class = steps_class[md_step.name_for_system]
+                step = session.query(step_class).get(md_step.workflow_step_pk)
+                steps.append(step)
+            return steps
+
+        except Exception as e:
+            raise Exception(f"{self.__class__.__name__} :: steps :: {e}")
 
     def _get_db_steps_with_translation(self, language_code):
+        session = object_session(self)
         user_lang_subquery = (
-            self.db_session.query(
+            session.query(
                 MdWorkflowStepDisplayedData.workflow_step_fk.label("workflow_step_fk"),
                 MdWorkflowStepDisplayedData.name_for_user.label("user_lang_name_for_user"),
                 MdWorkflowStepDisplayedData.definition_for_user.label("user_lang_definition_for_user"),
@@ -35,7 +42,7 @@ class Workflow:
 
         # Subquery for 'en'
         en_subquery = (
-            self.db_session.query(
+            session.query(
                 MdWorkflowStepDisplayedData.workflow_step_fk.label("workflow_step_fk"),
                 MdWorkflowStepDisplayedData.name_for_user.label("en_name_for_user"),
                 MdWorkflowStepDisplayedData.definition_for_user.label("en_definition_for_user"),
@@ -44,7 +51,7 @@ class Workflow:
             .subquery()
         )
 
-        steps = self.db_session.query(MdWorkflowStep, coalesce(
+        md_steps = session.query(MdWorkflowStep, coalesce(
             user_lang_subquery.c.user_lang_name_for_user,
             en_subquery.c.en_name_for_user).label(
             "name_for_user"),
@@ -54,9 +61,15 @@ class Workflow:
                                      "definition_for_user")) \
             .outerjoin(user_lang_subquery, MdWorkflowStep.workflow_step_pk == user_lang_subquery.c.workflow_step_fk) \
             .outerjoin(en_subquery, MdWorkflowStep.workflow_step_pk == en_subquery.c.workflow_step_fk) \
-            .filter(MdWorkflowStep.task_fk == self.db_object.task_pk) \
+            .filter(MdWorkflowStep.task_fk == self.task_pk) \
             .order_by(MdWorkflowStep.rank) \
             .all()
+        steps = []
+        for db_step, name_for_user, definition_for_user in md_steps:
+            step_name_for_system = db_step.name_for_system
+            step_class = steps_class[step_name_for_system]
+            step = session.query(step_class).get(db_step.workflow_step_pk)
+            steps.append((step, name_for_user, definition_for_user))
 
         return steps
 

@@ -2,7 +2,7 @@ import time
 
 from app import db, main_logger, server_socket, executor
 from mojodex_core.logging_handler import log_error
-from mojodex_core.entities import *
+from mojodex_core.entities.db_base_entities import *
 
 class SocketioMessageSender:
     def __init__(self):
@@ -19,8 +19,8 @@ class SocketioMessageSender:
             main_logger.error(f"Session {session_id} not found in db", None)
             return
 
-        from models.assistant.session import Session as SessionModel
-        session = SessionModel(session_id)
+        from models.assistant.session_controller import SessionController
+        session = SessionController(session_id)
         if "message_pk" in data and data["message_pk"]:
             message_pk = int(data["message_pk"])
             if message_pk in self.mojo_messages_waiting_for_acknowledgment:

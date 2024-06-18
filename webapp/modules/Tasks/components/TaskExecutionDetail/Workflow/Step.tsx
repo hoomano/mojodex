@@ -11,6 +11,7 @@ import BeatLoader from "react-spinners/BeatLoader";
 import { useTranslation } from "next-i18next";
 import { useState } from "react";
 import StepResult from "./StepResult";
+import useAlert from "helpers/hooks/useAlert";
 
 
 interface StepProps {
@@ -37,7 +38,8 @@ const Step: React.FC<StepProps> = ({
     const onValidateStepExecution = useOnStepExecutionValidate();
     const onInvalidateStepExecution = useOnStepExecutionInvalidate();
     const onStepExecutionRelaunch = useOnStepExecutionRelaunch();
-
+    const { showAlert } = useAlert();
+    
     const calculateTimeAgo = (creationDate: string) => {
         const providedDate: any = new Date(creationDate);
         const currentDate: any = new Date();
@@ -51,13 +53,19 @@ const Step: React.FC<StepProps> = ({
         let time_ago;
 
         if (minutes < 1) {
-            time_ago = "now";
+            time_ago = t('userTaskExecutionList.date.now');
         } else if (hours < 1) {
-            time_ago = `${minutes}min ago`;
+            time_ago = `${t('userTaskExecutionList.date.afterTimeAgo')} ${minutes}${t('userTaskExecutionList.date.minutes')} ${t('userTaskExecutionList.date.afterTimeAgo')}`;
         } else if (days < 1) {
-            time_ago = `${hours}h ago`;
+            time_ago = `${t('userTaskExecutionList.date.beforeTimeAgo')}${hours}${t('userTaskExecutionList.date.hours')} ${t('userTaskExecutionList.date.afterTimeAgo')}`;
         } else if (days <= 7) {
-            const dayOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][providedDate.getDay()];
+            const dayOfWeek = [t('userTaskExecutionList.date.sunday'),
+            t('userTaskExecutionList.date.monday'),
+            t('userTaskExecutionList.date.tuesday'),
+            t('userTaskExecutionList.date.wednesday'),
+            t('userTaskExecutionList.date.thursday'),
+            t('userTaskExecutionList.date.friday'),
+            t('userTaskExecutionList.date.saturday')][providedDate.getDay()];
             const timeString = `${dayOfWeek} ${providedDate.toLocaleTimeString([], {
                 hour: "2-digit",
                 minute: "2-digit",
@@ -85,8 +93,10 @@ const Step: React.FC<StepProps> = ({
                 setEditing(false);
             },
             onError: (error) => {
-                console.log("Error saving result edition", error);
-                // todo: manage error message
+                showAlert({
+                    title: t('errorMessages.globalSnackBarMessage'),
+                    type: "error",
+                });
             }
         });
     };
@@ -97,7 +107,10 @@ const Step: React.FC<StepProps> = ({
                 onInvalidate();
             },
             onError: (error) => {
-                console.log("Error invalidating step", error);
+                showAlert({
+                    title: t('errorMessages.globalSnackBarMessage'),
+                    type: "error",
+                });
             }
         }
         );
@@ -109,7 +122,10 @@ const Step: React.FC<StepProps> = ({
                 onStepRelaunched(stepExecution.user_workflow_step_execution_pk);
             },
             onError: (error) => {
-                console.log("Error relaunching step", error);
+                showAlert({
+                    title: t('errorMessages.globalSnackBarMessage'),
+                    type: "error",
+                });
             }
         }
         );
@@ -121,7 +137,10 @@ const Step: React.FC<StepProps> = ({
                 onValidate(stepExecution.user_workflow_step_execution_pk);
             },
             onError: (error) => {
-                console.log("Error validating step", error);
+                showAlert({
+                    title: t('errorMessages.globalSnackBarMessage'),
+                    type: "error",
+                });
             }
         }
         );

@@ -3,9 +3,11 @@ from datetime import datetime
 from flask import request
 from flask_restful import Resource
 from app import db, authenticate, server_socket, time_manager, main_logger
+
+from mojodex_core.entities.message import Message
 from mojodex_core.logging_handler import log_error
-from mojodex_core.entities import *
-from models.assistant.session import Session
+from mojodex_core.entities.db_base_entities import *
+from models.assistant.session_controller import SessionController
 from models.user_storage_manager.user_audio_file_manager import UserAudioFileManager
 from packaging import version
 
@@ -42,7 +44,7 @@ class UserMessage(Resource):
                 return {"error": f"Invalid session_id for user: {session_id}"}, 400
             if db_message is None:
                 # save in db as user_message
-                db_message = MdMessage(session_id=session_id, sender=Session.user_message_key,
+                db_message = MdMessage(session_id=session_id, sender=Message.user_message_key,
                                        event_name='user_message',
                                        message={'message_id': message_id},
                                        # temporary message to be replaced by the transcription
@@ -87,7 +89,7 @@ class UserMessage(Resource):
                 # if previous db_message.message of session contained user_task_execution_pk, use it to get the task
                 previous_agent_message = db.session.query(MdMessage) \
                     .filter(MdMessage.session_id == session_id) \
-                    .filter(MdMessage.sender == Session.agent_message_key) \
+                    .filter(MdMessage.sender == Message.agent_message_key) \
                     .order_by(MdMessage.creation_date.desc()) \
                     .first()
                 if previous_agent_message and previous_agent_message.message and "user_task_execution_pk" in previous_agent_message.message:
@@ -219,8 +221,7 @@ class UserMessage(Resource):
 
             db.session.flush()
 
-            from models.assistant.session import Session as SessionModel
-            session = SessionModel(session_id)
+            session = SessionController(session_id)
 
             session_message = {"text": db_message.message["text"],
                                "message_pk": db_message.message_pk,

@@ -3,7 +3,7 @@ import os
 from flask import request
 from flask_restful import Resource
 from app import db, authenticate
-from mojodex_core.entities import MdProductCategory, MdProduct, MdProductCategoryDisplayedData, MdUser
+from mojodex_core.entities.db_base_entities import MdProductCategory, MdProduct, MdProductCategoryDisplayedData, MdUser
 from sqlalchemy import func
 
 class ProductCategory(Resource):

@@ -213,19 +213,7 @@ class WorkflowProcessController:
         try:
             current_step_in_validation = self.workflow_execution.last_step_execution
             self._invalidate_step(current_step_in_validation)
-            if current_step_in_validation.workflow_step.is_checkpoint:
-                current_step_in_validation.learn_instruction(learned_instruction)
-                return
-
-            # find checkpoint step
-            checkpoint_step = self.workflow_execution.checkpoint_step
-            # for all step in self.validated_steps_executions after checkpoint_step, invalidate them
-            checkpoint_step_index = self.workflow_execution.past_valid_step_executions.index(checkpoint_step)
-            for validated_step in self.workflow_execution.past_valid_step_executions[checkpoint_step_index:]:
-                self._invalidate_step(validated_step)
-                # remove from validated_steps_executions
-                self.workflow_execution.past_valid_step_executions.remove(validated_step)
-            checkpoint_step.learn_instruction(learned_instruction)
+            current_step_in_validation.learn_instruction(learned_instruction)
         except Exception as e:
             raise Exception(f"invalidate_current_step :: {e}")
 
@@ -249,32 +237,6 @@ class WorkflowProcessController:
             self.run()
         except Exception as e:
             raise Exception(f"restart :: {e}")
-
-    def get_before_checkpoint_validated_steps_executions(self, current_step_in_validation: UserWorkflowStepExecution) -> \
-            List[UserWorkflowStepExecution]:
-        try:
-            if current_step_in_validation.workflow_step.is_checkpoint:
-                return self.workflow_execution.past_valid_step_executions
-            checkpoint_step = self.workflow_execution.checkpoint_step
-            if not checkpoint_step:
-                return []
-            checkpoint_step_index = self.workflow_execution.past_valid_step_executions.index(checkpoint_step)
-            return self.workflow_execution.past_valid_step_executions[:checkpoint_step_index]
-        except Exception as e:
-            raise Exception(f"before_checkpoint_steps_executions :: {e}")
-
-    def get_after_checkpoint_validated_steps_executions(self, current_step_in_validation: UserWorkflowStepExecution) -> \
-            List[UserWorkflowStepExecution]:
-        try:
-            if current_step_in_validation.workflow_step.is_checkpoint:
-                return []
-            checkpoint_step = self.workflow_execution.checkpoint_step
-            if not checkpoint_step:
-                return self.workflow_execution.past_valid_step_executions
-            checkpoint_step_index = self.workflow_execution.past_valid_step_executions.index(checkpoint_step)
-            return self.workflow_execution.past_valid_step_executions[checkpoint_step_index:]
-        except Exception as e:
-            raise Exception(f"after_checkpoint_to_current_steps_executions :: {e}")
 
     def get_formatted_past_validated_steps_results(self):
         try:

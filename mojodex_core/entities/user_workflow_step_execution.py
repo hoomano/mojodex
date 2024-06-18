@@ -31,12 +31,6 @@ class UserWorkflowStepExecution(MdUserWorkflowStepExecution):
             raise Exception(f"{self.__class__.__name__} :: user_task_execution :: {e}")
 
     @property
-    def is_checkpoint(self):
-        return self.workflow_step.is_checkpoint
-
-
-
-    @property
     def creation_date_at_utc(self):
         return self.creation_date.astimezone(pytz.UTC)
 

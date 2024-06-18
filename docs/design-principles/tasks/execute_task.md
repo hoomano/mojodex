@@ -333,10 +333,6 @@ class InstructTaskEnabledAssistantResponseGenerator(TaskEnabledAssistantResponse
         [...]
         if TaskInputsManager.ask_user_input_start_tag in response:
             return self.task_input_manager.manage_ask_input_text(response)
-        if TaskToolManager.tool_usage_start_tag in response:
-            return self.task_tool_manager.manage_tool_usage_text(response,
-                                                                    self.running_user_task_execution.user_task_execution_pk,
-                                                                    self._get_task_tools_json(self.running_task))
         return {"text": response}
         [...]
 
@@ -366,23 +362,6 @@ if TaskInputsManager.ask_user_input_start_tag in response:
 [...]
 ```
 Basically, the TaskInputsManager will extract the question addressed to the user from the LLM response by removing the tags so that it can be displayed properly to the user.
-
-##### TaskToolManager
-- TaskToolManager handles a response indicating the assistant needs to use a specific tool to complete the task. In this case, the response format will include a message indicating :
-- the tool to use enclosed in specific tags.
-- an explanation, addressed to the user, of how the assistant intends to use the tool for the task, also enclosed in specific tags.
-```python
-[...]
-if TaskToolManager.tool_usage_start_tag in response:
-    return self.task_tool_manager.manage_tool_usage_text(response,
-                                                            self.running_user_task_execution.user_task_execution_pk,
-                                                            self._get_task_tools_json(self.running_task))
-[...]
-```
-There, the TaskToolManager will:
-- instanciate a Task Tool Execution in the database
-- extract the explanation addressed to the user by removing the tags so that it can be displayed properly to the user.
-It will return a map containing message metadata with text to display to the user but also the primary key of the Task Tool Execution in database to indicate a special message to the UI receving the response, which can then decide of a specific display for this message.
 
 ##### ExecutionManager
 - ExecutionManager handles a response indicating the assistant has completed the task by produceing a text. In this case, the response format will include the result of the task enclosed in specific tags.

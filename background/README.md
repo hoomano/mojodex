@@ -1,7 +1,7 @@
 # MOJODEX Background
 
 The background backend is responsible for processing data in the background.
-It is useful for long-running process that would otherwise block the main backend (like using tools in tasks).
+It is useful for long-running process that would otherwise block the main backend.
 It is also useful for processing batch data (like sending emails or notifs to a group of users).
 
 
@@ -70,15 +70,6 @@ This process is called each time the user sends a message to a task. It updates 
 - Launched from: `backend/app/models/session.py`
 
 This process is called when a user starts a new session. It generates a session title that could be useful to identify the session later, in a history interface for example.
-
-### TaskToolExecution
-- Resource: `background/app/routes/task_tool_execution.py`
-- Cortex: `background/app/models/cortex/task_tool_execution_cortex.py`
-- Launched from: `backend/app/routes/task_tool_execution.py`
-
-This process is called to execute a tool in a task. It is launched with the label of the tool to use and a description of the tool's parameters. 
-
-> A documentation about using tools in tasks will be coming soon.
 
 ### ExtractTodos
 - Resource: `background/app/routes/extract_todos.py`

@@ -300,7 +300,8 @@ const DraftDetail = () => {
         validated: msg.validated,
         parameter: msg.parameter,
         result: msg.result,
-        error_status: msg.error_status
+        error_status: msg.error_status,
+        review_chat_enabled: msg.review_chat_enabled
       }
 
 
@@ -335,7 +336,8 @@ const DraftDetail = () => {
         validated: msg.validated,
         parameter: msg.parameter,
         result: msg.result,
-        error_status: msg.error_status
+        error_status: msg.error_status,
+        review_chat_enabled: msg.review_chat_enabled
       }
       setWorkflowStepExecutions((prev: UserTaskExecutionStepExecution[]) => {
         // find the step_execution with the same user_workflow_step_execution_pk

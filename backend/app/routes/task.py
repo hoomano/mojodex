@@ -254,7 +254,8 @@ class Task(Resource):
                     db_step = MdWorkflowStep(
                         name_for_system=step_name_for_system,
                         task_fk=task.task_pk,
-                        rank=step_index + 1
+                        rank=step_index + 1,
+                        review_chat_enabled=step.get("review_chat_enabled", False)
                     )
                     db.session.add(db_step)
                     db.session.flush()
@@ -566,7 +567,8 @@ class Task(Resource):
                     "step_pk": step.workflow_step_pk,
                     "name_for_system": step.name_for_system,
                     "rank": step.rank,
-                    "step_displayed_data": step_displayed_data
+                    "step_displayed_data": step_displayed_data,
+                    "review_chat_enabled": step.review_chat_enabled
                 })
             return steps_json
         except Exception as e:

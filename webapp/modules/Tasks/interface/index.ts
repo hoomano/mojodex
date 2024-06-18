@@ -26,6 +26,7 @@ export interface UserTaskExecutionStepExecution {
   parameter: any;
   result: Array<Map<string, any>>;
   error_status: any;
+  review_chat_enabled: boolean;
 }
 
 export interface UserTasksAPIResponse {

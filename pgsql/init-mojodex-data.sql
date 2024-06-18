@@ -364,13 +364,6 @@ SELECT pg_catalog.setval('public.md_error_seq', 1, true);
 
 
 --
--- Name: md_evaluation_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
---
-
-SELECT pg_catalog.setval('public.md_evaluation_seq', 1, false);
-
-
---
 -- Name: md_event_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
 --
 
@@ -396,20 +389,6 @@ SELECT pg_catalog.setval('public.md_platform_seq', 2, true);
 --
 
 SELECT pg_catalog.setval('public.md_predefined_action_displayed_data_seq', 1, false);
-
-
---
--- Name: md_process_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
---
-
-SELECT pg_catalog.setval('public.md_process_seq', 1, false);
-
-
---
--- Name: md_process_step_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
---
-
-SELECT pg_catalog.setval('public.md_process_step_seq', 1, false);
 
 
 --

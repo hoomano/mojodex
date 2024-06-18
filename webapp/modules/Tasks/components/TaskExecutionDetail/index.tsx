@@ -124,7 +124,7 @@ const DraftDetail = () => {
       component: (
         <StepProcessDetail stepExecutions={workflowStepExecutions!}
           sessionId={currentTask!.session_id}
-          onInvalidate={() => setChatIsVisible(true)}
+          changeChatVisibility={(visible: boolean) => setChatIsVisible(visible)}
           onValidate={(stepExecutionPk: number) => onStepExecutionValidated(stepExecutionPk)}
           onStepRelaunched={(stepExecutionPk: number) => onStepRelaunched(stepExecutionPk)}
           onRestartWorkflow={() => {

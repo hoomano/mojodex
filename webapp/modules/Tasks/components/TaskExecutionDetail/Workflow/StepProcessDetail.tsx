@@ -9,7 +9,7 @@ function classNames(...classes: string[]) {
 interface StepProcessDetailProps {
   stepExecutions: UserTaskExecutionStepExecution[];
   sessionId: string;
-  onInvalidate: any;
+  changeChatVisibility: (visible: boolean) => void;
   onValidate: any;
   onStepRelaunched: any;
   onRestartWorkflow: any;
@@ -18,7 +18,7 @@ interface StepProcessDetailProps {
 const StepProcessDetail: React.FC<StepProcessDetailProps> = ({
   stepExecutions,
   sessionId,
-  onInvalidate,
+  changeChatVisibility,
   onValidate,
   onStepRelaunched,
   onRestartWorkflow,
@@ -41,7 +41,7 @@ const StepProcessDetail: React.FC<StepProcessDetailProps> = ({
           <Step
               stepExecution={stepItem}
               sessionId={sessionId}
-            onInvalidate={onInvalidate}
+              changeChatVisibility={changeChatVisibility}
             onValidate={onValidate}
               onStepRelaunched={onStepRelaunched}
               isFirstStep={stepItemIdx === 0}

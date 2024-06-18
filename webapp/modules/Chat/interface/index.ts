@@ -18,8 +18,6 @@ export interface MessageType {
   error?: string;
   produced_text_pk?: string;
   isMojoToken?: boolean;
-  task_tool_execution_fk?: number;
-  showTaskMessage?: boolean;
 }
 
 export interface ChatSession {

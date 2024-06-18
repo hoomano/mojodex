@@ -30,9 +30,7 @@ const ChatMessage = ({
       content = <Message message={message} />;
       break;
     case "mojo_message":
-      if (message.showTaskMessage) {
-        content = <TaskMessage message={message} />;
-      } else if (message.produced_text !== undefined) {
+      if (message.produced_text !== undefined) {
         content = <ShareableDraft message={message} isMobile={isMobile} />;
       } else {
         content = <MojoMessage message={message} isMobile={isMobile} />;

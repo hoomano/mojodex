@@ -47,12 +47,7 @@ export const updateTaskMessageFormat = (
             produced_text: message.produced_text,
             source: message?.source,
             answer: message?.answer,
-            messageFor: chatUsedFrom,
-            task_tool_execution_fk: message?.task_tool_execution_fk,
-            showTaskMessage:
-              chatUsedFrom === ChatUsedFrom.Task &&
-              message?.question &&
-              message?.task_tool_execution_fk,
+            messageFor: chatUsedFrom
           });
         }
       } else if (sender === "user") {

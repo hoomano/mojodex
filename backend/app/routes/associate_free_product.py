@@ -111,7 +111,7 @@ class FreeProductAssociation(Resource):
                     email_file = os.path.join(self.welcome_email_dir, email_language, category + ".html")
 
                 with open(email_file, "r") as f:
-                    email_content = Template(f.read()).render(mojodex_webapp_url=os.environ["MOJODEX_WEBAPP_URI"]))
+                    email_content = Template(f.read()).render(mojodex_webapp_url=os.environ["MOJODEX_WEBAPP_URI"])
 
                 try:
                     soup = BeautifulSoup(email_content, 'html.parser')

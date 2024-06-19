@@ -52,6 +52,7 @@ class Task(Resource):
             task_displayed_data = request.json["task_displayed_data"]
             predefined_actions = request.json["predefined_actions"] if "predefined_actions" in request.json else []
             output_type = request.json["output_type"].strip().lower()
+            result_chat_enabled = request.json.get("result_chat_enabled", True)
         except KeyError as e:
             return {"error": f"Missing field {e}"}, 400
 
@@ -176,7 +177,8 @@ class Task(Resource):
                 output_format_instruction_draft=output_format_instruction_draft,
                 infos_to_extract=infos_to_extract,
                 icon=icon,
-                output_text_type_fk=output_type_pk
+                output_text_type_fk=output_type_pk,
+                result_chat_enabled=result_chat_enabled
                 )
 
             db.session.add(task)
@@ -536,6 +538,8 @@ class Task(Resource):
                     return {"error": f"output_type must be in {db.session.query(MdTextType).all()}"}, 400
                 task.output_text_type_fk = output_type_pk
                 db.session.flush()
+            if "result_chat_enabled" in request.json:
+                task.result_chat_enabled = request.json["result_chat_enabled"]
 
             # TODO: add "STEPS" modification
 

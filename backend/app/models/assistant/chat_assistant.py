@@ -110,7 +110,6 @@ class ChatAssistant(ABC):
     def _handle_llm_output(self, llm_output):
         try:
             self._manage_response_language_tags(llm_output)
-            print("👉 _manage_response_language_tags done")
             response = self._manage_response_tags(llm_output)
             return response
         except Exception as e:

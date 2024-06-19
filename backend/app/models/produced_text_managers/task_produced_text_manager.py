@@ -24,9 +24,9 @@ class TaskProducedTextManager(ProducedTextManager):
 
     def _extract_produced_text_title_from_tagged_text(self, mojo_text):
         try:
-            if InstructTaskProducedTextManager.title_start_tag and InstructTaskProducedTextManager.title_end_tag in mojo_text:
-                start = mojo_text.find(InstructTaskProducedTextManager.title_start_tag) + len(InstructTaskProducedTextManager.title_start_tag)
-                end = mojo_text.find(InstructTaskProducedTextManager.title_end_tag)
+            if self.title_start_tag and self.title_end_tag in mojo_text:
+                start = mojo_text.find(self.title_start_tag) + len(self.title_start_tag)
+                end = mojo_text.find(self.title_end_tag)
                 return mojo_text[start:end].strip()
             return None
         except Exception as e:
@@ -35,14 +35,14 @@ class TaskProducedTextManager(ProducedTextManager):
 
     def _extract_produced_text_production_from_tagged_text(self, mojo_text):
         try:
-            if InstructTaskProducedTextManager.draft_start_tag and InstructTaskProducedTextManager.draft_end_tag in mojo_text:
+            if self.draft_start_tag and self.draft_end_tag in mojo_text:
                 start = mojo_text.find(
-                    InstructTaskProducedTextManager.draft_start_tag) + len(InstructTaskProducedTextManager.draft_start_tag)
-                end = mojo_text.find(InstructTaskProducedTextManager.draft_end_tag)
+                    self.draft_start_tag) + len(self.draft_start_tag)
+                end = mojo_text.find(self.draft_end_tag)
                 return mojo_text[start:end].strip()
-            return mojo_text.replace(InstructTaskProducedTextManager.draft_start_tag, "").replace(
-                InstructTaskProducedTextManager.draft_end_tag, "").replace(InstructTaskProducedTextManager.title_start_tag, "").replace(
-                InstructTaskProducedTextManager.title_end_tag, "").strip()
+            return mojo_text.replace(self.draft_start_tag, "").replace(
+                self.draft_end_tag, "").replace(self.title_start_tag, "").replace(
+                self.title_end_tag, "").strip()
         except Exception as e:
             raise Exception(
                 f"_extract_produced_text_production_from_tagged_text:: {e}")

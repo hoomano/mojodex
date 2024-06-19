@@ -144,6 +144,7 @@ class MdTask(Base):
     name_for_system = Column(String(255), nullable=False)
     definition_for_system = Column(Text, nullable=False)
     visible_for_teasing = Column(Boolean, nullable=False, server_default=text('false'))
+    result_chat_enabled = Column(Boolean, nullable=False, server_default=text('true'))
     final_instruction = Column(Text)
     icon = Column(String(255))
     output_text_type_fk = Column(Integer)
@@ -484,7 +485,7 @@ class MdWorkflowStep(Base):
     name_for_system = Column(String(255), nullable=False)
     rank = Column(Integer, nullable=False)
     user_validation_required = Column(Boolean, nullable=False, server_default=text('true'))
-    review_chat_enabled = Column(Boolean, server_default=text('false'))
+    review_chat_enabled = Column(Boolean, nullable=False, server_default=text('false'))
 
     md_task = relationship('MdTask', back_populates='md_workflow_step')
     md_workflow_step_displayed_data = relationship('MdWorkflowStepDisplayedData', back_populates='md_workflow_step')

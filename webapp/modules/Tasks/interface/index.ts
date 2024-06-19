@@ -110,6 +110,7 @@ export interface UserTaskExecution {
   produced_text_production: string;
   task_name: string;
   task_type: string;
+  result_chat_enabled: boolean;
   produced_text_pk: number;
   produced_text_version_pk: number;
   produced_text_version_index: number;

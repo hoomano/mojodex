@@ -74,7 +74,6 @@ const DraftDetail = () => {
     producedTextPk: null,
   });
   const [workflowStepExecutions, setWorkflowStepExecutions] = useState(currentTask!.step_executions);
-  // chat is visible if tab is "result"
   const [chatIsVisible, setChatIsVisible] = useState(selectedTab === "result" && currentTask!.result_chat_enabled); //useState(currentTask!.task_type !== "workflow");
   const [editingInputs, setEditingInputs] = useState(false);
 

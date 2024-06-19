@@ -4,11 +4,14 @@ from models.produced_text_managers.instruct_task_produced_text_manager import In
 from models.assistant.instruct_task_assistant import InstructTaskAssistant
 from models.assistant.home_chat_assistant import HomeChatAssistant
 from models.assistant.chat_assistant import ChatAssistant
+
+from models.assistant.workflow_assistant import WorkflowAssistant
 from mojodex_core.entities.instruct_user_task_execution import InstructTaskExecution
 from mojodex_core.entities.message import Message
 from mojodex_core.entities.session import Session
+from mojodex_core.entities.user_workflow_execution import UserWorkflowExecution
 from mojodex_core.logging_handler import log_error
-from mojodex_core.entities.db_base_entities import MdProducedTextVersion
+from mojodex_core.entities.db_base_entities import MdProducedTextVersion, MdUserTask, MdTask, MdUserTaskExecution
 from datetime import datetime
 from models.voice_generator import VoiceGenerator
 from packaging import version
@@ -17,6 +20,7 @@ from sqlalchemy.orm.attributes import flag_modified
 from mojodex_core.db import engine
 from mojodex_core.db import Session as DbSession
 from mojodex_core.task_execution_title_summary_generator import TaskExecutionTitleSummaryGenerator
+
 
 class SessionController:
 
@@ -43,7 +47,6 @@ class SessionController:
                 self.voice_generator = None
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} :: __init__ :: {e}")
-
 
     ### STREAM CALLBACKS ###
     def token_stream_callback(event_name):
@@ -154,12 +157,13 @@ class SessionController:
         if "message_pk" not in message:
             self._new_message(message, Message.user_message_key, "user_message")
 
-        instruct_task_execution = None
+        user_task_execution = None
         # if "user_task_execution_pk" in message and message["user_task_execution_pk"] is not None, let's update task title and summary
         if "user_task_execution_pk" in message and message["user_task_execution_pk"] is not None:
             user_task_execution_pk = message["user_task_execution_pk"]
-            instruct_task_execution = self.db_session.query(InstructTaskExecution).get(user_task_execution_pk)
-            server_socket.start_background_task(TaskExecutionTitleSummaryGenerator.generate_title_and_summary, instruct_task_execution.user_task_execution_pk)
+            user_task_execution = self._get_user_task_execution_entity(user_task_execution_pk)
+            server_socket.start_background_task(TaskExecutionTitleSummaryGenerator.generate_title_and_summary,
+                                                user_task_execution.user_task_execution_pk)
 
         # Home chat assistant here ??
         # with response_message = ...
@@ -167,12 +171,16 @@ class SessionController:
         use_draft_placeholder = "use_draft_placeholder" in message and message["use_draft_placeholder"]
 
         if "origin" in message and message["origin"] == "home_chat":
-            return self.__manage_home_chat_session(self.platform, instruct_task_execution, use_message_placeholder)
+            return self.__manage_home_chat_session(self.platform, user_task_execution, use_message_placeholder)
 
         elif 'user_task_execution_pk' in message and message['user_task_execution_pk'] is not None:
             # For now only task sessions
-            return self.__manage_instruct_task_session(self.platform, instruct_task_execution, use_message_placeholder,
-                                              use_draft_placeholder)
+            if user_task_execution.task.type == "instruct":
+                return self.__manage_instruct_task_session(self.platform, user_task_execution, use_message_placeholder,
+                                                           use_draft_placeholder)
+            else:
+                return self.__manage_workflow_session(self.platform, user_task_execution, use_message_placeholder,
+                                                      use_draft_placeholder)
         else:
             raise Exception("Unknown message origin")
 
@@ -193,12 +201,29 @@ class SessionController:
             function: The function that manages the task assistant.
         """
         instruct_task_execution = self.db_session.query(InstructTaskExecution).get(user_task_execution_pk)
-        server_socket.start_background_task(TaskExecutionTitleSummaryGenerator.generate_title_and_summary, instruct_task_execution.user_task_execution_pk)
+        server_socket.start_background_task(TaskExecutionTitleSummaryGenerator.generate_title_and_summary,
+                                            instruct_task_execution.user_task_execution_pk)
 
         self.platform = platform
         return self.__manage_instruct_task_session(self.platform, instruct_task_execution,
                                                    use_message_placeholder=use_message_placeholder,
                                                    use_draft_placeholder=use_draft_placeholder)
+
+    def _get_user_task_execution_entity(self, user_task_execution_pk):
+        try:
+            type = self.db_session.query(MdTask.type) \
+                .join(MdUserTask, MdTask.task_pk == MdUserTask.task_fk) \
+                .join(MdUserTaskExecution, MdUserTaskExecution.user_task_fk == MdUserTask.user_task_pk) \
+                .filter(MdUserTaskExecution.user_task_execution_pk == user_task_execution_pk) \
+                .first()[0]
+            if type == "instruct":
+                return self.db_session.query(InstructTaskExecution).get(user_task_execution_pk)
+            elif type == "workflow":
+                return self.db_session.query(UserWorkflowExecution).get(user_task_execution_pk)
+            else:
+                raise Exception(f"Unknown task type {type}")
+        except Exception as e:
+            raise Exception(f"_get_user_task_execution_entity :: {e}")
 
     def process_mojo_message(self, response_message, response_language):
         """
@@ -223,13 +248,18 @@ class SessionController:
                 "audio"] = "text" in response_message and self.platform == "mobile" and self.voice_generator is not None
             # Does message contains a produced_text ?
             event_name = 'draft_message' if "produced_text_version_pk" in response_message else 'mojo_message'
-            socketio_message_sender.send_mojo_message_with_ack(response_message, self.session.session_id, event_name=event_name)
+            socketio_message_sender.send_mojo_message_with_ack(response_message, self.session.session_id,
+                                                               event_name=event_name)
             if response_message["audio"]:
                 from models.user_storage_manager.user_audio_file_manager import UserAudioFileManager
                 user_audio_file_manager = UserAudioFileManager()
-                output_filename = os.path.join(user_audio_file_manager.get_mojo_messages_audio_storage(self.session.user_id, self.session.session_id), f"{message_pk}.mp3")
+                output_filename = os.path.join(
+                    user_audio_file_manager.get_mojo_messages_audio_storage(self.session.user_id,
+                                                                            self.session.session_id),
+                    f"{message_pk}.mp3")
                 try:
-                    self.voice_generator.text_to_speech(response_message["text"], response_language, self.session.user_id,
+                    self.voice_generator.text_to_speech(response_message["text"], response_language,
+                                                        self.session.user_id,
                                                         output_filename)
                 except Exception as e:
                     db_message.in_error_state = datetime.now()
@@ -240,7 +270,8 @@ class SessionController:
         except Exception as e:
             raise Exception(f"process_mojo_message :: {e}")
 
-    def __manage_home_chat_session(self, platform: str, instruct_task_execution: InstructTaskExecution, use_message_placeholder: bool =False):
+    def __manage_home_chat_session(self, platform: str, instruct_task_execution: InstructTaskExecution,
+                                   use_message_placeholder: bool = False):
         """
         Manages a home chat assistant.
 
@@ -276,14 +307,15 @@ class SessionController:
         except Exception as e:
             raise Exception(f"__manage_home_chat_session :: {e}")
 
-    def __manage_instruct_task_session(self, platform: str, instruct_task_execution: InstructTaskExecution, use_message_placeholder: bool = False,
+    def __manage_instruct_task_session(self, platform: str, instruct_task_execution: InstructTaskExecution,
+                                       use_message_placeholder: bool = False,
                                        use_draft_placeholder: bool = False):
         """
-        Manages a task assistant.
+        Manages an instruct task assistant.
 
         Args:
             platform (str): The platform the user is on.
-            user_task_execution_pk (str): The primary key of the running user task execution if any
+            instruct_task_execution (InstructTaskExecution): The running user task execution.
             use_message_placeholder (bool, optional): Whether to use a message placeholder. Defaults to False.
             use_draft_placeholder (bool, optional): Whether to use a draft placeholder. Defaults to False.
 
@@ -312,6 +344,43 @@ class SessionController:
         except Exception as e:
             raise Exception(f"__manage_instruct_task_session :: {e}")
 
+    def __manage_workflow_session(self, platform: str, workflow_execution: UserWorkflowExecution,
+                                  use_message_placeholder: bool = False,
+                                  use_draft_placeholder: bool = False):
+        """
+        Manages a workflow assistant.
+
+        Args:
+            platform (str): The platform the user is on.
+            workflow_execution (UserWorkflowExecution): The running user task execution.
+            use_message_placeholder (bool, optional): Whether to use a message placeholder. Defaults to False.
+            use_draft_placeholder (bool, optional): Whether to use a draft placeholder. Defaults to False.
+
+        Returns:
+            tuple: The response message and response language.
+
+        Raises:
+            Exception: If there is an error during management.
+        """
+        try:
+            tag_proper_nouns = platform == "mobile"
+            user_messages_are_audio = platform == "mobile"
+            workflow_assistant = WorkflowAssistant(
+                mojo_message_token_stream_callback=self._mojo_message_stream_callback,
+                draft_token_stream_callback=self._produced_text_stream_callback,
+                use_message_placeholder=use_message_placeholder,
+                use_draft_placeholder=use_draft_placeholder,
+                tag_proper_nouns=tag_proper_nouns,
+                user_messages_are_audio=user_messages_are_audio,
+                running_user_task_execution=workflow_execution,
+                db_session=self.db_session)
+
+            response_message = workflow_assistant.generate_message()
+            response_language = workflow_assistant.language
+            return response_message, response_language
+        except Exception as e:
+            raise Exception(f"__manage_workflow_session :: {e}")
+
     def __process_error_during_message_generation(self, e):
         """
         Processes an error that occurs during message generation.
@@ -324,9 +393,9 @@ class SessionController:
         """
         self.db_session.rollback()
         message = socketio_message_sender.send_error("Error during assistant process_chat_message: " + str(e),
-                                                     self.session.session_id, user_message_pk=self.session.last_user_message.message_pk)
+                                                     self.session.session_id,
+                                                     user_message_pk=self.session.last_user_message.message_pk)
         self._new_message(message, Message.agent_message_key, 'error')
-
 
     def _new_message(self, message, sender, event_name):
         """
@@ -343,7 +412,7 @@ class SessionController:
             else:
                 message_date = datetime.now()
             message = Message(session_id=self.session.session_id, sender=sender, event_name=event_name, message=message,
-                                creation_date=datetime.now(), message_date=message_date)
+                              creation_date=datetime.now(), message_date=message_date)
             self.db_session.add(message)
             self.db_session.commit()
             return message

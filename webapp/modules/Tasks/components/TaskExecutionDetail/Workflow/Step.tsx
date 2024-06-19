@@ -17,7 +17,7 @@ import useAlert from "helpers/hooks/useAlert";
 interface StepProps {
     stepExecution: UserTaskExecutionStepExecution;
     sessionId: string;
-    onInvalidate: any;
+    changeChatVisibility: (visible: boolean) => void;
     onValidate: any;
     onStepRelaunched: any;
     onRestart: any;
@@ -27,7 +27,7 @@ interface StepProps {
 const Step: React.FC<StepProps> = ({
     stepExecution,
     sessionId,
-    onInvalidate,
+    changeChatVisibility,
     onValidate,
     onStepRelaunched,
     onRestart,
@@ -39,7 +39,7 @@ const Step: React.FC<StepProps> = ({
     const onInvalidateStepExecution = useOnStepExecutionInvalidate();
     const onStepExecutionRelaunch = useOnStepExecutionRelaunch();
     const { showAlert } = useAlert();
-    
+
     const calculateTimeAgo = (creationDate: string) => {
         const providedDate: any = new Date(creationDate);
         const currentDate: any = new Date();
@@ -80,7 +80,7 @@ const Step: React.FC<StepProps> = ({
 
     const [editing, setEditing] = useState<boolean>(false);
     const [editedResult, setEditedResult] = useState<Array<Map<string, string>>>([]);
-    
+
     const onSaveResultEdition = () => {
         onSaveStepResultEdition.mutate({
             user_workflow_step_execution_pk: stepExecution.user_workflow_step_execution_pk,
@@ -100,11 +100,11 @@ const Step: React.FC<StepProps> = ({
             }
         });
     };
-    
+
     const onReviewStep = () => {
         onInvalidateStepExecution.mutate(stepExecution.user_workflow_step_execution_pk, {
             onSuccess: () => {
-                onInvalidate();
+                changeChatVisibility(true);
             },
             onError: (error) => {
                 showAlert({
@@ -119,6 +119,7 @@ const Step: React.FC<StepProps> = ({
     const onRelaunchStep = () => {
         onStepExecutionRelaunch.mutate(stepExecution.user_workflow_step_execution_pk, {
             onSuccess: () => {
+                changeChatVisibility(false);
                 onStepRelaunched(stepExecution.user_workflow_step_execution_pk);
             },
             onError: (error) => {
@@ -134,6 +135,7 @@ const Step: React.FC<StepProps> = ({
     const onContinueStep = () => {
         onValidateStepExecution.mutate(stepExecution.user_workflow_step_execution_pk, {
             onSuccess: () => {
+                changeChatVisibility(false);
                 onValidate(stepExecution.user_workflow_step_execution_pk);
             },
             onError: (error) => {
@@ -147,53 +149,53 @@ const Step: React.FC<StepProps> = ({
     };
 
     return (
-       
-            <>
-                <div className="flex flex-row w-full">
-                    <div className="relative h-6 w-6 flex-none items-center justify-center bg-white">
-                        {stepExecution.validated === true ? (
-                            <CheckCircleIcon className="h-6 w-6 text-primary-main" aria-hidden="true" />
-                        ) : stepExecution.error_status != null ? (
-                            <ExclamationCircleIcon className="h-6 w-6 text-red-500" aria-hidden="true" />
-                        ) : (
-                            <div className="mt-1.5 ml-2 h-1.5 w-1.5 rounded-full bg-gray-100 ring-1 ring-gray-300" />
-                        )}
-                    </div>
-                    <div className="flex-col pl-3 w-full">
-                        <div className="flex justify-between gap-x-4">
-                            <div className="py-0.5 text-sm leading-5 text-gray-500">
-                                {stepExecution.step_name_for_user}: <span className="font-medium text-gray-900">{stepExecution.step_definition_for_user}</span>
-                            </div>
-                            <time dateTime={stepExecution.creation_date} className="flex-none py-0.5 text-xs leading-5 text-gray-500">
-                                {calculateTimeAgo(stepExecution.creation_date)}
-                            </time>
-                        </div>
-                        <div className="flex-auto rounded-md p-3 ring-1 ring-inset ring-gray-200 w-full">
 
-                            {
-                                Object.entries(stepExecution.parameter).map(([key, value]) => (
-                                    <p className="flex-auto text-xs leading-5 text-gray-500 italic">
-                                        <span className="font-medium text-gray-400">{t("userTaskExecution.processTab.stepExecutionParameters")}:</span><br />
-                                        {key}: {value?.toString()}
-                                    </p>
-                                ))
-                            }
-                            {
-                                stepExecution.result != null && stepExecution.result.length > 0 ?
+        <>
+            <div className="flex flex-row w-full">
+                <div className="relative h-6 w-6 flex-none items-center justify-center bg-white">
+                    {stepExecution.validated === true ? (
+                        <CheckCircleIcon className="h-6 w-6 text-primary-main" aria-hidden="true" />
+                    ) : stepExecution.error_status != null ? (
+                        <ExclamationCircleIcon className="h-6 w-6 text-red-500" aria-hidden="true" />
+                    ) : (
+                        <div className="mt-1.5 ml-2 h-1.5 w-1.5 rounded-full bg-gray-100 ring-1 ring-gray-300" />
+                    )}
+                </div>
+                <div className="flex-col pl-3 w-full">
+                    <div className="flex justify-between gap-x-4">
+                        <div className="py-0.5 text-sm leading-5 text-gray-500">
+                            {stepExecution.step_name_for_user}: <span className="font-medium text-gray-900">{stepExecution.step_definition_for_user}</span>
+                        </div>
+                        <time dateTime={stepExecution.creation_date} className="flex-none py-0.5 text-xs leading-5 text-gray-500">
+                            {calculateTimeAgo(stepExecution.creation_date)}
+                        </time>
+                    </div>
+                    <div className="flex-auto rounded-md p-3 ring-1 ring-inset ring-gray-200 w-full">
+
+                        {
+                            Object.entries(stepExecution.parameter).map(([key, value]) => (
+                                <p className="flex-auto text-xs leading-5 text-gray-500 italic">
+                                    <span className="font-medium text-gray-400">{t("userTaskExecution.processTab.stepExecutionParameters")}:</span><br />
+                                    {key}: {value?.toString()}
+                                </p>
+                            ))
+                        }
+                        {
+                            stepExecution.result != null && stepExecution.result.length > 0 ?
+                                <div className="relative">
+                                    <div className="absolute inset-0 flex items-center" aria-hidden="true">
+                                        <div className="w-full border-t border-gray-300" />
+                                    </div>
+                                    <div className="relative flex justify-center">
+                                        <span className="bg-white px-2 text-xs text-gray-400">{t("userTaskExecution.processTab.stepExecutionResults")}</span>
+                                    </div>
+                                </div> : (stepExecution.error_status === null ? <BeatLoader color="#3763E7" /> :
                                     <div className="relative">
-                                        <div className="absolute inset-0 flex items-center" aria-hidden="true">
-                                            <div className="w-full border-t border-gray-300" />
-                                        </div>
-                                        <div className="relative flex justify-center">
-                                            <span className="bg-white px-2 text-xs text-gray-400">{t("userTaskExecution.processTab.stepExecutionResults")}</span>
-                                        </div>
-                                    </div> : (stepExecution.error_status === null ? <BeatLoader color="#3763E7" /> :
-                                        <div className="relative">
-                                            <p className="text-primary-main text-sm leading-5"> {t("userTaskExecution.processTab.stepExecutionError")}</p>
-                                            <p className="text-gray-dark text-sm leading-5">{t("userTaskExecution.processTab.stepExecutionErrorInstruction")}</p>
-                                        </div>
-                                    )
-                            }
+                                        <p className="text-primary-main text-sm leading-5"> {t("userTaskExecution.processTab.stepExecutionError")}</p>
+                                        <p className="text-gray-dark text-sm leading-5">{t("userTaskExecution.processTab.stepExecutionErrorInstruction")}</p>
+                                    </div>
+                                )
+                        }
                         <StepResult
                             stepExecutionResult={stepExecution.result}
                             sessionId={sessionId}
@@ -201,79 +203,80 @@ const Step: React.FC<StepProps> = ({
                             editedResult={editedResult}
                             setEditedResult={setEditedResult}
                         />
-                            {editing ? <div className="text-end pt-2">
+                        {editing ? <div className="text-end pt-2">
+                            <Button
+                                variant="outline"
+                                size="middle"
+                                onClick={() => setEditing(false)}
+                                className="mr-2"
+                            >
+                                {t("userTaskExecution.processTab.cancelEditionButton")}
+                            </Button>
+
+                            <Button variant="primary" size="middle" onClick={() => onSaveResultEdition()}>
+                                {t("userTaskExecution.processTab.saveEditionButton")}
+                            </Button>
+                        </div> : stepExecution.user_validation_required && stepExecution.validated === null && stepExecution.result != null ?
+                            <div className="text-end pt-2">
+                                {isFirstStep ? <Button
+                                    variant="outline"
+                                    size="middle"
+                                    tooltip={t("userTaskExecution.processTab.restartButtonTooltip")}
+                                    onClick={() => {
+                                        // change tab => back to "initial data"
+                                        onRestart();
+                                    }}
+                                    className="mr-2"
+                                >
+                                    {t("userTaskExecution.processTab.restartButton")}
+                                </Button> : null}
                                 <Button
                                     variant="outline"
                                     size="middle"
-                                    onClick={() => setEditing(false)}
+                                    onClick={() => {
+                                        changeChatVisibility(false);
+                                        setEditedResult(stepExecution.result.map(obj => new Map(Object.entries(obj))));
+                                        setEditing(true);
+                                    }}
+                                    className="mr-2"
+                                    tooltip={t("userTaskExecution.processTab.editButtonTooltip")}
+                                >
+                                    {t("userTaskExecution.processTab.editionButton")}
+                                </Button>
+                                    {stepExecution.review_chat_enabled  ? <Button
+                                    variant="outline"
+                                    size="middle"
+                                    onClick={() => onReviewStep()}
                                     className="mr-2"
                                 >
-                                {t("userTaskExecution.processTab.cancelEditionButton")}
-                                </Button>
+                                    {t("userTaskExecution.processTab.invalidateButton")}
+                                </Button> : null }
 
-                                <Button variant="primary" size="middle" onClick={() => onSaveResultEdition()}>
-                                {t("userTaskExecution.processTab.saveEditionButton")}
+                                <Button variant="primary" size="middle"
+                                    tooltip={t("userTaskExecution.processTab.validateButtonTooltip")}
+                                    onClick={() => onContinueStep()}>
+                                    {t("userTaskExecution.processTab.validateButton")}
                                 </Button>
-                            </div> : stepExecution.user_validation_required && stepExecution.validated === null && stepExecution.result != null ?
-                                <div className="text-end pt-2">
-                                    {isFirstStep ? <Button
-                                        variant="outline"
-                                        size="middle"
-                                        tooltip={t("userTaskExecution.processTab.restartButtonTooltip")}
-                                        onClick={() => {
-                                            // change tab => back to "initial data"
-                                            onRestart();
-                                        }}
-                                        className="mr-2"
-                                    >
-                                        {t("userTaskExecution.processTab.restartButton")}
-                                    </Button>: null}
-                                    <Button
-                                        variant="outline"
-                                        size="middle"
-                                            onClick={() => {
-                                                setEditedResult(stepExecution.result.map(obj => new Map(Object.entries(obj))));
-                                                setEditing(true)
-                                            }}
-                                        className="mr-2"
-                                        tooltip={t("userTaskExecution.processTab.editButtonTooltip")}
-                                    >
-                                        {t("userTaskExecution.processTab.editionButton")}
-                                    </Button>
-                                    {/*<Button
-                                        variant="outline"
-                                        size="middle"
-                                        onClick={() => onReviewStep()}
-                                        className="mr-2"
-                                    >
-                                        {t("userTaskExecution.processTab.invalidateButton")}
-                                        </Button>*/}
-
-                                    <Button variant="primary" size="middle"
-                                        tooltip={t("userTaskExecution.processTab.validateButtonTooltip")}
-                                        onClick={() => onContinueStep()}>
-                                        {t("userTaskExecution.processTab.validateButton")}
-                                    </Button>
-                                </div> : null
-                            }
-                            {stepExecution.error_status != null ?
-                                <div className="text-end pt-2">
-                                    <Button
-                                        variant="outline"
-                                        size="middle"
-                                        onClick={() => onRelaunchStep()}
-                                        className="mr-2"
-                                    >
-                                        {t("userTaskExecution.processTab.relaunchButton")}
-                                    </Button>
-                                </div> : null
-                            }
-                        </div>
+                            </div> : null
+                        }
+                        {stepExecution.error_status != null ?
+                            <div className="text-end pt-2">
+                                <Button
+                                    variant="outline"
+                                    size="middle"
+                                    onClick={() => onRelaunchStep()}
+                                    className="mr-2"
+                                >
+                                    {t("userTaskExecution.processTab.relaunchButton")}
+                                </Button>
+                            </div> : null
+                        }
                     </div>
                 </div>
-            </>
+            </div>
+        </>
 
-    
+
     );
 };
 

@@ -134,7 +134,7 @@ You should see the following tables:
 ## Entities
 Each table is represented as a python class in `mojodex_code/entities.py`. This file is generated using `sqlacodegen`tool:
 ```bash
-sqlacodegen postgresql+psycopg2://$DBUSER:$DBPASS@localhost:5432/$DBNAME --outfile mojodex_core/entities.py
+sqlacodegen postgresql+psycopg2://$DBUSER:$DBPASS@localhost:5432/$DBNAME --outfile mojodex_core/entities/db_base_entities.py
 ```
 
 ## Go further

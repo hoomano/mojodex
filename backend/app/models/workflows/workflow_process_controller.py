@@ -128,7 +128,7 @@ class WorkflowProcessController:
                 self.end_workflow_execution()
                 return
 
-            self.execute_step(next_step_execution_to_run)
+            self._execute_step(next_step_execution_to_run)
 
             self._send_ended_step_event()
             if not next_step_execution_to_run.workflow_step.user_validation_required and next_step_execution_to_run.error_status is None:
@@ -213,19 +213,7 @@ class WorkflowProcessController:
         try:
             current_step_in_validation = self.workflow_execution.last_step_execution
             self._invalidate_step(current_step_in_validation)
-            if current_step_in_validation.workflow_step.is_checkpoint:
-                current_step_in_validation.learn_instruction(learned_instruction)
-                return
-
-            # find checkpoint step
-            checkpoint_step = self.workflow_execution.checkpoint_step
-            # for all step in self.validated_steps_executions after checkpoint_step, invalidate them
-            checkpoint_step_index = self.workflow_execution.past_valid_step_executions.index(checkpoint_step)
-            for validated_step in self.workflow_execution.past_valid_step_executions[checkpoint_step_index:]:
-                self._invalidate_step(validated_step)
-                # remove from validated_steps_executions
-                self.workflow_execution.past_valid_step_executions.remove(validated_step)
-            checkpoint_step.learn_instruction(learned_instruction)
+            current_step_in_validation.learn_instruction(learned_instruction)
         except Exception as e:
             raise Exception(f"invalidate_current_step :: {e}")
 
@@ -250,32 +238,6 @@ class WorkflowProcessController:
         except Exception as e:
             raise Exception(f"restart :: {e}")
 
-    def get_before_checkpoint_validated_steps_executions(self, current_step_in_validation: UserWorkflowStepExecution) -> \
-            List[UserWorkflowStepExecution]:
-        try:
-            if current_step_in_validation.workflow_step.is_checkpoint:
-                return self.workflow_execution.past_valid_step_executions
-            checkpoint_step = self.workflow_execution.checkpoint_step
-            if not checkpoint_step:
-                return []
-            checkpoint_step_index = self.workflow_execution.past_valid_step_executions.index(checkpoint_step)
-            return self.workflow_execution.past_valid_step_executions[:checkpoint_step_index]
-        except Exception as e:
-            raise Exception(f"before_checkpoint_steps_executions :: {e}")
-
-    def get_after_checkpoint_validated_steps_executions(self, current_step_in_validation: UserWorkflowStepExecution) -> \
-            List[UserWorkflowStepExecution]:
-        try:
-            if current_step_in_validation.workflow_step.is_checkpoint:
-                return []
-            checkpoint_step = self.workflow_execution.checkpoint_step
-            if not checkpoint_step:
-                return self.workflow_execution.past_valid_step_executions
-            checkpoint_step_index = self.workflow_execution.past_valid_step_executions.index(checkpoint_step)
-            return self.workflow_execution.past_valid_step_executions[checkpoint_step_index:]
-        except Exception as e:
-            raise Exception(f"after_checkpoint_to_current_steps_executions :: {e}")
-
     def get_formatted_past_validated_steps_results(self):
         try:
             return [{
@@ -286,9 +248,8 @@ class WorkflowProcessController:
         except Exception as e:
             raise Exception(f"get_formatted_past_validated_steps_results :: {e}")
 
-    def execute_step(self, workflow_step_execution: UserWorkflowStepExecution):
+    def _execute_step(self, workflow_step_execution: UserWorkflowStepExecution):
         try:
-
             step_json = workflow_step_execution.to_json()
             step_json["session_id"] = self.workflow_execution.session_id
             server_socket.emit('workflow_step_execution_started', step_json, to=self.workflow_execution.session_id)
@@ -304,6 +265,6 @@ class WorkflowProcessController:
             workflow_step_execution.error_status = {"datetime": datetime.now().isoformat(), "error": str(e)}
             self.db_session.commit()
             # send email to admin
-            print(f"🔴 {self.logger_prefix} - execute_step :: {e}")
+            print(f"🔴 {self.logger_prefix} - _execute_step :: {e}")
             send_technical_error_email(
                 f"Error while executing step {workflow_step_execution.user_workflow_step_execution_pk} for user {workflow_step_execution.user_task_execution.user.user_id} : {e}")

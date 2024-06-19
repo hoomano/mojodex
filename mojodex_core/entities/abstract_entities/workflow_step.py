@@ -20,10 +20,6 @@ class WorkflowStep(MdWorkflowStep, ABC, metaclass=AbstractEntity):
     def definition_for_system(self) -> str:
         raise NotImplementedError
 
-    @property
-    def name_for_system(self) -> str:
-        return self.name_for_system
-
     def _get_displayed_data(self, language_code):
         try:
             session = object_session(self)
@@ -61,10 +57,6 @@ class WorkflowStep(MdWorkflowStep, ABC, metaclass=AbstractEntity):
     @abstractmethod
     def output_keys(self) -> List[str]:
         raise NotImplementedError
-
-    @property
-    def is_checkpoint(self):
-        return True
 
     def _execute(self, parameter: dict, learned_instructions: dict, initial_parameters: dict,
                  past_validated_steps_results: List[dict], user_id: str, user_task_execution_pk: int,

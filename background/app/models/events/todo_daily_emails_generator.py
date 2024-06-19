@@ -46,7 +46,7 @@ class TodoDailyEmailsGenerator(EventsGenerator):
                 try:
                     with open(TodoDailyEmailsGenerator.message_from_mojodex_email, "r") as f:
                         template = Template(f.read())
-                        body = template.render(mojodex_message=body, mojodex_link=os.environ["MOJODEX_WEBAPP_URI"],
+                        body = template.render(mojodex_message=body, mojodex_webapp_url=os.environ["MOJODEX_WEBAPP_URI"],
                                                button_text="View To-do List")
                     self.send_event(user_id, message={"subject": subject, "body": body, 'email': email},
                                     event_type=TodoDailyEmailsGenerator.todo_daily_email_type)

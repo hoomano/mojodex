@@ -1,17 +1,20 @@
+import json
+from models.produced_text_managers.task_produced_text_manager import TaskProducedTextManager
 from models.knowledge.knowledge_manager import KnowledgeManager
 from models.assistant.chat_assistant import ChatAssistant
 from app import placeholder_generator
 
 from models.tasks.workflows.workflow_manager import WorkflowManager
+from mojodex_core.entities.user_workflow_execution import UserWorkflowExecution
 from mojodex_core.llm_engine.mpt import MPT
 
 
 class WorkflowAssistant(ChatAssistant):
-    mpt_file = "instructions/workflow_step_run.mpt"
+    mpt_file = "instructions/workflow_run.mpt"
 
     def __init__(self, mojo_message_token_stream_callback, draft_token_stream_callback, use_message_placeholder,
                  use_draft_placeholder,
-                 tag_proper_nouns, user_messages_are_audio, running_user_task_execution, db_session):
+                 tag_proper_nouns, user_messages_are_audio, running_user_task_execution: UserWorkflowExecution, db_session):
         try:
 
             super().__init__(mojo_message_token_stream_callback, draft_token_stream_callback,
@@ -21,7 +24,7 @@ class WorkflowAssistant(ChatAssistant):
             self.use_message_placeholder = use_message_placeholder
             self.use_draft_placeholder = use_draft_placeholder
 
-            self.workflow_manager = WorkflowManager()
+            self.workflow_manager = WorkflowManager(self.workflow_execution.session.session_id, self.workflow_execution.user.user_id)
 
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} __init__ :: {e}")
@@ -42,7 +45,8 @@ class WorkflowAssistant(ChatAssistant):
             # Handle LLM output
             if llm_output:
                 message = self._handle_llm_output(llm_output)
-                message['user_task_execution_pk'] = self.workflow_execution.user_task_execution_pk
+                if message:
+                    message['user_task_execution_pk'] = self.workflow_execution.user_task_execution_pk
                 return message
 
         except Exception as e:
@@ -55,7 +59,7 @@ class WorkflowAssistant(ChatAssistant):
             if self.use_message_placeholder:
                 placeholder = self.workflow_manager.workflow_step_clarification_manager
             elif self.use_draft_placeholder:
-                placeholder = self.workflow_manager.workflow_step_instruction_manager
+                placeholder = self.workflow_manager.task_execution_placeholder
             if placeholder:
                 placeholder_generator.stream(placeholder, self._token_callback)
                 return placeholder
@@ -67,14 +71,19 @@ class WorkflowAssistant(ChatAssistant):
         try:
             mojo_knowledge = KnowledgeManager.get_mojo_knowledge()
             global_context = KnowledgeManager.get_global_context_knowledge()
-
+            
             return MPT(self.mpt_file, mojo_knowledge=mojo_knowledge,
                        global_context=global_context,
                        username=self.workflow_execution.user.name,
                        user_company_knowledge=self.workflow_execution.user.company_description,
                        infos_to_extract=self.workflow_execution.task.infos_to_extract,
                        workflow=self.workflow_execution.task,
+                       title_start_tag=TaskProducedTextManager.title_start_tag,
+                       title_end_tag=TaskProducedTextManager.title_end_tag,
+                       draft_start_tag=TaskProducedTextManager.draft_start_tag,
+                       draft_end_tag=TaskProducedTextManager.draft_end_tag,
                        user_workflow_inputs=self.workflow_execution.json_input_values,
+                       produced_text_done=self.workflow_execution.produced_text_done,
                        audio_message=self.user_messages_are_audio,
                        tag_proper_nouns=self.tag_proper_nouns)
         except Exception as e:
@@ -96,10 +105,18 @@ class WorkflowAssistant(ChatAssistant):
             self.mojo_message_token_stream_callback(partial_text)
 
         else:
-            self.workflow_manager.manage_task_stream(partial_text, self.mojo_message_token_stream_callback)
+            self.workflow_manager.manage_task_stream(partial_text, self.mojo_message_token_stream_callback, self.draft_token_stream_callback)
 
     def _manage_response_tags(self, response):
         try:
+            execution = self._manage_execution_tags(response)
+            if execution:
+                return self.workflow_manager.task_executor.manage_execution_text(execution_text=execution,
+                                                                             task=self.workflow_execution.task,
+                                                                             task_name=self.workflow_execution.task_name_in_user_language,
+                                                                             user_task_execution_pk=self.workflow_execution.user_task_execution_pk,
+                                                                             use_draft_placeholder=self.use_draft_placeholder
+                                                                             )
             return self.workflow_manager.manage_response_task_tags(response, self.workflow_execution)
         except Exception as e:
             raise Exception(f"_manage_response_tags :: {e}")

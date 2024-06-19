@@ -74,12 +74,19 @@ const DraftDetail = () => {
     producedTextPk: null,
   });
   const [workflowStepExecutions, setWorkflowStepExecutions] = useState(currentTask!.step_executions);
-  const [chatIsVisible, setChatIsVisible] = useState(currentTask!.task_type !== "workflow");
+  const [chatIsVisible, setChatIsVisible] = useState(selectedTab === "result" && currentTask!.result_chat_enabled); 
   const [editingInputs, setEditingInputs] = useState(false);
 
 
 
   const { t } = useTranslation("dynamic");
+
+
+  // when tab change, update chatIsVisible
+  useEffect(() => {
+    setChatIsVisible(selectedTab === "result" && currentTask!.result_chat_enabled);
+  }, [selectedTab]);
+
 
   useEffect(() => {
     let resultTab = {

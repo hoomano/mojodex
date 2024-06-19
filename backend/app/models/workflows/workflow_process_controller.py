@@ -1,11 +1,15 @@
 from datetime import datetime
 
+from jinja2 import Template
+
 from app import server_socket, socketio_message_sender
 
-from models.produced_text_managers.workflow_produced_text_manager import WorkflowProducedTextManager
-from mojodex_core.entities.db_base_entities import MdUserTask, MdUserWorkflowStepExecutionResult, MdWorkflowStep
+
+from models.produced_text_managers.task_produced_text_manager import TaskProducedTextManager
+from mojodex_core.entities.db_base_entities import MdMessage, MdUserTask, MdUserWorkflowStepExecutionResult, \
+    MdWorkflowStep
 from mojodex_core.db import engine, Session
-from typing import List
+
 from mojodex_core.entities.user_workflow_execution import UserWorkflowExecution
 from sqlalchemy import case, and_
 
@@ -23,7 +27,7 @@ class WorkflowProcessController:
     def __init__(self, workflow_execution_pk):
         try:
             self.db_session = Session(engine)
-            self.workflow_execution = self.db_session.query(UserWorkflowExecution).get(workflow_execution_pk)
+            self.workflow_execution: UserWorkflowExecution = self.db_session.query(UserWorkflowExecution).get(workflow_execution_pk)
             self._current_step = None
         except Exception as e:
             raise Exception(f"{self.logger_prefix} :: __init__ :: {e}")
@@ -122,7 +126,8 @@ class WorkflowProcessController:
     def run(self):
         try:
             if not self.workflow_execution.title:
-                server_socket.start_background_task(TaskExecutionTitleSummaryGenerator.generate_title_and_summary, self.workflow_execution.user_task_execution_pk)
+                server_socket.start_background_task(TaskExecutionTitleSummaryGenerator.generate_title_and_summary,
+                                                    self.workflow_execution.user_task_execution_pk)
             next_step_execution_to_run = self._get_next_step_execution_to_run()
             if not next_step_execution_to_run:
                 self.end_workflow_execution()
@@ -142,7 +147,31 @@ class WorkflowProcessController:
 
     def end_workflow_execution(self):
         try:
+
+            self.add_state_message()
             produced_text, produced_text_version = self._generate_produced_text()
+            
+            # add it as a mojo_message
+            produced_text_with_tags = f"""{TaskProducedTextManager.title_start_tag}{produced_text_version.title}{TaskProducedTextManager.title_end_tag}
+{TaskProducedTextManager.draft_start_tag}{produced_text_version.production}{TaskProducedTextManager.draft_end_tag}"""
+
+            mojo_message = MdMessage(
+                session_id=self.workflow_execution.session_id, sender='mojo',
+                event_name='workflow_execution_produced_text',
+                message={"produced_text": produced_text_version.production,
+                         "produced_text_title": produced_text_version.title,
+                         "produced_text_pk": produced_text.produced_text_pk,
+                         "produced_text_version_pk": produced_text_version.produced_text_version_pk,
+                         "user_task_execution_pk": self.workflow_execution.user_task_execution_pk,
+                         "text": f"{produced_text_version.title}\n{produced_text_version.production}",
+                         "text_with_tags": f"<execution>{produced_text_with_tags}</execution>"
+                         },
+                creation_date=datetime.now(), message_date=datetime.now()
+            )
+            self.db_session.add(mojo_message)
+            self.db_session.commit()
+
+            # send event
             server_socket.emit('workflow_execution_produced_text', {
                 "user_task_execution_pk": self.workflow_execution.user_task_execution_pk,
                 "produced_text": produced_text_version.production,
@@ -182,11 +211,12 @@ class WorkflowProcessController:
             production = "\n\n".join(
                 [list(step.result[0].values())[0] for step in validated_last_step_executions[::-1]])
 
-            produced_text_manager = WorkflowProducedTextManager(self.workflow_execution.session_id,
+            produced_text_manager = TaskProducedTextManager(self.workflow_execution.session_id,
                                                                 self.workflow_execution.user.user_id,
-                                                                self.workflow_execution.user_task_execution_pk)
-            produced_text, produced_text_version = produced_text_manager.save(production,
-                                                                              text_type_pk=self.workflow_execution.task.output_text_type_fk, )
+                                                                self.workflow_execution.user_task_execution_pk,
+                                                                self.workflow_execution.task.name_for_system)
+            produced_text, produced_text_version = produced_text_manager.save_produced_text(production, title="", text_type_pk=self.workflow_execution.task.output_text_type_fk)
+
             return produced_text, produced_text_version
 
         except Exception as e:
@@ -200,6 +230,26 @@ class WorkflowProcessController:
                                to=self.workflow_execution.session_id)
         except Exception as e:
             raise Exception(f"_send_ended_step_event :: {e}")
+
+    def add_state_message(self):
+        try:
+            # add state message to conversation
+            with open("mojodex_core/prompts/workflows/state.txt") as f:
+                template = Template(f.read())
+                current_step_in_validation = self.workflow_execution.last_step_execution if self.workflow_execution.last_step_execution.validated == None else None
+                state_message = template.render(
+                    past_validated_steps_executions=self.workflow_execution.past_valid_step_executions,
+                    current_step=current_step_in_validation)
+
+                system_message = MdMessage(
+                    session_id=self.workflow_execution.session_id, sender='system',
+                    event_name='worflow_step_execution_rejection', message={'text': state_message},
+                    creation_date=datetime.now(), message_date=datetime.now()
+                )
+                self.db_session.add(system_message)
+                self.db_session.commit()
+        except Exception as e:
+            raise Exception(f"add_state_message :: {e}")
 
     def validate_step_execution(self, step_execution_pk: int):
         try:

@@ -41,21 +41,7 @@ class UserWorkflowStepExecution(Resource):
                 workflow_process_controller.validate_step_execution(user_workflow_step_execution_pk)
                 server_socket.start_background_task(workflow_process_controller.run)
             else:
-                # add new message to db
-                current_step_in_validation = db.session.query(UserWorkflowStepExecutionEntity).get(user_workflow_step_execution_pk)
-                with open("mojodex_core/prompts/workflows/state.txt", "r") as file:
-                    template = Template(file.read())
-                    text = template.render(
-                        past_validated_steps_executions=workflow_process_controller.workflow_execution.past_valid_step_executions,
-                        current_step=current_step_in_validation,
-                        )
-                    
-                system_message = MdMessage(
-                                session_id=user_task_execution.session_id, sender='system', event_name='worflow_step_execution_rejection', message={'text': text},
-                                creation_date=datetime.now(), message_date=datetime.now()
-                )
-                db.session.add(system_message)
-                db.session.commit()
+                workflow_process_controller.add_state_message()
                 
             return {"message": "Step validated"}, 200
         except Exception as e:

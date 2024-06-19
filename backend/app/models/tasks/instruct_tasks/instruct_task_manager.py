@@ -1,6 +1,6 @@
 from models.tasks.task_executor import TaskExecutor
 
-from models.produced_text_managers.instruct_task_produced_text_manager import InstructTaskProducedTextManager
+from models.produced_text_managers.task_produced_text_manager import TaskProducedTextManager
 from models.assistant.execution_manager import ExecutionManager
 from app import placeholder_generator
 from models.assistant.chat_assistant import ChatAssistant
@@ -17,8 +17,8 @@ class InstructTaskManager:
     @property
     def task_execution_placeholder(self):
         return f"{ExecutionManager.execution_start_tag}" \
-               f"{InstructTaskProducedTextManager.title_start_tag}{placeholder_generator.mojo_draft_title}{InstructTaskProducedTextManager.title_end_tag}" \
-               f"{InstructTaskProducedTextManager.draft_start_tag}{placeholder_generator.mojo_draft_body}{InstructTaskProducedTextManager.draft_end_tag}" \
+               f"{TaskProducedTextManager.title_start_tag}{placeholder_generator.mojo_draft_title}{TaskProducedTextManager.title_end_tag}" \
+               f"{TaskProducedTextManager.draft_start_tag}{placeholder_generator.mojo_draft_body}{TaskProducedTextManager.draft_end_tag}" \
                f"{ExecutionManager.execution_end_tag}"
 
     @property

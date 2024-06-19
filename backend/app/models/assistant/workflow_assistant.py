@@ -47,10 +47,9 @@ class WorkflowAssistant(ChatAssistant):
 
             # Handle LLM output
             if llm_output:
-                with open("/data/response.txt", "w") as f:
-                    f.write(llm_output)
                 message = self._handle_llm_output(llm_output)
-                message['user_task_execution_pk'] = self.workflow_execution.user_task_execution_pk
+                if message:
+                    message['user_task_execution_pk'] = self.workflow_execution.user_task_execution_pk
                 return message
 
         except Exception as e:

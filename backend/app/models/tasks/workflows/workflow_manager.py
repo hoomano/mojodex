@@ -50,7 +50,7 @@ class WorkflowManager:
                 workflow_process_controller = WorkflowProcessController(workflow_execution.user_task_execution_pk)
                 workflow_process_controller.invalidate_current_step(instruction['text'])
                 server_socket.start_background_task(workflow_process_controller.run)
-                return instruction
+                return None
 
             return {"text": response}
         except Exception as e:

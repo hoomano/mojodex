@@ -74,7 +74,7 @@ const DraftDetail = () => {
     producedTextPk: null,
   });
   const [workflowStepExecutions, setWorkflowStepExecutions] = useState(currentTask!.step_executions);
-  const [chatIsVisible, setChatIsVisible] = useState(selectedTab === "result" && currentTask!.result_chat_enabled); //useState(currentTask!.task_type !== "workflow");
+  const [chatIsVisible, setChatIsVisible] = useState(selectedTab === "result" && currentTask!.result_chat_enabled); 
   const [editingInputs, setEditingInputs] = useState(false);
 
 

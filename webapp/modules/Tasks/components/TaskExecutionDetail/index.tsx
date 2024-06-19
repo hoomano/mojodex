@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useRef, useState } from "react";
+import React, { use, useContext, useEffect, useRef, useState } from "react";
 import { getSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { Socket, io } from "socket.io-client";
@@ -74,12 +74,20 @@ const DraftDetail = () => {
     producedTextPk: null,
   });
   const [workflowStepExecutions, setWorkflowStepExecutions] = useState(currentTask!.step_executions);
-  const [chatIsVisible, setChatIsVisible] = useState(currentTask!.task_type !== "workflow");
+  // chat is visible if tab is "result"
+  const [chatIsVisible, setChatIsVisible] = useState(selectedTab === "result"); //useState(currentTask!.task_type !== "workflow");
   const [editingInputs, setEditingInputs] = useState(false);
 
 
 
   const { t } = useTranslation("dynamic");
+
+
+  // when tab change, update chatIsVisible
+  useEffect(() => {
+    setChatIsVisible(selectedTab === "result");
+  }, [selectedTab]);
+
 
   useEffect(() => {
     let resultTab = {

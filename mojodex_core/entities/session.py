@@ -15,8 +15,7 @@ class Session(MdSession):
     @property
     def last_user_message(self):
         try:
-            from models.assistant.session import Session as SessionModel
-            last_user_message = next((message for message in self.messages[::-1] if message.sender == SessionModel.user_message_key), None)
+            last_user_message = next((message for message in self.messages[::-1] if message.sender == Message.user_message_key), None)
             return last_user_message
         except Exception as e:
             raise Exception(f"_last_user_message :: {e}")

@@ -16,7 +16,7 @@ class UserTaskExecution(MdUserTaskExecution, ABC, metaclass=AbstractEntity):
     def produced_text_done(self):
         try:
             session = object_session(self)
-            return session.query(MdProducedText).filter(MdProducedText.user_task_execution_fk == self.user_task_execution_pk).count() > 1
+            return session.query(MdProducedText).filter(MdProducedText.user_task_execution_fk == self.user_task_execution_pk).count() >= 1
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} :: produced_text_done :: {e}")
 

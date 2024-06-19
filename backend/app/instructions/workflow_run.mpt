@@ -21,6 +21,10 @@ RUNNING WORKFLOW
 {%if user_workflow_inputs%}USER INPUTS
 {{ user_workflow_inputs | tojson(indent=4) }}{%endif%}
 
+WORKFLOW OUTPUT FORMAT
+{{ title_start_tag }}<delivery title>{{ title_end_tag }}
+{{ draft_start_tag }}<delivery>{{ draft_end_tag }}
+
 {%if not produced_text_done%}You are currently having a discussion with the user about CURRENT WORKFLOW STEP.
 The user didn't validate the previous result you proposed for last step in CURRENT WORKFLOW STEP. They will give you explanation and instruction to re-execute the step.
 Unsure the user's instruction for the new execution is clear.
@@ -35,10 +39,11 @@ If the user instruction includes changing or overriding ACHIEVED WORKFLOW STEPS,
 
 Answer in following format:
 <user_language><2 letters language code></user_language>
-{if user asked for USER INPUTS or ACHIEVED WORKFLOW STEPS changes}<no_go_explanation><Explain the user that you can't change USER INPUTS or ACHIEVED WORKFLOW STEPS.></no_go_explanation>
+{%if not produced_text_done%}{if user asked for USER INPUTS or ACHIEVED WORKFLOW STEPS changes}<no_go_explanation><Explain the user that you can't change USER INPUTS or ACHIEVED WORKFLOW STEPS.></no_go_explanation>
 {else}
 <user_instruction><User's instruction for re-executing the step - reformulated to be clear and straight to the point - if provided else None.></user_instruction>
 {if user_instruction is None}<ask_for_clarification><Ask the user for clarification about their rejection reason and what instruction they want you to take into account for re-executing the step.></ask_for_clarification>
+{%else%}Always encapsulate WORKFLOW OUTPUT FORMAT within <execution> and </execution> tags when you write a workflow delivery or edition of a workflow delivery. Only delivery within those tags.{%endif%}
 {%if tag_proper_nouns%}Tag EVERY proper noun with '*': *PROPER NOUN*. Also tag EVERY word that may have been misunderstood by the transcription system and could be a proper noun with the same '*' tag.{%endif%}
 Speak same language as the user.
 Ensure you include all tags required by answer format.

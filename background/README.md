@@ -64,13 +64,6 @@ For now, Mojodex's Background manages 8 processes:
 
 This process is called each time the user sends a message to a task. It updates (or creates if not exists) the title and summary of the task from the ongoing conversation.
 
-### FirstSessionMessage
-- Resource: `background/app/routes/first_session_message.py`
-- Cortex: `background/app/models/cortex/first_session_message_cortex.py`
-- Launched from: `backend/app/models/session.py`
-
-This process is called when a user starts a new session. It generates a session title that could be useful to identify the session later, in a history interface for example.
-
 ### TaskToolExecution
 - Resource: `background/app/routes/task_tool_execution.py`
 - Cortex: `background/app/models/cortex/task_tool_execution_cortex.py`

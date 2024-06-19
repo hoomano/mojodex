@@ -36,9 +36,6 @@ class WorkflowAssistant(ChatAssistant):
                 return self._handle_placeholder()
 
             # Call LLM
-            # save conversation to conversation.json
-            with open("/data/conversation.json", "w") as f:
-                json.dump(self.workflow_execution.session.conversation, f, indent=4)
             llm_output = self._call_llm(self.workflow_execution.session.conversation,
                                         self.workflow_execution.user.user_id,
                                         self.workflow_execution.session.session_id,

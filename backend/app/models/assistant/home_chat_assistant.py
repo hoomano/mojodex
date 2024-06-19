@@ -21,7 +21,7 @@ class HomeChatAssistant(ChatAssistant):
     task_pk_start_tag, task_pk_end_tag = "<task_pk>", "</task_pk>"
 
     def __init__(self, mojo_message_token_stream_callback, draft_token_stream_callback, use_message_placeholder,
-                 user_id, session_id, tag_proper_nouns, user_messages_are_audio, running_user_task_execution,
+                 user_id, session_id, tag_proper_nouns, user_messages_are_audio, running_user_task_execution: InstructTaskExecution,
                  db_session):
         try:
             super().__init__(mojo_message_token_stream_callback, draft_token_stream_callback,

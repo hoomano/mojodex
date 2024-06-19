@@ -4,9 +4,8 @@ from jinja2 import Template
 
 from app import server_socket, socketio_message_sender
 
-from models.produced_text_managers.workflow_produced_text_manager import WorkflowProducedTextManager
 
-from models.produced_text_managers.instruct_task_produced_text_manager import InstructTaskProducedTextManager
+from models.produced_text_managers.task_produced_text_manager import TaskProducedTextManager
 from mojodex_core.entities.db_base_entities import MdMessage, MdUserTask, MdUserWorkflowStepExecutionResult, \
     MdWorkflowStep
 from mojodex_core.db import engine, Session
@@ -28,7 +27,7 @@ class WorkflowProcessController:
     def __init__(self, workflow_execution_pk):
         try:
             self.db_session = Session(engine)
-            self.workflow_execution = self.db_session.query(UserWorkflowExecution).get(workflow_execution_pk)
+            self.workflow_execution: UserWorkflowExecution = self.db_session.query(UserWorkflowExecution).get(workflow_execution_pk)
             self._current_step = None
         except Exception as e:
             raise Exception(f"{self.logger_prefix} :: __init__ :: {e}")
@@ -151,6 +150,28 @@ class WorkflowProcessController:
 
             self.add_state_message()
             produced_text, produced_text_version = self._generate_produced_text()
+            
+            # add it as a mojo_message
+            produced_text_with_tags = f"""{TaskProducedTextManager.title_start_tag}{produced_text_version.title}{TaskProducedTextManager.title_end_tag}
+{TaskProducedTextManager.draft_start_tag}{produced_text_version.production}{TaskProducedTextManager.draft_end_tag}"""
+
+            mojo_message = MdMessage(
+                session_id=self.workflow_execution.session_id, sender='mojo',
+                event_name='workflow_execution_produced_text',
+                message={"produced_text": produced_text_version.production,
+                         "produced_text_title": produced_text_version.title,
+                         "produced_text_pk": produced_text.produced_text_pk,
+                         "produced_text_version_pk": produced_text_version.produced_text_version_pk,
+                         "user_task_execution_pk": self.workflow_execution.user_task_execution_pk,
+                         "text": f"{produced_text_version.title}\n{produced_text_version.production}",
+                         "text_with_tags": f"<execution>{produced_text_with_tags}</execution>"
+                         },
+                creation_date=datetime.now(), message_date=datetime.now()
+            )
+            self.db_session.add(mojo_message)
+            self.db_session.commit()
+
+            # send event
             server_socket.emit('workflow_execution_produced_text', {
                 "user_task_execution_pk": self.workflow_execution.user_task_execution_pk,
                 "produced_text": produced_text_version.production,
@@ -190,31 +211,10 @@ class WorkflowProcessController:
             production = "\n\n".join(
                 [list(step.result[0].values())[0] for step in validated_last_step_executions[::-1]])
 
-            produced_text_manager = WorkflowProducedTextManager(self.workflow_execution.session_id,
+            produced_text_manager = TaskProducedTextManager(self.workflow_execution.session_id,
                                                                 self.workflow_execution.user.user_id,
                                                                 self.workflow_execution.user_task_execution_pk)
-            produced_text, produced_text_version = produced_text_manager.save(production,
-                                                                              text_type_pk=self.workflow_execution.task.output_text_type_fk, )
-
-            # add it as a mojo_message
-            produced_text_with_tags = f"""{InstructTaskProducedTextManager.title_start_tag}{produced_text_version.title}{InstructTaskProducedTextManager.title_end_tag}
-{InstructTaskProducedTextManager.draft_start_tag}{produced_text_version.production}{InstructTaskProducedTextManager.draft_end_tag}"""
-
-            mojo_message = MdMessage(
-                session_id=self.workflow_execution.session_id, sender='mojo',
-                event_name='workflow_execution_produced_text',
-                message={"produced_text": produced_text_version.production,
-                         "produced_text_title": produced_text_version.title,
-                         "produced_text_pk": produced_text.produced_text_pk,
-                         "produced_text_version_pk": produced_text_version.produced_text_version_pk,
-                         "user_task_execution_pk": self.workflow_execution.user_task_execution_pk,
-                         "text": f"{produced_text_version.title}\n{produced_text_version.production}",
-                         "text_with_tags": f"<execution>{produced_text_with_tags}</execution>"
-                         },
-                creation_date=datetime.now(), message_date=datetime.now()
-            )
-            self.db_session.add(mojo_message)
-            self.db_session.commit()
+            produced_text, produced_text_version = produced_text_manager.save_produced_text(production, title="", text_type_pk=self.workflow_execution.task.output_text_type_fk)
 
             return produced_text, produced_text_version
 

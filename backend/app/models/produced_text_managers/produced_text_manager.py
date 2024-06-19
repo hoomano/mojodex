@@ -27,7 +27,7 @@ class ProducedTextManager(ABC):
             f"{ProducedTextManager.logger_prefix} -- session {session_id}")
 
 
-    def _save_produced_text(self, text, title, text_type_pk):
+    def save_produced_text(self, text, title, text_type_pk):
         try:
             text_to_edit_pk = self._is_edition()
             if text_to_edit_pk is not None:
@@ -48,6 +48,7 @@ class ProducedTextManager(ABC):
                 self.logger.error(f"_save_produced_text:: error embedding text: {e}")
                 embedding = None
                 
+            text_type_pk = text_type_pk if text_type_pk else self._determine_production_text_type_pk(text)
             new_version = MdProducedTextVersion(produced_text_fk=produced_text.produced_text_pk, title=title,
                                                 production=text,
                                                 creation_date=datetime.now(), text_type_fk=text_type_pk,

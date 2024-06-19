@@ -3,6 +3,7 @@ from models.assistant.chat_assistant import ChatAssistant
 from app import placeholder_generator
 
 from models.tasks.instruct_tasks.instruct_task_manager import InstructTaskManager
+from mojodex_core.entities.instruct_user_task_execution import InstructTaskExecution
 from mojodex_core.llm_engine.mpt import MPT
 
 
@@ -11,7 +12,7 @@ class InstructTaskAssistant(ChatAssistant):
 
     def __init__(self, mojo_message_token_stream_callback, draft_token_stream_callback, use_message_placeholder,
                  use_draft_placeholder,
-                 tag_proper_nouns, user_messages_are_audio, running_user_task_execution, db_session):
+                 tag_proper_nouns, user_messages_are_audio, running_user_task_execution: InstructTaskExecution, db_session):
         try:
 
             super().__init__(mojo_message_token_stream_callback, draft_token_stream_callback,

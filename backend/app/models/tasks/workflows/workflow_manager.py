@@ -4,8 +4,7 @@ from app import server_socket, placeholder_generator
 from models.workflows.workflow_process_controller import WorkflowProcessController
 
 from models.assistant.execution_manager import ExecutionManager
-from models.produced_text_managers.instruct_task_produced_text_manager import \
-    InstructTaskProducedTextManager
+from models.produced_text_managers.task_produced_text_manager import TaskProducedTextManager
 from models.tasks.task_executor import TaskExecutor
 from mojodex_core.entities.user_workflow_execution import UserWorkflowExecution
 
@@ -36,8 +35,8 @@ class WorkflowManager:
     @property
     def task_execution_placeholder(self):
         return f"{ExecutionManager.execution_start_tag}" \
-               f"{InstructTaskProducedTextManager.title_start_tag}{placeholder_generator.mojo_draft_title}{InstructTaskProducedTextManager.title_end_tag}" \
-               f"{InstructTaskProducedTextManager.draft_start_tag}{placeholder_generator.mojo_draft_body}{InstructTaskProducedTextManager.draft_end_tag}" \
+               f"{TaskProducedTextManager.title_start_tag}{placeholder_generator.mojo_draft_title}{TaskProducedTextManager.title_end_tag}" \
+               f"{TaskProducedTextManager.draft_start_tag}{placeholder_generator.mojo_draft_body}{TaskProducedTextManager.draft_end_tag}" \
                f"{ExecutionManager.execution_end_tag}"
 
     def manage_response_task_tags(self, response: str, workflow_execution: UserWorkflowExecution):

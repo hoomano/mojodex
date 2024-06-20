@@ -5,6 +5,7 @@ from jinja2 import Template
 from app import server_socket, socketio_message_sender
 
 
+from models.tasks.tag_manager import TagManager
 from models.produced_text_managers.task_produced_text_manager import TaskProducedTextManager
 from mojodex_core.entities.db_base_entities import MdMessage, MdUserTask, MdUserWorkflowStepExecutionResult, \
     MdWorkflowStep
@@ -151,9 +152,10 @@ class WorkflowProcessController:
             self.add_state_message()
             produced_text, produced_text_version = self._generate_produced_text()
             
+            title_tag_manager = TagManager("title")
+            draft_tag_manager = TagManager("draft")
             # add it as a mojo_message
-            produced_text_with_tags = f"""{TaskProducedTextManager.title_start_tag}{produced_text_version.title}{TaskProducedTextManager.title_end_tag}
-{TaskProducedTextManager.draft_start_tag}{produced_text_version.production}{TaskProducedTextManager.draft_end_tag}"""
+            produced_text_with_tags = f"{title_tag_manager.add_tags_to_text(produced_text_version.title)}\n{draft_tag_manager.add_tags_to_text(produced_text_version.production)}"
 
             mojo_message = MdMessage(
                 session_id=self.workflow_execution.session_id, sender='mojo',

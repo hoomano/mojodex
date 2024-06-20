@@ -1,3 +1,4 @@
+from models.tasks.tag_manager import TagManager
 from models.assistant.execution_manager import ExecutionManager
 from mojodex_core.llm_engine.mpt import MPT
 from mojodex_core.llm_engine.providers.openai_vision_llm import VisionMessagesData
@@ -6,24 +7,8 @@ from mojodex_core.llm_engine.providers.model_loader import ModelLoader
 
 
 class ChatAssistant(ABC):
-    language_start_tag, language_end_tag = "<user_language>", "</user_language>"
 
-    @staticmethod
-    def remove_tags_from_text(text, start_tag, end_tag):
-        """
-        Remove tags from text
-        :param text: text
-        :param start_tag: start tag
-        :param end_tag: end tag
-
-        :return: text without tags
-        """
-        try:
-            return text.split(start_tag)[1].split(end_tag)[0].strip() if start_tag in text else ""
-        except Exception as e:
-            raise Exception(
-                f"ChatAssistant: remove_tags_from_text :: text: {text} - start_tag: {start_tag} - end_tag: {end_tag} - {e}")
-
+    
     def __init__(self, mojo_message_token_stream_callback, draft_token_stream_callback,
                  tag_proper_nouns, user_messages_are_audio, db_session, temperature=0, max_tokens=4000):
         try:
@@ -37,6 +22,7 @@ class ChatAssistant(ABC):
             self.default_temperature = temperature
             self.default_max_tokens = max_tokens
             self.language = None
+            self.tag_manager = TagManager("user_language")
 
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} __init__ :: {e}")
@@ -119,11 +105,9 @@ class ChatAssistant(ABC):
         :param response: response
         """
         try:
-            if self.language_start_tag in response:
+            if self.tag_manager.start_tag in response:
                 try:
-                    self.language = self.remove_tags_from_text(response,
-                                                               self.language_start_tag,
-                                                               self.language_end_tag).lower()
+                    self.language = self.tag_manager.remove_tags_from_text(response).lower()
                 except Exception as e:
                     pass
         except Exception as e:

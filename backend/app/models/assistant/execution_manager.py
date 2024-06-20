@@ -1,18 +1,15 @@
+from models.tasks.tag_manager import TagManager
 from mojodex_backend_logger import MojodexBackendLogger
 
-
-
 class ExecutionManager:
-    execution_start_tag, execution_end_tag = "<execution>", "</execution>"
 
     def __init__(self):
         self.logger = MojodexBackendLogger(f"{self.__class__.__name__}")
+        self.tag_manager = TagManager("execution")
 
     def manage_execution_text(self, execution_text):
         try:
-            from models.assistant.chat_assistant import ChatAssistant
-            mojo_text = ChatAssistant.remove_tags_from_text(execution_text, self.execution_start_tag,
-                                                                             self.execution_end_tag)
+            mojo_text = self.tag_manager.remove_tags_from_text(execution_text)
             return mojo_text
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} :: manage_execution_text :: {e}")

@@ -74,12 +74,19 @@ const DraftDetail = () => {
     producedTextPk: null,
   });
   const [workflowStepExecutions, setWorkflowStepExecutions] = useState(currentTask!.step_executions);
-  const [chatIsVisible, setChatIsVisible] = useState(currentTask!.task_type !== "workflow");
+  const [chatIsVisible, setChatIsVisible] = useState(selectedTab === "result" && currentTask!.result_chat_enabled); 
   const [editingInputs, setEditingInputs] = useState(false);
 
 
 
   const { t } = useTranslation("dynamic");
+
+
+  // when tab change, update chatIsVisible
+  useEffect(() => {
+    setChatIsVisible(selectedTab === "result" && currentTask!.result_chat_enabled);
+  }, [selectedTab]);
+
 
   useEffect(() => {
     let resultTab = {
@@ -124,7 +131,7 @@ const DraftDetail = () => {
       component: (
         <StepProcessDetail stepExecutions={workflowStepExecutions!}
           sessionId={currentTask!.session_id}
-          onInvalidate={() => setChatIsVisible(true)}
+          changeChatVisibility={(visible: boolean) => setChatIsVisible(visible)}
           onValidate={(stepExecutionPk: number) => onStepExecutionValidated(stepExecutionPk)}
           onStepRelaunched={(stepExecutionPk: number) => onStepRelaunched(stepExecutionPk)}
           onRestartWorkflow={() => {
@@ -300,7 +307,8 @@ const DraftDetail = () => {
         validated: msg.validated,
         parameter: msg.parameter,
         result: msg.result,
-        error_status: msg.error_status
+        error_status: msg.error_status,
+        review_chat_enabled: msg.review_chat_enabled
       }
 
 
@@ -335,7 +343,8 @@ const DraftDetail = () => {
         validated: msg.validated,
         parameter: msg.parameter,
         result: msg.result,
-        error_status: msg.error_status
+        error_status: msg.error_status,
+        review_chat_enabled: msg.review_chat_enabled
       }
       setWorkflowStepExecutions((prev: UserTaskExecutionStepExecution[]) => {
         // find the step_execution with the same user_workflow_step_execution_pk

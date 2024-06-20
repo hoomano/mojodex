@@ -3,8 +3,8 @@ from datetime import datetime
 from models.knowledge.knowledge_manager import KnowledgeManager
 from models.assistant.chat_assistant import ChatAssistant
 from app import placeholder_generator, server_socket
-from models.tasks.task_manager import TaskManager
 
+from models.tasks.instruct_tasks.instruct_task_manager import InstructTaskManager
 from mojodex_core.entities.session import Session
 from mojodex_core.entities.user import User
 
@@ -21,7 +21,7 @@ class HomeChatAssistant(ChatAssistant):
     task_pk_start_tag, task_pk_end_tag = "<task_pk>", "</task_pk>"
 
     def __init__(self, mojo_message_token_stream_callback, draft_token_stream_callback, use_message_placeholder,
-                 user_id, session_id, tag_proper_nouns, user_messages_are_audio, running_user_task_execution,
+                 user_id, session_id, tag_proper_nouns, user_messages_are_audio, running_user_task_execution: InstructTaskExecution,
                  db_session):
         try:
             super().__init__(mojo_message_token_stream_callback, draft_token_stream_callback,
@@ -31,7 +31,7 @@ class HomeChatAssistant(ChatAssistant):
             self.session = self.instruct_task_execution.session if self.instruct_task_execution else self.db_session.query(
                 Session).get(session_id)
             self.use_message_placeholder = use_message_placeholder
-            self.task_manager = TaskManager(self.session.session_id, self.user.user_id)
+            self.task_manager = InstructTaskManager(self.session.session_id, self.user.user_id)
 
 
         except Exception as e:

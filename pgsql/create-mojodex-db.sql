@@ -297,18 +297,6 @@ CREATE TABLE public.md_error (
 
 
 --
--- Name: md_evaluation_seq; Type: SEQUENCE; Schema: public; Owner: -
---
-
-CREATE SEQUENCE public.md_evaluation_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
---
 -- Name: md_event_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -420,30 +408,6 @@ CREATE TABLE public.md_predefined_action_displayed_data (
     language_code character varying(2) NOT NULL,
     displayed_data json NOT NULL
 );
-
-
---
--- Name: md_process_seq; Type: SEQUENCE; Schema: public; Owner: -
---
-
-CREATE SEQUENCE public.md_process_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
---
--- Name: md_process_step_seq; Type: SEQUENCE; Schema: public; Owner: -
---
-
-CREATE SEQUENCE public.md_process_step_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
 
 
 --
@@ -701,7 +665,8 @@ CREATE TABLE public.md_task (
     output_format_instruction_title character varying(255),
     output_format_instruction_draft character varying(255),
     visible_for_teasing boolean DEFAULT false NOT NULL,
-    infos_to_extract json
+    infos_to_extract json,
+    result_chat_enabled boolean DEFAULT true NOT NULL
 );
 
 
@@ -1118,7 +1083,8 @@ CREATE TABLE public.md_workflow_step (
     task_fk integer NOT NULL,
     name_for_system character varying(255) NOT NULL,
     rank integer NOT NULL,
-    user_validation_required boolean DEFAULT true NOT NULL
+    user_validation_required boolean DEFAULT true NOT NULL,
+    review_chat_enabled boolean DEFAULT false NOT NULL
 );
 
 

@@ -72,7 +72,7 @@ class DailyEmailsGenerator(EventsGenerator):
                         with open(DailyEmailsGenerator.message_from_mojodex_email, "r") as f:
                             template = Template(f.read())
                             body = template.render(
-                                mojodex_message=body, mojodex_link=os.environ["MOJODEX_WEBAPP_URI"], button_text="Login")
+                                mojodex_message=body, mojodex_webapp_url=os.environ["MOJODEX_WEBAPP_URI"], button_text="Login")
                         self.send_event(user_id, message={"subject": subject, "body": body, 'email': email},
                                         event_type=DailyEmailsGenerator.reminder_email_type)
                     except Exception as e:

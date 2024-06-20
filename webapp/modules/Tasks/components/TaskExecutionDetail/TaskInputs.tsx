@@ -6,6 +6,7 @@ import InputsForm from "../TaskForm/InputsForm";
 import ImagePreview from "../ImagePreview";
 import useOnWorkflowRestart from "modules/Tasks/hooks/useOnWorkflowRestart";
 import { useTranslation } from "next-i18next";
+import useAlert from "helpers/hooks/useAlert";
 
 interface TaskInputsProps {
     user_task_execution_pk: number;
@@ -21,6 +22,8 @@ interface TaskInputsProps {
 const TaskInputs: FunctionComponent<TaskInputsProps> = ({ user_task_execution_pk, inputs, sessionId, editable, onCancelEdition, onSaveAndRestart }) => {
     const onWorkflowRestart = useOnWorkflowRestart();
     const { t } = useTranslation('dynamic');
+    const { showAlert } = useAlert();
+    
     const [inputArray, setInputArray] = useState<InputArrayProps[]>(inputs.map((input) => ({
         input_name: input.input_name,
         input_value: input.value || '', // Add a default value of an empty string if input.value is undefined
@@ -47,7 +50,10 @@ const TaskInputs: FunctionComponent<TaskInputsProps> = ({ user_task_execution_pk
                 onSaveAndRestart();
             },
             onError: (error) => {
-                alert(t("userTaskExecution.inputsTab.restartError"));
+                showAlert({
+                    title: t('userTaskExecution.inputsTab.restartError'),
+                    type: "error",
+                });
             }
         });  
     }

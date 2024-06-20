@@ -1,11 +1,15 @@
 from datetime import datetime
 
+from jinja2 import Template
+
 from app import server_socket, socketio_message_sender
 
-from models.produced_text_managers.workflow_produced_text_manager import WorkflowProducedTextManager
-from mojodex_core.entities.db_base_entities import MdUserTask, MdUserWorkflowStepExecutionResult, MdWorkflowStep
+
+from models.produced_text_managers.task_produced_text_manager import TaskProducedTextManager
+from mojodex_core.entities.db_base_entities import MdMessage, MdUserTask, MdUserWorkflowStepExecutionResult, \
+    MdWorkflowStep
 from mojodex_core.db import engine, Session
-from typing import List
+
 from mojodex_core.entities.user_workflow_execution import UserWorkflowExecution
 from sqlalchemy import case, and_
 
@@ -23,7 +27,7 @@ class WorkflowProcessController:
     def __init__(self, workflow_execution_pk):
         try:
             self.db_session = Session(engine)
-            self.workflow_execution = self.db_session.query(UserWorkflowExecution).get(workflow_execution_pk)
+            self.workflow_execution: UserWorkflowExecution = self.db_session.query(UserWorkflowExecution).get(workflow_execution_pk)
             self._current_step = None
         except Exception as e:
             raise Exception(f"{self.logger_prefix} :: __init__ :: {e}")
@@ -122,13 +126,14 @@ class WorkflowProcessController:
     def run(self):
         try:
             if not self.workflow_execution.title:
-                server_socket.start_background_task(TaskExecutionTitleSummaryGenerator.generate_title_and_summary, self.workflow_execution.user_task_execution_pk)
+                server_socket.start_background_task(TaskExecutionTitleSummaryGenerator.generate_title_and_summary,
+                                                    self.workflow_execution.user_task_execution_pk)
             next_step_execution_to_run = self._get_next_step_execution_to_run()
             if not next_step_execution_to_run:
                 self.end_workflow_execution()
                 return
 
-            self.execute_step(next_step_execution_to_run)
+            self._execute_step(next_step_execution_to_run)
 
             self._send_ended_step_event()
             if not next_step_execution_to_run.workflow_step.user_validation_required and next_step_execution_to_run.error_status is None:
@@ -142,7 +147,31 @@ class WorkflowProcessController:
 
     def end_workflow_execution(self):
         try:
+
+            self.add_state_message()
             produced_text, produced_text_version = self._generate_produced_text()
+            
+            # add it as a mojo_message
+            produced_text_with_tags = f"""{TaskProducedTextManager.title_start_tag}{produced_text_version.title}{TaskProducedTextManager.title_end_tag}
+{TaskProducedTextManager.draft_start_tag}{produced_text_version.production}{TaskProducedTextManager.draft_end_tag}"""
+
+            mojo_message = MdMessage(
+                session_id=self.workflow_execution.session_id, sender='mojo',
+                event_name='workflow_execution_produced_text',
+                message={"produced_text": produced_text_version.production,
+                         "produced_text_title": produced_text_version.title,
+                         "produced_text_pk": produced_text.produced_text_pk,
+                         "produced_text_version_pk": produced_text_version.produced_text_version_pk,
+                         "user_task_execution_pk": self.workflow_execution.user_task_execution_pk,
+                         "text": f"{produced_text_version.title}\n{produced_text_version.production}",
+                         "text_with_tags": f"<execution>{produced_text_with_tags}</execution>"
+                         },
+                creation_date=datetime.now(), message_date=datetime.now()
+            )
+            self.db_session.add(mojo_message)
+            self.db_session.commit()
+
+            # send event
             server_socket.emit('workflow_execution_produced_text', {
                 "user_task_execution_pk": self.workflow_execution.user_task_execution_pk,
                 "produced_text": produced_text_version.production,
@@ -182,11 +211,12 @@ class WorkflowProcessController:
             production = "\n\n".join(
                 [list(step.result[0].values())[0] for step in validated_last_step_executions[::-1]])
 
-            produced_text_manager = WorkflowProducedTextManager(self.workflow_execution.session_id,
+            produced_text_manager = TaskProducedTextManager(self.workflow_execution.session_id,
                                                                 self.workflow_execution.user.user_id,
-                                                                self.workflow_execution.user_task_execution_pk)
-            produced_text, produced_text_version = produced_text_manager.save(production,
-                                                                              text_type_pk=self.workflow_execution.task.output_text_type_fk, )
+                                                                self.workflow_execution.user_task_execution_pk,
+                                                                self.workflow_execution.task.name_for_system)
+            produced_text, produced_text_version = produced_text_manager.save_produced_text(production, title="", text_type_pk=self.workflow_execution.task.output_text_type_fk)
+
             return produced_text, produced_text_version
 
         except Exception as e:
@@ -201,6 +231,26 @@ class WorkflowProcessController:
         except Exception as e:
             raise Exception(f"_send_ended_step_event :: {e}")
 
+    def add_state_message(self):
+        try:
+            # add state message to conversation
+            with open("mojodex_core/prompts/workflows/state.txt") as f:
+                template = Template(f.read())
+                current_step_in_validation = self.workflow_execution.last_step_execution if self.workflow_execution.last_step_execution.validated == None else None
+                state_message = template.render(
+                    past_validated_steps_executions=self.workflow_execution.past_valid_step_executions,
+                    current_step=current_step_in_validation)
+
+                system_message = MdMessage(
+                    session_id=self.workflow_execution.session_id, sender='system',
+                    event_name='worflow_step_execution_rejection', message={'text': state_message},
+                    creation_date=datetime.now(), message_date=datetime.now()
+                )
+                self.db_session.add(system_message)
+                self.db_session.commit()
+        except Exception as e:
+            raise Exception(f"add_state_message :: {e}")
+
     def validate_step_execution(self, step_execution_pk: int):
         try:
             step_execution = self.db_session.query(UserWorkflowStepExecution).get(step_execution_pk)
@@ -213,19 +263,7 @@ class WorkflowProcessController:
         try:
             current_step_in_validation = self.workflow_execution.last_step_execution
             self._invalidate_step(current_step_in_validation)
-            if current_step_in_validation.workflow_step.is_checkpoint:
-                current_step_in_validation.learn_instruction(learned_instruction)
-                return
-
-            # find checkpoint step
-            checkpoint_step = self.workflow_execution.checkpoint_step
-            # for all step in self.validated_steps_executions after checkpoint_step, invalidate them
-            checkpoint_step_index = self.workflow_execution.past_valid_step_executions.index(checkpoint_step)
-            for validated_step in self.workflow_execution.past_valid_step_executions[checkpoint_step_index:]:
-                self._invalidate_step(validated_step)
-                # remove from validated_steps_executions
-                self.workflow_execution.past_valid_step_executions.remove(validated_step)
-            checkpoint_step.learn_instruction(learned_instruction)
+            current_step_in_validation.learn_instruction(learned_instruction)
         except Exception as e:
             raise Exception(f"invalidate_current_step :: {e}")
 
@@ -250,32 +288,6 @@ class WorkflowProcessController:
         except Exception as e:
             raise Exception(f"restart :: {e}")
 
-    def get_before_checkpoint_validated_steps_executions(self, current_step_in_validation: UserWorkflowStepExecution) -> \
-            List[UserWorkflowStepExecution]:
-        try:
-            if current_step_in_validation.workflow_step.is_checkpoint:
-                return self.workflow_execution.past_valid_step_executions
-            checkpoint_step = self.workflow_execution.checkpoint_step
-            if not checkpoint_step:
-                return []
-            checkpoint_step_index = self.workflow_execution.past_valid_step_executions.index(checkpoint_step)
-            return self.workflow_execution.past_valid_step_executions[:checkpoint_step_index]
-        except Exception as e:
-            raise Exception(f"before_checkpoint_steps_executions :: {e}")
-
-    def get_after_checkpoint_validated_steps_executions(self, current_step_in_validation: UserWorkflowStepExecution) -> \
-            List[UserWorkflowStepExecution]:
-        try:
-            if current_step_in_validation.workflow_step.is_checkpoint:
-                return []
-            checkpoint_step = self.workflow_execution.checkpoint_step
-            if not checkpoint_step:
-                return self.workflow_execution.past_valid_step_executions
-            checkpoint_step_index = self.workflow_execution.past_valid_step_executions.index(checkpoint_step)
-            return self.workflow_execution.past_valid_step_executions[checkpoint_step_index:]
-        except Exception as e:
-            raise Exception(f"after_checkpoint_to_current_steps_executions :: {e}")
-
     def get_formatted_past_validated_steps_results(self):
         try:
             return [{
@@ -286,9 +298,8 @@ class WorkflowProcessController:
         except Exception as e:
             raise Exception(f"get_formatted_past_validated_steps_results :: {e}")
 
-    def execute_step(self, workflow_step_execution: UserWorkflowStepExecution):
+    def _execute_step(self, workflow_step_execution: UserWorkflowStepExecution):
         try:
-
             step_json = workflow_step_execution.to_json()
             step_json["session_id"] = self.workflow_execution.session_id
             server_socket.emit('workflow_step_execution_started', step_json, to=self.workflow_execution.session_id)
@@ -304,6 +315,6 @@ class WorkflowProcessController:
             workflow_step_execution.error_status = {"datetime": datetime.now().isoformat(), "error": str(e)}
             self.db_session.commit()
             # send email to admin
-            print(f"🔴 {self.logger_prefix} - execute_step :: {e}")
+            print(f"🔴 {self.logger_prefix} - _execute_step :: {e}")
             send_technical_error_email(
                 f"Error while executing step {workflow_step_execution.user_workflow_step_execution_pk} for user {workflow_step_execution.user_task_execution.user.user_id} : {e}")

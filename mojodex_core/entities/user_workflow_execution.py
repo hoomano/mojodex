@@ -50,12 +50,6 @@ class UserWorkflowExecution(UserTaskExecution):
         except Exception as e:
             raise Exception(f"{self.__class__.__name__}:: past_valid_step_executions :: {e}")
 
-    @property
-    def checkpoint_step(self):
-        for step in reversed(self.workflow_execution.past_valid_step_executions):
-            if step.is_checkpoint:
-                return step
-        return None
 
     def get_steps_execution_json(self):
         try:

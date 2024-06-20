@@ -52,6 +52,7 @@ class Task(Resource):
             task_displayed_data = request.json["task_displayed_data"]
             predefined_actions = request.json["predefined_actions"] if "predefined_actions" in request.json else []
             output_type = request.json["output_type"].strip().lower()
+            result_chat_enabled = request.json.get("result_chat_enabled", True)
         except KeyError as e:
             return {"error": f"Missing field {e}"}, 400
 
@@ -176,7 +177,8 @@ class Task(Resource):
                 output_format_instruction_draft=output_format_instruction_draft,
                 infos_to_extract=infos_to_extract,
                 icon=icon,
-                output_text_type_fk=output_type_pk
+                output_text_type_fk=output_type_pk,
+                result_chat_enabled=result_chat_enabled
                 )
 
             db.session.add(task)
@@ -254,7 +256,8 @@ class Task(Resource):
                     db_step = MdWorkflowStep(
                         name_for_system=step_name_for_system,
                         task_fk=task.task_pk,
-                        rank=step_index + 1
+                        rank=step_index + 1,
+                        review_chat_enabled=step.get("review_chat_enabled", False)
                     )
                     db.session.add(db_step)
                     db.session.flush()
@@ -535,6 +538,8 @@ class Task(Resource):
                     return {"error": f"output_type must be in {db.session.query(MdTextType).all()}"}, 400
                 task.output_text_type_fk = output_type_pk
                 db.session.flush()
+            if "result_chat_enabled" in request.json:
+                task.result_chat_enabled = request.json["result_chat_enabled"]
 
             # TODO: add "STEPS" modification
 
@@ -566,7 +571,8 @@ class Task(Resource):
                     "step_pk": step.workflow_step_pk,
                     "name_for_system": step.name_for_system,
                     "rank": step.rank,
-                    "step_displayed_data": step_displayed_data
+                    "step_displayed_data": step_displayed_data,
+                    "review_chat_enabled": step.review_chat_enabled
                 })
             return steps_json
         except Exception as e:

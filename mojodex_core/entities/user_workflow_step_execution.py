@@ -31,12 +31,6 @@ class UserWorkflowStepExecution(MdUserWorkflowStepExecution):
             raise Exception(f"{self.__class__.__name__} :: user_task_execution :: {e}")
 
     @property
-    def is_checkpoint(self):
-        return self.workflow_step.is_checkpoint
-
-
-
-    @property
     def creation_date_at_utc(self):
         return self.creation_date.astimezone(pytz.UTC)
 
@@ -128,7 +122,8 @@ class UserWorkflowStepExecution(MdUserWorkflowStepExecution):
                 "validated": self.validated,
                 "parameter": self.parameter,
                 "result": self.result,
-                "error_status": self.error_status
+                "error_status": self.error_status,
+                "review_chat_enabled": self.workflow_step.review_chat_enabled,
             }
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} :: to_json :: {e}")
@@ -138,8 +133,6 @@ class UserWorkflowStepExecution(MdUserWorkflowStepExecution):
             session = object_session(self)
             self.validated = False
             session.commit()
-            # TODO: move that to the call of this function
-
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} :: invalidate :: {e}")
 

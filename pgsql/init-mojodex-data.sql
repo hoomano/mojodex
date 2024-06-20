@@ -70,12 +70,12 @@ INSERT INTO public.md_text_type VALUES (4, 'poem');
 -- Data for Name: md_task; Type: TABLE DATA; Schema: public; Owner: assistant_db_user
 --
 
-INSERT INTO public.md_task VALUES (1, 'instruct', 'prepare_meeting_minutes', 'The user needs assistance to prepare a meeting minutes', 'Write a meeting minutes in the form of bullet points', '📝', 1, 'SHORT CONTEXT - DATE OF THE DAY', 'CONTENT OF THE MEETING MINUTES', false, '[{"info_name": "key_topics", "description": "Key topics discussed in the meeting"}, {"info_name": "participants", "description": "Participants of the meeting"}, {"info_name": "date_of_meeting", "description": "Date of the meeting"}, {"info_name": "followup_actions", "description": "Followup actions if any"}]');
-INSERT INTO public.md_task VALUES (2, 'instruct', 'follow-up_email', 'The user needs assistance to prepare a follow-up email', 'Write a follow-up email', '💌', 2, 'EMAIL SUBJECT', 'CONTENT OF THE EMAIL', false, '[{"info_name": "meeting_notes", "description": "The notes taken by the user about the meeting"}, {"info_name": "call_to_action", "description": "The follow-up that the user expects from the meeting and wants to share if any"}]');
-INSERT INTO public.md_task VALUES (3, 'instruct', 'structure_ideas_into_doc', 'The user needs assistance to turn ideas into a structured written doc', 'Write a structured document based on the provided ideas.', '💡', 3, 'IDEA SUMMARY IN 3-5 WORDS - DATE OF THE DAY', 'CONTENT OF THE STRUCTURED DOCUMENT', false, '[]');
-INSERT INTO public.md_task VALUES (4, 'instruct', 'prepare_linkedin_post', 'The user wants to prepare a LinkedIn post', 'Write a post for LinkedIn', '📰', 3, 'CONTEXT OF THE POST', 'CONTENT OF THE LINKEDIN POST', false, '[{"info_name": "post_context", "description": "Context that makes the user want to communicate on LinkedIn"}]');
-INSERT INTO public.md_task VALUES (5, 'instruct', 'create_one_minute_pitch', 'The user needs assistance to create a 1-minute pitch for presenting their company and product', 'Write a 1-minute pitch to briefly present the company and product; finish with a question to engage conversation.', '🎤', 3, '1 MINUTE PITCH - COMPANY NAME', 'PITCH CONTENT', false, '[{"info_name": "problem_solved", "description": "The problem the company and product are solving"}, {"info_name": "solution", "description": "How the company and product solve the problem"}, {"info_name": "unique_selling_points", "description": "What makes the company and product different from other solutions"}, {"info_name": "target_market", "description": "The target market represented by an ideal customer description"}]');
-INSERT INTO public.md_task VALUES (6, 'instruct', 'general_assistance', 'The user needs help with a question they may ask', 'Provide a helpful and accurate answer to the user''s question', '💡', 3, 'QUESTION ASKED BY USER', 'HELPFUL RESPONSE WITH REQUESTED INFORMATION', false, '[]');
+INSERT INTO public.md_task VALUES (1, 'instruct', 'prepare_meeting_minutes', 'The user needs assistance to prepare a meeting minutes', 'Write a meeting minutes in the form of bullet points', '📝', 1, 'SHORT CONTEXT - DATE OF THE DAY', 'CONTENT OF THE MEETING MINUTES', false, '[{"info_name": "key_topics", "description": "Key topics discussed in the meeting"}, {"info_name": "participants", "description": "Participants of the meeting"}, {"info_name": "date_of_meeting", "description": "Date of the meeting"}, {"info_name": "followup_actions", "description": "Followup actions if any"}]', true);
+INSERT INTO public.md_task VALUES (2, 'instruct', 'follow-up_email', 'The user needs assistance to prepare a follow-up email', 'Write a follow-up email', '💌', 2, 'EMAIL SUBJECT', 'CONTENT OF THE EMAIL', false, '[{"info_name": "meeting_notes", "description": "The notes taken by the user about the meeting"}, {"info_name": "call_to_action", "description": "The follow-up that the user expects from the meeting and wants to share if any"}]', true);
+INSERT INTO public.md_task VALUES (3, 'instruct', 'structure_ideas_into_doc', 'The user needs assistance to turn ideas into a structured written doc', 'Write a structured document based on the provided ideas.', '💡', 3, 'IDEA SUMMARY IN 3-5 WORDS - DATE OF THE DAY', 'CONTENT OF THE STRUCTURED DOCUMENT', false, '[]', true);
+INSERT INTO public.md_task VALUES (4, 'instruct', 'prepare_linkedin_post', 'The user wants to prepare a LinkedIn post', 'Write a post for LinkedIn', '📰', 3, 'CONTEXT OF THE POST', 'CONTENT OF THE LINKEDIN POST', false, '[{"info_name": "post_context", "description": "Context that makes the user want to communicate on LinkedIn"}]', true);
+INSERT INTO public.md_task VALUES (5, 'instruct', 'create_one_minute_pitch', 'The user needs assistance to create a 1-minute pitch for presenting their company and product', 'Write a 1-minute pitch to briefly present the company and product; finish with a question to engage conversation.', '🎤', 3, '1 MINUTE PITCH - COMPANY NAME', 'PITCH CONTENT', false, '[{"info_name": "problem_solved", "description": "The problem the company and product are solving"}, {"info_name": "solution", "description": "How the company and product solve the problem"}, {"info_name": "unique_selling_points", "description": "What makes the company and product different from other solutions"}, {"info_name": "target_market", "description": "The target market represented by an ideal customer description"}]', true);
+INSERT INTO public.md_task VALUES (6, 'instruct', 'general_assistance', 'The user needs help with a question they may ask', 'Provide a helpful and accurate answer to the user''s question', '💡', 3, 'QUESTION ASKED BY USER', 'HELPFUL RESPONSE WITH REQUESTED INFORMATION', false, '[]', true);
 
 
 --
@@ -338,13 +338,6 @@ SELECT pg_catalog.setval('public.md_error_seq', 1, true);
 
 
 --
--- Name: md_evaluation_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
---
-
-SELECT pg_catalog.setval('public.md_evaluation_seq', 1, false);
-
-
---
 -- Name: md_event_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
 --
 
@@ -370,20 +363,6 @@ SELECT pg_catalog.setval('public.md_platform_seq', 2, true);
 --
 
 SELECT pg_catalog.setval('public.md_predefined_action_displayed_data_seq', 1, false);
-
-
---
--- Name: md_process_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
---
-
-SELECT pg_catalog.setval('public.md_process_seq', 1, false);
-
-
---
--- Name: md_process_step_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
---
-
-SELECT pg_catalog.setval('public.md_process_step_seq', 1, false);
 
 
 --

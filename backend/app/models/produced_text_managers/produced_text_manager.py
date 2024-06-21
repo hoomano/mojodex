@@ -7,7 +7,7 @@ from mojodex_core.entities.db_base_entities import MdProducedText, MdMessage, Md
 
 from mojodex_backend_logger import MojodexBackendLogger
 
-from app import model_loader
+from mojodex_core.llm_engine.providers.model_loader import model_loader
 from mojodex_core.llm_engine.mpt import MPT
 
 

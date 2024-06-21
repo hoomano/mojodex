@@ -1,12 +1,9 @@
 import glob
+from mojodex_core.stt.stt import STT
 from pydub import AudioSegment
 import os
 
-from mojodex_backend_logger import MojodexBackendLogger
-
-from app import stt, stt_conf
-
-from models.user_storage_manager.user_storage_manager import UserStorageManager
+from mojodex_core.user_storage_manager.user_storage_manager import UserStorageManager
 
 
 class UserAudioFileManager(UserStorageManager):
@@ -16,7 +13,8 @@ class UserAudioFileManager(UserStorageManager):
 
     def __init__(self):
         try:
-            self.logger = MojodexBackendLogger(f"{self.__class__.__name__}")
+            # Setup the STT engine
+            stt, stt_conf = STT.get_stt()
             self.stt = stt(stt_conf, label="whisper-azure")
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} : __init__ : {e}")

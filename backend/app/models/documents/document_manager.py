@@ -6,7 +6,7 @@ from app import db
 
 from mojodex_backend_logger import MojodexBackendLogger
 
-from app import model_loader
+from mojodex_core.llm_engine.providers.model_loader import model_loader
 from mojodex_core.llm_engine.providers.openai_embedding import OpenAIEmbedding
 
 

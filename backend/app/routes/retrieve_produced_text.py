@@ -7,7 +7,7 @@ from app import db
 from mojodex_core.logging_handler import log_error
 from mojodex_core.entities.db_base_entities import *
 
-from app import model_loader
+from mojodex_core.llm_engine.providers.model_loader import model_loader
 
 from sqlalchemy import func
 

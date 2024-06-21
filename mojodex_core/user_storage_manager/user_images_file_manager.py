@@ -1,17 +1,8 @@
 import os
-
-from mojodex_backend_logger import MojodexBackendLogger
-
-from models.user_storage_manager.user_storage_manager import UserStorageManager
+from mojodex_core.user_storage_manager.user_storage_manager import UserStorageManager
 
 
 class UserImagesFileManager(UserStorageManager):
-
-    def __init__(self):
-        try:
-            self.logger = MojodexBackendLogger(f"{self.__class__.__name__}")
-        except Exception as e:
-            raise Exception(f"{self.__class__.__name__} __init__ : {e}")
 
     def get_images_storage_path(self, user_id, session_id):
         try:

@@ -3,7 +3,6 @@ from gevent import monkey
 
 monkey.patch_all()
 
-from mojodex_core.llm_engine.providers.model_loader import ModelLoader
 
 from mojodex_core.mail import mojo_mail_client
 
@@ -38,9 +37,6 @@ api = Api(app)
 engine_container = db.get_engine(app)
 
 from background_logger import BackgroundLogger
-
-from mojodex_core.llm_engine.providers.model_loader import ModelLoader
-model_loader = ModelLoader()
 
 main_logger = BackgroundLogger("main_logger")
 

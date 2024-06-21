@@ -305,5 +305,3 @@ class ModelLoader:
             provider, model_name = section.split('/')
             models.append(model_name)
         return set(models)
-
-model_loader = ModelLoader()

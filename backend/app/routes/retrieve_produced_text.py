@@ -7,7 +7,7 @@ from app import db
 from mojodex_core.logging_handler import log_error
 from mojodex_core.entities.db_base_entities import *
 
-from mojodex_core.llm_engine.providers.model_loader import model_loader
+from mojodex_core.llm_engine.providers.model_loader import ModelLoader
 
 from sqlalchemy import func
 
@@ -38,7 +38,7 @@ class RetrieveProducedText(Resource):
             return {"error": f"Missing key {e} in args"}, 400
 
         try:
-            embedded_query = model_loader.embedding_provider.embed(query, user_id, label="PRODUCED_TEXT_QUERY_EMBEDDER",
+            embedded_query = ModelLoader().embedding_provider.embed(query, user_id, label="PRODUCED_TEXT_QUERY_EMBEDDER",
                                                                  user_task_execution_pk=user_task_execution_pk,
                                                                  task_name_for_system=task_name_for_system)
 

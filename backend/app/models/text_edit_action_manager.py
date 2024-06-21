@@ -13,7 +13,7 @@ from mojodex_core.logging_handler import log_error
 from models.voice_generator import VoiceGenerator
 from models.produced_text_managers.produced_text_manager import ProducedTextManager
 
-from mojodex_core.llm_engine.providers.model_loader import model_loader
+from mojodex_core.llm_engine.providers.model_loader import ModelLoader
 
 
 class TextEditActionManager:
@@ -52,7 +52,7 @@ class TextEditActionManager:
     def edit_text(self, input_prompt, app_version):
         # Edit text
         try:
-            edited_text = model_loader.main_llm.invoke(
+            edited_text = ModelLoader().main_llm.invoke(
                 messages=[{"role": "system", "content": input_prompt}],
                 user_id=self.user_id,
                 temperature=0.3,

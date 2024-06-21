@@ -6,7 +6,7 @@ from app import db
 
 from mojodex_backend_logger import MojodexBackendLogger
 
-from mojodex_core.llm_engine.providers.model_loader import model_loader
+from mojodex_core.llm_engine.providers.model_loader import ModelLoader
 from mojodex_core.llm_engine.providers.openai_embedding import OpenAIEmbedding
 
 
@@ -19,7 +19,7 @@ class DocumentManager:
 
     def __embedded(self, text, user_id, user_task_execution_pk=None, task_name_for_system=None):
         try:
-            embedding_response = model_loader.embedding_provider.embed(text, user_id,label="DOCUMENT_EMBEDDING", user_task_execution_pk=user_task_execution_pk,
+            embedding_response = ModelLoader().embedding_provider.embed(text, user_id,label="DOCUMENT_EMBEDDING", user_task_execution_pk=user_task_execution_pk,
                                                      task_name_for_system=task_name_for_system, )
             embedding = embedding_response["data"][0]["embedding"]
             return embedding

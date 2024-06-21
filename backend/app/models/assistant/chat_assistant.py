@@ -2,7 +2,7 @@ from models.assistant.execution_manager import ExecutionManager
 from mojodex_core.llm_engine.mpt import MPT
 from mojodex_core.llm_engine.providers.openai_vision_llm import VisionMessagesData
 from abc import ABC, abstractmethod
-from mojodex_core.llm_engine.providers.model_loader import model_loader
+from mojodex_core.llm_engine.providers.model_loader import ModelLoader
 
 
 class ChatAssistant(ABC):
@@ -90,7 +90,7 @@ class ChatAssistant(ABC):
                 VisionMessagesData(role=message["role"], text=message["content"], images_path=[]) for message in
                 conversation_list]
             messages_data = initial_system_message_data + conversation_messages_data
-            responses = model_loader.main_vision_llm.invoke(messages_data, user_id,
+            responses = ModelLoader().main_vision_llm.invoke(messages_data, user_id,
                                                             temperature=temperature,
                                                             max_tokens=max_tokens,
                                                             label=self._mpt.label,

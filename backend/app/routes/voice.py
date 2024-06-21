@@ -44,7 +44,7 @@ class Voice(Resource):
                     return {"error": f"Invalid message message_pk for user: {message_pk}"}, 400
                 filename=message_pk
                 session_id = message.session_id
-            from models.user_storage_manager.user_audio_file_manager import UserAudioFileManager
+            from mojodex_core.user_storage_manager.user_audio_file_manager import UserAudioFileManager
             user_audio_file_manager = UserAudioFileManager()
             if message_pk and message.sender == Message.user_message_key:
                 audio_storage = user_audio_file_manager.get_user_messages_audio_storage(user_id, session_id)

@@ -6,7 +6,7 @@ from mojodex_core.llm_engine.mpt import MPT
 
 class StanzaWriterStep(WorkflowStep):
 
-    write_poem_stanza_filename = "instructions/write_poem_stanza.mpt"
+    write_poem_stanza_filename = "mojodex_core/workflows/write_poem/write_poem_stanza.mpt"
 
     @property
     def definition_for_system(self):

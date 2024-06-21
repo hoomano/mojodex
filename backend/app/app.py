@@ -4,8 +4,6 @@ from gevent import monkey
 monkey.patch_all()
 
 
-from mojodex_core.llm_engine.providers.model_loader import ModelLoader
-from mojodex_core.stt.stt import STT
 from mojodex_core.mail import mojo_mail_client
 
 import hashlib
@@ -49,11 +47,6 @@ from mojodex_core.entities.db_base_entities import *
 
 from mojodex_backend_logger import MojodexBackendLogger
 
-from mojodex_core.llm_engine.providers.model_loader import ModelLoader
-model_loader = ModelLoader()
-
-# Setup the STT engine
-stt, stt_conf = STT.get_stt()
 
 main_logger = MojodexBackendLogger("main_logger")
 

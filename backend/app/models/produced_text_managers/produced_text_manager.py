@@ -7,7 +7,7 @@ from mojodex_core.entities.db_base_entities import MdProducedText, MdMessage, Md
 
 from mojodex_backend_logger import MojodexBackendLogger
 
-from app import model_loader
+from mojodex_core.llm_engine.providers.model_loader import ModelLoader
 from mojodex_core.llm_engine.mpt import MPT
 
 
@@ -92,7 +92,7 @@ class ProducedTextManager(ABC):
     def embed_produced_text(title, production, user_id, user_task_execution_pk=None, task_name_for_system=None):
         try:
             text_to_embedded = f"{title}\n\n{production}"
-            embedded_text = model_loader.embedding_provider.embed(text_to_embedded, user_id,
+            embedded_text = ModelLoader().embedding_provider.embed(text_to_embedded, user_id,
                                                                   label="PRODUCED_TEXT_EMBEDDER",
                                                                   user_task_execution_pk=user_task_execution_pk,
                                                                   task_name_for_system=task_name_for_system)

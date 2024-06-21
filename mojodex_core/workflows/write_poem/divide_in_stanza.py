@@ -9,7 +9,7 @@ from mojodex_core.llm_engine.mpt import MPT
 class StanzaDividerStep(WorkflowStep):
     logger_prefix = "StanzaDividerStep :: "
 
-    determine_poem_stanzas_filename = "instructions/determine_poem_stanza.mpt"
+    determine_poem_stanzas_filename = "mojodex_core/workflows/write_poem/determine_poem_stanza.mpt"
 
 
     @property

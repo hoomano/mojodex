@@ -8,7 +8,7 @@ from mojodex_core.entities.message import Message
 from mojodex_core.logging_handler import log_error
 from mojodex_core.entities.db_base_entities import *
 from models.assistant.session_controller import SessionController
-from models.user_storage_manager.user_audio_file_manager import UserAudioFileManager
+from mojodex_core.user_storage_manager.user_audio_file_manager import UserAudioFileManager
 from packaging import version
 
 

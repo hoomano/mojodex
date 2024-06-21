@@ -17,7 +17,7 @@ class Message(Resource):
 
     @staticmethod
     def has_audio_file(message_pk, sender, user_id, session_id):
-        from models.user_storage_manager.user_audio_file_manager import UserAudioFileManager
+        from mojodex_core.user_storage_manager.user_audio_file_manager import UserAudioFileManager
         user_audio_file_manager = UserAudioFileManager()
         if sender == MessageEntity.user_message_key:
             audio_storage = user_audio_file_manager.get_user_messages_audio_storage(user_id, session_id)

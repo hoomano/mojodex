@@ -13,7 +13,7 @@ from mojodex_core.logging_handler import log_error
 from models.voice_generator import VoiceGenerator
 from models.produced_text_managers.produced_text_manager import ProducedTextManager
 
-from app import model_loader
+from mojodex_core.llm_engine.providers.model_loader import ModelLoader
 
 
 class TextEditActionManager:
@@ -52,7 +52,7 @@ class TextEditActionManager:
     def edit_text(self, input_prompt, app_version):
         # Edit text
         try:
-            edited_text = model_loader.main_llm.invoke(
+            edited_text = ModelLoader().main_llm.invoke(
                 messages=[{"role": "system", "content": input_prompt}],
                 user_id=self.user_id,
                 temperature=0.3,
@@ -177,7 +177,7 @@ class TextEditActionManager:
     def __text_to_speech(self, message, db_message):
 
         try:
-            from models.user_storage_manager.user_audio_file_manager import UserAudioFileManager
+            from mojodex_core.user_storage_manager.user_audio_file_manager import UserAudioFileManager
             user_audio_file_manager = UserAudioFileManager()
             mojo_messages_audio_storage = user_audio_file_manager.get_mojo_messages_audio_storage(
                 self.user_id, self.session_id)

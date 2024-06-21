@@ -251,7 +251,7 @@ class SessionController:
             socketio_message_sender.send_mojo_message_with_ack(response_message, self.session.session_id,
                                                                event_name=event_name)
             if response_message["audio"]:
-                from models.user_storage_manager.user_audio_file_manager import UserAudioFileManager
+                from mojodex_core.user_storage_manager.user_audio_file_manager import UserAudioFileManager
                 user_audio_file_manager = UserAudioFileManager()
                 output_filename = os.path.join(
                     user_audio_file_manager.get_mojo_messages_audio_storage(self.session.user_id,

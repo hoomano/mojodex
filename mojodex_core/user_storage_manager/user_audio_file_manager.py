@@ -16,6 +16,7 @@ class UserAudioFileManager(UserStorageManager):
             # Setup the STT engine
             stt, stt_conf = STT.get_stt()
             self.stt = stt(stt_conf, label="whisper-azure")
+            super().__init__()
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} : __init__ : {e}")
 

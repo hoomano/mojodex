@@ -1,7 +1,12 @@
 from abc import ABC, abstractmethod
 import os
 class UserStorageManager(ABC):
-    sessions_storage = "/data/users"
+    
+    def __init__(self) -> None:
+        try:
+            self.sessions_storage = os.environ['USERS_DATA_STORAGE']
+        except Exception as e:
+            raise Exception(f"{self.__class__.__name__} :: __init__ :: {e}")
 
     def _get_user_storage(self, user_id):
         try:

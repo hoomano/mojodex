@@ -46,8 +46,8 @@ ENV POSTGRES_PASSWORD=<password>
 The `init-mojodex-data.sql` file contains the SQL scripts to create the Mojodex schema and data. You can modify this file to add or remove data.
 
 This will create the following Mojodex config:
-- user: `user@demo.com`
-- password: `password`
+- user: `demo@example.com`
+- password: `demo`
 - product: `demo`
 - task: `meeting_recap`
 

@@ -61,10 +61,6 @@ const paymentAPIRoutes = {
   purchaseStatus: "/api/purchase",
 };
 
-const taskToolExecutionsAPIRoutes = {
-  acceptTaskToolExecution: "/api/task_tool_execution"
-};
-
 
 export const apiRoutes = {
   // Auth API's
@@ -88,7 +84,5 @@ export const apiRoutes = {
   // resource API's
   ...resourcesAPIRoutes,
 
-  ...paymentAPIRoutes,
-
-  ...taskToolExecutionsAPIRoutes,
+  ...paymentAPIRoutes
 };

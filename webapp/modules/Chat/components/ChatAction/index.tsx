@@ -1,15 +1,10 @@
-import { useContext, useState } from "react";
+import { useContext } from "react";
 
 import ChatContext from "modules/Chat/helpers/ChatContext";
 
 import ChatInput from "./ChatInput";
-import ChatAcceptToolButtons from "./ChatAcceptToolButtons";
-
-import { appVersion, appPlatform } from "helpers/constants";
-import { socketEvents } from "helpers/constants/socket";
 import useContextSession from "helpers/hooks/useContextSession";
-import { ChatContextType, ChatUsedFrom } from "modules/Chat/interface/context";
-import useApproveTaskToolExecution from "modules/TaskToolExecution/hooks/useApproveTaskToolExecution";
+import { ChatContextType } from "modules/Chat/interface/context";
 import useSendUserMessage from "modules/Chat/hooks/useSendUserMessage";
 import { UserMessagePayload } from "modules/Chat/interface";
 
@@ -26,8 +21,6 @@ const ChatAction = ({ showPopup }: { showPopup: () => void }) => {
     ChatContext
   ) as ChatContextType;
   
-  const userLanguage = session?.authorization?.language_code;
-  const sendTaskToolExecutionApproval = useApproveTaskToolExecution();
   const sendUserMessage = useSendUserMessage();
 
   const {
@@ -125,72 +118,6 @@ const ChatAction = ({ showPopup }: { showPopup: () => void }) => {
       prompt: "",
     });
   };
-
-  const onApproveTool = () => {
-
-
-    // add new message "ok" and disable "waiting for answer..."
-    let allMessages = messages;
-    const currentMessageId = messages.length;
-
-    const newMessage = {
-      id: currentMessageId,
-      from: "user",
-      content: "ok",
-      type: "message",
-    };
-    allMessages = [...allMessages, newMessage];
-
-    setTimeout(
-      () => scrollToLastMsg(allMessages[allMessages.length - 1].id),
-      100
-    );
-
-    setChatState({
-      messages: allMessages,
-      waitingForServer: true,
-      inputDisabled: true,
-      focusInput: false,
-    });
-
-    // send approval to server
-    const payload = {
-      datetime: new Date().toISOString(),
-      task_tool_execution_pk: messages[messages.length - 1].task_tool_execution_fk,
-    };
-
-    sendTaskToolExecutionApproval.mutate(payload, {
-      onSuccess: () => {
-        showPopup();
-      },
-    });
-
-  };
-
-
-  const onRejectTool = () => {
-    // remove task_tool_execution_fk from last message
-    let allMessages = messages;
-    allMessages[allMessages.length - 1].task_tool_execution_fk = null;
-
-    setChatState({
-      messages: allMessages,
-      inputDisabled: false,
-      focusInput: true,
-    });
-  };
-
-
-  // print last message if there is one
-  if (messages.length > 0) {
-    const lastMessage = messages[messages.length - 1];
-    if (lastMessage.task_tool_execution_fk) {
-      return <ChatAcceptToolButtons
-        onApproveTool={onApproveTool}
-        onRejectTool={onRejectTool}
-      />;
-    }
-  }
 
 
   return (

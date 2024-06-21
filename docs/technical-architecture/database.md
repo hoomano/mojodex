@@ -116,9 +116,6 @@ You should see the following tables:
  public | md_task_displayed_data                    | table | <your_user>
  public | md_task_platform_association              | table | <your_user>
  public | md_task_predefined_action_association     | table | <your_user>
- public | md_task_tool_association                  | table | <your_user>
- public | md_task_tool_execution                    | table | <your_user>
- public | md_task_tool_query                        | table | <your_user>
  public | md_text_edit_action                       | table | <your_user>
  public | md_text_edit_action_displayed_data        | table | <your_user>
  public | md_text_edit_action_text_type_association | table | <your_user>

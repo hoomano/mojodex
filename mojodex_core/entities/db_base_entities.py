@@ -79,19 +79,6 @@ class MdTextType(Base):
     md_produced_text_version = relationship('MdProducedTextVersion', back_populates='md_text_type')
 
 
-class MdTool(Base):
-    __tablename__ = 'md_tool'
-    __table_args__ = (
-        PrimaryKeyConstraint('tool_pk', name='tool_pkey'),
-    )
-
-    tool_pk = Column(Integer, Sequence('md_tool_seq'), primary_key=True)
-    name = Column(String(255), nullable=False)
-    definition = Column(Text, nullable=False)
-
-    md_task_tool_association = relationship('MdTaskToolAssociation', back_populates='md_tool')
-
-
 class MdProduct(Base):
     __tablename__ = 'md_product'
     __table_args__ = (
@@ -158,7 +145,6 @@ class MdTask(Base):
     md_task_platform_association = relationship('MdTaskPlatformAssociation', back_populates='md_task')
     md_task_predefined_action_association = relationship('MdTaskPredefinedActionAssociation', foreign_keys='[MdTaskPredefinedActionAssociation.predefined_action_fk]', back_populates='md_task')
     md_task_predefined_action_association_ = relationship('MdTaskPredefinedActionAssociation', foreign_keys='[MdTaskPredefinedActionAssociation.task_fk]', back_populates='md_task_')
-    md_task_tool_association = relationship('MdTaskToolAssociation', back_populates='md_task')
     md_user_task = relationship('MdUserTask', back_populates='md_task')
     md_workflow_step = relationship('MdWorkflowStep', back_populates='md_task')
     md_calendar_suggestion = relationship('MdCalendarSuggestion', back_populates='md_task')
@@ -422,24 +408,6 @@ class MdTaskPredefinedActionAssociation(Base):
     md_predefined_action_displayed_data = relationship('MdPredefinedActionDisplayedData', back_populates='md_task_predefined_action_association')
 
 
-class MdTaskToolAssociation(Base):
-    __tablename__ = 'md_task_tool_association'
-    __table_args__ = (
-        ForeignKeyConstraint(['task_fk'], ['md_task.task_pk'], name='task_tool_association_task_fk_fkey'),
-        ForeignKeyConstraint(['tool_fk'], ['md_tool.tool_pk'], name='task_tool_association_tool_fk_fkey'),
-        PrimaryKeyConstraint('task_tool_association_pk', name='task_tool_association_pkey')
-    )
-
-    task_tool_association_pk = Column(Integer, Sequence('md_task_tool_association_seq'), primary_key=True)
-    task_fk = Column(Integer, nullable=False)
-    tool_fk = Column(Integer, nullable=False)
-    usage_description = Column(Text, nullable=False)
-
-    md_task = relationship('MdTask', back_populates='md_task_tool_association')
-    md_tool = relationship('MdTool', back_populates='md_task_tool_association')
-    md_task_tool_execution = relationship('MdTaskToolExecution', back_populates='md_task_tool_association')
-
-
 class MdUserTask(Base):
     __tablename__ = 'md_user_task'
     __table_args__ = (
@@ -592,7 +560,6 @@ class MdUserTaskExecution(Base):
     user_task_fk = Column(Integer, nullable=False)
     json_input_values = Column(JSON, nullable=False)
     session_id = Column(String(255), nullable=False)
-    tool_execution_generated = Column(Boolean, nullable=False, server_default=text('false'))
     start_date = Column(DateTime)
     end_date = Column(DateTime)
     summary = Column(Text)
@@ -609,7 +576,6 @@ class MdUserTaskExecution(Base):
     md_user_task = relationship('MdUserTask', back_populates='md_user_task_execution')
     md_calendar_suggestion = relationship('MdCalendarSuggestion', back_populates='md_user_task_execution')
     md_produced_text = relationship('MdProducedText', back_populates='md_user_task_execution')
-    md_task_tool_execution = relationship('MdTaskToolExecution', back_populates='md_user_task_execution')
     md_todo = relationship('MdTodo', back_populates='md_user_task_execution')
     md_user_workflow_step_execution = relationship('MdUserWorkflowStepExecution', back_populates='md_user_task_execution')
 
@@ -682,24 +648,6 @@ class MdProducedText(Base):
     md_produced_text_version = relationship('MdProducedTextVersion', back_populates='md_produced_text')
 
 
-class MdTaskToolExecution(Base):
-    __tablename__ = 'md_task_tool_execution'
-    __table_args__ = (
-        ForeignKeyConstraint(['task_tool_association_fk'], ['md_task_tool_association.task_tool_association_pk'], name='task_tool_execution_task_tool_association_fk_fkey'),
-        ForeignKeyConstraint(['user_task_execution_fk'], ['md_user_task_execution.user_task_execution_pk'], name='task_tool_execution_user_task_execution_fk_fkey'),
-        PrimaryKeyConstraint('task_tool_execution_pk', name='task_tool_execution_pkey')
-    )
-
-    task_tool_execution_pk = Column(Integer, Sequence('md_task_tool_execution_seq'), primary_key=True)
-    task_tool_association_fk = Column(Integer, nullable=False)
-    user_task_execution_fk = Column(Integer, nullable=False)
-    user_validation = Column(DateTime(True))
-
-    md_task_tool_association = relationship('MdTaskToolAssociation', back_populates='md_task_tool_execution')
-    md_user_task_execution = relationship('MdUserTaskExecution', back_populates='md_task_tool_execution')
-    md_task_tool_query = relationship('MdTaskToolQuery', back_populates='md_task_tool_execution')
-
-
 class MdTodo(Base):
     __tablename__ = 'md_todo'
     __table_args__ = (
@@ -762,23 +710,6 @@ class MdProducedTextVersion(Base):
 
     md_produced_text = relationship('MdProducedText', back_populates='md_produced_text_version')
     md_text_type = relationship('MdTextType', back_populates='md_produced_text_version')
-
-
-class MdTaskToolQuery(Base):
-    __tablename__ = 'md_task_tool_query'
-    __table_args__ = (
-        ForeignKeyConstraint(['task_tool_execution_fk'], ['md_task_tool_execution.task_tool_execution_pk'], name='md_task_tool_execution_fk_fkey'),
-        PrimaryKeyConstraint('task_tool_query_pk', name='md_task_tool_query_pkey')
-    )
-
-    task_tool_query_pk = Column(Integer, Sequence('md_task_tool_query_seq'), primary_key=True)
-    task_tool_execution_fk = Column(Integer, nullable=False)
-    creation_date = Column(DateTime(True), nullable=False, server_default=text('now()'))
-    query = Column(JSON, nullable=False)
-    result_date = Column(DateTime(True))
-    result = Column(JSON)
-
-    md_task_tool_execution = relationship('MdTaskToolExecution', back_populates='md_task_tool_query')
 
 
 class MdTodoScheduling(Base):

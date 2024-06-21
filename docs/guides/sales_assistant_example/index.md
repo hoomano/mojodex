@@ -145,7 +145,6 @@ curl -X 'PUT' \
 #### 3.3.1 Create the tasks
 The tasks are described in the `tasks` folder of the repository. Each task is a JSON file that describes the task and its parameters.
 
-- Qualify Leads: [Qualify Leads](../../guides/sales_assistant_example/tasks/qualify_lead.json)
 - Meeting Recap: [Meeting Recap](../../guides/sales_assistant_example/tasks/meeting_recap.json)
 - Event Conversation Recap: [Event Conversation Recap](../../guides/sales_assistant_example/tasks/event_conversation_recap.json)
 - Follow-up Email: [Follow-up Email](../../guides/sales_assistant_example/tasks/follow_up_email.json)
@@ -162,44 +161,6 @@ done
 ```
 
 > The terminal will return a response with the `task_pk` for each task. We will need it for the next step.
-
-#### 3.3.2 Specific configuration for the "Qualify Lead" task
-
-For this task, we need to add a tool: Google Search.
-
-This tool will be used to search for information about the lead.
-
-The tool is already available in the Mojodex platform, so we just need to associate it to the task.
-
-Table of default existing tools:
-| tool_pk | name | description |
-| --- | --- | --- |
-| 1 | google_search | Make some research on Google |
-| 2 | internal_memory | Retrieve past tasks you helped the user with. |
-
-We provide a description of the usage of the `google_search` tool for the task:
-> Use this tool to search for information that could help you qualify the lead.\n Start with a general research about the company to find its industry. A google query made only of the company name is usually the best way to go at first. Make sure you spell the company name correctly. Then look for the company's industry trends, news, and recent events.
-
-
-
-Replace `<BACKOFFICE_SECRET>` and `<task_pk>` with the previously created task pk for the "Qualify Lead" task and run the following command in your terminal:
-
-```shell
-curl -X 'PUT' 'http://localhost:5001/task_tool' \
--H 'Authorization: <BACKOFFICE_SECRET>' \
--H 'accept: application/json' \
--H 'Content-Type: application/json' \
--d @- <<EOF
-{
-  "datetime": "2024-02-14T11:00:00.000Z",
-  "task_pk": <task_pk>,
-  "tool_pk": 1,
-  "usage_description": "Use this tool to search for information that could help you qualify the lead.
-  Start with a general research about the company to find its industry. A google query made only of the company name is usually the best way to go at first. Make sure you spell the company name correctly. Then look for the company's industry trends, news, and recent events."
-}
-EOF
-```
-
 
 ### 3.4 Associate the tasks to the product
 

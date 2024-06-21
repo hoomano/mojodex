@@ -29,10 +29,6 @@ class InstructTaskManager:
         try:
             if self.task_input_manager.start_tag in response:
                 return self.task_input_manager.manage_text(response)
-            # if TaskToolManager.tool_usage_start_tag in response:
-            #    return self.task_tool_manager.manage_tool_usage_text(response,
-            #                                                         self.running_user_task_execution.user_task_execution_pk,
-            #                                                         self._get_task_tools_json(self.running_task))
             return {"text": response}
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} :: manage_response_task_tags :: {e}")
@@ -44,9 +40,6 @@ class InstructTaskManager:
                 text = ChatAssistant.remove_tags_from_text(partial_text,
                                                            self.task_input_manager.start_tag,
                                                            self.task_input_manager.end_tag)
-            # elif TaskToolManager.tool_usage_start_tag in partial_text:
-            #     text = AssistantMessageGenerator.remove_tags_from_text(partial_text, TaskToolManager.tool_usage_start_tag,
-            #                                                           TaskToolManager.tool_usage_end_tag)
             if text and mojo_message_token_stream_callback:
                 mojo_message_token_stream_callback(text)
 

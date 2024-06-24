@@ -17,10 +17,6 @@ class StanzaDividerStep(WorkflowStep):
         return "Determine topic of each stanza of a poem."
 
     @property
-    def input_keys(self):
-        return ['poem_topic', 'n_stanzas']
-    
-    @property
     def output_keys(self):
         return ['stanza_topic']
 

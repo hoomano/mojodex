@@ -13,10 +13,6 @@ class StanzaWriterStep(WorkflowStep):
         return "Write stanza of a poem"
 
     @property
-    def input_keys(self):
-        return ['stanza_topic']
-    
-    @property
     def output_keys(self):
         return ['stanza']
     

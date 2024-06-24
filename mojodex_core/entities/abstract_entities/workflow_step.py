@@ -50,11 +50,6 @@ class WorkflowStep(MdWorkflowStep, ABC, metaclass=AbstractEntity):
 
     @property
     @abstractmethod
-    def input_keys(self) -> List[str]:
-        raise NotImplementedError
-
-    @property
-    @abstractmethod
     def output_keys(self) -> List[str]:
         raise NotImplementedError
 
@@ -71,10 +66,6 @@ class WorkflowStep(MdWorkflowStep, ABC, metaclass=AbstractEntity):
         """
         try:
 
-            # ensure that input keys are present in parameter
-            for key in self.input_keys:
-                if key not in parameter:
-                    raise Exception(f"execute :: key {key} not in parameter")
             output = self._execute(parameter, learned_instructions, initial_parameter, past_validated_steps_results,
                                    user_id, user_task_execution_pk, task_name_for_system, session_id)  # list of dict
             # ensure output is a list

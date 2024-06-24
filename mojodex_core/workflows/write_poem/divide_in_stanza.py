@@ -15,11 +15,6 @@ class StanzaDividerStep(WorkflowStep):
     @property
     def definition_for_system(self):
         return "Determine topic of each stanza of a poem."
-
-    @property
-    def output_keys(self):
-        return ['stanza_topic']
-
     
     def _execute(self, parameter: dict, learned_instructions: dict, initial_parameter: dict, past_validated_steps_results: List[dict], user_id: str, user_task_execution_pk: int, task_name_for_system: str, session_id:str):
         try: 

@@ -48,11 +48,6 @@ class WorkflowStep(MdWorkflowStep, ABC, metaclass=AbstractEntity):
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} :: get_definition_in_language :: {e}")
 
-    @property
-    @abstractmethod
-    def output_keys(self) -> List[str]:
-        raise NotImplementedError
-
     def _execute(self, parameter: dict, learned_instructions: dict, initial_parameters: dict,
                  past_validated_steps_results: List[dict], user_id: str, user_task_execution_pk: int,
                  task_name_for_system: str, session_id: str):
@@ -62,7 +57,8 @@ class WorkflowStep(MdWorkflowStep, ABC, metaclass=AbstractEntity):
                 past_validated_steps_results: List[dict], user_id: str, user_task_execution_pk: int,
                 task_name_for_system: str, session_id: str):
         """
-        Returns a list of parameters (dict)
+        Execute the workflow step.
+        See [Workflow Doc](/docs/design-principles/workflows/execute_workflow.md) for more details.
         """
         try:
 
@@ -75,9 +71,7 @@ class WorkflowStep(MdWorkflowStep, ABC, metaclass=AbstractEntity):
             for item in output:
                 if not isinstance(item, dict):
                     raise Exception(f"execute :: output item {item} is not a dict")
-                for key in self.output_keys:
-                    if key not in item:
-                        raise Exception(f"execute :: key {key} not in output")
+
             return output
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} execute :: {e}")

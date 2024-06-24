@@ -52,8 +52,11 @@ class WorkflowProcessController:
                 self._current_step = self._generate_new_step_execution(self.workflow_execution.task.steps[0],
                                                                        self.get_formatted_initial_parameters())  # of first step
                 return self._current_step
+            
             last_validated_step_execution = self.workflow_execution.past_valid_step_executions[-1]
-            if len(self.workflow_execution.past_valid_step_executions) > 1:  # no dependency as it was the first step
+
+            
+            if len(self.workflow_execution.past_valid_step_executions) > 1:  # if it's not the 1st else no dependency as it was the first step
                 db_dependency_step = self.db_session.query(MdWorkflowStep) \
                     .join(MdUserTask, MdUserTask.task_fk == MdWorkflowStep.task_fk) \
                     .filter(MdUserTask.user_task_pk == self.workflow_execution.user_task_fk) \

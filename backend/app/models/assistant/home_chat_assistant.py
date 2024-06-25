@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from models.tasks.tag_manager import TagManager
+from mojodex_core.tag_manager import TagManager
 from models.knowledge.knowledge_manager import KnowledgeManager
 from models.assistant.chat_assistant import ChatAssistant
 from app import placeholder_generator, server_socket

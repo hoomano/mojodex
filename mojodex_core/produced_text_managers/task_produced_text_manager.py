@@ -1,7 +1,9 @@
-from models.produced_text_managers.produced_text_manager import ProducedTextManager
-from app import db
-from models.tasks.tag_manager import TagManager
+
+
+from mojodex_core.db import with_db_session
 from mojodex_core.entities.db_base_entities import MdProducedText
+from mojodex_core.produced_text_managers.produced_text_manager import ProducedTextManager
+from mojodex_core.tag_manager import TagManager
 
 
 class TaskProducedTextManager(ProducedTextManager):
@@ -45,11 +47,12 @@ class TaskProducedTextManager(ProducedTextManager):
         except Exception as e:
             raise Exception(f"{self.__class__.__name__}:: extract_and_save_produced_text:: {e}")
 
-    def _is_edition(self):
+    @with_db_session
+    def _is_edition(self, db_session):
         """If is edition, return the produced_text_pk of text to edit, else return None"""
         try:
             # Check if there already is a produced_text for this user_task_execution, if yes, it is an edition
-            produced_text = db.session.query(MdProducedText).filter(
+            produced_text = db_session.query(MdProducedText).filter(
                 MdProducedText.user_task_execution_fk == self.user_task_execution_pk).first()
             return produced_text.produced_text_pk if produced_text else None
         except Exception as e:

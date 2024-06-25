@@ -5,7 +5,7 @@ from flask import request
 from flask_restful import Resource
 from app import db, authenticate, server_socket
 
-from models.produced_text_managers.task_produced_text_manager import TaskProducedTextManager
+from mojodex_core.produced_text_managers.task_produced_text_manager import TaskProducedTextManager
 from mojodex_core.logging_handler import log_error
 from mojodex_core.entities.db_base_entities import *
 

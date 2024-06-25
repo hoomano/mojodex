@@ -1,7 +1,7 @@
 import os
 from app import server_socket, time_manager, socketio_message_sender, main_logger
-from models.tasks.tag_manager import TagManager
-from models.produced_text_managers.task_produced_text_manager import TaskProducedTextManager
+from mojodex_core.tag_manager import TagManager
+from mojodex_core.produced_text_managers.task_produced_text_manager import TaskProducedTextManager
 from models.assistant.instruct_task_assistant import InstructTaskAssistant
 from models.assistant.home_chat_assistant import HomeChatAssistant
 from models.assistant.workflow_assistant import WorkflowAssistant

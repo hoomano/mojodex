@@ -5,8 +5,8 @@ from jinja2 import Template
 from app import server_socket, socketio_message_sender
 
 
-from models.tasks.tag_manager import TagManager
-from models.produced_text_managers.task_produced_text_manager import TaskProducedTextManager
+from mojodex_core.tag_manager import TagManager
+from mojodex_core.produced_text_managers.task_produced_text_manager import TaskProducedTextManager
 from mojodex_core.entities.db_base_entities import MdMessage, MdUserTask, MdUserWorkflowStepExecutionResult, \
     MdWorkflowStep
 from mojodex_core.db import MojodexCoreDB, Session

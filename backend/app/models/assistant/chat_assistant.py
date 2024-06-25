@@ -1,4 +1,4 @@
-from models.tasks.tag_manager import TagManager
+from mojodex_core.tag_manager import TagManager
 from models.assistant.execution_manager import ExecutionManager
 from mojodex_core.llm_engine.mpt import MPT
 from mojodex_core.llm_engine.providers.openai_vision_llm import VisionMessagesData

@@ -1,10 +1,10 @@
 from models.assistant.chat_assistant import ChatAssistant
-from models.tasks.tag_manager import TagManager
+from mojodex_core.tag_manager import TagManager
 from app import server_socket, placeholder_generator
 from models.workflows.workflow_process_controller import WorkflowProcessController
 
 from models.assistant.execution_manager import ExecutionManager
-from models.produced_text_managers.task_produced_text_manager import TaskProducedTextManager
+from mojodex_core.produced_text_managers.task_produced_text_manager import TaskProducedTextManager
 from models.tasks.task_executor import TaskExecutor
 from mojodex_core.entities.user_workflow_execution import UserWorkflowExecution
 

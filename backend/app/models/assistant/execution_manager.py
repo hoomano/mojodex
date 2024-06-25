@@ -1,4 +1,4 @@
-from models.tasks.tag_manager import TagManager
+from mojodex_core.tag_manager import TagManager
 
 class ExecutionManager:
 

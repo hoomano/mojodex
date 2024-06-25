@@ -1,5 +1,5 @@
 import os
-from models.tasks.tag_manager import TagManager
+from mojodex_core.tag_manager import TagManager
 from flask import request
 from flask_restful import Resource
 from app import authenticate, db, server_socket

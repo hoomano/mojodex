@@ -1,11 +1,11 @@
 from models.tasks.task_executor import TaskExecutor
 
-from models.produced_text_managers.task_produced_text_manager import TaskProducedTextManager
+from mojodex_core.produced_text_managers.task_produced_text_manager import TaskProducedTextManager
 from models.assistant.execution_manager import ExecutionManager
 from app import placeholder_generator
 from models.assistant.chat_assistant import ChatAssistant
 
-from models.tasks.tag_manager import TagManager
+from mojodex_core.tag_manager import TagManager
 
 
 class InstructTaskManager:

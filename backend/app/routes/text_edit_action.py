@@ -155,10 +155,10 @@ class TextEditAction (Resource):
                 input_prompt = text_edit_action_prompt.render(
                     title=produced_text_version.title,
                     draft=produced_text_version.production,
-                    title_start_tag=TaskProducedTextManager.title_start_tag,
-                    title_end_tag=TaskProducedTextManager.title_end_tag,
-                    draft_start_tag=TaskProducedTextManager.draft_start_tag,
-                    draft_end_tag=TaskProducedTextManager.draft_end_tag
+                    title_start_tag=TaskProducedTextManager.title_tag_manager.start_tag,
+                    title_end_tag=TaskProducedTextManager.title_tag_manager.end_tag,
+                    draft_start_tag=TaskProducedTextManager.draft_tag_manager.start_tag,
+                    draft_end_tag=TaskProducedTextManager.draft_tag_manager.end_tag,
                 )
 
             text_edit_action_manager = TextEditActionManager(

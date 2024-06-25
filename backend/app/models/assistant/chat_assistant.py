@@ -14,7 +14,6 @@ class ChatAssistant(ABC):
         try:
 
             self.db_session = db_session
-            self.execution_manager = ExecutionManager()
             self.tag_proper_nouns = tag_proper_nouns
             self.user_messages_are_audio = user_messages_are_audio
             self.mojo_message_token_stream_callback = mojo_message_token_stream_callback
@@ -115,8 +114,8 @@ class ChatAssistant(ABC):
 
     def _manage_execution_tags(self, response):
         try:
-            if ExecutionManager.execution_start_tag in response:
-                return self.execution_manager.manage_execution_text(response)
+            if ExecutionManager.tag_manager.start_tag in response:
+                return ExecutionManager.manage_execution_text(response)
         except Exception as e:
             raise Exception(f"_manage_execution_tags :: {e}")
 

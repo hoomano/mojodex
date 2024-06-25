@@ -16,10 +16,9 @@ class InstructTaskManager:
 
     @property
     def task_execution_placeholder(self):
-        return f"{ExecutionManager.execution_start_tag}" \
-               f"{TaskProducedTextManager.title_start_tag}{placeholder_generator.mojo_draft_title}{TaskProducedTextManager.title_end_tag}" \
-               f"{TaskProducedTextManager.draft_start_tag}{placeholder_generator.mojo_draft_body}{TaskProducedTextManager.draft_end_tag}" \
-               f"{ExecutionManager.execution_end_tag}"
+        return ExecutionManager.tag_manager.add_tags_to_text(
+               f"{TaskProducedTextManager.title_tag_manager.add_tags_to_text(placeholder_generator.mojo_draft_title)}"
+               f"{TaskProducedTextManager.title_tag_manager.add_tags_to_text(placeholder_generator.mojo_draft_body)}")
 
     @property
     def task_message_placeholder(self):

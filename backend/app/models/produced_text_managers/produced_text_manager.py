@@ -1,30 +1,24 @@
 from abc import ABC, abstractmethod
 from datetime import datetime
 
-from app import db, timing_logger
-import time
-from mojodex_core.entities.db_base_entities import MdProducedText, MdMessage, MdProducedTextVersion, MdTextType
+from app import db, timing_logger, log_error
+from mojodex_core.entities.db_base_entities import MdProducedText, MdProducedTextVersion, MdTextType
 
-from mojodex_backend_logger import MojodexBackendLogger
 
 from mojodex_core.llm_engine.providers.model_loader import ModelLoader
 from mojodex_core.llm_engine.mpt import MPT
 
 
 class ProducedTextManager(ABC):
-    logger_prefix = "📝 ProducedTextManager"
 
     get_text_type_mpt_filename = "instructions/get_text_type.mpt"
 
     def __init__(self, session_id, user_id=None, use_draft_placeholder=False, user_task_execution_pk=None,
-                 task_name_for_system=None,
-                 logger=None):
+                 task_name_for_system=None):
         self.session_id = session_id
         self.user_id = user_id
         self.use_draft_placeholder = use_draft_placeholder
         self.user_task_execution_pk, self.task_name_for_system = user_task_execution_pk, task_name_for_system
-        self.logger = logger if logger else MojodexBackendLogger(
-            f"{ProducedTextManager.logger_prefix} -- session {session_id}")
 
 
     def save_produced_text(self, text, title, text_type_pk):
@@ -45,7 +39,7 @@ class ProducedTextManager(ABC):
                                                                     user_task_execution_pk=self.user_task_execution_pk,
                                                                     task_name_for_system=self.task_name_for_system)
             except Exception as e:
-                self.logger.error(f"_save_produced_text:: error embedding text: {e}")
+                log_error(f"{self.__class__.__name__} : save_produced_text:: error embedding text: {e}")
                 embedding = None
                 
             text_type_pk = text_type_pk if text_type_pk else self._determine_production_text_type_pk(text)
@@ -55,11 +49,9 @@ class ProducedTextManager(ABC):
                                                 embedding=embedding)
             db.session.add(new_version)
             db.session.commit()
-            self.logger.debug(
-                f'_save_produced_text:: produced_text_pk {produced_text.produced_text_pk} - new_version_pk {new_version.produced_text_version_pk}')
             return produced_text, new_version
         except Exception as e:
-            raise Exception(f"_save_produced_text:: {e}")
+            raise Exception(f"save_produced_text:: {e}")
 
     @abstractmethod
     def _is_edition(self):

@@ -4,8 +4,6 @@ from models.tasks.tag_manager import TagManager
 from models.produced_text_managers.task_produced_text_manager import TaskProducedTextManager
 from models.assistant.instruct_task_assistant import InstructTaskAssistant
 from models.assistant.home_chat_assistant import HomeChatAssistant
-from models.assistant.chat_assistant import ChatAssistant
-
 from models.assistant.workflow_assistant import WorkflowAssistant
 from mojodex_core.entities.instruct_user_task_execution import InstructTaskExecution
 from mojodex_core.entities.message import Message
@@ -92,7 +90,7 @@ class SessionController:
             return {"produced_text_title": title,
                     "produced_text": production,
                     "session_id": self.session.session_id,
-                    "text": TaskProducedTextManager.remove_tags(partial_text)}
+                    "text": TaskProducedTextManager.get_produced_text_without_tags(partial_text)}
         except Exception as e:
             raise Exception(f"_produced_text_stream_callback :: {e}")
 

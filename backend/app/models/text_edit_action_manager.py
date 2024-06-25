@@ -5,7 +5,6 @@ from models.produced_text_managers.task_produced_text_manager import TaskProduce
 
 from models.assistant.execution_manager import ExecutionManager
 
-from models.assistant.chat_assistant import ChatAssistant
 from mojodex_core.entities.db_base_entities import *
 from app import db, server_socket, main_logger, socketio_message_sender
 from mojodex_core.logging_handler import log_error
@@ -39,6 +38,8 @@ class TextEditActionManager:
         self.text_type_fk = text_type_fk
         self.platform = platform
         self.user_message_pk = user_message_pk
+        self.task_produced_text_manager = TaskProducedTextManager(
+            session_id, user_id, user_task_execution_pk, task_name_for_system)
         if 'SPEECH_KEY' in os.environ and 'SPEECH_REGION' in os.environ:
             try:
                 self.voice_generator = VoiceGenerator()
@@ -66,16 +67,15 @@ class TextEditActionManager:
             )[0]  # Because chat returns a list
 
             event_name = "draft_message"
+            title, production = self.task_produced_text_manager.extract_produced_text_from_tagged_text(edited_text)
             draft_message = {
                 "produced_text_pk": self.produced_text_fk,
-                "produced_text_title": self.__get_title_without_tags(edited_text),
-                "produced_text": self.__get_draft_without_tags(edited_text),
-                "text": self.__get_text_without_tags(edited_text),
-                "text_with_tags": ExecutionManager.execution_start_tag + edited_text + ExecutionManager.execution_end_tag
+                "produced_text_title": title,
+                "produced_text": production,
+                "text": self.task_produced_text_manager.get_produced_text_without_tags(edited_text),
+                "text_with_tags": ExecutionManager.tag_manager.add_tags_to_text(edited_text)
             }
 
-            title = self.__get_title_without_tags(edited_text)
-            production = self.__get_draft_without_tags(edited_text)
             embedding = ProducedTextManager.embed_produced_text(title, production, self.user_id,
                                                                 user_task_execution_pk=self.user_task_execution_pk,
                                                                 task_name_for_system=self.task_name_for_system)
@@ -130,11 +130,9 @@ class TextEditActionManager:
     def __send_draft_token(self, token_text):
 
         try:
-            produced_text_title = self.__get_title_without_tags(token_text)
+            produced_text_title, produced_text = self.task_produced_text_manager.extract_produced_text_from_tagged_text(token_text)
 
-            produced_text = self.__get_draft_without_tags(token_text)
-
-            text = self.__get_text_without_tags(token_text)
+            text = self.task_produced_text_manager.get_produced_text_without_tags(token_text)
 
             server_socket.emit(
                 "draft_token",
@@ -148,31 +146,6 @@ class TextEditActionManager:
         except Exception as e:
             raise Exception(f"__send_draft_token :: {e}")
 
-    def __get_title_without_tags(self, edited_text):
-        try:
-            return ChatAssistant.remove_tags_from_text(
-                text=edited_text.strip(),
-                start_tag=TaskProducedTextManager.title_start_tag,
-                end_tag=TaskProducedTextManager.title_end_tag
-            )
-        except Exception as e:
-            raise Exception(f"__get_title_without_tags :: {e}")
-
-    def __get_draft_without_tags(self, edited_text):
-        try:
-            return ChatAssistant.remove_tags_from_text(
-                text=edited_text.strip(),
-                start_tag=TaskProducedTextManager.draft_start_tag,
-                end_tag=TaskProducedTextManager.draft_end_tag
-            )
-        except Exception as e:
-            raise Exception(f"__get_draft_without_tags :: {e}")
-
-    def __get_text_without_tags(self, edited_text):
-        try:
-            return TaskProducedTextManager.remove_tags(edited_text.strip())
-        except Exception as e:
-            raise Exception(f"__get_text_without_tags :: {e}")
 
     def __text_to_speech(self, message, db_message):
 

@@ -31,19 +31,21 @@ class TaskProducedTextManager(ProducedTextManager):
             else:
                 # Backup in case text does not contains correct tags:
                 # Remove the one that are presents and returns the whole text without tags
-                production = mojo_text.replace(TaskProducedTextManager.self.draft_tag_manager.start_tag, "").replace(
-                    TaskProducedTextManager.self.draft_tag_manager.end_tag, "").replace(
+                production = mojo_text.replace(TaskProducedTextManager.draft_tag_manager.start_tag, "").replace(
+                    TaskProducedTextManager.draft_tag_manager.end_tag, "").replace(
                     TaskProducedTextManager.title_tag_manager.start_tag, "").replace(
                     TaskProducedTextManager.title_tag_manager.end_tag, "").strip()
             return title, production
         except Exception as e:
             raise Exception(f"extract_produced_text_from_tagged_text:: {e}")
 
-    def extract_and_save_produced_text_from_tagged_text(self, mojo_text, text_type_pk=None):
+    def extract_and_save_produced_text_from_tagged_text(self, mojo_text, db_session, text_type_pk=None):
         try:
+            print("👉 extract_and_save_produced_text_from_tagged_text")
             title, production = self.extract_produced_text_from_tagged_text(mojo_text)
-            text_type_pk = text_type_pk if text_type_pk else self._determine_production_text_type_pk(production)
-            return self.save_produced_text(production, title, text_type_pk)
+            text_type_pk = text_type_pk if text_type_pk else self._determine_production_text_type_pk(production, db_session)
+            print("👉 extract_and_save_produced_text_from_tagged_text 2")
+            return self.save_produced_text(production, title, text_type_pk, db_session)
         except Exception as e:
             raise Exception(f"{self.__class__.__name__}:: extract_and_save_produced_text:: {e}")
 

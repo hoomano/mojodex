@@ -2,13 +2,12 @@ from abc import ABC, abstractmethod
 from datetime import datetime
 from mojodex_core.logging_handler import log_error
 from mojodex_core.entities.db_base_entities import MdProducedText, MdProducedTextVersion, MdTextType
-from mojodex_core.db import with_db_session
 from mojodex_core.llm_engine.providers.model_loader import ModelLoader
 from mojodex_core.llm_engine.mpt import MPT
 
 
 class ProducedTextManager(ABC):
-    get_text_type_mpt_filename = "instructions/get_text_type.mpt"
+    get_text_type_mpt_filename = "mojodex_core/instructions/get_text_type.mpt"
 
     def __init__(self, session_id, user_id=None, use_draft_placeholder=False, user_task_execution_pk=None,
                  task_name_for_system=None):
@@ -17,7 +16,6 @@ class ProducedTextManager(ABC):
         self.use_draft_placeholder = use_draft_placeholder
         self.user_task_execution_pk, self.task_name_for_system = user_task_execution_pk, task_name_for_system
 
-    @with_db_session
     def save_produced_text(self, text, title, text_type_pk, db_session):
         try:
             text_to_edit_pk = self._is_edition()
@@ -55,6 +53,7 @@ class ProducedTextManager(ABC):
         """Determines if current produced text is an edition of a previous one.
         If it is, returns the produced_text_pk of the text to edit, else returns None"""
         raise NotImplementedError
+
 
     def _determine_production_text_type_pk(self, production, db_session):
         """Return the type of the produced text among the available enum, based on the text itself, determined by the MPT get_text_type.mpt"""

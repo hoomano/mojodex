@@ -217,7 +217,7 @@ class WorkflowProcessController:
                                                                 self.workflow_execution.user.user_id,
                                                                 self.workflow_execution.user_task_execution_pk,
                                                                 self.workflow_execution.task.name_for_system)
-            produced_text, produced_text_version = produced_text_manager.save_produced_text(production, title="", text_type_pk=self.workflow_execution.task.output_text_type_fk)
+            produced_text, produced_text_version = produced_text_manager.save_produced_text(production, title="", text_type_pk=self.workflow_execution.task.output_text_type_fk, db_session=self.db_session)
 
             return produced_text, produced_text_version
 

@@ -65,9 +65,9 @@ class WorkflowManager:
             if text and mojo_message_token_stream_callback:
                 mojo_message_token_stream_callback(text)
 
-            elif self.task_executor.tag_manager.execution_start_tag in partial_text:
+            elif ExecutionManager.tag_manager.start_tag in partial_text:
                 # take the text between <execution> and </execution>
-                text = self.task_executor.tag_manager.remove_tags_from_text(partial_text)
+                text = ExecutionManager.tag_manager.remove_tags_from_text(partial_text)
                 draft_token_stream_callback(text)
 
         except Exception as e:

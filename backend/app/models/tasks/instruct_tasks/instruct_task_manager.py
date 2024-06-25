@@ -3,7 +3,6 @@ from models.tasks.task_executor import TaskExecutor
 from mojodex_core.produced_text_managers.task_produced_text_manager import TaskProducedTextManager
 from models.assistant.execution_manager import ExecutionManager
 from app import placeholder_generator
-from models.assistant.chat_assistant import ChatAssistant
 
 from mojodex_core.tag_manager import TagManager
 
@@ -41,9 +40,9 @@ class InstructTaskManager:
             if text and mojo_message_token_stream_callback:
                 mojo_message_token_stream_callback(text)
 
-            elif self.task_executor.tag_manager.execution_start_tag in partial_text:
+            elif ExecutionManager.tag_manager.start_tag in partial_text:
                 # take the text between <execution> and </execution>
-                text = self.task_executor.tag_manager.remove_tags_from_text(partial_text)
+                text = ExecutionManager.tag_manager.remove_tags_from_text(partial_text)
                 draft_token_stream_callback(text)
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} :: manage_task_stream :: {e}")

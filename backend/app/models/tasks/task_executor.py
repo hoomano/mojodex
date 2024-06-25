@@ -23,7 +23,9 @@ class TaskExecutor:
 
                 produced_text_manager = TaskProducedTextManager(self.session_id, self.user_id, user_task_execution_pk, task.name_for_system, use_draft_placeholder=use_draft_placeholder)
                 produced_text, produced_text_version = produced_text_manager.extract_and_save_produced_text_from_tagged_text(
-                    execution_text, text_type_pk=task.output_text_type_fk)
+                    execution_text, db_session=db.session, text_type_pk=task.output_text_type_fk)
+                print("👉 extract_and_save_produced_text_from_tagged_text DONE")
+                print(f"👉 produced_text_version.text_type_fk: {produced_text_version.text_type_fk}")
 
                 text_type = db.session.query(MdTextType.name).filter(
                     MdTextType.text_type_pk == produced_text_version.text_type_fk).first()[0] if produced_text_version.text_type_fk else None

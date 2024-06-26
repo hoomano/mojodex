@@ -1,7 +1,6 @@
-import { TextMatchTransformer } from "@lexical/markdown";
 import { $createImageNode, $isImageNode, ImageNode } from "./imageNode";
+import { CODE, HEADING, QUOTE, TextMatchTransformer, UNORDERED_LIST } from "@lexical/markdown";
 import {
-    ELEMENT_TRANSFORMERS,
     TEXT_FORMAT_TRANSFORMERS,
     TEXT_MATCH_TRANSFORMERS,
     Transformer,
@@ -36,7 +35,12 @@ export const IMAGE: TextMatchTransformer = {
 
 export const MOJODEX_LEXICAL_TRANSFORMERS: Array<Transformer> = [
     IMAGE,
-    ...ELEMENT_TRANSFORMERS,
+    UNORDERED_LIST,
+    CODE,
+    HEADING,
+    QUOTE,
     ...TEXT_FORMAT_TRANSFORMERS,
     ...TEXT_MATCH_TRANSFORMERS,
-]; // all built-in transformers + IMAGE special one
+]; // all built-in transformers 
+// + IMAGE special one made for Mojodex
+// - ORDERED_LIST because it does not display numbers at start of line which is not desired

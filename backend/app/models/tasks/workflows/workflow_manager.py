@@ -32,21 +32,24 @@ class WorkflowManager:
     @property
     def task_execution_placeholder(self):
         return ExecutionManager.tag_manager.add_tags_to_text(
-            f"{TaskProducedTextManager.title_start_tag}{placeholder_generator.mojo_draft_title}{TaskProducedTextManager.title_end_tag}"
-            f"{TaskProducedTextManager.draft_start_tag}{placeholder_generator.mojo_draft_body}{TaskProducedTextManager.draft_end_tag}")
-
+               f"{TaskProducedTextManager.title_tag_manager.add_tags_to_text(placeholder_generator.mojo_draft_title)}"
+               f"{TaskProducedTextManager.draft_tag_manager.add_tags_to_text(placeholder_generator.mojo_draft_body)}")
     def manage_response_task_tags(self, response: str, workflow_execution: UserWorkflowExecution):
         try:
+            print("👉 manage_response_task_tags")
             if self.workflow_step_no_go_explanation_manager.start_tag in response:
+                print("👉 workflow_step_no_go_explanation_manager.start_tag in response")
                 text_without_tags = self.workflow_step_no_go_explanation_manager.remove_tags_from_text(response)
                 return {"text": text_without_tags, "text_with_tags": response}
             elif self.workflow_step_clarification_manager.start_tag in response:
+                print("👉 workflow_step_clarification_manager.start_tag in response")
                 text_without_tags = self.workflow_step_clarification_manager.remove_tags_from_text(response)
                 return {"text": text_without_tags, "text_with_tags": response}
             elif self.workflow_step_instruction_manager.start_tag in response:
+                print("👉 workflow_step_instruction_manager.start_tag in response")
                 instruction = self.workflow_step_instruction_manager.remove_tags_from_text(response)
                 workflow_process_controller = WorkflowProcessController(workflow_execution.user_task_execution_pk)
-                workflow_process_controller.invalidate_current_step(instruction['text'])
+                workflow_process_controller.invalidate_current_step(instruction)
                 server_socket.start_background_task(workflow_process_controller.run)
                 return None
 

@@ -193,4 +193,5 @@ class TextEditAction (Resource):
         except Exception as e:
             db.session.rollback()
             log_error(f"{TextEditAction.error_message_text} : request.json: {request.json}: {e}", notify_admin=True)
+            db.session.close()
             return {"error": f"{TextEditAction.error_message_text} : {e}"}, 400

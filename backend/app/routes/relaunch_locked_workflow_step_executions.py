@@ -72,4 +72,5 @@ class RelaunchLockedWorkflowStepExecutions(Resource):
         except Exception as e:
             db.session.rollback()
             log_error(f"{error_message} : {e}", notify_admin=True)
+            db.session.close()
             return {"error": f"{e}"}, 500

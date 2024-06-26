@@ -300,6 +300,8 @@ class HomeChat(Resource):
 
         except Exception as e:
             log_error(f"{error_message} : {e}", notify_admin=True)
+            db.session.rollback()
+            db.session.close()
             return {"error": f"{error_message} : {e}"}, 500
 
     # User just killed app, ready for generating next home_chat
@@ -324,5 +326,7 @@ class HomeChat(Resource):
             db.session.close()
             return {}, 200
         except Exception as e:
+            db.session.rollback()
             log_error(f"Error creating home chat : {e}", notify_admin=True)
+            db.session.close()
             return {"error": f"Error creating home chat : {e}"}, 500

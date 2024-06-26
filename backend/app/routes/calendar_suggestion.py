@@ -324,6 +324,7 @@ class CalendarSuggestion(Resource):
         except Exception as e:
             db.session.rollback()
             log_error(f"{error_message} : {e}")
+            db.session.close()
             return {f"{error_message} : {e}"}, 400
 
     # route to get a calendar suggestion from backend. Returns calendar suggestion.

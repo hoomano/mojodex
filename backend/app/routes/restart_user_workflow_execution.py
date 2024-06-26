@@ -63,7 +63,9 @@ class RestartUserWorkflowExecution(Resource):
 
             return {"message": "Workflow restarted"}, 200
         except Exception as e:
+            db.session.rollback()
             log_error(e)
+            db.session.close()
             return {"error": f"{error_message}: {e}"}, 500
         
   

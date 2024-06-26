@@ -249,5 +249,6 @@ class UserMessage(Resource):
             db_message.in_error_state = datetime.now()
             db.session.commit()
             log_error(f"Error with user_message : {e}")
+            db.session.close()
             return {"error": f"{e}"}, 400
 

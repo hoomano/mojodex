@@ -17,7 +17,7 @@ from models.voice_generator import VoiceGenerator
 from packaging import version
 from functools import wraps
 from sqlalchemy.orm.attributes import flag_modified
-from mojodex_core.db import engine
+from mojodex_core.db import MojodexCoreDB
 from mojodex_core.db import Session as DbSession
 from mojodex_core.task_execution_title_summary_generator import TaskExecutionTitleSummaryGenerator
 
@@ -34,7 +34,7 @@ class SessionController:
         :param session_id: id of the managed session.
         """
         try:
-            self.db_session = DbSession(engine)
+            self.db_session = DbSession(MojodexCoreDB().engine)
             self.session = self.db_session.query(Session).get(session_id)
             self.platform = None
             if 'SPEECH_KEY' in os.environ and 'SPEECH_REGION' in os.environ:

@@ -290,13 +290,14 @@ class HomeChat(Resource):
                     db.session.commit()
 
             server_socket.start_background_task(self.__create_home_chat_by_batches, to_be_prepared, week)
+            user_ids = [user.user_id for user, _ in user_and_ready_home_chat]
             # Normally, flask_socketio will close db.session automatically after the request is done 
             # (https://flask.palletsprojects.com/en/2.3.x/patterns/sqlalchemy/) "Flask will automatically remove database sessions at the end of the request or when the application shuts down."
             # But if may not the case because of the background task launched in this route, errors like `QueuePool limit of size 5 overflow 10 reached` may happen in the backend logs and cause issues.
             # That's why here we explicitely call `db.session.close()` to close the session manually.
             db.session.close()
 
-            return {"user_ids": [user.user_id for user, _ in user_and_ready_home_chat]}, 200
+            return {"user_ids": user_ids}, 200
 
         except Exception as e:
             log_error(f"{error_message} : {e}", notify_admin=True)

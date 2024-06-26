@@ -3,7 +3,7 @@ from mojodex_core.knowledge_manager import knowledge_manager
 from mojodex_core.entities.db_base_entities import MdUserTaskExecution
 from mojodex_core.entities.db_base_entities import MdTask, MdUserTask
 from mojodex_core.llm_engine.mpt import MPT
-from mojodex_core.db import engine, with_db_session
+from mojodex_core.db import with_db_session
 
 class TaskExecutionTitleSummaryGenerator:
 

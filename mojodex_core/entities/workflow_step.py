@@ -1,24 +1,14 @@
-from abc import ABC, abstractmethod
 from typing import List
-
-from mojodex_core.entities.abstract_entities.abstract_entity import AbstractEntity
 from mojodex_core.entities.db_base_entities import MdWorkflowStep, MdWorkflowStepDisplayedData
 from sqlalchemy.orm import object_session
 from sqlalchemy import func, or_
 
-class WorkflowStep(MdWorkflowStep, ABC, metaclass=AbstractEntity):
-    """WorkflowStep entity class is an abstract class.
-    It should be instanciated as a class listed in `mojodex_core/steps_library.py`.
-    
-    This is true for default constructor usage but also when retrieving data from the database: `db.session.query(...)...`"""
+class WorkflowStep(MdWorkflowStep):
+    """WorkflowStep contains additional properties and methods for a WorkflowStep entity."""
 
     types_reserved_key = 'types'
     reserved_output_keys: List[str] = [types_reserved_key]
 
-    @property
-    @abstractmethod
-    def definition_for_system(self) -> str:
-        raise NotImplementedError
 
     def _get_displayed_data(self, language_code):
         try:
@@ -34,7 +24,7 @@ class WorkflowStep(MdWorkflowStep, ABC, metaclass=AbstractEntity):
                 func.nullif(MdWorkflowStepDisplayedData.language_code, 'en').asc()) \
                 .first()
         except Exception as e:
-            raise Exception(f"_get_displayed_data_in_language :: {e}")
+            raise Exception(f"_get_displayed_data :: {e}")
 
     def get_name_in_language(self, language_code):
         try:
@@ -51,7 +41,11 @@ class WorkflowStep(MdWorkflowStep, ABC, metaclass=AbstractEntity):
     def _execute(self, parameter: dict, learned_instructions: dict, initial_parameters: dict,
                  past_validated_steps_results: List[dict], user_id: str, user_task_execution_pk: int,
                  task_name_for_system: str, session_id: str):
-        pass
+        """ The child of the workflow step must implement this method.
+            If not, it will raise a NotImplementedError.
+            This can happen for "deprecated" steps that are not used anymore.
+        """
+        raise NotImplementedError
 
     def execute(self, parameter: dict, learned_instructions: dict, initial_parameter: dict,
                 past_validated_steps_results: List[dict], user_id: str, user_task_execution_pk: int,

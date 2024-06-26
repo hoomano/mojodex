@@ -87,10 +87,10 @@ class WorkflowProcessController:
                     .filter(
                     case(
                         # When `MdWorkflowStep.user_validation_required` is `True`, we check that `MdUserWorkflowStepExecution.validated` is also `True`
-                        [
+                        
                             (MdWorkflowStep.user_validation_required == True,
                              UserWorkflowStepExecution.validated == True),
-                        ],
+                        
                         # if `user_validation_required` is `False`, we don't care about the `validated` status, and the `MdUserWorkflowStepExecution` will be included in the results regardless of its `validated` value.
                         else_=True
                     )) \
@@ -200,11 +200,11 @@ class WorkflowProcessController:
                 .filter(
                 case(
                     # When `MdWorkflowStep.user_validation_required` is `True`, we check that `MdUserWorkflowStepExecution.validated` is also `True`
-                    [
+                    
                         (
                             MdWorkflowStep.user_validation_required == True,
                             UserWorkflowStepExecution.validated == True),
-                    ],
+                    
                     # if `user_validation_required` is `False`, we don't care about the `validated` status, and the `MdUserWorkflowStepExecution` will be included in the results regardless of its `validated` value.
                     else_=True
                 )

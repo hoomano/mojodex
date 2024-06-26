@@ -34,7 +34,6 @@ app.config[
 
 db = SQLAlchemy(app)
 api = Api(app)
-engine_container = db.get_engine(app)
 
 from background_logger import BackgroundLogger
 
@@ -56,7 +55,7 @@ HttpRouteManager(api)
 
 @app.route("/")
 def index():
-    message = "Welcome to Mojodex Backend Service."
+    message = "Welcome to Mojodex Background Service."
     return message
 
 

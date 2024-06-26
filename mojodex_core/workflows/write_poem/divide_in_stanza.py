@@ -1,8 +1,7 @@
 
-import json
 from typing import List
 
-from mojodex_core.entities.abstract_entities.workflow_step import WorkflowStep
+from mojodex_core.entities.workflow_step import WorkflowStep
 from mojodex_core.llm_engine.mpt import MPT
         
 

@@ -1,22 +1,19 @@
 itsdangerous<2.0.1
-flask==2.0.1
-Flask-WTF==1.1.1
+flask==2.2.5
+Flask-WTF==1.2.1
 flask_restful==0.3.10
-flask-sqlalchemy==2.4.4
+Flask-SQLAlchemy==3.1.1
 gevent==23.9.1
 gevent-websocket==0.10.1
 requests==2.31.0
 pandas==2.0.3
-Jinja2<3.1
-werkzeug==2.0.1
+Jinja2==3.1.2
+werkzeug==2.3.7
 gunicorn==20.1.0
 google-search-results==2.4.2
 eventlet==0.30.2
 ipython==8.12.2
 bs4==0.0.1
-pydantic==1.10.9
---index-url https://pypi.fury.io/gantry-ml/
---extra-index-url https://pypi.org/simple/
-gantry-logger==0.0.1a4
+pydantic==2.5.2
 boto3==1.28.56
 configparser==6.0.0

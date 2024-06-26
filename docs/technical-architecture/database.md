@@ -134,6 +134,12 @@ Each table is represented as a python class in `mojodex_code/entities.py`. This 
 sqlacodegen postgresql+psycopg2://$DBUSER:$DBPASS@localhost:5432/$DBNAME --outfile mojodex_core/entities/db_base_entities.py
 ```
 
+⚠️  Be sure to install `sqlacodegen` with the appropriate pg_vector features:
+```
+python3 -m pip install git+https://github.com/hoomano/sqlacodegen.git@feature-pgvector
+```
+
+
 ## Go further
 
 You can use the Mojodex API to create new users, products, tasks, etc.

@@ -1,4 +1,4 @@
-from mojodex_core.entities.abstract_entities.user_task import UserTask
+from mojodex_core.entities.user_task import UserTask
 from sqlalchemy.orm import object_session
 
 from mojodex_core.entities.workflow import Workflow

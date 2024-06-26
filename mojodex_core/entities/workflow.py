@@ -1,10 +1,11 @@
 
 from mojodex_core.entities.db_base_entities import MdWorkflowStepDisplayedData, MdWorkflowStep
-from mojodex_core.entities.abstract_entities.task import Task
+from mojodex_core.entities.task import Task
 from sqlalchemy.orm import object_session
 from sqlalchemy.sql.functions import coalesce
 
 
+from mojodex_core.entities.workflow_step import WorkflowStep
 from mojodex_core.steps_library import steps_class
 
 
@@ -20,7 +21,7 @@ class Workflow(Task):
                 .filter(MdWorkflowStep.task_fk == self.task_pk) \
                 .order_by(MdWorkflowStep.rank.asc()).all()
             for md_step in md_steps:
-                step_class = steps_class[md_step.name_for_system]
+                step_class = steps_class[md_step.name_for_system] if md_step.name_for_system in steps_class else WorkflowStep
                 step = session.query(step_class).get(md_step.workflow_step_pk)
                 steps.append(step)
             return steps
@@ -67,7 +68,7 @@ class Workflow(Task):
         steps = []
         for db_step, name_for_user, definition_for_user in md_steps:
             step_name_for_system = db_step.name_for_system
-            step_class = steps_class[step_name_for_system]
+            step_class = steps_class[step_name_for_system] if step_name_for_system in steps_class else WorkflowStep
             step = session.query(step_class).get(db_step.workflow_step_pk)
             steps.append((step, name_for_user, definition_for_user))
 

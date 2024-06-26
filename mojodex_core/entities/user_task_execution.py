@@ -1,15 +1,12 @@
-from abc import ABC, abstractmethod
-from mojodex_core.entities.abstract_entities.abstract_entity import AbstractEntity
+from mojodex_core.entities.user_task import UserTask
 from mojodex_core.entities.db_base_entities import MdUserTaskExecution, MdProducedText
 from sqlalchemy.orm import object_session
 from mojodex_core.entities.session import Session
 
 
-class UserTaskExecution(MdUserTaskExecution, ABC, metaclass=AbstractEntity):
-    """UserTaskExecution entity class is an abstract class.
-    It should be instanciated as an InstructUserTaskExecution or UserWorkflowExecution.
-    
-    This is true for default constructor usage but also when retrieving data from the database: `db.session.query(InstructUserTaskExecution).all()`"""
+class UserTaskExecution(MdUserTaskExecution):
+    """UserTaskExecution entity class that contains all the common properties and methods of an InstructUserTaskExecution or UserWorkflowExecution.
+    """
 
 
     @property
@@ -51,24 +48,14 @@ class UserTaskExecution(MdUserTaskExecution, ABC, metaclass=AbstractEntity):
             raise Exception(f"{self.__class__.__name__} :: get_task_name_in_user_language :: {e}")
 
     @property
-    @abstractmethod
     def user_task(self):
+        """ contains the common informations of a UserTask, either from an Instruct or Workflow.
         """
-        task property is abstract and should be implemented in the child class to retrieve either an InstructTask or Workflow entity.
-        Implementation will look like:
-
-        ```
         try:
             session = object_session(self)
             return session.query(UserTask).filter(UserTask.user_task_pk == self.user_task_fk).first()
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} :: user_task :: {e}")
-        ```
-
-        replacing `Task` by `InstructTask` or `Workflow` depending on the child class.
-        """
-        raise NotImplementedError
-        
 
     @property
     def user(self):

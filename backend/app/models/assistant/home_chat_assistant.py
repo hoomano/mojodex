@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from mojodex_core.knowledge_manager import knowledge_manager
 from mojodex_core.tag_manager import TagManager
 from models.knowledge.knowledge_manager import KnowledgeManager
 from models.assistant.chat_assistant import ChatAssistant
@@ -77,15 +78,12 @@ class HomeChatAssistant(ChatAssistant):
 
     def _get_message_placeholder(self):
         return self.user_message_tag_manager.add_tags_to_text(placeholder_generator.mojo_message)
-  
+
     @property
     def _mpt(self):
         try:
-            mojo_knowledge = KnowledgeManager.get_mojo_knowledge()
-            global_context = KnowledgeManager.get_global_context_knowledge()
-
-            return MPT(self.mpt_file, mojo_knowledge=mojo_knowledge,
-                       global_context=global_context,
+            return MPT(self.mpt_file, mojo_knowledge=knowledge_manager.mojodex_knowledge,
+                       global_context=self.user.datetime_context,
                        username=self.user.name,
                        user_company_knowledge=self.user.company_description,
                        tasks=self.user.available_instruct_tasks,

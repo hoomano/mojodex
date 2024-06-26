@@ -2,10 +2,13 @@
 from flask import request
 from flask_restful import Resource
 from app import db, authenticate
+
+from mojodex_core.entities.message import Message
+from mojodex_core.entities.user import User
 from mojodex_core.logging_handler import log_error
 from mojodex_core.entities.db_base_entities import *
 
-from models.knowledge.knowledge_manager import KnowledgeManager
+from mojodex_core.knowledge_manager import knowledge_manager
 from sqlalchemy import func, or_
 from sqlalchemy.orm.attributes import flag_modified
 
@@ -53,16 +56,19 @@ class Vocabulary(Resource):
 
         # Logic
         try:
-            md_message = db.session.query(MdMessage)\
-                .filter(MdMessage.message_pk == message_pk) \
-                .join(MdSession, MdSession.session_id == MdMessage.session_id) \
+            result = db.session.query(Message, User)\
+                .filter(Message.message_pk == message_pk) \
+                .join(MdSession, MdSession.session_id == Message.session_id) \
+                .join(User, User.user_id == MdSession.user_id) \
                 .filter(MdSession.user_id == user_id) \
                 .first()
 
-            if md_message is None:
+            if result is None:
                 log_error(
                     f"{error_message} : Message not found - message_pk: {message_pk}")
                 return {"error": "Message not found"}, 404
+
+            db_message, user = result
 
             result = db.session.query(MdUserTaskExecution.user_task_execution_pk,
                                       MdTask.name_for_system, MdTask.definition_for_system) \
@@ -70,9 +76,8 @@ class Vocabulary(Resource):
                 .join(MdMessage, MdMessage.session_id == MdSession.session_id) \
                 .join(MdUserTask, MdUserTask.user_task_pk == MdUserTaskExecution.user_task_fk) \
                 .join(MdTask, MdTask.task_pk == MdUserTask.task_fk) \
-                .join(MdUser, MdUser.user_id == MdSession.user_id) \
                 .filter(MdMessage.message_pk == message_pk) \
-                .filter(MdUser.user_id == user_id) \
+                .filter(MdSession.user_id == user_id) \
                 .first()
 
             if result is None:
@@ -80,24 +85,18 @@ class Vocabulary(Resource):
             else:
                 user_task_execution_pk, task_name_for_system, task_definition_for_system = result
 
-            if "text" not in md_message.message:
+            if "text" not in db_message.message:
                 log_error(f"{error_message} : Message text not found")
                 return {"error": "Message text not found"}, 404
 
-            message_text = md_message.message['text']
-            mojo_knowledge = KnowledgeManager.get_mojo_knowledge()
-            global_context = KnowledgeManager.get_global_context_knowledge()
-            user_company_knowledge = KnowledgeManager.get_user_company_knowledge(
-                user_id)
-            username = KnowledgeManager.get_user_name(user_id)
-            tagged_message = self.__tag_proper_nouns(message_text, mojo_knowledge, global_context, username,
-                                                     user_company_knowledge,
-                                                     task_definition_for_system, user_id, user_task_execution_pk,
-                                                     task_name_for_system)
+            message_text = db_message.message['text']
+            tagged_message = self.__tag_proper_nouns(message_text, knowledge_manager.mojodex_knowledge, user.datetime_context, user.name,
+                                                     user.company_description, task_definition_for_system, user_id,
+                                                     user_task_execution_pk, task_name_for_system)
 
             # update md_message.message['text']
-            md_message.message['text'] = tagged_message
-            flag_modified(md_message, "message")
+            db_message.message['text'] = tagged_message
+            flag_modified(db_message, "message")
             db.session.commit()
 
             return {"tagged_text": tagged_message}, 200

@@ -36,17 +36,13 @@ class WorkflowManager:
                f"{TaskProducedTextManager.draft_tag_manager.add_tags_to_text(placeholder_generator.mojo_draft_body)}")
     def manage_response_task_tags(self, response: str, workflow_execution: UserWorkflowExecution):
         try:
-            print("👉 manage_response_task_tags")
             if self.workflow_step_no_go_explanation_manager.start_tag in response:
-                print("👉 workflow_step_no_go_explanation_manager.start_tag in response")
                 text_without_tags = self.workflow_step_no_go_explanation_manager.remove_tags_from_text(response)
                 return {"text": text_without_tags, "text_with_tags": response}
             elif self.workflow_step_clarification_manager.start_tag in response:
-                print("👉 workflow_step_clarification_manager.start_tag in response")
                 text_without_tags = self.workflow_step_clarification_manager.remove_tags_from_text(response)
                 return {"text": text_without_tags, "text_with_tags": response}
             elif self.workflow_step_instruction_manager.start_tag in response:
-                print("👉 workflow_step_instruction_manager.start_tag in response")
                 instruction = self.workflow_step_instruction_manager.remove_tags_from_text(response)
                 workflow_process_controller = WorkflowProcessController(workflow_execution.user_task_execution_pk)
                 workflow_process_controller.invalidate_current_step(instruction)

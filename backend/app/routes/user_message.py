@@ -179,7 +179,7 @@ class UserMessage(Resource):
 
         except Exception as e:
             db.session.rollback()
-            log_error(f"Error with user_message : {e}")
+            log_error(f"🟢 Error with user_message : {e}")
             return {"error": f"{e}"}, 400
 
         try:
@@ -237,12 +237,19 @@ class UserMessage(Resource):
             server_socket.start_background_task(session.process_chat_message, session_message)
 
             db.session.commit()
-            return db_message.message, 200
+            message = db_message.message
+            # Normally, flask_socketio will close db.session automatically after the request is done 
+            # (https://flask.palletsprojects.com/en/2.3.x/patterns/sqlalchemy/) "Flask will automatically remove database sessions at the end of the request or when the application shuts down."
+            # But if may not the case because of the background task launched in this route, errors like `QueuePool limit of size 5 overflow 10 reached` may happen in the backend logs and cause issues.
+            # That's why here we explicitely call `db.session.close()` to close the session manually.
+            db.session.close()
+            return message, 200
         except Exception as e:
             # If we arrive at this point, message has correctly been stored in db but not transcripted nor transmitted to session for answer generation
             # Mark message as in_error_state so that next retry will go through transcription again
             db_message.in_error_state = datetime.now()
             db.session.commit()
             log_error(f"Error with user_message : {e}")
+            db.session.close()
             return {"error": f"{e}"}, 400
 

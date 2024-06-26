@@ -8,7 +8,7 @@ from app import server_socket, socketio_message_sender
 from models.produced_text_managers.task_produced_text_manager import TaskProducedTextManager
 from mojodex_core.entities.db_base_entities import MdMessage, MdUserTask, MdUserWorkflowStepExecutionResult, \
     MdWorkflowStep
-from mojodex_core.db import engine, Session
+from mojodex_core.db import MojodexCoreDB, Session
 
 from mojodex_core.entities.user_workflow_execution import UserWorkflowExecution
 from sqlalchemy import case, and_
@@ -26,7 +26,7 @@ class WorkflowProcessController:
 
     def __init__(self, workflow_execution_pk):
         try:
-            self.db_session = Session(engine)
+            self.db_session = Session(MojodexCoreDB().engine)
             self.workflow_execution: UserWorkflowExecution = self.db_session.query(UserWorkflowExecution).get(workflow_execution_pk)
             self._current_step = None
         except Exception as e:

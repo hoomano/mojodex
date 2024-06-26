@@ -43,9 +43,16 @@ class UserWorkflowStepExecution(Resource):
             else:
                 workflow_process_controller.add_state_message()
                 
+            # Normally, flask_socketio will close db.session automatically after the request is done 
+            # (https://flask.palletsprojects.com/en/2.3.x/patterns/sqlalchemy/) "Flask will automatically remove database sessions at the end of the request or when the application shuts down."
+            # But if may not the case because of the background task launched in this route, errors like `QueuePool limit of size 5 overflow 10 reached` may happen in the backend logs and cause issues.
+            # That's why here we explicitely call `db.session.close()` to close the session manually.
+            db.session.close()
             return {"message": "Step validated"}, 200
         except Exception as e:
+            db.session.rollback()
             log_error(e)
+            db.session.close()
             return {"error": f"{error_message}: {e}"}, 500
         
     def put(self, user_id):
@@ -74,9 +81,16 @@ class UserWorkflowStepExecution(Resource):
         
             server_socket.start_background_task(workflow_process_controller.run)
 
+            # Normally, flask_socketio will close db.session automatically after the request is done 
+            # (https://flask.palletsprojects.com/en/2.3.x/patterns/sqlalchemy/) "Flask will automatically remove database sessions at the end of the request or when the application shuts down."
+            # But if may not the case because of the background task launched in this route, errors like `QueuePool limit of size 5 overflow 10 reached` may happen in the backend logs and cause issues.
+            # That's why here we explicitely call `db.session.close()` to close the session manually.
+            db.session.close()
             return {"message": "Workflow relaunched"}, 200
         except Exception as e:
+            db.session.rollback()
             log_error(e)
+            db.session.close()
             return {"error": f"{error_message}: {e}"}, 500
         
     

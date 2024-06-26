@@ -181,11 +181,18 @@ class TextEditAction (Resource):
             )
 
             db.session.commit()
+            message_pk = message.message_pk
+            # Normally, flask_socketio will close db.session automatically after the request is done 
+            # (https://flask.palletsprojects.com/en/2.3.x/patterns/sqlalchemy/) "Flask will automatically remove database sessions at the end of the request or when the application shuts down."
+            # But if may not the case because of the background task launched in this route, errors like `QueuePool limit of size 5 overflow 10 reached` may happen in the backend logs and cause issues.
+            # That's why here we explicitely call `db.session.close()` to close the session manually.
+            db.session.close()
 
             # Return value
-            return {"success": f"produced_text_version_pk : {produced_text_version_pk}", "message_pk": message.message_pk}, 200
+            return {"success": f"produced_text_version_pk : {produced_text_version_pk}", "message_pk": message_pk}, 200
 
         except Exception as e:
             db.session.rollback()
             log_error(f"{TextEditAction.error_message_text} : request.json: {request.json}: {e}", notify_admin=True)
+            db.session.close()
             return {"error": f"{TextEditAction.error_message_text} : {e}"}, 400

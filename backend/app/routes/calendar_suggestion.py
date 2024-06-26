@@ -310,6 +310,11 @@ class CalendarSuggestion(Resource):
                 log_error(f"{error_message} : {e}", notify_admin=True)
 
             db.session.commit()
+            # Normally, flask_socketio will close db.session automatically after the request is done 
+            # (https://flask.palletsprojects.com/en/2.3.x/patterns/sqlalchemy/) "Flask will automatically remove database sessions at the end of the request or when the application shuts down."
+            # But if may not the case because of the background task launched in this route, errors like `QueuePool limit of size 5 overflow 10 reached` may happen in the backend logs and cause issues.
+            # That's why here we explicitely call `db.session.close()` to close the session manually.
+            db.session.close()
 
             return {
                 "calendar_suggestion_pk": calendar_suggestion.calendar_suggestion_pk,

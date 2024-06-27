@@ -5,7 +5,7 @@ from flask import request
 from flask_restful import Resource
 from app import authenticate, db, server_socket
 
-from mojodex_core.knowledge_manager import knowledge_manager
+from mojodex_core.knowledge_manager import KnowledgeManager
 
 from mojodex_core.entities.message import Message
 from mojodex_core.llm_engine.mpt import MPT
@@ -77,7 +77,7 @@ class HomeChat(Resource):
         try:
             previous_conversations = self.__get_this_week_home_conversations(user_id)
             welcome_message_mpt = MPT(self.welcome_message_mpt_filename,
-                                  mojo_knowledge=knowledge_manager.mojodex_knowledge,
+                                  mojo_knowledge=KnowledgeManager().mojodex_knowledge,
                                   global_context=user_datetime_context,
                                   username=user_name,
                                   tasks=user_available_instruct_tasks,

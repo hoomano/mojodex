@@ -8,7 +8,7 @@ from mojodex_core.entities.user import User
 from mojodex_core.logging_handler import log_error
 from mojodex_core.entities.db_base_entities import *
 
-from mojodex_core.knowledge_manager import knowledge_manager
+from mojodex_core.knowledge_manager import KnowledgeManager
 from sqlalchemy import func, or_
 from sqlalchemy.orm.attributes import flag_modified
 
@@ -21,10 +21,10 @@ class Vocabulary(Resource):
     def __init__(self):
         Vocabulary.method_decorators = [authenticate()]
 
-    def __tag_proper_nouns(self, message_text, mojo_knowledge, global_context, username, user_company_knowledge,
+    def __tag_proper_nouns(self, message_text, global_context, username, user_company_knowledge,
                            task_definition_for_system, user_id, user_task_execution_pk, task_name_for_system):
         try:
-            proper_nouns_tagger_mpt = MPT(Vocabulary.proper_nouns_tagger_mpt_filename, mojo_knowledge=mojo_knowledge,
+            proper_nouns_tagger_mpt = MPT(Vocabulary.proper_nouns_tagger_mpt_filename, mojo_knowledge=KnowledgeManager().mojodex_knowledge,
                                           global_context=global_context,
                                           username=username,
                                           user_company_knowledge=user_company_knowledge,
@@ -90,7 +90,7 @@ class Vocabulary(Resource):
                 return {"error": "Message text not found"}, 404
 
             message_text = db_message.message['text']
-            tagged_message = self.__tag_proper_nouns(message_text, knowledge_manager.mojodex_knowledge, user.datetime_context, user.name,
+            tagged_message = self.__tag_proper_nouns(message_text, user.datetime_context, user.name,
                                                      user.company_description, task_definition_for_system, user_id,
                                                      user_task_execution_pk, task_name_for_system)
 

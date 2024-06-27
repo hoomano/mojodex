@@ -1,6 +1,6 @@
 from mojodex_core.produced_text_managers.task_produced_text_manager import TaskProducedTextManager
 from models.produced_text_managers.task_produced_text_manager import TaskProducedTextManager
-from mojodex_core.knowledge_manager import knowledge_manager
+from mojodex_core.knowledge_manager import KnowledgeManager
 from models.assistant.chat_assistant import ChatAssistant
 from app import placeholder_generator
 from models.tasks.workflows.workflow_manager import WorkflowManager
@@ -68,7 +68,7 @@ class WorkflowAssistant(ChatAssistant):
     @property
     def _mpt(self):
         try:
-            return MPT(self.mpt_file, mojo_knowledge=knowledge_manager.mojodex_knowledge,
+            return MPT(self.mpt_file, mojo_knowledge=KnowledgeManager().mojodex_knowledge,
                        global_context=self.workflow_execution.user.datetime_context,
                        username=self.workflow_execution.user.name,
                        user_company_knowledge=self.workflow_execution.user.company_description,

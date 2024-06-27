@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from mojodex_core.knowledge_manager import knowledge_manager
+from mojodex_core.knowledge_manager import KnowledgeManager
 from mojodex_core.tag_manager import TagManager
 from models.assistant.chat_assistant import ChatAssistant
 from app import placeholder_generator, server_socket
@@ -81,7 +81,7 @@ class HomeChatAssistant(ChatAssistant):
     @property
     def _mpt(self):
         try:
-            return MPT(self.mpt_file, mojo_knowledge=knowledge_manager.mojodex_knowledge,
+            return MPT(self.mpt_file, mojo_knowledge=KnowledgeManager().mojodex_knowledge,
                        global_context=self.user.datetime_context,
                        username=self.user.name,
                        user_company_knowledge=self.user.company_description,

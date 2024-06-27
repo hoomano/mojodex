@@ -7,7 +7,8 @@ from models.login_providers.google_login_manager import GoogleLoginManager
 from models.login_providers.apple_login_manager import AppleLoginManager
 from flask import request
 from flask_restful import Resource
-from app import db, mojo_mail_client
+from app import db
+from mojodex_core.mail import mojo_mail_client
 from mojodex_core.logging_handler import log_error
 from mojodex_core.entities.db_base_entities import *
 import hashlib

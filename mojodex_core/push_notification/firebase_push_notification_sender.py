@@ -1,23 +1,19 @@
 import json
-
 import requests
 from google.oauth2 import service_account
-from mojodex_core.entities.db_base_entities import *
-from mojodex_backend_logger import MojodexBackendLogger
 from mojodex_core.logging_handler import log_error
-from app import db
 import google.auth.transport.requests
 import os
+from mojodex_core.push_notification.push_notification_sender import PushNotificationSender
 
-class PushNotificationSender:
-    logger_prefix = "PushNotificationSender::"
+
+class FirebasePushNotificationSender(PushNotificationSender):
 
     def __init__(self):
         try:
-            self.logger = MojodexBackendLogger(f"{PushNotificationSender.logger_prefix}")
             self.project_id = os.environ['FIREBASE_PROJECT_ID']
         except Exception as e:
-            log_error(f"{self.logger_prefix} __init__: {e}", notify_admin=True)
+            log_error(f"{self.__class__.__name__} __init__: {e}", notify_admin=True)
 
     def _get_access_token(self):
         try:
@@ -31,29 +27,31 @@ class PushNotificationSender:
         except Exception as e:
             raise Exception(f"_get_access_token: {e}")
 
-    def send_notification_to_user(self, user_id, title, description, data):
+    def send_notification(self, device_fcm_token: str, title: str, description: str, data: dict):
         try:
             access_token = self._get_access_token()
-            devices = db.session.query(MdDevice).filter(MdDevice.user_id == user_id).filter(
-                MdDevice.valid == True).all()
-            successes = 0
-            for device in devices:
-                success = self._send_notification_to_device(access_token, device, title, description, data)
-                if success:
-                    successes += 1
-            return successes > 0
+            return self._send_notification_to_device(access_token, device_fcm_token, title, description, data)
         except Exception as e:
-            log_error(f"{self.logger_prefix} send_notification_to_user: "
-                      f"- user_id {user_id} - title: {title} - description: {description} - data {data}: {e}", notify_admin=True)
+            raise Exception(f"{self.__class__.__name__} send_notification: {e}")
 
-    def _send_notification_to_device(self, access_token, device, title, description, data):
+    def _send_notification_to_device(self, access_token, device_fcm_token, title, description, data):
+        """
+        Tries to send a push notification to a device using its fcm token.
+        Return true if device is valid and notification is sent successfully, false otherwise.
+        :param access_token:
+        :param device_fcm_token:
+        :param title:
+        :param description:
+        :param data:
+        :return:
+        """
         try:
             base_url = f'https://fcm.googleapis.com/v1/projects/{self.project_id}/messages:send'
             headers = {'Authorization': 'Bearer ' + access_token,
                        'Content-Type': 'application/json; UTF-8'}
             data = {
                 "message": {
-                    "token": device.fcm_token,  # token of the user
+                    "token": device_fcm_token,  # token of the user
                     "notification": {
                         "title": title,
                         "body": description
@@ -70,41 +68,14 @@ class PushNotificationSender:
                 # There is a message coming along. We will check the message, if it is the one I observed, we will invalidate the device,
                 # otherwise, send an email to admin so that we can investigate
                 if resp.json()['error']['message'] == "The registration token is not a valid FCM registration token":
-                    self._invalidate_device(device)
+                    return False
                 else:
                     raise Exception(f"{resp.status_code}: {resp.text}")
             elif resp.status_code == 400 and resp.json()['error']['status'] == 'UNREGISTERED':
-                self._invalidate_device(device)
+                return False
             elif resp.status_code != 200:
                 raise Exception(f"{resp.status_code}: {resp.text}")
             return True
         except Exception as e:
-            return False
-
-    def _invalidate_device(self, device):
-        try:
-            device.valid = False
-            db.session.commit()
-        except Exception as e:
-            log_error(
-                f"{self.logger_prefix} _invalidate_device: {e}",
-                notify_admin=True)
-
-
-class PushNotificationSenderLogging:
-    
-    def __init__(self):
-        self.logger = MojodexBackendLogger(f"{PushNotificationSender.logger_prefix}")
-    
-    def send_notification_to_user(self, user_id, title, description, data):
-        self.logger.info(f"send_notification_to_user: user_id {user_id} - title: {title} - description: {description} - data {data}")
-
-try:
-    if os.environ.get('FIREBASE_PROJECT_ID', ''):
-        push_notification_sender = PushNotificationSender()
-    else:
-        push_notification_sender = PushNotificationSenderLogging()
-except Exception as e:
-    log_error.error(f"Can't initialize NotificationSender : {e}")
-    push_notification_sender = PushNotificationSenderLogging()
+            raise Exception(f"_send_notification_to_device: {e}")
 

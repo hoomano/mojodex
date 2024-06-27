@@ -1,14 +1,11 @@
 import os
+from mojodex_core.db import with_db_session
 from mojodex_core.tag_manager import TagManager
 from flask import request
 from flask_restful import Resource
 from app import authenticate, db, server_socket
 
 from models.knowledge.knowledge_manager import KnowledgeManager
-
-
-from models.assistant.chat_assistant import ChatAssistant
-
 from mojodex_core.entities.message import Message
 from mojodex_core.llm_engine.mpt import MPT
 from mojodex_core.logging_handler import log_error
@@ -31,11 +28,12 @@ class HomeChat(Resource):
         HomeChat.method_decorators = [authenticate(methods=["GET", "POST"])]
         self.session_creator = SessionCreator()
 
-    def __get_this_week_home_conversations(self, user_id):
+    @with_db_session
+    def __get_this_week_home_conversations(self, user_id, db_session):
         try:
             # 1. get list of this week's home_chat sessions
             week_start_date = datetime.now().date() - timedelta(days=datetime.now().date().weekday())
-            sessions = db.session.query(Session)\
+            sessions: list[Session] = db_session.query(Session)\
             .join(MdHomeChat, Session.session_id == MdHomeChat.session_id)\
             .filter(and_(MdHomeChat.start_date.isnot(None), MdHomeChat.start_date >= week_start_date))\
             .filter(Session.user_id == user_id)\
@@ -52,11 +50,12 @@ class HomeChat(Resource):
         except Exception as e:
             raise Exception(f"__get_this_week_home_conversations :: {e}")
 
-    def __get_this_week_task_executions(self, user_id):
+    @with_db_session
+    def __get_this_week_task_executions(self, user_id, db_session):
         try:
             week_start_date = datetime.now().date() - timedelta(days=datetime.now().date().weekday())
             # last 20 tasks executions of the user this week order by start_date
-            user_task_executions = db.session.query(MdUserTaskExecution.title, MdUserTaskExecution.summary, MdTask.name_for_system) \
+            user_task_executions = db_session.query(MdUserTaskExecution.title, MdUserTaskExecution.summary, MdTask.name_for_system) \
                 .join(MdUserTask, MdUserTaskExecution.user_task_fk == MdUserTask.user_task_pk) \
                 .join(MdTask, MdUserTask.task_fk == MdTask.task_pk) \
                 .filter(MdUserTask.user_id == user_id) \
@@ -72,20 +71,21 @@ class HomeChat(Resource):
         except Exception as e:
             raise Exception(f"__get_this_week_task_executions :: {e}")
 
-    def _generate_welcome_message(self, user: User):
+
+    def _generate_welcome_message(self, user_id, user_name, user_available_instruct_tasks, user_language_code):
         try:
-            previous_conversations = self.__get_this_week_home_conversations(user.user_id)
+            previous_conversations = self.__get_this_week_home_conversations(user_id)
             welcome_message_mpt = MPT(self.welcome_message_mpt_filename,
                                   mojo_knowledge=KnowledgeManager.get_mojo_knowledge(),
                                   global_context=KnowledgeManager.get_global_context_knowledge(),
-                                  username=user.name,
-                                  tasks=user.available_instruct_tasks,
+                                  username=user_name,
+                                  tasks=user_available_instruct_tasks,
                                   first_time_this_week=len(previous_conversations) == 0,
-                                  user_task_executions=self.__get_this_week_task_executions(user.user_id),
+                                  user_task_executions=self.__get_this_week_task_executions(user_id),
                                   previous_conversations=previous_conversations,
-                                  language=user.language_code)
+                                  language=user_language_code)
 
-            responses = welcome_message_mpt.run(user_id=user.user_id, temperature=0, max_tokens=1000,
+            responses = welcome_message_mpt.run(user_id=user_id, temperature=0, max_tokens=1000,
                                                   user_task_execution_pk=None,
                                                   task_name_for_system=None)
             message = responses[0].strip()
@@ -99,38 +99,38 @@ class HomeChat(Resource):
         except Exception as e:
             raise Exception(f"_generate_welcome_message : {e}")
 
-    def __create_home_chat(self, app_version, platform, user_id, week, close_db=True, use_message_placeholder=False):
+    @with_db_session
+    def __create_home_chat(self, app_version, platform, user_id, week, db_session, use_message_placeholder=False):
         try:
             session_creation = self.session_creator.create_session(user_id, platform, "chat")
             if "error" in session_creation[0]:
                 raise Exception(session_creation[0]["error"])
             session_id = session_creation[0]["session_id"]
             home_chat = MdHomeChat(session_id=session_id, user_id=user_id, week=week)
-            db.session.add(home_chat)
-            db.session.commit()
-            user = db.session.query(User).get(user_id)
-            message = self._generate_welcome_message(user)
+            db_session.add(home_chat)
+            db_session.commit()
+            user: User = db_session.query(User).filter(User.user_id == user_id).first()
+            message = self._generate_welcome_message(user_id, user.name,
+                                                     user.available_instruct_tasks, user.language_code)
             db_message = MdMessage(session_id=session_id, message=message, sender=Message.agent_message_key,
                                    event_name='home_chat_message', creation_date=datetime.now(),
                                    message_date=datetime.now())
-            db.session.add(db_message)
-            db.session.commit()
-
-            if close_db:
-                db.session.close()
+            db_session.add(db_message)
+            db_session.commit()
         except Exception as e:
             raise Exception(f"__create_home_chat : {e}")
 
+
     def __create_home_chat_by_batches(self, user_ids, week):
         for user_id in user_ids:
-            self.__create_home_chat("0.0.0", "mobile", user_id, week=week, close_db=True)
-        db.session.close()
+            self.__create_home_chat("0.0.0", "mobile", user_id, week=week)
 
-    def __get_this_week_last_pre_prepared_home_chat(self, user_id, use_message_placeholder):
+    @with_db_session
+    def __get_this_week_last_pre_prepared_home_chat(self, user_id, use_message_placeholder, db_session):
         try:
             week_start = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0) - timedelta(
                 days=datetime.now().weekday())
-            result = db.session.query(MdHomeChat, MdMessage) \
+            result = db_session.query(MdHomeChat, MdMessage) \
                 .filter(user_id == MdHomeChat.user_id) \
                 .filter(MdHomeChat.start_date.is_(None)) \
                 .filter(MdHomeChat.week >= week_start) \
@@ -213,8 +213,8 @@ class HomeChat(Resource):
             # - datetime in timezone is sunday 10pm
 
             users = (
-                db.session.query(MdUser)
-                .filter(MdUser.timezone_offset.isnot(None))
+                db.session.query(User)
+                .filter(User.timezone_offset.isnot(None))
                 .filter(
                     extract(
                         "hour",
@@ -236,7 +236,7 @@ class HomeChat(Resource):
                     )
                     == int(7)
                 )
-                .order_by(MdUser.user_id)
+                .order_by(User.user_id)
                 .offset(offset)
                 .limit(n_users)
                 .subquery()
@@ -255,9 +255,9 @@ class HomeChat(Resource):
             )
 
             user_and_ready_home_chat = (
-                db.session.query(MdUser, MdHomeChat)
+                db.session.query(User, MdHomeChat)
                 .select_from(users)
-                .join(MdUser, MdUser.user_id == users.c.user_id)
+                .join(User, User.user_id == users.c.user_id)
                 .outerjoin(
                     MdHomeChat,
                     and_(

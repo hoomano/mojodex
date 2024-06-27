@@ -3,6 +3,8 @@ import time
 from flask import request
 from flask_restful import Resource
 from app import authenticate, db, server_socket
+from mojodex_core.db import with_db_session
+from mojodex_core.entities.user import User
 from mojodex_core.logging_handler import log_error
 
 from datetime import datetime, timedelta
@@ -41,34 +43,16 @@ class CalendarSuggestion(Resource):
                                    datetime=timestamp.strftime("%d %B %Y"),
                                    time=timestamp.strftime("%H:%M"))
 
-    def __get_calendar_suggestion(self, user_id, use_placeholders=False):
-        try:
-            if not use_placeholders:  # if placeholder, create one
-                # try to find a calendar suggestion pre-set and not used
-                calendar_suggestion = db.session.query(MdCalendarSuggestion) \
-                    .filter(MdCalendarSuggestion.user_id == user_id) \
-                    .filter(MdCalendarSuggestion.waiting_message_sent.is_(None)) \
-                    .filter(MdCalendarSuggestion.waiting_message.isnot(None)) \
-                    .first()
-                if calendar_suggestion:
-                    return calendar_suggestion
+  
 
-            calendar_suggestion = MdCalendarSuggestion(
-                user_id=user_id
-            )
-            db.session.add(calendar_suggestion)
-            db.session.flush()
-            return calendar_suggestion
-        except Exception as e:
-            raise Exception(f"get_calendar_suggestion: {e}")
-
-    def __generate_calendar_suggestion(self, user_id, calendar_suggestion_pk, use_placeholder, planning, app_version):
+    @with_db_session
+    def __generate_calendar_suggestion(self, user_id, calendar_suggestion_pk, use_placeholder, planning, app_version, db_session):
         try:
-            user = db.session.query(MdUser).filter(
+            user = db_session.query(MdUser).filter(
                 MdUser.user_id == user_id).first()
 
             def get_user_tasks(user_id):
-                user_tasks = db.session.query(MdTask) \
+                user_tasks = db_session.query(MdTask) \
                     .join(MdUserTask, MdUserTask.task_fk == MdTask.task_pk) \
                     .filter(MdUserTask.user_id == user_id).all()
                 return [{
@@ -80,7 +64,7 @@ class CalendarSuggestion(Resource):
 
             def get_user_tasks_done_today(user_id):
                 start_date = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
-                user_tasks_done_today = db.session.query(MdTask.name_for_system, MdUserTaskExecution.title,
+                user_tasks_done_today = db_session.query(MdTask.name_for_system, MdUserTaskExecution.title,
                                                          MdUserTaskExecution.start_date) \
                     .join(MdUserTask, MdUserTask.task_fk == MdTask.task_pk) \
                     .join(MdUserTaskExecution, MdUserTaskExecution.user_task_fk == MdUserTask.user_task_pk) \
@@ -124,7 +108,7 @@ class CalendarSuggestion(Resource):
 
                 data = generate(planning)
 
-            calendar_suggestion = db.session.query(MdCalendarSuggestion) \
+            calendar_suggestion = db_session.query(MdCalendarSuggestion) \
                 .filter(MdCalendarSuggestion.calendar_suggestion_pk == calendar_suggestion_pk) \
                 .filter(MdCalendarSuggestion.user_id == user_id) \
                 .first()
@@ -146,7 +130,7 @@ class CalendarSuggestion(Resource):
                         filter(lambda x: x["eventId"] == data["event_id"], planning))
                     calendar_suggestion.reminder_date = datetime.strptime(event["eventEndDate"],
                                                                           "%Y-%m-%dT%H:%M:%S.%f%z") if "eventEndDate" in event else None
-                    db.session.flush()
+                    db_session.flush()
 
                     # if there is an event and event is not started yet, do not propose any task
                     event_start_date = datetime.strptime(
@@ -166,40 +150,36 @@ class CalendarSuggestion(Resource):
             server_socket.emit('calendar_suggestion', message,
                                to=f"mojo_events_{user_id}")
 
-            db.session.commit()
-            db.session.close()
+            db_session.commit()
         except Exception as e:
             server_socket.emit('calendar_suggestion', {
                                "error": "error"}, to=f"mojo_events_{user_id}")
 
-            db.session.rollback()
-            db.session.close()
+            db_session.rollback()
             log_error(f"generate_calendar_suggestion: {e}", notify_admin=True)
 
-    def __get_waiting_message(self, user_id, use_placeholders=False):
+    def __get_waiting_message(self, user_id,  user_name, user_language_code, use_placeholders=False):
         try:
             # generate waiting message
             if use_placeholders:
                 return {"waiting_message": PlaceholderGenerator.waiting_message_placeholder,
                         "done_message": PlaceholderGenerator.done_message_placeholder}
             else:
-                return self.__generate_waiting_message(user_id)
+                return self.__generate_waiting_message(user_id, user_name, user_language_code)
         except Exception as e:
             raise Exception(f"__get_waiting_message: {e}")
 
     @json_decode_retry(retries=3, required_keys=["waiting_message", "done_message"],
                        on_json_error=on_json_error)
-    def __generate_waiting_message(self, user_id):
+    def __generate_waiting_message(self,user_id, user_name, user_language_code):
         try:
 
-            user = db.session.query(MdUser).filter(
-                MdUser.user_id == user_id).first()
             
             waiting_message_mpt = MPT(CalendarSuggestion.calendar_suggestion_waiting_mpt_filename,
                                       mojo_knowledge=self.__get_mojo_knwoledge(),
                                       # no global context so that it can be used any day / time
-                                      username=user.name,
-                                      language=user.language_code
+                                      username=user_name,
+                                      language=user_language_code
                                       )
 
             responses = waiting_message_mpt.run(user_id=user_id, temperature=1,
@@ -208,39 +188,29 @@ class CalendarSuggestion(Resource):
         except Exception as e:
             raise Exception(f"get_waiting_message: {e}")
 
-    def __prepare_next_calendar_suggestion(self, user_id):
+    @with_db_session
+    def __prepare_next_calendar_suggestion(self, user_id, db_session):
         try:
             calendar_suggestion = MdCalendarSuggestion(
                 user_id=user_id
             )
-            db.session.add(calendar_suggestion)
-            db.session.flush()
+            db_session.add(calendar_suggestion)
+            db_session.flush()
+            user: User = db_session.query(User).get(user_id)
             waiting_json = self.__get_waiting_message(
-                user_id, use_placeholders=False)
+                user_id,  user.name, user.language_code, use_placeholders=False)
             calendar_suggestion.waiting_message = waiting_json["waiting_message"].strip(
             ) if "waiting_message" in waiting_json else None
             calendar_suggestion.ready_message = waiting_json["done_message"].strip(
             ) if "done_message" in waiting_json else None
-            db.session.commit()
-            db.session.close()
+            db_session.commit()
             return calendar_suggestion
         except Exception as e:
-            db.session.rollback()
-            db.session.close()
+            db_session.rollback()
             log_error(
                 f"prepare_next_calendar_suggestion: {e}", notify_admin=True)
 
-    def __has_next_calendar_suggestion(self, user_id):
-        try:
-            calendar_suggestion = db.session.query(MdCalendarSuggestion) \
-                .filter(MdCalendarSuggestion.user_id == user_id) \
-                .filter(MdCalendarSuggestion.waiting_message_sent.is_(None)) \
-                .filter(MdCalendarSuggestion.waiting_message.isnot(None)) \
-                .first()
-            return calendar_suggestion is not None
-        except Exception as e:
-            log_error(f"has_next_calendar_suggestion: {e}", notify_admin=True)
-            return False
+   
 
     # route to put a new calendar suggestion in backend. Returns waiting message.
 
@@ -279,16 +249,30 @@ class CalendarSuggestion(Resource):
                 return {}, 200
 
             # find pre-set calendar suggestion for this user or create new one
-            calendar_suggestion = self.__get_calendar_suggestion(
-                user_id, use_placeholders=use_placeholders)
+            if not use_placeholders:  # if placeholder, create one
+                # try to find a calendar suggestion pre-set and not used
+                calendar_suggestion = db.session.query(MdCalendarSuggestion) \
+                    .filter(MdCalendarSuggestion.user_id == user_id) \
+                    .filter(MdCalendarSuggestion.waiting_message_sent.is_(None)) \
+                    .filter(MdCalendarSuggestion.waiting_message.isnot(None)) \
+                    .first()
+                if calendar_suggestion:
+                    return calendar_suggestion
+
+            calendar_suggestion = MdCalendarSuggestion(
+                user_id=user_id
+            )
+            db.session.add(calendar_suggestion)
+            db.session.flush()
 
             server_socket.start_background_task(self.__generate_calendar_suggestion, user_id,
                                                 calendar_suggestion.calendar_suggestion_pk, use_placeholders, planning, app_version)
 
             try:
                 if not calendar_suggestion.waiting_message:
+                    user : User = db.session.query(User).get(user_id)
                     waiting_json = self.__get_waiting_message(
-                        user_id, use_placeholders=use_placeholders)
+                        user_id, user.name, user.language_code, use_placeholders=use_placeholders)
                     calendar_suggestion.waiting_message = waiting_json[
                         "waiting_message"].strip() if "waiting_message" in waiting_json else None
                     calendar_suggestion.ready_message = waiting_json[
@@ -303,7 +287,12 @@ class CalendarSuggestion(Resource):
             db.session.flush()
             try:
                 # if no preset calendar_suggestion
-                if not self.__has_next_calendar_suggestion(user_id):
+                calendar_suggestion = db.session.query(MdCalendarSuggestion) \
+                .filter(MdCalendarSuggestion.user_id == user_id) \
+                .filter(MdCalendarSuggestion.waiting_message_sent.is_(None)) \
+                .filter(MdCalendarSuggestion.waiting_message.isnot(None)) \
+                .first()
+                if calendar_suggestion is None:
                     server_socket.start_background_task(
                         self.__prepare_next_calendar_suggestion, user_id)
             except Exception as e:

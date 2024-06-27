@@ -1,7 +1,7 @@
-from datetime import datetime
+
 from mojodex_core.costs_manager.costs_manager import CostsManager
 from mojodex_core.logging_handler import log_error
-
+from datetime import datetime, timezone
 class WhisperCostsManager(CostsManager):
     logger_prefix = "WhisperCostsManager"
     name = "whisper"
@@ -17,6 +17,6 @@ class WhisperCostsManager(CostsManager):
     def on_seconds_counted(self, user_id, n_seconds, user_task_execution_pk, task_name_for_system, mode):
         try:
             with open(self.file_path, "a") as f:
-                f.write(f"{datetime.utcnow().isoformat()},{user_id},{n_seconds},{user_task_execution_pk},{task_name_for_system},{mode}\n")
+                f.write(f"{datetime.now(timezone.utc).isoformat()},{user_id},{n_seconds},{user_task_execution_pk},{task_name_for_system},{mode}\n")
         except Exception as e:
             log_error(f"{WhisperCostsManager.logger_prefix}: on_seconds_counted: {e}", notify_admin=True)

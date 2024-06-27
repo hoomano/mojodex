@@ -1,19 +1,13 @@
 import os
-from datetime import datetime, timedelta
-
-import pytz
 import stripe
 from mojodex_backend_logger import MojodexBackendLogger
-
 from app import db
 from mojodex_core.logging_handler import log_error
 from mojodex_core.entities.db_base_entities import *
-
 from mojodex_core.mail import send_admin_email
 from sqlalchemy import and_, func, or_, text
 from sqlalchemy.sql.functions import coalesce
-from packaging import version
-
+from datetime import timedelta
 
 class PurchaseManager:
     logger_prefix = "Purchase Manager:: "

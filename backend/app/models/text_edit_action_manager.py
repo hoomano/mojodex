@@ -1,5 +1,4 @@
 import os
-from datetime import datetime
 from models.assistant.execution_manager import ExecutionManager
 from mojodex_core.db import with_db_session
 from mojodex_core.entities.db_base_entities import MdProducedTextVersion, MdMessage
@@ -9,7 +8,7 @@ from models.voice_generator import VoiceGenerator
 from mojodex_core.llm_engine.providers.model_loader import ModelLoader
 from mojodex_core.produced_text_managers.produced_text_manager import ProducedTextManager
 from mojodex_core.produced_text_managers.task_produced_text_manager import TaskProducedTextManager
-
+from datetime import datetime
 
 class TextEditActionManager:
     logger_prefix = "TextEditActionManager"

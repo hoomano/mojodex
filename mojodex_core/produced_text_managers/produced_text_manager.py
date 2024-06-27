@@ -1,11 +1,10 @@
 from abc import ABC, abstractmethod
-from datetime import datetime
 from mojodex_core.db import with_db_session
 from mojodex_core.logging_handler import log_error
 from mojodex_core.entities.db_base_entities import MdProducedText, MdProducedTextVersion, MdTextType
 from mojodex_core.llm_engine.providers.model_loader import ModelLoader
 from mojodex_core.llm_engine.mpt import MPT
-
+from datetime import datetime
 
 class ProducedTextManager(ABC):
     get_text_type_mpt_filename = "mojodex_core/instructions/get_text_type.mpt"

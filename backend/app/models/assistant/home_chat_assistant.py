@@ -1,4 +1,4 @@
-from datetime import datetime
+
 
 from mojodex_core.knowledge_manager import KnowledgeManager
 from mojodex_core.tag_manager import TagManager
@@ -14,7 +14,7 @@ from mojodex_core.entities.instruct_user_task_execution import InstructTaskExecu
 from mojodex_core.entities.instruct_user_task import InstructUserTask
 from mojodex_core.llm_engine.mpt import MPT
 from mojodex_core.task_execution_title_summary_generator import TaskExecutionTitleSummaryGenerator
-
+from datetime import datetime
 
 class HomeChatAssistant(ChatAssistant):
     mpt_file = "instructions/home_chat_run.mpt"

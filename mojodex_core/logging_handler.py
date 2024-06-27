@@ -1,10 +1,10 @@
 import logging
 import os
-from datetime import datetime
+
 
 from mojodex_core.db import with_db_session
 from mojodex_core.entities.db_base_entities import MdError
-
+from datetime import datetime
 class EmojiFormatter(logging.Formatter):
     def __init__(self):
         super().__init__()

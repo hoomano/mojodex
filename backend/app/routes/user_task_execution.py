@@ -5,13 +5,13 @@ from app import db, authenticate, time_manager
 from mojodex_core.entities.user_workflow_execution import UserWorkflowExecution
 from mojodex_core.logging_handler import log_error
 from mojodex_core.entities.db_base_entities import *
-from datetime import datetime
+
 from models.session_creator import SessionCreator
 from sqlalchemy import func, and_, or_, text
 from sqlalchemy.sql.functions import coalesce
 
 from models.purchase_manager import PurchaseManager
-
+from datetime import datetime, timezone
 
 class UserTaskExecution(Resource):
 
@@ -367,7 +367,7 @@ class UserTaskExecution(Resource):
                         )
 
             def get_n_todos_not_read(user_task_execution_pk):
-                now_utc = datetime.utcnow().date()
+                now_utc = datetime.now(timezone.utc).date()
                 # Subquery to get the latest todo_scheduling for each todo
                 latest_todo_scheduling = db.session.query(
                     MdTodoScheduling.todo_fk,

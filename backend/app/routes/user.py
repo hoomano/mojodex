@@ -12,7 +12,6 @@ from mojodex_core.logging_handler import log_error
 from mojodex_core.entities.db_base_entities import *
 import hashlib
 import string
-from datetime import datetime, timedelta
 import jwt
 from werkzeug.security import generate_password_hash, check_password_hash
 from bs4 import BeautifulSoup
@@ -20,7 +19,7 @@ from models.purchase_manager import PurchaseManager
 
 from mojodex_core.mail import send_admin_email
 from packaging import version
-
+from datetime import datetime, timedelta, timezone
 def generate_user_id(name):
     random_string = ''.join(random.choices(string.ascii_uppercase + string.digits, k=10))
     clear_string = f"{random_string}_mojodex_{name}_{datetime.now().isoformat()}"
@@ -30,10 +29,10 @@ def generate_user_id(name):
 
 def generate_token(user_id):
     payload = {
-        'iat': datetime.utcnow(),
-        "exp": datetime.utcnow() + timedelta(days=180),
+        'iat': datetime.now(timezone.utc),
+        "exp": datetime.now(timezone.utc) + timedelta(days=180),
         'sub': user_id + os.environ['TOKEN_SECRET_SPLITTER'] + ''.join(
-            random.choices(string.ascii_uppercase + string.digits, k=10)) + datetime.utcnow().isoformat()
+            random.choices(string.ascii_uppercase + string.digits, k=10)) + datetime.now(timezone.utc).isoformat()
     }
     return jwt.encode(payload, os.environ["JWT_SECRET"], algorithm=os.environ["ENCODING_ALGORITHM"])
 

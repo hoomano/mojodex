@@ -1,4 +1,4 @@
-from datetime import datetime
+
 import os
 
 from flask import request
@@ -8,7 +8,7 @@ from mojodex_core.logging_handler import log_error
 from mojodex_core.entities.db_base_entities import *
 
 from models.voice_generator import VoiceGenerator
-
+from datetime import datetime
 
 class MojoMessage(Resource):
     logger_prefix = "MojoMessage"

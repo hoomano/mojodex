@@ -1,4 +1,3 @@
-import os
 import time
 from flask import request
 from flask_restful import Resource
@@ -7,7 +6,7 @@ from mojodex_core.db import with_db_session
 from mojodex_core.entities.user import User
 from mojodex_core.logging_handler import log_error
 
-from datetime import datetime, timedelta
+
 from jinja2 import Template
 from mojodex_core.entities.db_base_entities import *
 
@@ -17,7 +16,7 @@ from placeholder_generator import PlaceholderGenerator
 from mojodex_core.json_loader import json_decode_retry
 from mojodex_core.logging_handler import on_json_error
 from packaging import version
-
+from datetime import datetime, timedelta, timezone
 
 class CalendarSuggestion(Resource):
 
@@ -37,8 +36,7 @@ class CalendarSuggestion(Resource):
         # TODO: with @kelly check how to mpt-ize this
         with open("mojodex_core/prompts/knowledge/global_context.txt", 'r') as f:
             template = Template(f.read())
-            timestamp = datetime.utcnow(
-            ) - timedelta(minutes=timezoneOffsetMinutes if timezoneOffsetMinutes else 0)
+            timestamp = datetime.now(timezone.utc) - timedelta(minutes=timezoneOffsetMinutes if timezoneOffsetMinutes else 0)
             return template.render(weekday=timestamp.strftime("%A"),
                                    datetime=timestamp.strftime("%d %B %Y"),
                                    time=timestamp.strftime("%H:%M"))

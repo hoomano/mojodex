@@ -1,4 +1,3 @@
-import os
 
 from mojodex_core.entities.db_base_entities import *
 from app import db
@@ -7,7 +6,6 @@ from app import db
 from mojodex_backend_logger import MojodexBackendLogger
 
 from mojodex_core.llm_engine.providers.model_loader import ModelLoader
-from mojodex_core.llm_engine.providers.openai_embedding import OpenAIEmbedding
 
 
 class DocumentManager:

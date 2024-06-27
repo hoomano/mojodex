@@ -4,9 +4,8 @@ from flask import request
 from flask_restful import Resource
 from app import db
 from mojodex_core.entities.db_base_entities import *
-from datetime import datetime
 from models.purchase_manager import PurchaseManager
-
+from datetime import datetime
 
 class ManualPurchase(Resource):
     active_status = "active"

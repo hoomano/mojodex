@@ -1,10 +1,10 @@
 from mojodex_core.db import with_db_session
 from mojodex_core.logging_handler import log_error
 from mojodex_core.entities.db_base_entities import MdUser, MdSession
-from datetime import datetime
 import hashlib
 import random
 import string
+from datetime import datetime
 
 class SessionCreator:
     @staticmethod

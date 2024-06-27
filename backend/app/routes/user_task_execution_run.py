@@ -1,4 +1,4 @@
-from datetime import datetime
+
 import json
 
 from models.user_task_execution_inputs_manager import UserTaskExecutionInputsManager
@@ -10,7 +10,7 @@ from mojodex_core.logging_handler import log_error
 from mojodex_core.entities.db_base_entities import MdUserTaskExecution, MdTask, MdUserTask
 from sqlalchemy.orm.attributes import flag_modified
 from packaging import version
-
+from datetime import datetime
 class UserTaskExecutionRun(Resource):
     logger_prefix = "UserTaskExecutionRun"
     image_type = "image"

@@ -1,5 +1,5 @@
 import pytz
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from tzlocal import get_localzone
 from dateutil.parser import parse
 
@@ -46,7 +46,7 @@ class TimeManager:
         """
         try:
             offset = timedelta(minutes=timezone_offset)
-            return datetime.utcnow() - offset
+            return datetime.now(timezone.utc) - offset
         except Exception as e:
             raise Exception(f"Invalid timezone_offset : {e}")
 

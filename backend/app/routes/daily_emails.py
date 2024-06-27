@@ -1,6 +1,5 @@
-import json
 import os
-from datetime import datetime, timedelta
+
 
 import requests
 from flask import request
@@ -12,7 +11,7 @@ from sqlalchemy import func, text, extract, case
 from sqlalchemy.sql.functions import coalesce
 
 from mojodex_core.mail import send_admin_email, admin_email_receivers
-
+from datetime import datetime, timedelta
 
 class DailyEmails(Resource):
     reminder_email_type="reminder_email"

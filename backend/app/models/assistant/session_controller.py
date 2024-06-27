@@ -11,7 +11,6 @@ from mojodex_core.entities.session import Session
 from mojodex_core.entities.user_workflow_execution import UserWorkflowExecution
 from mojodex_core.logging_handler import log_error
 from mojodex_core.entities.db_base_entities import MdProducedTextVersion, MdUserTask, MdTask, MdUserTaskExecution
-from datetime import datetime
 from models.voice_generator import VoiceGenerator
 from packaging import version
 from functools import wraps
@@ -19,7 +18,7 @@ from sqlalchemy.orm.attributes import flag_modified
 from mojodex_core.db import MojodexCoreDB
 from mojodex_core.db import Session as DbSession
 from mojodex_core.task_execution_title_summary_generator import TaskExecutionTitleSummaryGenerator
-
+from datetime import datetime
 
 class SessionController:
 

@@ -9,11 +9,6 @@ class StanzaDividerStep(WorkflowStep):
     logger_prefix = "StanzaDividerStep :: "
 
     determine_poem_stanzas_filename = "mojodex_core/workflows/write_poem/determine_poem_stanza.mpt"
-
-
-    @property
-    def definition_for_system(self):
-        return "Determine topic of each stanza of a poem."
     
     def _execute(self, parameter: dict, learned_instructions: dict, initial_parameter: dict, past_validated_steps_results: List[dict], user_id: str, user_task_execution_pk: int, task_name_for_system: str, session_id:str):
         try: 

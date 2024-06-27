@@ -193,6 +193,8 @@ class WorkflowProcessController:
             # concatenation of results of last step's validated executions
             last_step = self.workflow_execution.task.steps[-1]
             validated_last_step_executions = self.db_session.query(UserWorkflowStepExecution) \
+                .join(MdWorkflowStep,
+                        UserWorkflowStepExecution.workflow_step_fk == MdWorkflowStep.workflow_step_pk) \
                 .filter(
                 UserWorkflowStepExecution.user_task_execution_fk == self.workflow_execution.user_task_execution_pk) \
                 .filter(

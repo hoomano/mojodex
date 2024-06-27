@@ -39,7 +39,8 @@ services:
     volumes:
       - ./data:/data
     depends_on:
-      - mojodex-backend
+      mojodex-backend:
+        condition: service_healthy
 
   mojodex-background:
     build: 

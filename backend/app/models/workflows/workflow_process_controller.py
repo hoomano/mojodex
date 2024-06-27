@@ -1,23 +1,14 @@
-from datetime import datetime
-
 from jinja2 import Template
-
 from app import server_socket, socketio_message_sender
-
-
 from mojodex_core.tag_manager import TagManager
 from mojodex_core.produced_text_managers.task_produced_text_manager import TaskProducedTextManager
-from mojodex_core.entities.db_base_entities import MdMessage, MdUserTask, MdUserWorkflowStepExecutionResult, \
-    MdWorkflowStep
+from mojodex_core.entities.db_base_entities import MdMessage
 from mojodex_core.db import MojodexCoreDB, Session
-
 from mojodex_core.entities.user_workflow_execution import UserWorkflowExecution
-from sqlalchemy import case, and_
-
 from mojodex_core.entities.user_workflow_step_execution import UserWorkflowStepExecution
 from mojodex_core.mail import send_technical_error_email
 from mojodex_core.task_execution_title_summary_generator import TaskExecutionTitleSummaryGenerator
-
+from datetime import datetime
 
 class WorkflowProcessController:
     logger_prefix = "WorkflowProcessController :: "
@@ -28,7 +19,8 @@ class WorkflowProcessController:
     def __init__(self, workflow_execution_pk):
         try:
             self.db_session = Session(MojodexCoreDB().engine)
-            self.workflow_execution: UserWorkflowExecution = self.db_session.query(UserWorkflowExecution).get(workflow_execution_pk)
+            self.workflow_execution: UserWorkflowExecution = self.db_session.query(UserWorkflowExecution).get(
+                workflow_execution_pk)
             self._current_step = None
         except Exception as e:
             raise Exception(f"{self.logger_prefix} :: __init__ :: {e}")
@@ -52,50 +44,22 @@ class WorkflowProcessController:
                 self._current_step = self._generate_new_step_execution(self.workflow_execution.task.steps[0],
                                                                        self.get_formatted_initial_parameters())  # of first step
                 return self._current_step
-            
+
             last_validated_step_execution = self.workflow_execution.past_valid_step_executions[-1]
 
-            
             if len(self.workflow_execution.past_valid_step_executions) > 1:  # if it's not the 1st else no dependency as it was the first step
-                db_dependency_step = self.db_session.query(MdWorkflowStep) \
-                    .join(MdUserTask, MdUserTask.task_fk == MdWorkflowStep.task_fk) \
-                    .filter(MdUserTask.user_task_pk == self.workflow_execution.user_task_fk) \
-                    .filter(MdWorkflowStep.rank == last_validated_step_execution.workflow_step.rank - 1) \
-                    .first()
+
+                # find dependency step
+                db_dependency_step = last_validated_step_execution.workflow_step.dependency_step
 
                 # find last execution of dependency step
-                db_dependency_step_execution = self.db_session.query(UserWorkflowStepExecution) \
-                    .filter(
-                    UserWorkflowStepExecution.user_task_execution_fk == self.workflow_execution.user_task_execution_pk) \
-                    .filter(UserWorkflowStepExecution.workflow_step_fk == db_dependency_step.workflow_step_pk) \
-                    .order_by(UserWorkflowStepExecution.creation_date.desc()) \
-                    .first()
-                db_dependency_step_execution_result = self.db_session.query(MdUserWorkflowStepExecutionResult) \
-                    .filter(
-                    MdUserWorkflowStepExecutionResult.user_workflow_step_execution_fk == db_dependency_step_execution.user_workflow_step_execution_pk) \
-                    .order_by(MdUserWorkflowStepExecutionResult.creation_date.desc()) \
-                    .first()
+                db_dependency_step_execution = self.workflow_execution.get_last_execution_of_a_step(
+                    db_dependency_step.workflow_step_pk)
+                db_dependency_step_execution_result = db_dependency_step_execution.user_workflow_step_execution_result
 
-                # load all validated step executions of current step:
-                current_step_executions_count = self.db_session.query(UserWorkflowStepExecution) \
-                    .join(MdWorkflowStep,
-                          UserWorkflowStepExecution.workflow_step_fk == MdWorkflowStep.workflow_step_pk) \
-                    .filter(
-                    UserWorkflowStepExecution.user_task_execution_fk == self.workflow_execution.user_task_execution_pk) \
-                    .filter(
-                    UserWorkflowStepExecution.workflow_step_fk == last_validated_step_execution.workflow_step.workflow_step_pk) \
-                    .filter(
-                    case(
-                        # When `MdWorkflowStep.user_validation_required` is `True`, we check that `MdUserWorkflowStepExecution.validated` is also `True`
-                        
-                            (MdWorkflowStep.user_validation_required == True,
-                             UserWorkflowStepExecution.validated == True),
-                        
-                        # if `user_validation_required` is `False`, we don't care about the `validated` status, and the `MdUserWorkflowStepExecution` will be included in the results regardless of its `validated` value.
-                        else_=True
-                    )) \
-                    .filter(UserWorkflowStepExecution.error_status.is_(None)) \
-                    .count()
+                # count all validated step executions of current step:
+                current_step_executions_count = self.workflow_execution.count_valid_step_executions_of_a_step(
+                    last_validated_step_execution.workflow_step.workflow_step_pk)
 
                 # have all parameters been executed and validated?
                 if current_step_executions_count < len(db_dependency_step_execution_result.result):
@@ -104,12 +68,9 @@ class WorkflowProcessController:
                                                                            current_parameter)
                     return self._current_step
 
+
             # else, generate new step execution of next step
-            next_step = self.db_session.query(MdWorkflowStep) \
-                .join(MdUserTask, MdUserTask.task_fk == MdWorkflowStep.task_fk) \
-                .filter(MdUserTask.user_task_pk == self.workflow_execution.user_task_fk) \
-                .filter(MdWorkflowStep.rank == last_validated_step_execution.workflow_step.rank + 1) \
-                .first()
+            next_step = last_validated_step_execution.workflow_step.next_step
             # Reached last rank order => there is no next step
             if next_step is None:
                 return None  # end of workflow
@@ -154,7 +115,7 @@ class WorkflowProcessController:
 
             self.add_state_message()
             produced_text_pk, produced_text_version_pk, title, production = self._generate_produced_text()
-            
+
             title_tag_manager = TagManager("title")
             draft_tag_manager = TagManager("draft")
             # add it as a mojo_message
@@ -190,39 +151,18 @@ class WorkflowProcessController:
 
     def _generate_produced_text(self):
         try:
-            # concatenation of results of last step's validated executions
+            # For now, production of a workflow is the concatenation of results of all last step's validated executions' results
             last_step = self.workflow_execution.task.steps[-1]
-            validated_last_step_executions = self.db_session.query(UserWorkflowStepExecution) \
-                .join(MdWorkflowStep,
-                        UserWorkflowStepExecution.workflow_step_fk == MdWorkflowStep.workflow_step_pk) \
-                .filter(
-                UserWorkflowStepExecution.user_task_execution_fk == self.workflow_execution.user_task_execution_pk) \
-                .filter(
-                UserWorkflowStepExecution.workflow_step_fk == last_step.workflow_step_pk) \
-                .filter(
-                case(
-                    # When `MdWorkflowStep.user_validation_required` is `True`, we check that `MdUserWorkflowStepExecution.validated` is also `True`
-                    
-                        (
-                            MdWorkflowStep.user_validation_required == True,
-                            UserWorkflowStepExecution.validated == True),
-                    
-                    # if `user_validation_required` is `False`, we don't care about the `validated` status, and the `MdUserWorkflowStepExecution` will be included in the results regardless of its `validated` value.
-                    else_=True
-                )
-            ) \
-                .filter(UserWorkflowStepExecution.error_status.is_(None)) \
-                .order_by(UserWorkflowStepExecution.creation_date.desc()) \
-                .all()
+            validated_last_step_executions = self.workflow_execution.get_valid_executions_of_a_step(last_step.workflow_step_pk)
 
-            production = "\n\n".join(
-                [list(step.result[0].values())[0] for step in validated_last_step_executions[::-1]])
+            production = "\n\n".join([list(step.result[0].values())[0] for step in validated_last_step_executions])
 
             produced_text_manager = TaskProducedTextManager(self.workflow_execution.session_id,
-                                                                self.workflow_execution.user.user_id,
-                                                                self.workflow_execution.user_task_execution_pk,
-                                                                self.workflow_execution.task.name_for_system)
-            produced_text_pk, produced_text_version_pk, title, production, text_type = produced_text_manager.save_produced_text(production, title="", text_type_pk=self.workflow_execution.task.output_text_type_fk)
+                                                            self.workflow_execution.user.user_id,
+                                                            self.workflow_execution.user_task_execution_pk,
+                                                            self.workflow_execution.task.name_for_system)
+            produced_text_pk, produced_text_version_pk, title, production, text_type = produced_text_manager.save_produced_text(
+                production, title="", text_type_pk=self.workflow_execution.task.output_text_type_fk)
 
             return produced_text_pk, produced_text_version_pk, title, production
 

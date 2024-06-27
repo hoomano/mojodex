@@ -38,6 +38,34 @@ class WorkflowStep(MdWorkflowStep):
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} :: get_definition_in_language :: {e}")
 
+
+    @property
+    def dependency_step(self):
+        """The dependency step of a workflow step is the step of its workflow which rank is the previous one."""
+        try:
+            session = object_session(self)
+            return session.query(MdWorkflowStep) \
+                .filter(MdWorkflowStep.task_fk == self.task_fk) \
+                .filter(MdWorkflowStep.rank == self.rank - 1) \
+                .first()
+        except Exception as e:
+            raise Exception(f"{self.__class__.__name__} :: dependency_step :: {e}")
+
+    @property
+    def next_step(self):
+        """
+        The next step of a workflow step is the step of its workflow which rank is the next one.
+        :return:
+        """
+        try:
+            session = object_session(self)
+            return session.query(MdWorkflowStep) \
+                .filter(MdWorkflowStep.task_fk == self.task_fk) \
+                .filter(MdWorkflowStep.rank == self.rank + 1) \
+                .first()
+        except Exception as e:
+            raise Exception(f"{self.__class__.__name__} :: next_step :: {e}")
+
     def _execute(self, parameter: dict, learned_instructions: dict, initial_parameters: dict,
                  past_validated_steps_results: List[dict], user_id: str, user_task_execution_pk: int,
                  task_name_for_system: str, session_id: str):

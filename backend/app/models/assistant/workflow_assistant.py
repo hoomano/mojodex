@@ -1,5 +1,4 @@
 from mojodex_core.produced_text_managers.task_produced_text_manager import TaskProducedTextManager
-from models.produced_text_managers.task_produced_text_manager import TaskProducedTextManager
 from mojodex_core.knowledge_manager import KnowledgeManager
 from models.assistant.chat_assistant import ChatAssistant
 from app import placeholder_generator

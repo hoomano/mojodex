@@ -1,7 +1,4 @@
-from app import db
 from mojodex_core.produced_text_managers.task_produced_text_manager import TaskProducedTextManager
-
-from mojodex_core.entities.db_base_entities import MdTextType
 from mojodex_backend_logger import MojodexBackendLogger
 
 
@@ -22,17 +19,15 @@ class TaskExecutor:
                 self.logger.debug(f"TaskProducedTextManager.draft_tag_manager.start_tag in mojo_text")
 
                 produced_text_manager = TaskProducedTextManager(self.session_id, self.user_id, user_task_execution_pk, task.name_for_system, use_draft_placeholder=use_draft_placeholder)
-                produced_text, produced_text_version = produced_text_manager.extract_and_save_produced_text_from_tagged_text(
-                    execution_text, db_session=db.session, text_type_pk=task.output_text_type_fk)
+                produced_text_pk, produced_text_version_pk, title, production, text_type = produced_text_manager.extract_and_save_produced_text_from_tagged_text(
+                    execution_text, text_type_pk=task.output_text_type_fk)
 
-                text_type = db.session.query(MdTextType.name).filter(
-                    MdTextType.text_type_pk == produced_text_version.text_type_fk).first()[0] if produced_text_version.text_type_fk else None
-
+                
                 message = {
-                    "produced_text": produced_text_version.production,
-                    "produced_text_title": produced_text_version.title,
-                    "produced_text_pk": produced_text.produced_text_pk,
-                    "produced_text_version_pk": produced_text_version.produced_text_version_pk,
+                    "produced_text": production,
+                    "produced_text_title": title,
+                    "produced_text_pk": produced_text_pk,
+                    "produced_text_version_pk": produced_text_version_pk,
                     "user_task_execution_pk": user_task_execution_pk,
                     "text_type": text_type,
                     "text": TaskProducedTextManager.get_produced_text_without_tags(execution_text)

@@ -39,11 +39,11 @@ class TaskProducedTextManager(ProducedTextManager):
         except Exception as e:
             raise Exception(f"extract_produced_text_from_tagged_text:: {e}")
 
-    def extract_and_save_produced_text_from_tagged_text(self, mojo_text, db_session, text_type_pk=None):
+    def extract_and_save_produced_text_from_tagged_text(self, mojo_text, text_type_pk=None):
         try:
             title, production = self.extract_produced_text_from_tagged_text(mojo_text)
-            text_type_pk = text_type_pk if text_type_pk else self._determine_production_text_type_pk(production, db_session)
-            return self.save_produced_text(production, title, text_type_pk, db_session)
+            text_type_pk = text_type_pk if text_type_pk else self._determine_production_text_type_pk(production)
+            return self.save_produced_text(production, title, text_type_pk)
         except Exception as e:
             raise Exception(f"{self.__class__.__name__}:: extract_and_save_produced_text:: {e}")
 

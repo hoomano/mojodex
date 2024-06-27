@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from datetime import datetime
+from mojodex_core.db import with_db_session
 from mojodex_core.logging_handler import log_error
 from mojodex_core.entities.db_base_entities import MdProducedText, MdProducedTextVersion, MdTextType
 from mojodex_core.llm_engine.providers.model_loader import ModelLoader
@@ -16,6 +17,7 @@ class ProducedTextManager(ABC):
         self.use_draft_placeholder = use_draft_placeholder
         self.user_task_execution_pk, self.task_name_for_system = user_task_execution_pk, task_name_for_system
 
+    @with_db_session
     def save_produced_text(self, text, title, text_type_pk, db_session):
         try:
             text_to_edit_pk = self._is_edition()
@@ -37,14 +39,15 @@ class ProducedTextManager(ABC):
                 log_error(f"{self.__class__.__name__} : save_produced_text:: error embedding text: {e}")
                 embedding = None
 
-            text_type_pk = text_type_pk if text_type_pk else self._determine_production_text_type_pk(text, db_session)
+            text_type_pk = text_type_pk if text_type_pk else self._determine_production_text_type_pk(text)
             new_version = MdProducedTextVersion(produced_text_fk=produced_text.produced_text_pk, title=title,
                                                 production=text,
                                                 creation_date=datetime.now(), text_type_fk=text_type_pk,
                                                 embedding=embedding)
             db_session.add(new_version)
             db_session.commit()
-            return produced_text, new_version
+            text_type_name = db_session.query(MdTextType.name).filter(MdTextType.text_type_pk == text_type_pk).first()[0] if text_type_pk else None
+            return produced_text.produced_text_pk, new_version.produced_text_version_pk, new_version.title, new_version.production, text_type_name
         except Exception as e:
             raise Exception(f"save_produced_text:: {e}")
 
@@ -54,7 +57,7 @@ class ProducedTextManager(ABC):
         If it is, returns the produced_text_pk of the text to edit, else returns None"""
         raise NotImplementedError
 
-
+    @with_db_session    
     def _determine_production_text_type_pk(self, production, db_session):
         """Return the type of the produced text among the available enum, based on the text itself, determined by the MPT get_text_type.mpt"""
         try:

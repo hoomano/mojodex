@@ -73,12 +73,12 @@ class HomeChat(Resource):
             raise Exception(f"__get_this_week_task_executions :: {e}")
 
 
-    def _generate_welcome_message(self, user_id, user_name, user_available_instruct_tasks, user_language_code):
+    def _generate_welcome_message(self, user_id, user_name, user_available_instruct_tasks, user_language_code, user_datetime_context):
         try:
             previous_conversations = self.__get_this_week_home_conversations(user_id)
             welcome_message_mpt = MPT(self.welcome_message_mpt_filename,
                                   mojo_knowledge=knowledge_manager.mojodex_knowledge,
-                                  global_context=KnowledgeManager.get_global_context_knowledge(),
+                                  global_context=user_datetime_context,
                                   username=user_name,
                                   tasks=user_available_instruct_tasks,
                                   first_time_this_week=len(previous_conversations) == 0,
@@ -112,7 +112,7 @@ class HomeChat(Resource):
             db_session.commit()
             user: User = db_session.query(User).filter(User.user_id == user_id).first()
             message = self._generate_welcome_message(user_id, user.name,
-                                                     user.available_instruct_tasks, user.language_code)
+                                                     user.available_instruct_tasks, user.language_code, user.datetime_context)
             db_message = MdMessage(session_id=session_id, message=message, sender=Message.agent_message_key,
                                    event_name='home_chat_message', creation_date=datetime.now(),
                                    message_date=datetime.now())

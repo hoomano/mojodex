@@ -1,6 +1,4 @@
-import json
 from mojodex_core.produced_text_managers.task_produced_text_manager import TaskProducedTextManager
-from models.knowledge.knowledge_manager import KnowledgeManager
 from models.produced_text_managers.task_produced_text_manager import TaskProducedTextManager
 from mojodex_core.knowledge_manager import knowledge_manager
 from models.assistant.chat_assistant import ChatAssistant

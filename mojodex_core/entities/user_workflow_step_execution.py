@@ -86,16 +86,22 @@ class UserWorkflowStepExecution(MdUserWorkflowStepExecution):
             raise Exception(f"{self.__class__.__name__} :: learn_instruction :: {e}")
 
     @property
-    def result(self):
+    def user_workflow_step_execution_result(self):
         try:
-            # find the last associated step result if any
             session = object_session(self)
             step_result = session.query(MdUserWorkflowStepExecutionResult) \
                 .filter(
                 MdUserWorkflowStepExecutionResult.user_workflow_step_execution_fk == self.user_workflow_step_execution_pk) \
                 .order_by(MdUserWorkflowStepExecutionResult.creation_date.desc()) \
                 .first()
-            return step_result.result if step_result else None
+            return step_result
+        except Exception as e:
+            raise Exception(f"{self.__class__.__name__} :: user_workflow_step_execution_result :: {e}")
+
+    @property
+    def result(self):
+        try:
+            return self.user_workflow_step_execution_result.result if self.user_workflow_step_execution_result else None
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} :: parameter :: {e}")
 

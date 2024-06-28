@@ -80,7 +80,7 @@ class HomeChat(Resource):
             previous_conversations = self.__get_this_week_home_conversations(user_id)
             welcome_message_mpt = MPT(self.welcome_message_mpt_filename,
                                   mojo_knowledge=KnowledgeManager().mojodex_knowledge,
-                                  global_context=user_datetime_context,
+                                  user_datetime_context=user_datetime_context,
                                   username=user_name,
                                   tasks=user_available_instruct_tasks,
                                   first_time_this_week=len(previous_conversations) == 0,

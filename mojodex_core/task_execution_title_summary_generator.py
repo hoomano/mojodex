@@ -13,7 +13,7 @@ class TaskExecutionTitleSummaryGenerator:
             user_task_execution = db_session.query(UserTaskExecution).get(user_task_execution_pk)
             task_execution_summary = MPT("mojodex_core/instructions/task_execution_summary.mpt",
                                         mojo_knowledge=KnowledgeManager().mojodex_knowledge,
-                                        global_context=user_task_execution.user.datetime_context,
+                                        user_datetime_context=user_task_execution.user.datetime_context,
                                         username=user_task_execution.user.name,
                                         user_company_knowledge=user_task_execution.user,
                                         task=user_task_execution.task,

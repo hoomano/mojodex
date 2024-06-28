@@ -82,7 +82,7 @@ class HomeChatAssistant(ChatAssistant):
     def _mpt(self):
         try:
             return MPT(self.mpt_file, mojo_knowledge=KnowledgeManager().mojodex_knowledge,
-                       global_context=self.user.datetime_context,
+                       user_datetime_context=self.user.datetime_context,
                        username=self.user.name,
                        user_company_knowledge=self.user.company_description,
                        tasks=self.user.available_instruct_tasks,

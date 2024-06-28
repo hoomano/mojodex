@@ -60,9 +60,9 @@ class DailyEmailsGenerator(EventsGenerator):
                 # except Exception as e:
                 #    send_admin_error_email(f"Error sending daily recap email to {email} : {e}")
                 if user['n_meeting_minutes_today'] == 0:
-                    global_context = KnowledgeCollector.get_global_context_knowledge(
+                    user_datetime_context = KnowledgeCollector.get_global_context_knowledge(
                         user["user_timezone_offset"])
-                    email_message = self.__generate_emails_text(mojo_knowledge, global_context, user_id,
+                    email_message = self.__generate_emails_text(mojo_knowledge, user_datetime_context, user_id,
                                                                 user["user_name"],
                                                                 user["user_company_description"], user["user_goal"],
                                                                 user["received_reminder_email_yesterday"],
@@ -84,14 +84,14 @@ class DailyEmailsGenerator(EventsGenerator):
                 f"{self.logger.name} : Error preparing emails: {e}")
 
     @json_decode_retry(retries=3, required_keys=["subject", "body"], on_json_error=on_json_error)
-    def __generate_emails_text(self, mojo_knowledge, global_context, user_id, username, user_company_knowledge,
+    def __generate_emails_text(self, mojo_knowledge, user_datetime_context, user_id, username, user_company_knowledge,
                                user_business_goal,
                                received_reminder_email_yesterday, language, retry=2):
         try:
             self.logger.info(f"generate_emails_text for user {user_id}")
             daily_email_text = MPT(DailyEmailsGenerator.daily_email_text_mpt_filename,
                                    mojo_knowledge=mojo_knowledge,
-                                   global_context=global_context,
+                                   user_datetime_context=user_datetime_context,
                                    username=username,
                                    user_company_knowledge=user_company_knowledge,
                                    user_business_goal=user_business_goal,

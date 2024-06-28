@@ -12,7 +12,7 @@ YOUR CONTEXT
 {{mojo_knowledge}}
 
 GLOBAL CONTEXT
-{{global_context}}
+{{user_datetime_context}}
 
 USER NAME
 {{username}}

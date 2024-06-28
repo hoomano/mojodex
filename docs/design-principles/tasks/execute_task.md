@@ -248,14 +248,14 @@ class InstructTaskEnabledAssistantResponseGeneratorTaskEnabledAssistantResponseG
     def _render_prompt_from_template(self):
         try:
             mojo_knowledge = KnowledgeManager.get_mojo_knowledge()
-            global_context = KnowledgeManager.get_global_context_knowledge()
+            user_datetime_context = KnowledgeManager.get_global_context_knowledge()
             user_company_knowledge = KnowledgeManager.get_user_company_knowledge(self.context.user_id)
             available_user_tasks = self.__get_available_user_instruct_tasks()
             task_specific_instructions = self.__get_specific_task_instructions(self.running_task) if self.running_task else None
             produced_text_done = self.context.state.get_produced_text_done()
 
             return self.prompt_template.render(mojo_knowledge=mojo_knowledge,
-                                                    global_context=global_context,
+                                                    user_datetime_context=user_datetime_context,
                                                     username=self.context.username,
                                                     user_company_knowledge=user_company_knowledge,
                                                     tasks = available_user_tasks,

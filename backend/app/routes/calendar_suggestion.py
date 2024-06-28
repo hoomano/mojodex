@@ -4,19 +4,15 @@ from flask_restful import Resource
 from app import authenticate, db, server_socket
 from mojodex_core.db import with_db_session
 from mojodex_core.entities.user import User
+from mojodex_core.knowledge_manager import KnowledgeManager
 from mojodex_core.logging_handler import log_error
-
-
-from jinja2 import Template
 from mojodex_core.entities.db_base_entities import *
-
 from mojodex_core.llm_engine.mpt import MPT
-
 from placeholder_generator import PlaceholderGenerator
 from mojodex_core.json_loader import json_decode_retry
 from mojodex_core.logging_handler import on_json_error
 from packaging import version
-from datetime import datetime, timedelta, timezone
+from datetime import datetime
 
 class CalendarSuggestion(Resource):
 
@@ -27,27 +23,11 @@ class CalendarSuggestion(Resource):
     def __init__(self):
         CalendarSuggestion.method_decorators = [authenticate()]
 
-    def __get_mojo_knwoledge(self):
-        # TODO: with @kelly check how to mpt-ize this
-        with open("mojodex_core/prompts/knowledge/mojo_knowledge.txt", 'r') as f:
-            return f.read()
-
-    def __get_global_context(self, timezoneOffsetMinutes):
-        # TODO: with @kelly check how to mpt-ize this
-        with open("mojodex_core/prompts/knowledge/global_context.txt", 'r') as f:
-            template = Template(f.read())
-            timestamp = datetime.now(timezone.utc) - timedelta(minutes=timezoneOffsetMinutes if timezoneOffsetMinutes else 0)
-            return template.render(weekday=timestamp.strftime("%A"),
-                                   datetime=timestamp.strftime("%d %B %Y"),
-                                   time=timestamp.strftime("%H:%M"))
-
-  
-
     @with_db_session
     def __generate_calendar_suggestion(self, user_id, calendar_suggestion_pk, use_placeholder, planning, app_version, db_session):
         try:
-            user = db_session.query(MdUser).filter(
-                MdUser.user_id == user_id).first()
+            user = db_session.query(User).filter(
+                User.user_id == user_id).first()
 
             def get_user_tasks(user_id):
                 user_tasks = db_session.query(MdTask) \
@@ -85,9 +65,8 @@ class CalendarSuggestion(Resource):
                 @json_decode_retry(retries=3, required_keys=[], on_json_error=on_json_error)
                 def generate(planning):
                     # Answer using openai
-                    generate_suggestion_mpt = MPT(CalendarSuggestion.calendar_suggestion_generator_from_calendar_mpt_filename, mojo_knowledge=self.__get_mojo_knwoledge(),
-                                                  global_context=self.__get_global_context(
-                        user.timezone_offset),
+                    generate_suggestion_mpt = MPT(CalendarSuggestion.calendar_suggestion_generator_from_calendar_mpt_filename, mojo_knowledge=KnowledgeManager().mojodex_knowledge,
+                                                  user_datetime_context=user.datetime_context,
                         username=user.name,
                         user_company_knowledge=user.company_description,
                         user_business_goal=user.goal,
@@ -174,7 +153,7 @@ class CalendarSuggestion(Resource):
 
             
             waiting_message_mpt = MPT(CalendarSuggestion.calendar_suggestion_waiting_mpt_filename,
-                                      mojo_knowledge=self.__get_mojo_knwoledge(),
+                                      mojo_knowledge=KnowledgeManager().mojodex_knowledge,
                                       # no global context so that it can be used any day / time
                                       username=user_name,
                                       language=user_language_code

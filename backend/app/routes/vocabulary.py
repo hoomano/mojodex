@@ -21,11 +21,11 @@ class Vocabulary(Resource):
     def __init__(self):
         Vocabulary.method_decorators = [authenticate()]
 
-    def __tag_proper_nouns(self, message_text, global_context, username, user_company_knowledge,
+    def __tag_proper_nouns(self, message_text, user_datetime_context, username, user_company_knowledge,
                            task_definition_for_system, user_id, user_task_execution_pk, task_name_for_system):
         try:
             proper_nouns_tagger_mpt = MPT(Vocabulary.proper_nouns_tagger_mpt_filename, mojo_knowledge=KnowledgeManager().mojodex_knowledge,
-                                          global_context=global_context,
+                                          user_datetime_context=user_datetime_context,
                                           username=username,
                                           user_company_knowledge=user_company_knowledge,
                                           task_name_for_system=task_name_for_system,

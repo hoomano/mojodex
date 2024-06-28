@@ -26,9 +26,9 @@ class CalendarSuggestionNotificationsGenerator(EventsGenerator):
             for calendar_suggestion in calendar_suggestions:
                 user_id = calendar_suggestion["user_id"]
                 try:
-                    global_context = KnowledgeCollector.get_global_context_knowledge(
+                    user_datetime_context = KnowledgeCollector.get_global_context_knowledge(
                         calendar_suggestion["user_timezone_offset"])
-                    notification_message = self.__generate_notif_text(mojo_knowledge, global_context,
+                    notification_message = self.__generate_notif_text(mojo_knowledge, user_datetime_context,
                                                                       user_id,
                                                                       calendar_suggestion["user_name"],
                                                                       calendar_suggestion[
@@ -52,13 +52,13 @@ class CalendarSuggestionNotificationsGenerator(EventsGenerator):
                 f"{self.logger.name} : Error preparing notifications: {e}")
 
     @json_decode_retry(retries=3, required_keys=["title", "message"], on_json_error=on_json_error)
-    def __generate_notif_text(self, mojo_knowledge, global_context, user_id, username, user_company_knowledge,
+    def __generate_notif_text(self, mojo_knowledge, user_datetime_context, user_id, username, user_company_knowledge,
                               user_business_goal, calendar_suggestion, task_name):
         try:
             self.logger.info(f"generate_notif_text for user {user_id}")
             calendar_suggestion_notification = MPT(CalendarSuggestionNotificationsGenerator.calendar_suggestion_notification_text_mpt_filename, 
                                                    mojo_knowledge=mojo_knowledge,
-                                                   global_context=global_context,
+                                                   user_datetime_context=user_datetime_context,
                                                    username=username,
                                                    user_company_knowledge=user_company_knowledge,
                                                    user_business_goal=user_business_goal,

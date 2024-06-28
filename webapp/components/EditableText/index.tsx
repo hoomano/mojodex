@@ -32,12 +32,6 @@ export const EditableText: React.FC<EditableTextProps> = ({ text, onSave }) => {
                         className="border-2 border-primary-main grow py-0.5 text-h4 font-semibold leading-5 text-gray-darker resize-none w-full"
 
                     />
-                    {/* <TextareaAutosize 
-                        value={title}
-                        onChange={(e) => setTitle(e.target.value)}
-                        className="border-none grow py-0.5 text-h4 font-semibold leading-5 text-gray-darker resize-none w-full"
-
-                    /> */}
                     <button onClick={handleSave} className="ml-2">
                         <FaSave className="text-gray-dark flex-none" />
                     </button>

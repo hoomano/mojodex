@@ -21,6 +21,7 @@ import { ArrowLeftIcon } from "@heroicons/react/24/outline";
 import TaskInputs from "./TaskInputs";
 import { getUserTaskExecutionProducedText } from "services/tasks";
 import { useQueryClient } from "@tanstack/react-query";
+import { EditableText } from "components/EditableText";
 
 const DraftDetail = () => {
   const [tabs, setTabs] = useState<TabType[]>([]);
@@ -429,20 +430,20 @@ const DraftDetail = () => {
             <TaskLoader />
           ) : (
             <>
-              <div className="flex items-center mb-5">
+              <div className="flex items-center mb-5 w-full">
                 <ArrowLeftIcon
                   onClick={() => router.push(`/tasks`)}
                   className="w-[24px] h-[24px] text-gray-lighter cursor-pointer mr-2"
                 />
-                <div>
-                  <div className="text-subtitle6 font-semibold text-gray-lighter">
+                <div className="w-full">
+                  <div className="text-subtitle6 font-semibold text-gray-lighter w-full">
                     {currentTask?.task_name}
                   </div>
-                  {!!taskExecutionTitle && (
-                    <div className="text-h4 font-semibold text-gray-darker">
-                      {taskExecutionTitle}
-                    </div>
-                  )}
+                  <EditableText
+                    text={taskExecutionTitle ?? ""}
+                    onSave={(title: string) => {}}
+                    />
+                               
                 </div>
               </div>
               <Tab

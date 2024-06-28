@@ -29,7 +29,7 @@ export const EditableText: React.FC<EditableTextProps> = ({ text, onSave }) => {
                         type="text"
                         value={title}
                         onChange={(e) => setTitle(e.target.value)}
-                        className="border border-2 border-primary-main grow py-0.5 text-h4 font-semibold leading-5 text-gray-darker resize-none w-full"
+                        className="border-2 border-primary-main grow py-0.5 text-h4 font-semibold leading-5 text-gray-darker resize-none w-full"
 
                     />
                     {/* <TextareaAutosize 

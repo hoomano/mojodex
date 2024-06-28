@@ -39,4 +39,5 @@ ENV HOSTNAME "0.0.0.0"
 
 
 CMD ["npm", "run", "dev"]
+# Troubleshooting: if "next.js" not found in container, launch the container with the following command, then log into the container and run "npm install", then back to normal.
 #CMD ["tail", "-f", "/dev/null"]

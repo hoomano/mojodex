@@ -155,7 +155,7 @@ class HomeChatAssistant(ChatAssistant):
                         # do not stop the stream, this will take effect at next run
 
             if self.user_message_start_tag in partial_text:
-                text = self.user_message_tag_manager.remove_tags_from_text(partial_text)
+                text = self.user_message_tag_manager.extract_text(partial_text)
                 self.mojo_message_token_stream_callback(text)
 
             # else, task specific tags
@@ -172,7 +172,7 @@ class HomeChatAssistant(ChatAssistant):
                                                                                  task_name=self.instruct_task_execution.task_name_in_user_language,
                                                                                  user_task_execution_pk=self.instruct_task_execution.user_task_execution_pk)
             if self.user_message_start_tag in response:
-                text = self.user_message_tag_manager.remove_tags_from_text(response)
+                text = self.user_message_tag_manager.extract_text(response)
                 return {"text": text, 'text_with_tags': response}
             return self.task_manager.manage_response_task_tags(response)
         except Exception as e:

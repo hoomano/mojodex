@@ -363,26 +363,6 @@ if TaskInputsManager.ask_user_input_start_tag in response:
 ```
 Basically, the TaskInputsManager will extract the question addressed to the user from the LLM response by removing the tags so that it can be displayed properly to the user.
 
-##### ExecutionManager
-- ExecutionManager handles a response indicating the assistant has completed the task by produceing a text. In this case, the response format will include the result of the task enclosed in specific tags.
-```python
-[...]
-if ExecutionManager.execution_start_tag in response:
-    return self.execution_manager.manage_execution_text(response, self.running_task, self.running_task_displayed_data,
-                                self.running_user_task_execution, self.task_executor,
-                                use_draft_placeholder=self.use_draft_placeholder)
-[...]
-```
-
-The ExecutionManager will:
-- remove tags from the response to extract the result of the task in different format:
-    - title of the produced text
-    - body of the produced text
-    - produced text as a message the assistant could have written (```f"{title}\n{body}"```)
-- instanciate a Produced Text in the database if not already done
-- instanciate a Produced Text Version in the database and store the result of the task
-- send the message on SocketIO dedicated event: `draft_message`
-
 #### 3.5. Response to user
 Finally, the method `generate_message` returns the assistant's message that should be sent to the user (or None if it was a `draft_message` managed by TaskExecutionManager).
 

@@ -1,5 +1,4 @@
 from mojodex_core.tag_manager import TagManager
-from models.assistant.execution_manager import ExecutionManager
 from mojodex_core.llm_engine.mpt import MPT
 from mojodex_core.llm_engine.providers.openai_vision_llm import VisionMessagesData
 from abc import ABC, abstractmethod
@@ -21,7 +20,8 @@ class ChatAssistant(ABC):
             self.default_temperature = temperature
             self.default_max_tokens = max_tokens
             self.language = None
-            self.tag_manager = TagManager("user_language")
+            self.language_tag_manager = TagManager("user_language")
+            self.execution_tag_manager = TagManager("execution")
 
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} __init__ :: {e}")
@@ -104,9 +104,9 @@ class ChatAssistant(ABC):
         :param response: response
         """
         try:
-            if self.tag_manager.start_tag in response:
+            if self.language_tag_manager.start_tag in response:
                 try:
-                    self.language = self.tag_manager.remove_tags_from_text(response).lower()
+                    self.language = self.language_tag_manager.extract_text(response).lower()
                 except Exception as e:
                     pass
         except Exception as e:
@@ -114,8 +114,8 @@ class ChatAssistant(ABC):
 
     def _manage_execution_tags(self, response):
         try:
-            if ExecutionManager.tag_manager.start_tag in response:
-                return ExecutionManager.manage_execution_text(response)
+            if self.execution_tag_manager.start_tag in response:
+                return self.execution_tag_manager.extract_text(response)
         except Exception as e:
             raise Exception(f"_manage_execution_tags :: {e}")
 

@@ -1,5 +1,4 @@
 import os
-from models.assistant.execution_manager import ExecutionManager
 from mojodex_core.db import with_db_session
 from mojodex_core.entities.db_base_entities import MdProducedTextVersion, MdMessage
 from app import server_socket, main_logger, socketio_message_sender
@@ -9,6 +8,8 @@ from mojodex_core.llm_engine.providers.model_loader import ModelLoader
 from mojodex_core.produced_text_managers.produced_text_manager import ProducedTextManager
 from mojodex_core.produced_text_managers.task_produced_text_manager import TaskProducedTextManager
 from datetime import datetime
+
+from mojodex_core.tag_manager import TagManager
 
 class TextEditActionManager:
     logger_prefix = "TextEditActionManager"
@@ -69,7 +70,7 @@ class TextEditActionManager:
                 "produced_text_title": title,
                 "produced_text": production,
                 "text": self.task_produced_text_manager.get_produced_text_without_tags(edited_text),
-                "text_with_tags": ExecutionManager.tag_manager.add_tags_to_text(edited_text)
+                "text_with_tags": TagManager("execution").add_tags_to_text(edited_text)
             }
 
             embedding = ProducedTextManager.embed_produced_text(title, production, self.user_id,

@@ -4,7 +4,7 @@ class TagManager:
         self.start_tag = f"<{tag_name}>"
         self.end_tag = f"</{tag_name}>"
 
-    def remove_tags_from_text(self, text):
+    def extract_text(self, text):
         try:
             return text.split(self.start_tag)[1].split(self.end_tag)[0].strip() if self.start_tag in text else ""
         except Exception as e:

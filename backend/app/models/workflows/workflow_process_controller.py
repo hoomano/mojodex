@@ -116,10 +116,8 @@ class WorkflowProcessController:
             self.add_state_message()
             produced_text_pk, produced_text_version_pk, title, production = self._generate_produced_text()
 
-            title_tag_manager = TagManager("title")
-            draft_tag_manager = TagManager("draft")
             # add it as a mojo_message
-            produced_text_with_tags = f"{title_tag_manager.add_tags_to_text(title)}\n{draft_tag_manager.add_tags_to_text(production)}"
+            produced_text_with_tags = TaskProducedTextManager.get_text_with_tags_from_title_and_production(title, production)
 
             mojo_message = MdMessage(
                 session_id=self.workflow_execution.session_id, sender='mojo',

@@ -68,7 +68,7 @@ class WorkflowAssistant(ChatAssistant):
     def _mpt(self):
         try:
             return MPT(self.mpt_file, mojo_knowledge=KnowledgeManager().mojodex_knowledge,
-                       global_context=self.workflow_execution.user.datetime_context,
+                       user_datetime_context=self.workflow_execution.user.datetime_context,
                        username=self.workflow_execution.user.name,
                        user_company_knowledge=self.workflow_execution.user.company_description,
                        infos_to_extract=self.workflow_execution.task.infos_to_extract,

@@ -24,9 +24,9 @@ class DailyNotificationsGenerator(EventsGenerator):
             for user in users:
                 user_id = user["user_id"]
                 try:
-                    global_context = KnowledgeCollector.get_global_context_knowledge(
+                    user_datetime_context = KnowledgeCollector.get_global_context_knowledge(
                         user["user_timezone_offset"])
-                    notification_json = self.__generate_notif_text(mojo_knowledge, global_context,
+                    notification_json = self.__generate_notif_text(mojo_knowledge, user_datetime_context,
                                                                    user_id, user["user_name"],
                                                                    user["user_company_description"],
                                                                    user["user_goal"],
@@ -46,14 +46,14 @@ class DailyNotificationsGenerator(EventsGenerator):
                 f"{self.logger.name} : Error preparing notifications: {e}")
 
     @json_decode_retry(retries=3, required_keys=["title", "message"], on_json_error=on_json_error)
-    def __generate_notif_text(self, mojo_knowledge, global_context, user_id, username, user_company_knowledge,
+    def __generate_notif_text(self, mojo_knowledge, user_datetime_context, user_id, username, user_company_knowledge,
                               user_business_goal,
                               new_todos_today, language, retry=2):
         try:
             self.logger.info(f"generate_notif_text for user {user_id}")
             daily_notification_text = MPT(DailyNotificationsGenerator.daily_notification_text_mpt_filename,
                                           mojo_knowledge=mojo_knowledge,
-                                          global_context=global_context,
+                                          user_datetime_context=user_datetime_context,
                                           username=username,
                                           user_company_knowledge=user_company_knowledge,
                                           user_business_goal=user_business_goal,

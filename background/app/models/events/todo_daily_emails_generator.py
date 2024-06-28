@@ -32,9 +32,9 @@ class TodoDailyEmailsGenerator(EventsGenerator):
             self.logger.info("generate_events")
             for user in users:
                 user_id, email = user["user_id"], user["email"]
-                global_context = KnowledgeCollector.get_global_context_knowledge(
+                user_datetime_context = KnowledgeCollector.get_global_context_knowledge(
                     user["user_timezone_offset"])
-                email_json = self.__generate_emails_text(mojo_knowledge, global_context, user_id,
+                email_json = self.__generate_emails_text(mojo_knowledge, user_datetime_context, user_id,
                                                          user["username"],
                                                          user["company_description"], user["goal"],
                                                          user["language"],
@@ -59,13 +59,13 @@ class TodoDailyEmailsGenerator(EventsGenerator):
                 f"{self.logger.name} : Error preparing emails: {e}")
 
     @json_decode_retry(retries=3, required_keys=["subject", "body"], on_json_error=on_json_error)
-    def __generate_emails_text(self, mojo_knowledge, global_context, user_id, username, user_company_knowledge,
+    def __generate_emails_text(self, mojo_knowledge, user_datetime_context, user_id, username, user_company_knowledge,
                                user_business_goal, language, today_todo_list, rescheduled_todos, deleted_todos):
         try:
             self.logger.info(f"generate_emails_text for user {user_id}")
             todo_daily_email_text = MPT(TodoDailyEmailsGenerator.todo_daily_email_text_mpt_filename,
                                         mojo_knowledge=mojo_knowledge,
-                                        global_context=global_context,
+                                        user_datetime_context=user_datetime_context,
                                         username=username,
                                         user_company_knowledge=user_company_knowledge,
                                         user_business_goal=user_business_goal,

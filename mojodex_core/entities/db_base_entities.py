@@ -1,8 +1,12 @@
-from pgvector.sqlalchemy import Vector
-from sqlalchemy import Boolean, Column, Date, DateTime, Enum, ForeignKeyConstraint, Integer, JSON, PrimaryKeyConstraint, Sequence, String, Text, UniqueConstraint, text
-from sqlalchemy.orm import declarative_base, relationship
+from typing import Any, List, Optional
 
-Base = declarative_base()
+from pgvector.sqlalchemy import Vector
+from sqlalchemy import Boolean, Date, DateTime, Enum, ForeignKeyConstraint, Integer, JSON, PrimaryKeyConstraint, Sequence, String, Text, UniqueConstraint, text
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+import datetime
+
+class Base(DeclarativeBase):
+    pass
 
 
 class MdCompany(Base):
@@ -11,15 +15,15 @@ class MdCompany(Base):
         PrimaryKeyConstraint('company_pk', name='md_company_pkey'),
     )
 
-    company_pk = Column(Integer, Sequence('md_company_seq'), primary_key=True)
-    creation_date = Column(DateTime, nullable=False)
-    name = Column(String(255))
-    website = Column(String(255))
-    additional_info = Column(JSON)
-    emoji = Column(String(255))
-    last_update_date = Column(DateTime(True))
+    company_pk: Mapped[int] = mapped_column(Integer, Sequence('md_company_seq'), primary_key=True)
+    creation_date: Mapped[datetime.datetime] = mapped_column(DateTime)
+    name: Mapped[Optional[str]] = mapped_column(String(255))
+    website: Mapped[Optional[str]] = mapped_column(String(255))
+    additional_info: Mapped[Optional[dict]] = mapped_column(JSON)
+    emoji: Mapped[Optional[str]] = mapped_column(String(255))
+    last_update_date: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(True))
 
-    md_user = relationship('MdUser', back_populates='md_company')
+    md_user: Mapped[List['MdUser']] = relationship('MdUser', back_populates='md_company')
 
 
 class MdPlatform(Base):
@@ -28,10 +32,10 @@ class MdPlatform(Base):
         PrimaryKeyConstraint('platform_pk', name='md_platform_pkey'),
     )
 
-    platform_pk = Column(Integer, Sequence('md_platform_seq'), primary_key=True)
-    name = Column(String(255), nullable=False)
+    platform_pk: Mapped[int] = mapped_column(Integer, Sequence('md_platform_seq'), primary_key=True)
+    name: Mapped[str] = mapped_column(String(255))
 
-    md_task_platform_association = relationship('MdTaskPlatformAssociation', back_populates='md_platform')
+    md_task_platform_association: Mapped[List['MdTaskPlatformAssociation']] = relationship('MdTaskPlatformAssociation', back_populates='md_platform')
 
 
 class MdProductCategory(Base):
@@ -40,15 +44,15 @@ class MdProductCategory(Base):
         PrimaryKeyConstraint('product_category_pk', name='md_product_category_pkey'),
     )
 
-    product_category_pk = Column(Integer, Sequence('md_product_category_pk_seq'), primary_key=True)
-    label = Column(String(255), nullable=False)
-    emoji = Column(String(255), nullable=False)
-    implicit_goal = Column(String(255), nullable=False)
-    visible = Column(Boolean, nullable=False, server_default=text('false'))
+    product_category_pk: Mapped[int] = mapped_column(Integer, Sequence('md_product_category_pk_seq'), primary_key=True)
+    label: Mapped[str] = mapped_column(String(255))
+    emoji: Mapped[str] = mapped_column(String(255))
+    implicit_goal: Mapped[str] = mapped_column(String(255))
+    visible: Mapped[bool] = mapped_column(Boolean, server_default=text('false'))
 
-    md_product = relationship('MdProduct', back_populates='md_product_category')
-    md_product_category_displayed_data = relationship('MdProductCategoryDisplayedData', back_populates='md_product_category')
-    md_user = relationship('MdUser', back_populates='md_product_category')
+    md_product: Mapped[List['MdProduct']] = relationship('MdProduct', back_populates='md_product_category')
+    md_product_category_displayed_data: Mapped[List['MdProductCategoryDisplayedData']] = relationship('MdProductCategoryDisplayedData', back_populates='md_product_category')
+    md_user: Mapped[List['MdUser']] = relationship('MdUser', back_populates='md_product_category')
 
 
 class MdTextEditAction(Base):
@@ -57,12 +61,12 @@ class MdTextEditAction(Base):
         PrimaryKeyConstraint('text_edit_action_pk', name='md_text_edit_action_pkey'),
     )
 
-    text_edit_action_pk = Column(Integer, Sequence('md_text_edit_action_seq'), primary_key=True)
-    emoji = Column(String(255), nullable=False)
-    prompt_file_name = Column(String(255), nullable=False)
+    text_edit_action_pk: Mapped[int] = mapped_column(Integer, Sequence('md_text_edit_action_seq'), primary_key=True)
+    emoji: Mapped[str] = mapped_column(String(255))
+    prompt_file_name: Mapped[str] = mapped_column(String(255))
 
-    md_text_edit_action_displayed_data = relationship('MdTextEditActionDisplayedData', back_populates='md_text_edit_action')
-    md_text_edit_action_text_type_association = relationship('MdTextEditActionTextTypeAssociation', back_populates='md_text_edit_action')
+    md_text_edit_action_displayed_data: Mapped[List['MdTextEditActionDisplayedData']] = relationship('MdTextEditActionDisplayedData', back_populates='md_text_edit_action')
+    md_text_edit_action_text_type_association: Mapped[List['MdTextEditActionTextTypeAssociation']] = relationship('MdTextEditActionTextTypeAssociation', back_populates='md_text_edit_action')
 
 
 class MdTextType(Base):
@@ -71,12 +75,12 @@ class MdTextType(Base):
         PrimaryKeyConstraint('text_type_pk', name='md_text_type_pkey'),
     )
 
-    text_type_pk = Column(Integer, Sequence('md_text_type_seq'), primary_key=True)
-    name = Column(String(255), nullable=False)
+    text_type_pk: Mapped[int] = mapped_column(Integer, Sequence('md_text_type_seq'), primary_key=True)
+    name: Mapped[str] = mapped_column(String(255))
 
-    md_task = relationship('MdTask', back_populates='md_text_type')
-    md_text_edit_action_text_type_association = relationship('MdTextEditActionTextTypeAssociation', back_populates='md_text_type')
-    md_produced_text_version = relationship('MdProducedTextVersion', back_populates='md_text_type')
+    md_task: Mapped[List['MdTask']] = relationship('MdTask', back_populates='md_text_type')
+    md_text_edit_action_text_type_association: Mapped[List['MdTextEditActionTextTypeAssociation']] = relationship('MdTextEditActionTextTypeAssociation', back_populates='md_text_type')
+    md_produced_text_version: Mapped[List['MdProducedTextVersion']] = relationship('MdProducedTextVersion', back_populates='md_text_type')
 
 
 class MdProduct(Base):
@@ -87,20 +91,20 @@ class MdProduct(Base):
         UniqueConstraint('label', name='product_label_key')
     )
 
-    product_pk = Column(Integer, Sequence('md_product_seq'), primary_key=True)
-    status = Column(Enum('active', 'inactive', name='md_product_status_'), nullable=False)
-    free = Column(Boolean, nullable=False)
-    product_stripe_id = Column(String(255))
-    product_category_fk = Column(Integer)
-    n_days_validity = Column(Integer)
-    product_apple_id = Column(String(255))
-    n_tasks_limit = Column(Integer)
-    label = Column(String(255))
+    product_pk: Mapped[int] = mapped_column(Integer, Sequence('md_product_seq'), primary_key=True)
+    status: Mapped[str] = mapped_column(Enum('active', 'inactive', name='md_product_status_'))
+    free: Mapped[bool] = mapped_column(Boolean)
+    product_stripe_id: Mapped[Optional[str]] = mapped_column(String(255))
+    product_category_fk: Mapped[Optional[int]] = mapped_column(Integer)
+    n_days_validity: Mapped[Optional[int]] = mapped_column(Integer)
+    product_apple_id: Mapped[Optional[str]] = mapped_column(String(255))
+    n_tasks_limit: Mapped[Optional[int]] = mapped_column(Integer)
+    label: Mapped[Optional[str]] = mapped_column(String(255))
 
-    md_product_category = relationship('MdProductCategory', back_populates='md_product')
-    md_product_displayed_data = relationship('MdProductDisplayedData', back_populates='md_product')
-    md_product_task = relationship('MdProductTask', back_populates='md_product')
-    md_purchase = relationship('MdPurchase', back_populates='md_product')
+    md_product_category: Mapped['MdProductCategory'] = relationship('MdProductCategory', back_populates='md_product')
+    md_product_displayed_data: Mapped[List['MdProductDisplayedData']] = relationship('MdProductDisplayedData', back_populates='md_product')
+    md_product_task: Mapped[List['MdProductTask']] = relationship('MdProductTask', back_populates='md_product')
+    md_purchase: Mapped[List['MdPurchase']] = relationship('MdPurchase', back_populates='md_product')
 
 
 class MdProductCategoryDisplayedData(Base):
@@ -110,13 +114,13 @@ class MdProductCategoryDisplayedData(Base):
         PrimaryKeyConstraint('product_category_displayed_data_pk', name='md_product_category_displayed_data_pkey')
     )
 
-    product_category_displayed_data_pk = Column(Integer, Sequence('md_product_category_displayed_data_seq'), primary_key=True)
-    product_category_fk = Column(Integer, nullable=False)
-    language_code = Column(String(2), nullable=False)
-    name_for_user = Column(String(255), nullable=False)
-    description_for_user = Column(String(255), nullable=False)
+    product_category_displayed_data_pk: Mapped[int] = mapped_column(Integer, Sequence('md_product_category_displayed_data_seq'), primary_key=True)
+    product_category_fk: Mapped[int] = mapped_column(Integer)
+    language_code: Mapped[str] = mapped_column(String(2))
+    name_for_user: Mapped[str] = mapped_column(String(255))
+    description_for_user: Mapped[str] = mapped_column(String(255))
 
-    md_product_category = relationship('MdProductCategory', back_populates='md_product_category_displayed_data')
+    md_product_category: Mapped['MdProductCategory'] = relationship('MdProductCategory', back_populates='md_product_category_displayed_data')
 
 
 class MdTask(Base):
@@ -126,28 +130,28 @@ class MdTask(Base):
         PrimaryKeyConstraint('task_pk', name='task_pkey')
     )
 
-    task_pk = Column(Integer, Sequence('md_task_seq'), primary_key=True)
-    type = Column(Enum('instruct', 'workflow', name='_task_type'), nullable=False, server_default=text("'instruct'::_task_type"))
-    name_for_system = Column(String(255), nullable=False)
-    definition_for_system = Column(Text, nullable=False)
-    visible_for_teasing = Column(Boolean, nullable=False, server_default=text('false'))
-    result_chat_enabled = Column(Boolean, nullable=False, server_default=text('true'))
-    final_instruction = Column(Text)
-    icon = Column(String(255))
-    output_text_type_fk = Column(Integer)
-    output_format_instruction_title = Column(String(255))
-    output_format_instruction_draft = Column(String(255))
-    infos_to_extract = Column(JSON)
+    task_pk: Mapped[int] = mapped_column(Integer, Sequence('md_task_seq'), primary_key=True)
+    type: Mapped[str] = mapped_column(Enum('instruct', 'workflow', name='_task_type'), server_default=text("'instruct'::_task_type"))
+    name_for_system: Mapped[str] = mapped_column(String(255))
+    definition_for_system: Mapped[str] = mapped_column(Text)
+    visible_for_teasing: Mapped[bool] = mapped_column(Boolean, server_default=text('false'))
+    result_chat_enabled: Mapped[bool] = mapped_column(Boolean, server_default=text('true'))
+    final_instruction: Mapped[Optional[str]] = mapped_column(Text)
+    icon: Mapped[Optional[str]] = mapped_column(String(255))
+    output_text_type_fk: Mapped[Optional[int]] = mapped_column(Integer)
+    output_format_instruction_title: Mapped[Optional[str]] = mapped_column(String(255))
+    output_format_instruction_draft: Mapped[Optional[str]] = mapped_column(String(255))
+    infos_to_extract: Mapped[Optional[dict]] = mapped_column(JSON)
 
-    md_text_type = relationship('MdTextType', back_populates='md_task')
-    md_product_task = relationship('MdProductTask', back_populates='md_task')
-    md_task_displayed_data = relationship('MdTaskDisplayedData', back_populates='md_task')
-    md_task_platform_association = relationship('MdTaskPlatformAssociation', back_populates='md_task')
-    md_task_predefined_action_association = relationship('MdTaskPredefinedActionAssociation', foreign_keys='[MdTaskPredefinedActionAssociation.predefined_action_fk]', back_populates='md_task')
-    md_task_predefined_action_association_ = relationship('MdTaskPredefinedActionAssociation', foreign_keys='[MdTaskPredefinedActionAssociation.task_fk]', back_populates='md_task_')
-    md_user_task = relationship('MdUserTask', back_populates='md_task')
-    md_workflow_step = relationship('MdWorkflowStep', back_populates='md_task')
-    md_calendar_suggestion = relationship('MdCalendarSuggestion', back_populates='md_task')
+    md_text_type: Mapped['MdTextType'] = relationship('MdTextType', back_populates='md_task')
+    md_product_task: Mapped[List['MdProductTask']] = relationship('MdProductTask', back_populates='md_task')
+    md_task_displayed_data: Mapped[List['MdTaskDisplayedData']] = relationship('MdTaskDisplayedData', back_populates='md_task')
+    md_task_platform_association: Mapped[List['MdTaskPlatformAssociation']] = relationship('MdTaskPlatformAssociation', back_populates='md_task')
+    md_task_predefined_action_association: Mapped[List['MdTaskPredefinedActionAssociation']] = relationship('MdTaskPredefinedActionAssociation', foreign_keys='[MdTaskPredefinedActionAssociation.predefined_action_fk]', back_populates='md_task')
+    md_task_predefined_action_association_: Mapped[List['MdTaskPredefinedActionAssociation']] = relationship('MdTaskPredefinedActionAssociation', foreign_keys='[MdTaskPredefinedActionAssociation.task_fk]', back_populates='md_task_')
+    md_user_task: Mapped[List['MdUserTask']] = relationship('MdUserTask', back_populates='md_task')
+    md_workflow_step: Mapped[List['MdWorkflowStep']] = relationship('MdWorkflowStep', back_populates='md_task')
+    md_calendar_suggestion: Mapped[List['MdCalendarSuggestion']] = relationship('MdCalendarSuggestion', back_populates='md_task')
 
 
 class MdTextEditActionDisplayedData(Base):
@@ -157,13 +161,13 @@ class MdTextEditActionDisplayedData(Base):
         PrimaryKeyConstraint('text_edit_action_displayed_data_pk', name='md_text_edit_action_displayed_data_pkey')
     )
 
-    text_edit_action_displayed_data_pk = Column(Integer, Sequence('md_text_edit_action_displayed_data_seq'), primary_key=True)
-    text_edit_action_fk = Column(Integer, nullable=False)
-    language_code = Column(String(2), nullable=False)
-    name = Column(String(255), nullable=False)
-    description = Column(String(255), nullable=False)
+    text_edit_action_displayed_data_pk: Mapped[int] = mapped_column(Integer, Sequence('md_text_edit_action_displayed_data_seq'), primary_key=True)
+    text_edit_action_fk: Mapped[int] = mapped_column(Integer)
+    language_code: Mapped[str] = mapped_column(String(2))
+    name: Mapped[str] = mapped_column(String(255))
+    description: Mapped[str] = mapped_column(String(255))
 
-    md_text_edit_action = relationship('MdTextEditAction', back_populates='md_text_edit_action_displayed_data')
+    md_text_edit_action: Mapped['MdTextEditAction'] = relationship('MdTextEditAction', back_populates='md_text_edit_action_displayed_data')
 
 
 class MdTextEditActionTextTypeAssociation(Base):
@@ -174,12 +178,12 @@ class MdTextEditActionTextTypeAssociation(Base):
         PrimaryKeyConstraint('text_edit_action_text_type_association_pk', name='md_text_edit_action_text_type_association_pkey')
     )
 
-    text_edit_action_text_type_association_pk = Column(Integer, Sequence('md_text_edit_action_text_type_association_seq'), primary_key=True)
-    text_type_fk = Column(Integer, nullable=False)
-    text_edit_action_fk = Column(Integer, nullable=False)
+    text_edit_action_text_type_association_pk: Mapped[int] = mapped_column(Integer, Sequence('md_text_edit_action_text_type_association_seq'), primary_key=True)
+    text_type_fk: Mapped[int] = mapped_column(Integer)
+    text_edit_action_fk: Mapped[int] = mapped_column(Integer)
 
-    md_text_edit_action = relationship('MdTextEditAction', back_populates='md_text_edit_action_text_type_association')
-    md_text_type = relationship('MdTextType', back_populates='md_text_edit_action_text_type_association')
+    md_text_edit_action: Mapped['MdTextEditAction'] = relationship('MdTextEditAction', back_populates='md_text_edit_action_text_type_association')
+    md_text_type: Mapped['MdTextType'] = relationship('MdTextType', back_populates='md_text_edit_action_text_type_association')
 
 
 class MdUser(Base):
@@ -190,39 +194,39 @@ class MdUser(Base):
         PrimaryKeyConstraint('user_id', name='user_pkey')
     )
 
-    user_id = Column(String(255), primary_key=True)
-    email = Column(String(255), nullable=False)
-    creation_date = Column(DateTime(True), nullable=False)
-    todo_email_reception = Column(Boolean, nullable=False, server_default=text('true'))
-    name = Column(String(255))
-    terms_and_conditions_accepted = Column(DateTime(True))
-    language_code = Column(String(5))
-    summary = Column(Text)
-    password = Column(String(255))
-    google_id = Column(String(255))
-    microsoft_id = Column(String(255))
-    apple_id = Column(String(255))
-    company_fk = Column(Integer)
-    last_summary_update_date = Column(DateTime(True))
-    company_description = Column(Text)
-    last_company_description_update_date = Column(DateTime(True))
-    goal = Column(Text)
-    timezone_offset = Column(Integer)
-    onboarding_presented = Column(DateTime(True))
-    product_category_fk = Column(Integer)
+    user_id: Mapped[str] = mapped_column(String(255), primary_key=True)
+    email: Mapped[str] = mapped_column(String(255))
+    creation_date: Mapped[datetime.datetime] = mapped_column(DateTime(True))
+    todo_email_reception: Mapped[bool] = mapped_column(Boolean, server_default=text('true'))
+    name: Mapped[Optional[str]] = mapped_column(String(255))
+    terms_and_conditions_accepted: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(True))
+    language_code: Mapped[Optional[str]] = mapped_column(String(5))
+    summary: Mapped[Optional[str]] = mapped_column(Text)
+    password: Mapped[Optional[str]] = mapped_column(String(255))
+    google_id: Mapped[Optional[str]] = mapped_column(String(255))
+    microsoft_id: Mapped[Optional[str]] = mapped_column(String(255))
+    apple_id: Mapped[Optional[str]] = mapped_column(String(255))
+    company_fk: Mapped[Optional[int]] = mapped_column(Integer)
+    last_summary_update_date: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(True))
+    company_description: Mapped[Optional[str]] = mapped_column(Text)
+    last_company_description_update_date: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(True))
+    goal: Mapped[Optional[str]] = mapped_column(Text)
+    timezone_offset: Mapped[Optional[int]] = mapped_column(Integer)
+    onboarding_presented: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(True))
+    product_category_fk: Mapped[Optional[int]] = mapped_column(Integer)
 
-    md_company = relationship('MdCompany', back_populates='md_user')
-    md_product_category = relationship('MdProductCategory', back_populates='md_user')
-    md_device = relationship('MdDevice', back_populates='user')
-    md_document = relationship('MdDocument', back_populates='author_user')
-    md_event = relationship('MdEvent', back_populates='user')
-    md_purchase = relationship('MdPurchase', back_populates='user')
-    md_session = relationship('MdSession', back_populates='user')
-    md_user_task = relationship('MdUserTask', back_populates='user')
-    md_user_vocabulary = relationship('MdUserVocabulary', back_populates='user')
-    md_home_chat = relationship('MdHomeChat', back_populates='user')
-    md_calendar_suggestion = relationship('MdCalendarSuggestion', back_populates='user')
-    md_produced_text = relationship('MdProducedText', back_populates='user')
+    md_company: Mapped['MdCompany'] = relationship('MdCompany', back_populates='md_user')
+    md_product_category: Mapped['MdProductCategory'] = relationship('MdProductCategory', back_populates='md_user')
+    md_device: Mapped[List['MdDevice']] = relationship('MdDevice', back_populates='user')
+    md_document: Mapped[List['MdDocument']] = relationship('MdDocument', back_populates='author_user')
+    md_event: Mapped[List['MdEvent']] = relationship('MdEvent', back_populates='user')
+    md_purchase: Mapped[List['MdPurchase']] = relationship('MdPurchase', back_populates='user')
+    md_session: Mapped[List['MdSession']] = relationship('MdSession', back_populates='user')
+    md_user_task: Mapped[List['MdUserTask']] = relationship('MdUserTask', back_populates='user')
+    md_user_vocabulary: Mapped[List['MdUserVocabulary']] = relationship('MdUserVocabulary', back_populates='user')
+    md_home_chat: Mapped[List['MdHomeChat']] = relationship('MdHomeChat', back_populates='user')
+    md_calendar_suggestion: Mapped[List['MdCalendarSuggestion']] = relationship('MdCalendarSuggestion', back_populates='user')
+    md_produced_text: Mapped[List['MdProducedText']] = relationship('MdProducedText', back_populates='user')
 
 
 class MdDevice(Base):
@@ -232,13 +236,13 @@ class MdDevice(Base):
         PrimaryKeyConstraint('device_pk', name='device_pkey')
     )
 
-    device_pk = Column(Integer, Sequence('md_device_seq'), primary_key=True)
-    creation_date = Column(DateTime(True), nullable=False, server_default=text('now()'))
-    fcm_token = Column(Text, nullable=False)
-    user_id = Column(String(255), nullable=False)
-    valid = Column(Boolean, nullable=False, server_default=text('true'))
+    device_pk: Mapped[int] = mapped_column(Integer, Sequence('md_device_seq'), primary_key=True)
+    creation_date: Mapped[datetime.datetime] = mapped_column(DateTime(True), server_default=text('now()'))
+    fcm_token: Mapped[str] = mapped_column(Text)
+    user_id: Mapped[str] = mapped_column(String(255))
+    valid: Mapped[bool] = mapped_column(Boolean, server_default=text('true'))
 
-    user = relationship('MdUser', back_populates='md_device')
+    user: Mapped['MdUser'] = relationship('MdUser', back_populates='md_device')
 
 
 class MdDocument(Base):
@@ -248,16 +252,16 @@ class MdDocument(Base):
         PrimaryKeyConstraint('document_pk', name='md_document_pkey')
     )
 
-    document_pk = Column(Integer, Sequence('md_document_seq'), primary_key=True)
-    name = Column(String(255), nullable=False)
-    author_user_id = Column(String(255), nullable=False)
-    creation_date = Column(DateTime, nullable=False)
-    document_type = Column(Enum('learned_by_mojo', 'webpage', name='document_type_'), nullable=False)
-    deleted_by_user = Column(Boolean, nullable=False, server_default=text('false'))
-    last_update_date = Column(DateTime(True))
+    document_pk: Mapped[int] = mapped_column(Integer, Sequence('md_document_seq'), primary_key=True)
+    name: Mapped[str] = mapped_column(String(255))
+    author_user_id: Mapped[str] = mapped_column(String(255))
+    creation_date: Mapped[datetime.datetime] = mapped_column(DateTime)
+    document_type: Mapped[str] = mapped_column(Enum('learned_by_mojo', 'webpage', name='document_type_'))
+    deleted_by_user: Mapped[bool] = mapped_column(Boolean, server_default=text('false'))
+    last_update_date: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(True))
 
-    author_user = relationship('MdUser', back_populates='md_document')
-    md_document_chunk = relationship('MdDocumentChunk', back_populates='md_document')
+    author_user: Mapped['MdUser'] = relationship('MdUser', back_populates='md_document')
+    md_document_chunk: Mapped[List['MdDocumentChunk']] = relationship('MdDocumentChunk', back_populates='md_document')
 
 
 class MdEvent(Base):
@@ -267,13 +271,13 @@ class MdEvent(Base):
         PrimaryKeyConstraint('event_pk', name='event_pkey')
     )
 
-    event_pk = Column(Integer, Sequence('md_event_seq'), primary_key=True)
-    creation_date = Column(DateTime(True), nullable=False, server_default=text('now()'))
-    event_type = Column(String(255), nullable=False)
-    user_id = Column(String(255), nullable=False)
-    message = Column(JSON, nullable=False)
+    event_pk: Mapped[int] = mapped_column(Integer, Sequence('md_event_seq'), primary_key=True)
+    creation_date: Mapped[datetime.datetime] = mapped_column(DateTime(True), server_default=text('now()'))
+    event_type: Mapped[str] = mapped_column(String(255))
+    user_id: Mapped[str] = mapped_column(String(255))
+    message: Mapped[dict] = mapped_column(JSON)
 
-    user = relationship('MdUser', back_populates='md_event')
+    user: Mapped['MdUser'] = relationship('MdUser', back_populates='md_event')
 
 
 class MdProductDisplayedData(Base):
@@ -283,12 +287,12 @@ class MdProductDisplayedData(Base):
         PrimaryKeyConstraint('product_displayed_data_pk', name='md_product_displayed_data_pkey')
     )
 
-    product_displayed_data_pk = Column(Integer, Sequence('md_product_displayed_data_seq'), primary_key=True)
-    product_fk = Column(Integer, nullable=False)
-    language_code = Column(String(2), nullable=False)
-    name = Column(String(255), nullable=False)
+    product_displayed_data_pk: Mapped[int] = mapped_column(Integer, Sequence('md_product_displayed_data_seq'), primary_key=True)
+    product_fk: Mapped[int] = mapped_column(Integer)
+    language_code: Mapped[str] = mapped_column(String(2))
+    name: Mapped[str] = mapped_column(String(255))
 
-    md_product = relationship('MdProduct', back_populates='md_product_displayed_data')
+    md_product: Mapped['MdProduct'] = relationship('MdProduct', back_populates='md_product_displayed_data')
 
 
 class MdProductTask(Base):
@@ -299,12 +303,12 @@ class MdProductTask(Base):
         PrimaryKeyConstraint('product_task_pk', name='product_task_pkey')
     )
 
-    product_task_pk = Column(Integer, Sequence('md_product_task_seq'), primary_key=True)
-    product_fk = Column(Integer, nullable=False)
-    task_fk = Column(Integer, nullable=False)
+    product_task_pk: Mapped[int] = mapped_column(Integer, Sequence('md_product_task_seq'), primary_key=True)
+    product_fk: Mapped[int] = mapped_column(Integer)
+    task_fk: Mapped[int] = mapped_column(Integer)
 
-    md_product = relationship('MdProduct', back_populates='md_product_task')
-    md_task = relationship('MdTask', back_populates='md_product_task')
+    md_product: Mapped['MdProduct'] = relationship('MdProduct', back_populates='md_product_task')
+    md_task: Mapped['MdTask'] = relationship('MdTask', back_populates='md_product_task')
 
 
 class MdPurchase(Base):
@@ -315,22 +319,22 @@ class MdPurchase(Base):
         PrimaryKeyConstraint('purchase_pk', name='purchase_pkey')
     )
 
-    purchase_pk = Column(Integer, Sequence('md_purchase_seq'), primary_key=True)
-    product_fk = Column(Integer, nullable=False)
-    creation_date = Column(DateTime(True), nullable=False)
-    active = Column(Boolean, nullable=False, server_default=text('false'))
-    user_id = Column(String(255))
-    subscription_stripe_id = Column(String(255))
-    session_stripe_id = Column(String(255))
-    customer_stripe_id = Column(String(255))
-    completed_date = Column(DateTime(True))
-    apple_transaction_id = Column(String(255))
-    apple_original_transaction_id = Column(String(255))
-    custom_purchase_id = Column(String(255))
+    purchase_pk: Mapped[int] = mapped_column(Integer, Sequence('md_purchase_seq'), primary_key=True)
+    product_fk: Mapped[int] = mapped_column(Integer)
+    creation_date: Mapped[datetime.datetime] = mapped_column(DateTime(True))
+    active: Mapped[bool] = mapped_column(Boolean, server_default=text('false'))
+    user_id: Mapped[Optional[str]] = mapped_column(String(255))
+    subscription_stripe_id: Mapped[Optional[str]] = mapped_column(String(255))
+    session_stripe_id: Mapped[Optional[str]] = mapped_column(String(255))
+    customer_stripe_id: Mapped[Optional[str]] = mapped_column(String(255))
+    completed_date: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(True))
+    apple_transaction_id: Mapped[Optional[str]] = mapped_column(String(255))
+    apple_original_transaction_id: Mapped[Optional[str]] = mapped_column(String(255))
+    custom_purchase_id: Mapped[Optional[str]] = mapped_column(String(255))
 
-    md_product = relationship('MdProduct', back_populates='md_purchase')
-    user = relationship('MdUser', back_populates='md_purchase')
-    md_user_task_execution = relationship('MdUserTaskExecution', back_populates='md_purchase')
+    md_product: Mapped['MdProduct'] = relationship('MdProduct', back_populates='md_purchase')
+    user: Mapped['MdUser'] = relationship('MdUser', back_populates='md_purchase')
+    md_user_task_execution: Mapped[List['MdUserTaskExecution']] = relationship('MdUserTaskExecution', back_populates='md_purchase')
 
 
 class MdSession(Base):
@@ -340,22 +344,22 @@ class MdSession(Base):
         PrimaryKeyConstraint('session_id', name='session_pkey')
     )
 
-    session_id = Column(String(255), primary_key=True)
-    user_id = Column(String(255), nullable=False)
-    creation_date = Column(DateTime(True), nullable=False)
-    language = Column(String(5), nullable=False, server_default=text("'en'::character varying"))
-    deleted_by_user = Column(Boolean, nullable=False, server_default=text('false'))
-    platform = Column(Enum('chrome', 'webapp', 'outlook', 'mobile', name='platform_name'))
-    end_date = Column(DateTime(True))
-    title = Column(String(255))
-    starting_mode = Column(Enum('chat', 'form', name='_session_mode'))
+    session_id: Mapped[str] = mapped_column(String(255), primary_key=True)
+    user_id: Mapped[str] = mapped_column(String(255))
+    creation_date: Mapped[datetime.datetime] = mapped_column(DateTime(True))
+    language: Mapped[str] = mapped_column(String(5), server_default=text("'en'::character varying"))
+    deleted_by_user: Mapped[bool] = mapped_column(Boolean, server_default=text('false'))
+    platform: Mapped[Optional[str]] = mapped_column(Enum('chrome', 'webapp', 'outlook', 'mobile', name='platform_name'))
+    end_date: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(True))
+    title: Mapped[Optional[str]] = mapped_column(String(255))
+    starting_mode: Mapped[Optional[str]] = mapped_column(Enum('chat', 'form', name='_session_mode'))
 
-    user = relationship('MdUser', back_populates='md_session')
-    md_error = relationship('MdError', back_populates='session')
-    md_home_chat = relationship('MdHomeChat', back_populates='session')
-    md_message = relationship('MdMessage', back_populates='session')
-    md_user_task_execution = relationship('MdUserTaskExecution', back_populates='session')
-    md_produced_text = relationship('MdProducedText', back_populates='session')
+    user: Mapped['MdUser'] = relationship('MdUser', back_populates='md_session')
+    md_error: Mapped[List['MdError']] = relationship('MdError', back_populates='session')
+    md_home_chat: Mapped[List['MdHomeChat']] = relationship('MdHomeChat', back_populates='session')
+    md_message: Mapped[List['MdMessage']] = relationship('MdMessage', back_populates='session')
+    md_user_task_execution: Mapped[List['MdUserTaskExecution']] = relationship('MdUserTaskExecution', back_populates='session')
+    md_produced_text: Mapped[List['MdProducedText']] = relationship('MdProducedText', back_populates='session')
 
 
 class MdTaskDisplayedData(Base):
@@ -365,14 +369,14 @@ class MdTaskDisplayedData(Base):
         PrimaryKeyConstraint('task_displayed_data_pk', name='md_task_displayed_data_pkey')
     )
 
-    task_displayed_data_pk = Column(Integer, Sequence('md_task_displayed_data_seq'), primary_key=True)
-    task_fk = Column(Integer, nullable=False)
-    language_code = Column(String(2), nullable=False)
-    name_for_user = Column(String(255), nullable=False)
-    definition_for_user = Column(Text, nullable=False)
-    json_input = Column(JSON, nullable=False)
+    task_displayed_data_pk: Mapped[int] = mapped_column(Integer, Sequence('md_task_displayed_data_seq'), primary_key=True)
+    task_fk: Mapped[int] = mapped_column(Integer)
+    language_code: Mapped[str] = mapped_column(String(2))
+    name_for_user: Mapped[str] = mapped_column(String(255))
+    definition_for_user: Mapped[str] = mapped_column(Text)
+    json_input: Mapped[dict] = mapped_column(JSON)
 
-    md_task = relationship('MdTask', back_populates='md_task_displayed_data')
+    md_task: Mapped['MdTask'] = relationship('MdTask', back_populates='md_task_displayed_data')
 
 
 class MdTaskPlatformAssociation(Base):
@@ -383,12 +387,12 @@ class MdTaskPlatformAssociation(Base):
         PrimaryKeyConstraint('task_platform_association_pk', name='md_task_platform_association_pkey')
     )
 
-    task_platform_association_pk = Column(Integer, Sequence('md_task_platform_association_seq'), primary_key=True)
-    task_fk = Column(Integer, nullable=False)
-    platform_fk = Column(Integer, nullable=False)
+    task_platform_association_pk: Mapped[int] = mapped_column(Integer, Sequence('md_task_platform_association_seq'), primary_key=True)
+    task_fk: Mapped[int] = mapped_column(Integer)
+    platform_fk: Mapped[int] = mapped_column(Integer)
 
-    md_platform = relationship('MdPlatform', back_populates='md_task_platform_association')
-    md_task = relationship('MdTask', back_populates='md_task_platform_association')
+    md_platform: Mapped['MdPlatform'] = relationship('MdPlatform', back_populates='md_task_platform_association')
+    md_task: Mapped['MdTask'] = relationship('MdTask', back_populates='md_task_platform_association')
 
 
 class MdTaskPredefinedActionAssociation(Base):
@@ -399,13 +403,13 @@ class MdTaskPredefinedActionAssociation(Base):
         PrimaryKeyConstraint('task_predefined_action_association_pk', name='md_task_predefined_action_association_pkey')
     )
 
-    task_predefined_action_association_pk = Column(Integer, Sequence('md_task_predefined_action_association_seq'), primary_key=True)
-    task_fk = Column(Integer, nullable=False)
-    predefined_action_fk = Column(Integer, nullable=False)
+    task_predefined_action_association_pk: Mapped[int] = mapped_column(Integer, Sequence('md_task_predefined_action_association_seq'), primary_key=True)
+    task_fk: Mapped[int] = mapped_column(Integer)
+    predefined_action_fk: Mapped[int] = mapped_column(Integer)
 
-    md_task = relationship('MdTask', foreign_keys=[predefined_action_fk], back_populates='md_task_predefined_action_association')
-    md_task_ = relationship('MdTask', foreign_keys=[task_fk], back_populates='md_task_predefined_action_association_')
-    md_predefined_action_displayed_data = relationship('MdPredefinedActionDisplayedData', back_populates='md_task_predefined_action_association')
+    md_task: Mapped['MdTask'] = relationship('MdTask', foreign_keys=[predefined_action_fk], back_populates='md_task_predefined_action_association')
+    md_task_: Mapped['MdTask'] = relationship('MdTask', foreign_keys=[task_fk], back_populates='md_task_predefined_action_association_')
+    md_predefined_action_displayed_data: Mapped[List['MdPredefinedActionDisplayedData']] = relationship('MdPredefinedActionDisplayedData', back_populates='md_task_predefined_action_association')
 
 
 class MdUserTask(Base):
@@ -416,14 +420,14 @@ class MdUserTask(Base):
         PrimaryKeyConstraint('user_task_pk', name='user_task_pkey')
     )
 
-    user_task_pk = Column(Integer, Sequence('md_user_task_seq'), primary_key=True)
-    user_id = Column(String(255), nullable=False)
-    task_fk = Column(Integer, nullable=False)
-    enabled = Column(Boolean, nullable=False, server_default=text('true'))
+    user_task_pk: Mapped[int] = mapped_column(Integer, Sequence('md_user_task_seq'), primary_key=True)
+    user_id: Mapped[str] = mapped_column(String(255))
+    task_fk: Mapped[int] = mapped_column(Integer)
+    enabled: Mapped[bool] = mapped_column(Boolean, server_default=text('true'))
 
-    md_task = relationship('MdTask', back_populates='md_user_task')
-    user = relationship('MdUser', back_populates='md_user_task')
-    md_user_task_execution = relationship('MdUserTaskExecution', back_populates='md_user_task')
+    md_task: Mapped['MdTask'] = relationship('MdTask', back_populates='md_user_task')
+    user: Mapped['MdUser'] = relationship('MdUser', back_populates='md_user_task')
+    md_user_task_execution: Mapped[List['MdUserTaskExecution']] = relationship('MdUserTaskExecution', back_populates='md_user_task')
 
 
 class MdUserVocabulary(Base):
@@ -433,12 +437,12 @@ class MdUserVocabulary(Base):
         PrimaryKeyConstraint('user_vocabulary_pk', name='md_user_vocabulary_pkey')
     )
 
-    user_vocabulary_pk = Column(Integer, Sequence('md_user_vocabulary_pk_seq'), primary_key=True)
-    word = Column(String(255), nullable=False)
-    creation_date = Column(DateTime, nullable=False, server_default=text('now()'))
-    user_id = Column(String(255), nullable=False)
+    user_vocabulary_pk: Mapped[int] = mapped_column(Integer, Sequence('md_user_vocabulary_pk_seq'), primary_key=True)
+    word: Mapped[str] = mapped_column(String(255))
+    creation_date: Mapped[datetime.datetime] = mapped_column(DateTime, server_default=text('now()'))
+    user_id: Mapped[str] = mapped_column(String(255))
 
-    user = relationship('MdUser', back_populates='md_user_vocabulary')
+    user: Mapped['MdUser'] = relationship('MdUser', back_populates='md_user_vocabulary')
 
 
 class MdWorkflowStep(Base):
@@ -448,16 +452,17 @@ class MdWorkflowStep(Base):
         PrimaryKeyConstraint('workflow_step_pk', name='md_workflow_step_pkey')
     )
 
-    workflow_step_pk = Column(Integer, Sequence('md_workflow_step_seq'), primary_key=True)
-    task_fk = Column(Integer, nullable=False)
-    name_for_system = Column(String(255), nullable=False)
-    rank = Column(Integer, nullable=False)
-    user_validation_required = Column(Boolean, nullable=False, server_default=text('true'))
-    review_chat_enabled = Column(Boolean, nullable=False, server_default=text('false'))
+    workflow_step_pk: Mapped[int] = mapped_column(Integer, Sequence('md_workflow_step_seq'), primary_key=True)
+    task_fk: Mapped[int] = mapped_column(Integer)
+    name_for_system: Mapped[str] = mapped_column(String(255))
+    rank: Mapped[int] = mapped_column(Integer)
+    user_validation_required: Mapped[bool] = mapped_column(Boolean, server_default=text('true'))
+    review_chat_enabled: Mapped[bool] = mapped_column(Boolean, server_default=text('false'))
+    definition_for_system: Mapped[Optional[str]] = mapped_column(String)
 
-    md_task = relationship('MdTask', back_populates='md_workflow_step')
-    md_workflow_step_displayed_data = relationship('MdWorkflowStepDisplayedData', back_populates='md_workflow_step')
-    md_user_workflow_step_execution = relationship('MdUserWorkflowStepExecution', back_populates='md_workflow_step')
+    md_task: Mapped['MdTask'] = relationship('MdTask', back_populates='md_workflow_step')
+    md_workflow_step_displayed_data: Mapped[List['MdWorkflowStepDisplayedData']] = relationship('MdWorkflowStepDisplayedData', back_populates='md_workflow_step')
+    md_user_workflow_step_execution: Mapped[List['MdUserWorkflowStepExecution']] = relationship('MdUserWorkflowStepExecution', back_populates='md_workflow_step')
 
 
 class MdDocumentChunk(Base):
@@ -467,14 +472,14 @@ class MdDocumentChunk(Base):
         PrimaryKeyConstraint('document_chunk_pk', name='md_document_chunk_pkey')
     )
 
-    document_chunk_pk = Column(Integer, Sequence('md_document_chunk_seq'), primary_key=True)
-    document_fk = Column(Integer, nullable=False)
-    index = Column(Integer, nullable=False)
-    embedding = Column(Vector(1536), nullable=False)
-    chunk_text = Column(Text, nullable=False)
-    deleted = Column(DateTime(True))
+    document_chunk_pk: Mapped[int] = mapped_column(Integer, Sequence('md_document_chunk_seq'), primary_key=True)
+    document_fk: Mapped[int] = mapped_column(Integer)
+    index: Mapped[int] = mapped_column(Integer)
+    embedding: Mapped[Any] = mapped_column(Vector(1536))
+    chunk_text: Mapped[str] = mapped_column(Text)
+    deleted: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(True))
 
-    md_document = relationship('MdDocument', back_populates='md_document_chunk')
+    md_document: Mapped['MdDocument'] = relationship('MdDocument', back_populates='md_document_chunk')
 
 
 class MdError(Base):
@@ -484,12 +489,12 @@ class MdError(Base):
         PrimaryKeyConstraint('error_pk', name='error_pkey')
     )
 
-    error_pk = Column(Integer, Sequence('md_error_seq'), primary_key=True)
-    message = Column(Text, nullable=False)
-    creation_date = Column(DateTime(True), nullable=False)
-    session_id = Column(String(255))
+    error_pk: Mapped[int] = mapped_column(Integer, Sequence('md_error_seq'), primary_key=True)
+    message: Mapped[str] = mapped_column(Text)
+    creation_date: Mapped[datetime.datetime] = mapped_column(DateTime(True))
+    session_id: Mapped[Optional[str]] = mapped_column(String(255))
 
-    session = relationship('MdSession', back_populates='md_error')
+    session: Mapped['MdSession'] = relationship('MdSession', back_populates='md_error')
 
 
 class MdHomeChat(Base):
@@ -500,15 +505,15 @@ class MdHomeChat(Base):
         PrimaryKeyConstraint('home_chat_pk', name='md_home_chat_pkey')
     )
 
-    home_chat_pk = Column(Integer, Sequence('home_chat_pk_seq'), primary_key=True)
-    session_id = Column(String(255), nullable=False)
-    creation_date = Column(DateTime, nullable=False, server_default=text('now()'))
-    user_id = Column(String(255), nullable=False)
-    week = Column(Date, nullable=False)
-    start_date = Column(DateTime)
+    home_chat_pk: Mapped[int] = mapped_column(Integer, Sequence('home_chat_pk_seq'), primary_key=True)
+    session_id: Mapped[str] = mapped_column(String(255))
+    creation_date: Mapped[datetime.datetime] = mapped_column(DateTime, server_default=text('now()'))
+    user_id: Mapped[str] = mapped_column(String(255))
+    week: Mapped[datetime.date] = mapped_column(Date)
+    start_date: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime)
 
-    session = relationship('MdSession', back_populates='md_home_chat')
-    user = relationship('MdUser', back_populates='md_home_chat')
+    session: Mapped['MdSession'] = relationship('MdSession', back_populates='md_home_chat')
+    user: Mapped['MdUser'] = relationship('MdUser', back_populates='md_home_chat')
 
 
 class MdMessage(Base):
@@ -518,17 +523,17 @@ class MdMessage(Base):
         PrimaryKeyConstraint('message_pk', name='message_pkey')
     )
 
-    message_pk = Column(Integer, Sequence('md_message_seq'), primary_key=True)
-    session_id = Column(String(255), nullable=False)
-    sender = Column(Enum('mojo', 'user', 'system', name='md_sender_'), nullable=False)
-    message = Column(JSON, nullable=False)
-    creation_date = Column(DateTime(True), nullable=False)
-    message_date = Column(DateTime(True), nullable=False)
-    event_name = Column(String(255))
-    read_by_user = Column(DateTime(True))
-    in_error_state = Column(DateTime(True))
+    message_pk: Mapped[int] = mapped_column(Integer, Sequence('md_message_seq'), primary_key=True)
+    session_id: Mapped[str] = mapped_column(String(255))
+    sender: Mapped[str] = mapped_column(Enum('mojo', 'user', 'system', name='md_sender_'))
+    message: Mapped[dict] = mapped_column(JSON)
+    creation_date: Mapped[datetime.datetime] = mapped_column(DateTime(True))
+    message_date: Mapped[datetime.datetime] = mapped_column(DateTime(True))
+    event_name: Mapped[Optional[str]] = mapped_column(String(255))
+    read_by_user: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(True))
+    in_error_state: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(True))
 
-    session = relationship('MdSession', back_populates='md_message')
+    session: Mapped['MdSession'] = relationship('MdSession', back_populates='md_message')
 
 
 class MdPredefinedActionDisplayedData(Base):
@@ -538,12 +543,12 @@ class MdPredefinedActionDisplayedData(Base):
         PrimaryKeyConstraint('predefined_action_displayed_data_pk', name='md_predefined_action_displayed_data_pkey')
     )
 
-    predefined_action_displayed_data_pk = Column(Integer, Sequence('md_predefined_action_displayed_data_seq'), primary_key=True)
-    task_predefined_action_association_fk = Column(Integer, nullable=False)
-    language_code = Column(String(2), nullable=False)
-    displayed_data = Column(JSON, nullable=False)
+    predefined_action_displayed_data_pk: Mapped[int] = mapped_column(Integer, Sequence('md_predefined_action_displayed_data_seq'), primary_key=True)
+    task_predefined_action_association_fk: Mapped[int] = mapped_column(Integer)
+    language_code: Mapped[str] = mapped_column(String(2))
+    displayed_data: Mapped[dict] = mapped_column(JSON)
 
-    md_task_predefined_action_association = relationship('MdTaskPredefinedActionAssociation', back_populates='md_predefined_action_displayed_data')
+    md_task_predefined_action_association: Mapped['MdTaskPredefinedActionAssociation'] = relationship('MdTaskPredefinedActionAssociation', back_populates='md_predefined_action_displayed_data')
 
 
 class MdUserTaskExecution(Base):
@@ -556,28 +561,28 @@ class MdUserTaskExecution(Base):
         PrimaryKeyConstraint('user_task_execution_pk', name='user_task_execution_pkey')
     )
 
-    user_task_execution_pk = Column(Integer, Sequence('md_user_task_execution_seq'), primary_key=True)
-    user_task_fk = Column(Integer, nullable=False)
-    json_input_values = Column(JSON, nullable=False)
-    session_id = Column(String(255), nullable=False)
-    start_date = Column(DateTime)
-    end_date = Column(DateTime)
-    summary = Column(Text)
-    title = Column(String(255))
-    predefined_action_from_user_task_execution_fk = Column(Integer)
-    todos_extracted = Column(DateTime(True))
-    deleted_by_user = Column(DateTime(True))
-    purchase_fk = Column(Integer)
+    user_task_execution_pk: Mapped[int] = mapped_column(Integer, Sequence('md_user_task_execution_seq'), primary_key=True)
+    user_task_fk: Mapped[int] = mapped_column(Integer)
+    json_input_values: Mapped[dict] = mapped_column(JSON)
+    session_id: Mapped[str] = mapped_column(String(255))
+    start_date: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime)
+    end_date: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime)
+    summary: Mapped[Optional[str]] = mapped_column(Text)
+    title: Mapped[Optional[str]] = mapped_column(String(255))
+    predefined_action_from_user_task_execution_fk: Mapped[Optional[int]] = mapped_column(Integer)
+    todos_extracted: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(True))
+    deleted_by_user: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(True))
+    purchase_fk: Mapped[Optional[int]] = mapped_column(Integer)
 
-    md_user_task_execution = relationship('MdUserTaskExecution', remote_side=[user_task_execution_pk], back_populates='md_user_task_execution_reverse')
-    md_user_task_execution_reverse = relationship('MdUserTaskExecution', remote_side=[predefined_action_from_user_task_execution_fk], back_populates='md_user_task_execution')
-    md_purchase = relationship('MdPurchase', back_populates='md_user_task_execution')
-    session = relationship('MdSession', back_populates='md_user_task_execution')
-    md_user_task = relationship('MdUserTask', back_populates='md_user_task_execution')
-    md_calendar_suggestion = relationship('MdCalendarSuggestion', back_populates='md_user_task_execution')
-    md_produced_text = relationship('MdProducedText', back_populates='md_user_task_execution')
-    md_todo = relationship('MdTodo', back_populates='md_user_task_execution')
-    md_user_workflow_step_execution = relationship('MdUserWorkflowStepExecution', back_populates='md_user_task_execution')
+    md_user_task_execution: Mapped['MdUserTaskExecution'] = relationship('MdUserTaskExecution', remote_side=[user_task_execution_pk], back_populates='md_user_task_execution_reverse')
+    md_user_task_execution_reverse: Mapped[List['MdUserTaskExecution']] = relationship('MdUserTaskExecution', remote_side=[predefined_action_from_user_task_execution_fk], back_populates='md_user_task_execution')
+    md_purchase: Mapped['MdPurchase'] = relationship('MdPurchase', back_populates='md_user_task_execution')
+    session: Mapped['MdSession'] = relationship('MdSession', back_populates='md_user_task_execution')
+    md_user_task: Mapped['MdUserTask'] = relationship('MdUserTask', back_populates='md_user_task_execution')
+    md_calendar_suggestion: Mapped[List['MdCalendarSuggestion']] = relationship('MdCalendarSuggestion', back_populates='md_user_task_execution')
+    md_produced_text: Mapped[List['MdProducedText']] = relationship('MdProducedText', back_populates='md_user_task_execution')
+    md_todo: Mapped[List['MdTodo']] = relationship('MdTodo', back_populates='md_user_task_execution')
+    md_user_workflow_step_execution: Mapped[List['MdUserWorkflowStepExecution']] = relationship('MdUserWorkflowStepExecution', back_populates='md_user_task_execution')
 
 
 class MdWorkflowStepDisplayedData(Base):
@@ -587,13 +592,13 @@ class MdWorkflowStepDisplayedData(Base):
         PrimaryKeyConstraint('workflow_step_displayed_data_pk', name='md_workflow_step_displayed_data_pkey')
     )
 
-    workflow_step_displayed_data_pk = Column(Integer, Sequence('md_workflow_step_displayed_data_seq'), primary_key=True)
-    workflow_step_fk = Column(Integer, nullable=False)
-    language_code = Column(String(2), nullable=False)
-    name_for_user = Column(String(255), nullable=False)
-    definition_for_user = Column(Text, nullable=False)
+    workflow_step_displayed_data_pk: Mapped[int] = mapped_column(Integer, Sequence('md_workflow_step_displayed_data_seq'), primary_key=True)
+    workflow_step_fk: Mapped[int] = mapped_column(Integer)
+    language_code: Mapped[str] = mapped_column(String(2))
+    name_for_user: Mapped[str] = mapped_column(String(255))
+    definition_for_user: Mapped[str] = mapped_column(Text)
 
-    md_workflow_step = relationship('MdWorkflowStep', back_populates='md_workflow_step_displayed_data')
+    md_workflow_step: Mapped['MdWorkflowStep'] = relationship('MdWorkflowStep', back_populates='md_workflow_step_displayed_data')
 
 
 class MdCalendarSuggestion(Base):
@@ -605,26 +610,26 @@ class MdCalendarSuggestion(Base):
         PrimaryKeyConstraint('calendar_suggestion_pk', name='md_welcome_message_pkey')
     )
 
-    calendar_suggestion_pk = Column(Integer, Sequence('welcome_message_pk_seq'), primary_key=True)
-    user_id = Column(String(255), nullable=False)
-    reminder = Column(Boolean, nullable=False, server_default=text('false'))
-    creation_date = Column(DateTime, nullable=False, server_default=text('now()'))
-    suggestion_text = Column(Text)
-    user_reaction_date = Column(DateTime)
-    triggered_user_task_execution_pk = Column(Integer)
-    proposed_task_fk = Column(Integer)
-    text_generated_date = Column(DateTime(True))
-    waiting_message = Column(String(255))
-    suggestion_title = Column(String(255))
-    suggestion_emoji = Column(String(255))
-    event_id = Column(String(255))
-    reminder_date = Column(DateTime(True))
-    waiting_message_sent = Column(DateTime(True))
-    ready_message = Column(String(255))
+    calendar_suggestion_pk: Mapped[int] = mapped_column(Integer, Sequence('welcome_message_pk_seq'), primary_key=True)
+    user_id: Mapped[str] = mapped_column(String(255))
+    reminder: Mapped[bool] = mapped_column(Boolean, server_default=text('false'))
+    creation_date: Mapped[datetime.datetime] = mapped_column(DateTime, server_default=text('now()'))
+    suggestion_text: Mapped[Optional[str]] = mapped_column(Text)
+    user_reaction_date: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime)
+    triggered_user_task_execution_pk: Mapped[Optional[int]] = mapped_column(Integer)
+    proposed_task_fk: Mapped[Optional[int]] = mapped_column(Integer)
+    text_generated_date: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(True))
+    waiting_message: Mapped[Optional[str]] = mapped_column(String(255))
+    suggestion_title: Mapped[Optional[str]] = mapped_column(String(255))
+    suggestion_emoji: Mapped[Optional[str]] = mapped_column(String(255))
+    event_id: Mapped[Optional[str]] = mapped_column(String(255))
+    reminder_date: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(True))
+    waiting_message_sent: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(True))
+    ready_message: Mapped[Optional[str]] = mapped_column(String(255))
 
-    md_task = relationship('MdTask', back_populates='md_calendar_suggestion')
-    md_user_task_execution = relationship('MdUserTaskExecution', back_populates='md_calendar_suggestion')
-    user = relationship('MdUser', back_populates='md_calendar_suggestion')
+    md_task: Mapped['MdTask'] = relationship('MdTask', back_populates='md_calendar_suggestion')
+    md_user_task_execution: Mapped['MdUserTaskExecution'] = relationship('MdUserTaskExecution', back_populates='md_calendar_suggestion')
+    user: Mapped['MdUser'] = relationship('MdUser', back_populates='md_calendar_suggestion')
 
 
 class MdProducedText(Base):
@@ -636,16 +641,16 @@ class MdProducedText(Base):
         PrimaryKeyConstraint('produced_text_pk', name='produced_text_pkey')
     )
 
-    produced_text_pk = Column(Integer, Sequence('md_produced_text_seq'), primary_key=True)
-    user_id = Column(String(255), nullable=False)
-    user_task_execution_fk = Column(Integer)
-    session_id = Column(String(255))
-    deleted_by_user = Column(DateTime(True))
+    produced_text_pk: Mapped[int] = mapped_column(Integer, Sequence('md_produced_text_seq'), primary_key=True)
+    user_id: Mapped[str] = mapped_column(String(255))
+    user_task_execution_fk: Mapped[Optional[int]] = mapped_column(Integer)
+    session_id: Mapped[Optional[str]] = mapped_column(String(255))
+    deleted_by_user: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(True))
 
-    session = relationship('MdSession', back_populates='md_produced_text')
-    user = relationship('MdUser', back_populates='md_produced_text')
-    md_user_task_execution = relationship('MdUserTaskExecution', back_populates='md_produced_text')
-    md_produced_text_version = relationship('MdProducedTextVersion', back_populates='md_produced_text')
+    session: Mapped['MdSession'] = relationship('MdSession', back_populates='md_produced_text')
+    user: Mapped['MdUser'] = relationship('MdUser', back_populates='md_produced_text')
+    md_user_task_execution: Mapped['MdUserTaskExecution'] = relationship('MdUserTaskExecution', back_populates='md_produced_text')
+    md_produced_text_version: Mapped[List['MdProducedTextVersion']] = relationship('MdProducedTextVersion', back_populates='md_produced_text')
 
 
 class MdTodo(Base):
@@ -655,18 +660,18 @@ class MdTodo(Base):
         PrimaryKeyConstraint('todo_pk', name='md_todo_pkey')
     )
 
-    todo_pk = Column(Integer, Sequence('md_todo_seq'), primary_key=True)
-    user_task_execution_fk = Column(Integer, nullable=False)
-    description = Column(Text, nullable=False)
-    creation_date = Column(DateTime(True), nullable=False, server_default=text('now()'))
-    deleted_by_user = Column(DateTime(True))
-    completed = Column(DateTime(True))
-    deleted_by_mojo = Column(DateTime(True))
-    deletion_justification = Column(Text)
-    read_by_user = Column(DateTime(True))
+    todo_pk: Mapped[int] = mapped_column(Integer, Sequence('md_todo_seq'), primary_key=True)
+    user_task_execution_fk: Mapped[int] = mapped_column(Integer)
+    description: Mapped[str] = mapped_column(Text)
+    creation_date: Mapped[datetime.datetime] = mapped_column(DateTime(True), server_default=text('now()'))
+    deleted_by_user: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(True))
+    completed: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(True))
+    deleted_by_mojo: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(True))
+    deletion_justification: Mapped[Optional[str]] = mapped_column(Text)
+    read_by_user: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(True))
 
-    md_user_task_execution = relationship('MdUserTaskExecution', back_populates='md_todo')
-    md_todo_scheduling = relationship('MdTodoScheduling', back_populates='md_todo')
+    md_user_task_execution: Mapped['MdUserTaskExecution'] = relationship('MdUserTaskExecution', back_populates='md_todo')
+    md_todo_scheduling: Mapped[List['MdTodoScheduling']] = relationship('MdTodoScheduling', back_populates='md_todo')
 
 
 class MdUserWorkflowStepExecution(Base):
@@ -677,18 +682,18 @@ class MdUserWorkflowStepExecution(Base):
         PrimaryKeyConstraint('user_workflow_step_execution_pk', name='md_user_workflow_step_execution_pkey')
     )
 
-    user_workflow_step_execution_pk = Column(Integer, Sequence('md_user_workflow_step_execution_seq'), primary_key=True)
-    user_task_execution_fk = Column(Integer, nullable=False)
-    workflow_step_fk = Column(Integer, nullable=False)
-    creation_date = Column(DateTime, nullable=False, server_default=text('now()'))
-    parameter = Column(JSON, nullable=False)
-    validated = Column(Boolean)
-    learned_instruction = Column(Text)
-    error_status = Column(JSON)
+    user_workflow_step_execution_pk: Mapped[int] = mapped_column(Integer, Sequence('md_user_workflow_step_execution_seq'), primary_key=True)
+    user_task_execution_fk: Mapped[int] = mapped_column(Integer)
+    workflow_step_fk: Mapped[int] = mapped_column(Integer)
+    creation_date: Mapped[datetime.datetime] = mapped_column(DateTime, server_default=text('now()'))
+    parameter: Mapped[dict] = mapped_column(JSON)
+    validated: Mapped[Optional[bool]] = mapped_column(Boolean)
+    learned_instruction: Mapped[Optional[str]] = mapped_column(Text)
+    error_status: Mapped[Optional[dict]] = mapped_column(JSON)
 
-    md_user_task_execution = relationship('MdUserTaskExecution', back_populates='md_user_workflow_step_execution')
-    md_workflow_step = relationship('MdWorkflowStep', back_populates='md_user_workflow_step_execution')
-    md_user_workflow_step_execution_result = relationship('MdUserWorkflowStepExecutionResult', back_populates='md_user_workflow_step_execution')
+    md_user_task_execution: Mapped['MdUserTaskExecution'] = relationship('MdUserTaskExecution', back_populates='md_user_workflow_step_execution')
+    md_workflow_step: Mapped['MdWorkflowStep'] = relationship('MdWorkflowStep', back_populates='md_user_workflow_step_execution')
+    md_user_workflow_step_execution_result: Mapped[List['MdUserWorkflowStepExecutionResult']] = relationship('MdUserWorkflowStepExecutionResult', back_populates='md_user_workflow_step_execution')
 
 
 class MdProducedTextVersion(Base):
@@ -699,17 +704,17 @@ class MdProducedTextVersion(Base):
         PrimaryKeyConstraint('produced_text_version_pk', name='produced_text_version_pkey')
     )
 
-    produced_text_version_pk = Column(Integer, Sequence('md_produced_text_version_seq'), primary_key=True)
-    creation_date = Column(DateTime, nullable=False)
-    production = Column(Text, nullable=False)
-    produced_text_fk = Column(Integer, nullable=False)
-    title = Column(Text)
-    text_type_fk = Column(Integer)
-    read_by_user = Column(DateTime(True))
-    embedding = Column(Vector(1536))
+    produced_text_version_pk: Mapped[int] = mapped_column(Integer, Sequence('md_produced_text_version_seq'), primary_key=True)
+    creation_date: Mapped[datetime.datetime] = mapped_column(DateTime)
+    production: Mapped[str] = mapped_column(Text)
+    produced_text_fk: Mapped[int] = mapped_column(Integer)
+    title: Mapped[Optional[str]] = mapped_column(Text)
+    text_type_fk: Mapped[Optional[int]] = mapped_column(Integer)
+    read_by_user: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(True))
+    embedding: Mapped[Optional[Any]] = mapped_column(Vector(1536))
 
-    md_produced_text = relationship('MdProducedText', back_populates='md_produced_text_version')
-    md_text_type = relationship('MdTextType', back_populates='md_produced_text_version')
+    md_produced_text: Mapped['MdProducedText'] = relationship('MdProducedText', back_populates='md_produced_text_version')
+    md_text_type: Mapped['MdTextType'] = relationship('MdTextType', back_populates='md_produced_text_version')
 
 
 class MdTodoScheduling(Base):
@@ -719,13 +724,13 @@ class MdTodoScheduling(Base):
         PrimaryKeyConstraint('todo_scheduling_pk', name='md_todo_scheduling_pkey')
     )
 
-    todo_scheduling_pk = Column(Integer, Sequence('md_todo_seq'), primary_key=True)
-    todo_fk = Column(Integer, nullable=False)
-    scheduled_date = Column(Date, nullable=False)
-    creation_date = Column(DateTime(True), nullable=False, server_default=text('now()'))
-    reschedule_justification = Column(Text)
+    todo_scheduling_pk: Mapped[int] = mapped_column(Integer, Sequence('md_todo_seq'), primary_key=True)
+    todo_fk: Mapped[int] = mapped_column(Integer)
+    scheduled_date: Mapped[datetime.date] = mapped_column(Date)
+    creation_date: Mapped[datetime.datetime] = mapped_column(DateTime(True), server_default=text('now()'))
+    reschedule_justification: Mapped[Optional[str]] = mapped_column(Text)
 
-    md_todo = relationship('MdTodo', back_populates='md_todo_scheduling')
+    md_todo: Mapped['MdTodo'] = relationship('MdTodo', back_populates='md_todo_scheduling')
 
 
 class MdUserWorkflowStepExecutionResult(Base):
@@ -735,10 +740,10 @@ class MdUserWorkflowStepExecutionResult(Base):
         PrimaryKeyConstraint('user_workflow_step_execution_result_pk', name='user_workflow_step_execution_result_pkey')
     )
 
-    user_workflow_step_execution_result_pk = Column(Integer, Sequence('md_user_workflow_step_execution_result_seq'), primary_key=True)
-    user_workflow_step_execution_fk = Column(Integer, nullable=False)
-    creation_date = Column(DateTime, nullable=False, server_default=text('now()'))
-    result = Column(JSON, nullable=False)
-    author = Column(Enum('assistant', 'user', name='_step_result_author'), nullable=False, server_default=text("'assistant'::_step_result_author"))
+    user_workflow_step_execution_result_pk: Mapped[int] = mapped_column(Integer, Sequence('md_user_workflow_step_execution_result_seq'), primary_key=True)
+    user_workflow_step_execution_fk: Mapped[int] = mapped_column(Integer)
+    creation_date: Mapped[datetime.datetime] = mapped_column(DateTime, server_default=text('now()'))
+    result: Mapped[dict] = mapped_column(JSON)
+    author: Mapped[str] = mapped_column(Enum('assistant', 'user', name='_step_result_author'), server_default=text("'assistant'::_step_result_author"))
 
-    md_user_workflow_step_execution = relationship('MdUserWorkflowStepExecution', back_populates='md_user_workflow_step_execution_result')
+    md_user_workflow_step_execution: Mapped['MdUserWorkflowStepExecution'] = relationship('MdUserWorkflowStepExecution', back_populates='md_user_workflow_step_execution_result')

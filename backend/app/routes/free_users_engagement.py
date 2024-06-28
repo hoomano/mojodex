@@ -1,6 +1,6 @@
 
 import os
-from datetime import datetime, timedelta
+
 
 from flask import request
 from flask_restful import Resource
@@ -14,7 +14,7 @@ from mojodex_backend_logger import MojodexBackendLogger
 from mojodex_core.mail import send_admin_email
 
 from models.purchase_manager import PurchaseManager
-
+from datetime import datetime, timedelta, timezone
 
 class FreeUsersEngagementChecker(Resource):
     logger_prefix = "FreeUsersEngagementChecker::"
@@ -66,7 +66,7 @@ class FreeUsersEngagementChecker(Resource):
 
             # Calculate the date before 2 working days (we don't count today)
             # if today = monday, we check if user has done nothing thursday, friday and today
-            today = datetime.utcnow().date() - timedelta(days=3)
+            today =datetime.now(timezone.utc).date() - timedelta(days=3)
             start_date_cutoff = self.calculate_previous_working_day(today)
 
             # Query for users with active free and limited products and MdUser.creation_date before the start_date_cutoff

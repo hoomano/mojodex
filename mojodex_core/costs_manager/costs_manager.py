@@ -1,7 +1,7 @@
 import os
-from datetime import datetime
-from abc import ABC
 
+from abc import ABC
+from datetime import datetime
 class CostsManager(ABC):
     logger_prefix = "CostsManager"
     cost_dir = "/data/costs"

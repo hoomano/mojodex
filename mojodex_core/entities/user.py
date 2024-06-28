@@ -1,11 +1,11 @@
-from datetime import datetime, timedelta
+
 
 from mojodex_core.entities.db_base_entities import MdUser, MdTask, MdUserTask
 from sqlalchemy.orm import object_session
 
 from mojodex_core.entities.instruct_task import InstructTask
 from mojodex_core.llm_engine.mpt import MPT
-
+from datetime import datetime, timedelta, timezone
 
 class User(MdUser):
 
@@ -24,7 +24,7 @@ class User(MdUser):
     @property
     def local_datetime(self):
         try:
-            timestamp = datetime.utcnow()
+            timestamp = datetime.now(timezone.utc)
             if self.timezone_offset:
                 timestamp -= timedelta(minutes=self.timezone_offset)
             return timestamp

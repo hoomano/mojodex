@@ -1,4 +1,4 @@
-from datetime import datetime
+
 
 from app import db, language_retriever, conversation_retriever
 from mojodex_core.entities.db_base_entities import *
@@ -12,7 +12,7 @@ from sqlalchemy import func, text
 from models.todos.todos_rescheduler import TodosRescheduler
 
 from mojodex_core.mail import send_technical_error_email
-
+from datetime import datetime, timezone
 
 class RescheduleTodoCortex:
     logger_prefix = "RescheduleTodoCortex"
@@ -124,7 +124,7 @@ class RescheduleTodoCortex:
                 .group_by(MdTodoScheduling.todo_fk) \
                 .subquery()
             # Get the current date in UTC
-            now_utc = datetime.utcnow().date()
+            now_utc = datetime.now(timezone.utc).date()
             results = db.session.query(MdTodo.description, latest_todo_scheduling.c.latest_scheduled_date) \
                 .join(MdUserTaskExecution, MdTodo.user_task_execution_fk == MdUserTaskExecution.user_task_execution_pk) \
                 .join(latest_todo_scheduling, MdTodo.todo_pk == latest_todo_scheduling.c.todo_fk) \

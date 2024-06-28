@@ -1,4 +1,3 @@
-from models.assistant.chat_assistant import ChatAssistant
 from mojodex_core.tag_manager import TagManager
 from app import server_socket, placeholder_generator
 from models.workflows.workflow_process_controller import WorkflowProcessController

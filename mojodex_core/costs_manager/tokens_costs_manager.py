@@ -1,8 +1,8 @@
-from datetime import datetime
+
 
 from mojodex_core.costs_manager.costs_manager import CostsManager
 from mojodex_core.logging_handler import log_error
-
+from datetime import datetime, timezone
 
 class TokensCostsManager(CostsManager):
     logger_prefix = "TokensCostsManager"
@@ -21,7 +21,7 @@ class TokensCostsManager(CostsManager):
                            user_task_execution_pk, task_name_for_system):
         try:
             with open(self.file_path, "a") as f:
-                f.write(f"{datetime.utcnow().isoformat()},{user_id},{n_prompts_tokens},{n_conversation_tokens},{n_response_tokens},{model},{name},"
+                f.write(f"{datetime.now(timezone.utc).isoformat()},{user_id},{n_prompts_tokens},{n_conversation_tokens},{n_response_tokens},{model},{name},"
                         f"{user_task_execution_pk},{task_name_for_system}\n")
         except Exception as e:
             log_error(f"{TokensCostsManager.logger_prefix}: on_tokens_counted: {e}", notify_admin=True)

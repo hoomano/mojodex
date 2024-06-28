@@ -1,6 +1,6 @@
 
 import os
-from datetime import datetime
+
 
 import requests
 from flask import request
@@ -11,7 +11,7 @@ from mojodex_core.entities.db_base_entities import *
 from sqlalchemy import func, text, extract, and_
 
 from mojodex_backend_logger import MojodexBackendLogger
-
+from datetime import datetime
 
 
 class TodoDailyEmails(Resource):

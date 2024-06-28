@@ -10,7 +10,7 @@ from mojodex_core.knowledge_manager import KnowledgeManager
 from mojodex_core.entities.message import Message
 from mojodex_core.llm_engine.mpt import MPT
 from mojodex_core.logging_handler import log_error
-from datetime import datetime, timedelta
+
 from mojodex_core.entities.db_base_entities import MdHomeChat, MdMessage, MdUserTaskExecution, MdUserTask, MdTask
 from packaging import version
 
@@ -20,6 +20,8 @@ from sqlalchemy import extract, text, func, and_
 
 from mojodex_core.entities.session import Session
 from mojodex_core.entities.user import User
+from datetime import datetime, timedelta
+
 class HomeChat(Resource):
     welcome_message_mpt_filename = "instructions/welcome_message.mpt"
     message_header_start_tag, message_header_end_tag = "<message_header>", "</message_header>"

@@ -1,9 +1,10 @@
 from mojodex_core.entities.db_base_entities import MdWorkflowStep
-from mojodex_core.entities.abstract_entities.user_task_execution import UserTaskExecution
+from mojodex_core.entities.user_task_execution import UserTaskExecution
 from mojodex_core.entities.user_workflow import UserWorkflow
 from mojodex_core.entities.user_workflow_step_execution import UserWorkflowStepExecution
 from sqlalchemy.orm import object_session
-from sqlalchemy import case, and_
+from sqlalchemy import case
+from sqlalchemy.sql import and_
 
 class UserWorkflowExecution(UserTaskExecution):
 
@@ -35,10 +36,9 @@ class UserWorkflowExecution(UserTaskExecution):
                 .filter(
                 case(
                     # When `MdWorkflowStep.user_validation_required` is `True`, we check that `MdUserWorkflowStepExecution.validated` is also `True`
-                    [
-                        (
-                        MdWorkflowStep.user_validation_required == True, UserWorkflowStepExecution.validated == True),
-                    ],
+                    
+                        (MdWorkflowStep.user_validation_required == True, UserWorkflowStepExecution.validated == True),
+                    
                     # if `user_validation_required` is `False`, we don't care about the `validated` status, and the `MdUserWorkflowStepExecution` will be included in the results regardless of its `validated` value.
                     else_=True
                 )

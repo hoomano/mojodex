@@ -1,5 +1,5 @@
 import os
-from datetime import datetime
+
 
 from flask import request
 from flask_restful import Resource
@@ -7,7 +7,7 @@ from app import db, authenticate
 from mojodex_core.logging_handler import log_error
 from mojodex_core.entities.db_base_entities import *
 from sqlalchemy import func, text
-
+from datetime import datetime, timezone
 
 class Todos(Resource):
     MAX_TODOS = 50
@@ -212,7 +212,7 @@ class Todos(Resource):
                 .group_by(MdTodoScheduling.todo_fk)\
                 .subquery()
             # Get the current date in UTC
-            now_utc = datetime.utcnow().date()
+            now_utc = datetime.now(timezone.utc).date()
             if "user_task_execution_fk" in request.args:
                 user_task_execution_pk = request.args["user_task_execution_fk"]
                 # ensure user_task_execution_pk exists for this user

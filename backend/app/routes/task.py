@@ -248,13 +248,17 @@ class Task(Resource):
                         return {"error": "Step must be a dict"}, 400
                     if "name_for_system" not in step:
                         return {"error": "Step must contain 'name_for_system'"}, 400
+                    if "definition_for_system" not in step:
+                        return {"error": "Step must contain 'definition_for_system'"}, 400
                     step_name_for_system = step["name_for_system"]
+                    step_definition_for_system = step["definition_for_system"]
                     # ensure key exists in steps_class
                     if step_name_for_system not in steps_class:
                         return {"error": f"Step {step_name_for_system} not found in steps library"}, 400
 
                     db_step = MdWorkflowStep(
                         name_for_system=step_name_for_system,
+                        definition_for_system=step_definition_for_system,
                         task_fk=task.task_pk,
                         rank=step_index + 1,
                         review_chat_enabled=step.get("review_chat_enabled", False)

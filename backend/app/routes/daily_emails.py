@@ -1,6 +1,5 @@
-import json
 import os
-from datetime import datetime, timedelta
+
 
 import requests
 from flask import request
@@ -12,7 +11,7 @@ from sqlalchemy import func, text, extract, case
 from sqlalchemy.sql.functions import coalesce
 
 from mojodex_core.mail import send_admin_email, admin_email_receivers
-
+from datetime import datetime, timedelta
 
 class DailyEmails(Resource):
     reminder_email_type="reminder_email"
@@ -197,10 +196,10 @@ class DailyEmails(Resource):
                                        func.coalesce(
                                             n_meeting_minutes_subquery.c.today_meeting_minutes_counts, 0
                                         ).label("n_meeting_minutes_today"),
-                                       case([(reminder_email_yesterday_subquery.c.user_id.is_(None), False)],
+                                       case((reminder_email_yesterday_subquery.c.user_id.is_(None), False),
                                             else_=True).label(
                                            "received_reminder_email_yesterday"),
-                                       case([(reminder_email_day_before_yesterday_subquery.c.user_id.is_(None), False)],
+                                       case((reminder_email_day_before_yesterday_subquery.c.user_id.is_(None), False),
                                             else_=True).label(
                                            "reminder_email_day_before_yesterday"),
                                        func.coalesce(process_count_subquery.c.process_count_since_today, 0).label("n_processes_created_today"),

@@ -1,5 +1,5 @@
 import os
-from datetime import datetime
+
 
 import requests
 from flask import request
@@ -13,7 +13,7 @@ from mojodex_core.json_loader import json_decode_retry
 from mojodex_core.logging_handler import on_json_error
 
 from mojodex_core.llm_engine.mpt import MPT
-
+from datetime import datetime
 
 class Company(Resource):
     correct_company_info_mpt_filename = "instructions/correct_company_infos.mpt"

@@ -1,5 +1,5 @@
 import os
-from datetime import datetime
+
 
 from bs4 import BeautifulSoup
 from jinja2 import Template
@@ -14,7 +14,7 @@ from mojodex_core.mail import send_admin_email
 from sqlalchemy import or_
 
 from mojodex_core.mail import mojo_mail_client
-
+from datetime import datetime
 
 class FreeProductAssociation(Resource):
     welcome_email_dir = "mojodex_core/mails_templates/welcome"

@@ -5,20 +5,19 @@ from mojodex_core.logging_handler import log_error
 from mojodex_core.entities.db_base_entities import *
 from jinja2 import Template
 from werkzeug.security import generate_password_hash
-from datetime import datetime, timedelta
 import random
 import string
 import os
 from bs4 import BeautifulSoup
 from routes.user import User
-
+from datetime import datetime, timedelta, timezone
 
 def generate_reset_password_token(user_id):
     payload = {
-        'iat': datetime.utcnow(),
-        "exp": datetime.utcnow() + timedelta(minutes=10),
+        'iat': datetime.now(timezone.utc),
+        "exp": datetime.now(timezone.utc) + timedelta(minutes=10),
         'sub': user_id + os.environ['RESET_PASSWORD_SECRET_KEY'] + ''.join(
-            random.choices(string.ascii_uppercase + string.digits, k=10)) + datetime.utcnow().isoformat()
+            random.choices(string.ascii_uppercase + string.digits, k=10)) + datetime.now(timezone.utc).isoformat()
     }
     return jwt.encode(payload, os.environ["RESET_PASSWORD_JWT_SECRET"], algorithm=os.environ["ENCODING_ALGORITHM"])
 

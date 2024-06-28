@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from mojodex_core.logging_handler import MojodexCoreLogger
 
@@ -26,7 +26,7 @@ class KnowledgeCollector:
     def get_global_context_knowledge(timezone_offset=0):
         """Returns the global context knowledge for the current time
         :param timezone_offset: offset in minutes to remove from UTC time to get user time"""
-        timestamp = datetime.utcnow()
+        timestamp = datetime.now(timezone.utc)
         timestamp -= timedelta(minutes=timezone_offset)
         global_context = MPT("mojodex_core/instructions/global_context.mpt",
                              weekday=timestamp.strftime("%A"),
@@ -41,7 +41,7 @@ class KnowledgeCollector:
     @property
     def localized_context(self):
         try:
-            timestamp = datetime.utcnow()
+            timestamp = datetime.now(timezone.utc)
             if self.user_timezone_offset:
                 timestamp -= timedelta(minutes=self.user_timezone_offset)
             return MPT("mojodex_core/instructions/global_context.mpt",

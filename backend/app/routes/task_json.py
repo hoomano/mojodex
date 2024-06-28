@@ -1,5 +1,4 @@
 import os
-from datetime import datetime
 
 from flask import request
 from flask_restful import Resource
@@ -10,6 +9,7 @@ from mojodex_core.entities.db_base_entities import MdTextType
 from mojodex_core.llm_engine.mpt import MPT
 from mojodex_core.json_loader import json_decode_retry
 from mojodex_core.logging_handler import on_json_error
+from datetime import datetime
 
 
 class TaskJson(Resource):

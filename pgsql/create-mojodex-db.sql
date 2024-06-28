@@ -1084,7 +1084,8 @@ CREATE TABLE public.md_workflow_step (
     name_for_system character varying(255) NOT NULL,
     rank integer NOT NULL,
     user_validation_required boolean DEFAULT true NOT NULL,
-    review_chat_enabled boolean DEFAULT false NOT NULL
+    review_chat_enabled boolean DEFAULT false NOT NULL,
+    definition_for_system character varying(255)
 );
 
 

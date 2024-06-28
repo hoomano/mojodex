@@ -1,5 +1,5 @@
 import os
-from datetime import datetime, timedelta
+
 from operator import and_
 
 import requests
@@ -9,7 +9,7 @@ from app import db
 from mojodex_core.logging_handler import log_error
 from mojodex_core.entities.db_base_entities import *
 from sqlalchemy import func, desc
-
+from datetime import datetime, timedelta
 
 class ExtractTodos(Resource):
 

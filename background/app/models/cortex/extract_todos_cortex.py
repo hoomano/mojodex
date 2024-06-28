@@ -1,5 +1,5 @@
 import os
-from datetime import datetime
+
 
 import requests
 from app import db, language_retriever, conversation_retriever
@@ -12,7 +12,7 @@ from background_logger import BackgroundLogger
 
 from models.todos.todos_creator import TodosCreator
 from sqlalchemy import func
-
+from datetime import datetime
 
 class ExtractTodosCortex:
     logger_prefix = "ExtractTodosCortex"

@@ -5,7 +5,7 @@ import os
 from appstoreserverlibrary.api_client import AppStoreServerAPIClient
 from flask import request
 from flask_restful import Resource
-from datetime import datetime
+
 from app import authenticate, db
 from mojodex_core.entities.db_base_entities import *
 from models.purchase_manager import PurchaseManager
@@ -14,7 +14,7 @@ from appstoreserverlibrary.models.Environment import Environment
 
 from mojodex_core.mail import send_admin_email
 from mojodex_core.logging_handler import log_error
-
+from datetime import datetime
 class InAppApplePurchase(Resource):
     logger_prefix = "InAppApplePurchase Resource:: "
 

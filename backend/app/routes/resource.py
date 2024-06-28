@@ -1,5 +1,5 @@
 import os
-from datetime import datetime
+
 
 import requests
 from flask import request
@@ -10,7 +10,7 @@ from mojodex_core.entities.db_base_entities import *
 
 from models.documents.website_parser import WebsiteParser
 from typing import List, Dict, Any
-
+from datetime import datetime
 class MojoResource(Resource):
 
 

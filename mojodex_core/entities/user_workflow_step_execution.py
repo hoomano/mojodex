@@ -6,6 +6,7 @@ from mojodex_core.entities.db_base_entities import MdUserWorkflowStepExecution, 
 import pytz
 from sqlalchemy.orm import object_session
 
+from mojodex_core.entities.workflow_step import WorkflowStep
 from mojodex_core.steps_library import steps_class
 
 
@@ -16,7 +17,7 @@ class UserWorkflowStepExecution(MdUserWorkflowStepExecution):
         try:
             session = object_session(self)
             md_step = session.query(MdWorkflowStep).get(self.workflow_step_fk)
-            step_class = steps_class[md_step.name_for_system]
+            step_class = steps_class[md_step.name_for_system] if md_step.name_for_system in steps_class else WorkflowStep
             return session.query(step_class).get(self.workflow_step_fk)
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} :: workflow_step :: {e}")

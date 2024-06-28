@@ -1,5 +1,4 @@
 import os
-from datetime import datetime, timedelta
 import requests
 from flask import request
 from flask_restful import Resource
@@ -7,7 +6,7 @@ from app import db, authenticate
 from mojodex_core.logging_handler import log_error
 from mojodex_core.entities.db_base_entities import *
 from sqlalchemy import func, text, extract
-
+from datetime import datetime, timedelta, timezone
 
 class TodosScheduling(Resource):
 
@@ -102,7 +101,7 @@ class TodosScheduling(Resource):
             results = []
 
             while len(results) == 50 or offset == 0:
-                yesterday = datetime.utcnow() - timedelta(days=1)
+                yesterday = datetime.now(timezone.utc) - timedelta(days=1)
 
                 latest_todo_scheduling = db.session.query(MdTodoScheduling.todo_fk, func.max(MdTodoScheduling.scheduled_date).label('scheduled_date')) \
                     .group_by(MdTodoScheduling.todo_fk) \

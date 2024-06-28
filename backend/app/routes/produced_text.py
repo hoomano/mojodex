@@ -1,5 +1,4 @@
 import os
-from datetime import datetime
 from sqlalchemy import func
 from flask import request
 from flask_restful import Resource
@@ -7,7 +6,7 @@ from app import db, authenticate, authenticate_function
 from mojodex_core.logging_handler import log_error
 from mojodex_core.entities.db_base_entities import *
 from mojodex_core.produced_text_managers.produced_text_manager import ProducedTextManager
-
+from datetime import datetime
 
 class ProducedText(Resource):
 

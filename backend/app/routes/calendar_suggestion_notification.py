@@ -1,5 +1,5 @@
 import os
-from datetime import datetime
+
 
 import requests
 from flask import request
@@ -7,7 +7,7 @@ from flask_restful import Resource
 from app import db
 from mojodex_core.logging_handler import log_error
 from mojodex_core.entities.db_base_entities import *
-
+from datetime import datetime
 
 class CalendarSuggestionNotifications(Resource):
 

@@ -1,6 +1,5 @@
 import glob
 import os
-from datetime import datetime
 from flask import request
 from flask_restful import Resource
 from app import db, authenticate
@@ -9,7 +8,7 @@ from mojodex_core.entities.db_base_entities import *
 
 from sqlalchemy import or_
 from mojodex_core.entities.message import Message as MessageEntity
-
+from datetime import datetime
 class Message(Resource):
 
     def __init__(self):

@@ -67,7 +67,7 @@ const DraftDetail = () => {
 
   const [isSocketLoaded, setIsSocketLoaded] = useState(false);
   const [isTask, setIsTask] = useState(false);
-  const [streamTitle, setStreamTitle] = useState<string | null>(null);
+  const [taskExecutionTitle, setTaskExecutionTitle] = useState<string | null>(currentTask?.title ?? null);
   const [editorDetails, setEditorDetails] = useState<EditerProducedText>({
     text: "",
     title: "",
@@ -251,7 +251,7 @@ const DraftDetail = () => {
     });
 
     socket.on(socketEvents.USER_TASK_EXECUTION_TITLE, ({ title }) => {
-      setStreamTitle(title);
+      setTaskExecutionTitle(title);
     });
 
     socket.on(socketEvents.DRAFT_MESSAGE, (message: any, ack) => {
@@ -438,9 +438,9 @@ const DraftDetail = () => {
                   <div className="text-subtitle6 font-semibold text-gray-lighter">
                     {currentTask?.task_name}
                   </div>
-                  {!!streamTitle && (
+                  {!!taskExecutionTitle && (
                     <div className="text-h4 font-semibold text-gray-darker">
-                      {streamTitle}
+                      {taskExecutionTitle}
                     </div>
                   )}
                 </div>

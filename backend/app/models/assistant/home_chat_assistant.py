@@ -145,8 +145,9 @@ class HomeChatAssistant(ChatAssistant):
                         # associate previous user message to this task
                         if self.session.last_user_message:
                             self.session.last_user_message.user_task_execution_pk = self.instruct_task_execution.user_task_execution_pk
-
-                        server_socket.start_background_task(TaskExecutionTitleSummaryGenerator.generate_title_and_summary, self.instruct_task_execution.user_task_execution_pk)
+                        if self.instruct_task_execution.title is None:
+                            # No callback to stream the title here because no clear UX plan for this, just call the background task
+                            server_socket.start_background_task(TaskExecutionTitleSummaryGenerator.generate_title_and_summary, self.instruct_task_execution.user_task_execution_pk)
                         return True  # we stop the stream
                 else:  # detected task is null
                     if self.instruct_task_execution:

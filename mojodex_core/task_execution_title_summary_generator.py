@@ -8,7 +8,7 @@ class TaskExecutionTitleSummaryGenerator:
     
     @staticmethod
     @with_db_session
-    def generate_title_and_summary(user_task_execution_pk, db_session):
+    def generate_title_and_summary(user_task_execution_pk, db_session, callback=None):
         try:
             user_task_execution = db_session.query(UserTaskExecution).get(user_task_execution_pk)
             task_execution_summary = MPT("mojodex_core/instructions/task_execution_summary.mpt",
@@ -29,5 +29,10 @@ class TaskExecutionTitleSummaryGenerator:
             user_task_execution.title = response.split("<title>")[1].split("</title>")[0]
             user_task_execution.summary = response.split("<summary>")[1].split("</summary>")[0]
             db_session.commit()
+
+            # callback can be used to do something with the title and summary once they are generated
+            if callback:
+                callback(user_task_execution.title, user_task_execution.summary)
+
         except Exception as e:
             raise Exception(f"generate_title_and_summary :: {e}")

@@ -70,7 +70,7 @@ class TextEditActionManager:
                 "produced_text_title": title,
                 "produced_text": production,
                 "text": self.task_produced_text_manager.get_produced_text_without_tags(edited_text),
-                "text_with_tags": TagManager("execution").tag_manager.add_tags_to_text(edited_text)
+                "text_with_tags": TagManager("execution").add_tags_to_text(edited_text)
             }
 
             embedding = ProducedTextManager.embed_produced_text(title, production, self.user_id,

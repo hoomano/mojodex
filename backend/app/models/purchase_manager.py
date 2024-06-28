@@ -4,7 +4,7 @@ from mojodex_backend_logger import MojodexBackendLogger
 from app import db
 from mojodex_core.logging_handler import log_error
 from mojodex_core.entities.db_base_entities import *
-from mojodex_core.mail import send_admin_email
+from mojodex_core.email_sender.email_service import EmailService
 from sqlalchemy import and_, func, or_, text
 from sqlalchemy.sql.functions import coalesce
 from datetime import timedelta
@@ -50,7 +50,7 @@ class PurchaseManager:
                                     user_active_purchase["subscription_stripe_id"]).status == "active":
                                 self.logger.info("Purchase paid with Stripe")
                         except Exception as e:
-                            send_admin_email(
+                            EmailService().send(
                                 subject=f"URGENT: STRIPE API FAILED TO CHECK PURCHASE {user_active_purchase['purchase_pk']}",
                                 recipients=self.purchases_email_receivers,
                                 text=f"Stripe API error: {e}")
@@ -63,7 +63,7 @@ class PurchaseManager:
                         # if not, then there is a strange problem, let's send a message to admin
                         message = f"Purchase {user_active_purchase['purchase_pk']} of user {user_id} has no stripe_id nor apple_transaction_id nor custom_purchase_id and is not free." \
                                   f"\nPlease check this purchase."
-                        send_admin_email(subject="URGENT: Incorrect purchase in db",
+                        EmailService().send(subject="URGENT: Incorrect purchase in db",
                                          recipients=self.purchases_email_receivers,
                                          text=message)
                         try:

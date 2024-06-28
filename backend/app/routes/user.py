@@ -8,7 +8,6 @@ from models.login_providers.apple_login_manager import AppleLoginManager
 from flask import request
 from flask_restful import Resource
 from app import db
-from mojodex_core.mail import mojo_mail_client
 from mojodex_core.logging_handler import log_error
 from mojodex_core.entities.db_base_entities import *
 import hashlib
@@ -17,8 +16,7 @@ import jwt
 from werkzeug.security import generate_password_hash, check_password_hash
 from bs4 import BeautifulSoup
 from models.purchase_manager import PurchaseManager
-
-from mojodex_core.mail import send_admin_email
+from mojodex_core.email_sender.email_service import EmailService
 from packaging import version
 from datetime import datetime, timedelta, timezone
 def generate_user_id(name):
@@ -68,7 +66,7 @@ class User(Resource):
 
         try:
             message = f"New user registered : \nuser_id: {user_id} \nemail: {email} \nname: {name} \napp_version: {app_version}"
-            send_admin_email(subject="🎉 New user registered",
+            EmailService().send(subject="🎉 New user registered",
                              recipients=PurchaseManager.purchases_email_receivers,
                              text=message)
         except Exception as e:
@@ -283,7 +281,7 @@ class User(Resource):
                                reset_password_link=f'{os.environ["MOJODEX_WEBAPP_URI"]}/auth/reset-password?token={token}',
                                mojodex_webapp_url=os.environ["MOJODEX_WEBAPP_URI"])
     
-        mojo_mail_client.send_email(subject=subject,
+        EmailService().send(subject=subject,
                                     recipients=[user.email],
                                     html_body=mail)
                 

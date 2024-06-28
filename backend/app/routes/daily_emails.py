@@ -1,6 +1,4 @@
 import os
-
-
 import requests
 from flask import request
 from flask_restful import Resource
@@ -9,8 +7,7 @@ from mojodex_core.logging_handler import log_error
 from mojodex_core.entities.db_base_entities import *
 from sqlalchemy import func, text, extract, case
 from sqlalchemy.sql.functions import coalesce
-
-from mojodex_core.mail import send_admin_email, admin_email_receivers
+from mojodex_core.email_sender.email_service import EmailService
 from datetime import datetime, timedelta
 
 class DailyEmails(Resource):
@@ -250,7 +247,7 @@ class DailyEmails(Resource):
             for user in users_needing_admin_email:
                 user_id, email = user["user_id"], user["email"]
                 try:
-                    send_admin_email(f"User engagement", admin_email_receivers,
+                    EmailService().send_admin_email(f"User engagement",
                                      f"User {user_id} with email {email} has done no meeting minutes for the last 2 days.")
                 except Exception as e:
                     log_error(f"Error sending daily notification to user {user_id}: {e}", notify_admin=True)

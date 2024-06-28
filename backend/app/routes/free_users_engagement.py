@@ -11,7 +11,7 @@ from sqlalchemy import func, text, and_
 
 from mojodex_backend_logger import MojodexBackendLogger
 
-from mojodex_core.mail import send_admin_email
+from mojodex_core.email_sender.email_service import EmailService
 
 from models.purchase_manager import PurchaseManager
 from datetime import datetime, timedelta, timezone
@@ -94,7 +94,7 @@ class FreeUsersEngagementChecker(Resource):
             for user in users:
                 try:
                     message = f"User {user.user_id} - {user.email} currently in free trial is disengaged => They have done nothing in the last 2 working days (and nothing yet today)"
-                    send_admin_email(subject="Disengaged free trial user",
+                    EmailService().end(subject="Disengaged free trial user",
                                      recipients=PurchaseManager.purchases_email_receivers,
                                      text=message)
                 except Exception as e:

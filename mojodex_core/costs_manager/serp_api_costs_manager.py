@@ -1,6 +1,6 @@
 
 from mojodex_core.costs_manager.costs_manager import CostsManager
-from mojodex_core.mail import send_technical_error_email
+from mojodex_core.email_sender.email_service import EmailService
 from datetime import datetime, timezone
 class SerpAPICostsManager(CostsManager):
     logger_prefix = "SerpAPICostsManager"
@@ -11,7 +11,7 @@ class SerpAPICostsManager(CostsManager):
         try:
             super().__init__(SerpAPICostsManager.name, SerpAPICostsManager.columns)
         except Exception as e:
-            send_technical_error_email(f"{SerpAPICostsManager.logger_prefix}: __init__: {e}")
+            EmailService().send_technical_error_email(f"{SerpAPICostsManager.logger_prefix}: __init__: {e}")
 
 
     def on_search(self, user_id, num_of_results_asked, user_task_execution_pk, task_name_for_system):
@@ -19,4 +19,4 @@ class SerpAPICostsManager(CostsManager):
             with open(self.file_path, "a") as f:
                 f.write(f"{datetime.now(timezone.utc).isoformat()},{user_id},{num_of_results_asked},{user_task_execution_pk},{task_name_for_system}\n")
         except Exception as e:
-            send_technical_error_email(f"{SerpAPICostsManager.logger_prefix}: on_search: {e}")
+            EmailService().send_technical_error_email(f"{SerpAPICostsManager.logger_prefix}: on_search: {e}")

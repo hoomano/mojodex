@@ -7,7 +7,7 @@ from flask_restful import Resource
 
 from app import authenticate, db
 from mojodex_core.entities.db_base_entities import *
-from mojodex_core.mail import send_admin_email
+from mojodex_core.email_sender.email_service import EmailService
 from mojodex_core.logging_handler import log_error
 
 from mojodex_backend_logger import MojodexBackendLogger
@@ -104,7 +104,7 @@ class Purchase(Resource):
                 customer_email = data['object']['customer_details']['email']
                 message = f"A purchase error occurred for customer {customer_id} - {customer_email} " \
                             f"purchase session_id={session_id} was not found in db"
-                send_admin_email(subject="URGENT: Purchase error",
+                EmailService().send(subject="URGENT: Purchase error",
                                            recipients=PurchaseManager.purchases_email_receivers,
                                            text=message)
 
@@ -128,7 +128,7 @@ class Purchase(Resource):
             product = db.session.query(MdProduct).filter(MdProduct.product_pk == purchase.product_fk).first()
             try:
                 message = f"🎉 Congratulations ! {user_email} just bought {product.name} !"
-                send_admin_email(subject="🥳 New client purchase",
+                EmailService().send(subject="🥳 New client purchase",
                                            recipients=PurchaseManager.purchases_email_receivers,
                                            text=message)
             except Exception as e:
@@ -140,7 +140,7 @@ class Purchase(Resource):
             log_error(f"Error in stripe webhook validating purchase: {e}")
             message=f"A purchase error occurred : {e}\n" \
                     f"See [https://dashboard.stripe.com/] for more details"
-            send_admin_email(subject="URGENT: Purchase error",
+            EmailService().send(subject="URGENT: Purchase error",
                                        recipients=PurchaseManager.purchases_email_receivers,
                                        text=message)
             return {"error": f"Error in stripe webhook validating purchase: {e}"}, 409

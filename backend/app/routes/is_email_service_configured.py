@@ -1,7 +1,7 @@
 from flask import request
 from flask_restful import Resource
 from mojodex_core.logging_handler import log_error
-from mojodex_core.mail import mojo_mail_client
+from mojodex_core.email_sender.email_service import EmailService
 
 
 class IsEmailServiceConfigured(Resource):
@@ -14,7 +14,7 @@ class IsEmailServiceConfigured(Resource):
             return {"error": f"Missing field {e}"}, 400
         
         try:
-            return {"is_configured": mojo_mail_client is not None}
+            return {"is_configured": EmailService().configured}
         except Exception as e:
             log_error(f"Error getting email service configuration : {e}")
             return {"error": f"Error getting email service configuration : {e}"}, 500

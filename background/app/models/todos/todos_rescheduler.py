@@ -7,7 +7,7 @@ from background_logger import BackgroundLogger
 from mojodex_core.logging_handler import on_json_error
 
 
-from mojodex_core.mail import send_technical_error_email
+from mojodex_core.email_sender.email_service import EmailService
 
 from mojodex_core.llm_engine.mpt import MPT
 
@@ -40,7 +40,7 @@ class TodosRescheduler:
             except ValueError:
                 self.logger.error(
                     f"Error extracting todos : Invalid reschedule_date {json_result['reschedule_date']} - Not saving to db")
-                send_technical_error_email(f"Error in {self.logger_prefix} - reschedule_and_save: Invalid reschedule_date {json_result['reschedule_date']} - Not saving to db."
+                EmailService().send_technical_error_email(f"Error in {self.logger_prefix} - reschedule_and_save: Invalid reschedule_date {json_result['reschedule_date']} - Not saving to db."
                                        f"This is not blocking, only this todo {self.todo_pk} will not be rescheduled.")
                 save_to_db = False
             if save_to_db:

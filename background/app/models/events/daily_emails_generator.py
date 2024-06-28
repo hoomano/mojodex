@@ -6,7 +6,7 @@ from background_logger import BackgroundLogger
 from mojodex_core.json_loader import json_decode_retry
 
 
-from mojodex_core.mail import send_technical_error_email
+from mojodex_core.email_sender.email_service import EmailService
 from mojodex_core.logging_handler import on_json_error
 
 from models.events.events_generator import EventsGenerator
@@ -76,11 +76,11 @@ class DailyEmailsGenerator(EventsGenerator):
                         self.send_event(user_id, message={"subject": subject, "body": body, 'email': email},
                                         event_type=DailyEmailsGenerator.reminder_email_type)
                     except Exception as e:
-                        send_technical_error_email(
+                        EmailService().send_technical_error_email(
                             f"Error sending daily remind_email to {email} : {e}")
 
         except Exception as e:
-            send_technical_error_email(
+            EmailService().send_technical_error_email(
                 f"{self.logger.name} : Error preparing emails: {e}")
 
     @json_decode_retry(retries=3, required_keys=["subject", "body"], on_json_error=on_json_error)

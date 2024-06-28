@@ -58,6 +58,7 @@ from routes.profile_task_association import ProfileTaskAssociation
 from routes.image import Image
 from routes.relaunch_locked_workflow_step_executions import RelaunchLockedWorkflowStepExecutions
 from routes.is_email_service_configured import IsEmailServiceConfigured
+from routes.is_push_notif_service_configured import IsPushNotifServiceConfigured
 from routes.user_workflow_step_execution_result import UserWorkflowStepExecutionResult
 from routes.restart_user_workflow_execution import RestartUserWorkflowExecution
 class HttpRouteManager:
@@ -123,5 +124,6 @@ class HttpRouteManager:
         api.add_resource(Image, "/image")
         api.add_resource(RelaunchLockedWorkflowStepExecutions, "/relaunch_locked_workflow_step_executions")
         api.add_resource(IsEmailServiceConfigured, "/is_email_service_configured")
+        api.add_resource(IsPushNotifServiceConfigured, "/is_push_notif_service_configured")
         api.add_resource(UserWorkflowStepExecutionResult, "/user_workflow_step_execution_result")
         api.add_resource(RestartUserWorkflowExecution, "/restart_user_workflow_execution")

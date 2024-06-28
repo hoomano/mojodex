@@ -1,10 +1,8 @@
 import os
-
-
 from flask import request
 from flask_restful import Resource
 from app import db
-from push_notification_sender import push_notification_sender
+from mojodex_core.push_notification.client import PushNotificationClient
 from mojodex_core.logging_handler import log_error
 from mojodex_core.entities.db_base_entities import *
 from mojodex_core.mail import mojo_mail_client
@@ -46,8 +44,7 @@ class Event(Resource):
                 data = request.json["data"]
                 notification_title, notification_body = request.json['message']['title'], request.json['message']['body']
 
-                success = push_notification_sender.send_notification_to_user(user_id, notification_title, notification_body,
-                                                                        data)
+                success = PushNotificationClient().send_notification(user_id, notification_title, notification_body, data)
                 if success:
                     # add notification to db
                     notification_event = MdEvent(creation_date=datetime.now(), event_type=event_type,

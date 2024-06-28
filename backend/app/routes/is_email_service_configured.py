@@ -1,7 +1,7 @@
 from flask import request
 from flask_restful import Resource
 from mojodex_core.logging_handler import log_error
-from app import mojo_mail_client
+from mojodex_core.mail import mojo_mail_client
 
 
 class IsEmailServiceConfigured(Resource):

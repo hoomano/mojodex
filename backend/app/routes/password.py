@@ -1,6 +1,7 @@
 import jwt
 from flask_restful import Resource, request
-from app import db, mojo_mail_client
+from app import db
+from mojodex_core.mail import mojo_mail_client
 from mojodex_core.logging_handler import log_error
 from mojodex_core.entities.db_base_entities import *
 from jinja2 import Template

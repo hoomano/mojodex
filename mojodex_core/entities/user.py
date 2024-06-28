@@ -34,7 +34,7 @@ class User(MdUser):
     @property
     def datetime_context(self):
         try:
-            return MPT("mojodex_core/instructions/global_context.mpt", weekday=self.local_datetime.strftime("%A"),
+            return MPT("mojodex_core/instructions/user_datetime_context.mpt", weekday=self.local_datetime.strftime("%A"),
                    datetime=self.local_datetime.strftime("%d %B %Y"),
                    time=self.local_datetime.strftime("%H:%M")).prompt
         except Exception as e:

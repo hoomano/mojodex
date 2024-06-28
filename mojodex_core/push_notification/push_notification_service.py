@@ -6,12 +6,12 @@ from mojodex_core.push_notification.firebase_push_notification_sender import Fir
 from mojodex_core.push_notification.push_notification_sender import PushNotificationSender
 
 
-class PushNotificationClient:  # Singleton
+class PushNotificationService:  # Singleton
     _instance = None
 
     def __new__(cls, *args, **kwargs):
         if not cls._instance:
-            cls._instance = super(PushNotificationClient, cls).__new__(
+            cls._instance = super(PushNotificationService, cls).__new__(
                 cls, *args, **kwargs)
         return cls._instance
 
@@ -39,7 +39,7 @@ class PushNotificationClient:  # Singleton
             raise Exception(f"_configure_push_notification_sender: {e}")
 
     @with_db_session
-    def send_notification(self, user_id: str, title: str, description: str, data: dict, db_session):
+    def send(self, user_id: str, title: str, description: str, data: dict, db_session):
         """
         Collect all devices associated with a user. Sends a push notification to each device using self._push_notification_sender.
         """

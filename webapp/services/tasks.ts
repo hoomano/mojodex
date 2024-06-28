@@ -12,6 +12,8 @@ import {
   SaveResultPayload,
   SaveResultResponse,
   MessageHistoryResponse,
+  SaveUserTaskExecutionTitleResponse,
+  SaveUserTaskExecutionTitlePayload,
 } from "modules/Tasks/interface";
 import axiosClient from "./config/axiosClient";
 import {
@@ -168,3 +170,6 @@ export const workflowRestart = (payload: RestartWorkflowPayload) => {
   addUserInputsToForm(inputs, formData);
   return axiosClient.post(apiRoutes.workflowRestart, formData);
 };
+
+export const saveTaskExecutionTitle = (payload: SaveUserTaskExecutionTitlePayload): Promise<SaveUserTaskExecutionTitleResponse> =>
+  axiosClient.post(apiRoutes.userTaskExecutionTitle, payload);

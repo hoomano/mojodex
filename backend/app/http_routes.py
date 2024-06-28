@@ -14,7 +14,7 @@ from routes.user_task_execution import UserTaskExecution
 from routes.user_task_execution_run import UserTaskExecutionRun
 from routes.task import Task
 from routes.user_summary import UserSummary
-from routes.user_task_execution_summary import UserTaskExecutionSummary
+from routes.user_task_execution_title import UserTaskExecutionTitle
 from routes.password import Password
 from routes.document import Document
 from routes.document_chunk import DocumentChunk
@@ -80,7 +80,7 @@ class HttpRouteManager:
         api.add_resource(UserTaskExecutionRun, '/user_task_execution_run')
         api.add_resource(Task, '/task')
         api.add_resource(UserSummary, '/user_summary')
-        api.add_resource(UserTaskExecutionSummary, '/user_task_execution_summary')
+        api.add_resource(UserTaskExecutionTitle, '/user_task_execution_title')
         api.add_resource(Password, '/password')
         api.add_resource(Document, '/document')
         api.add_resource(DocumentChunk, '/document_chunk')

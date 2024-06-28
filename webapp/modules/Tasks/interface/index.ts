@@ -143,6 +143,11 @@ export interface SaveResultPayload {
   result: Array<{ [k: string]: string; }>;
 }
 
+export interface SaveUserTaskExecutionTitlePayload {
+  user_task_execution_pk: number;
+  title: string;
+}
+
 export interface SaveResultResponse {
   new_result: Array<Map<string, string>>;
 }
@@ -150,4 +155,8 @@ export interface SaveResultResponse {
 export interface RestartWorkflowPayload{
   user_task_execution_pk: number;
   inputs: InputArrayProps[];
+}
+
+export interface SaveUserTaskExecutionTitleResponse {
+  success: boolean;
 }

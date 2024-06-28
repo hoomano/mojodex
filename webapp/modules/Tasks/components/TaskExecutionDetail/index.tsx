@@ -22,6 +22,9 @@ import TaskInputs from "./TaskInputs";
 import { getUserTaskExecutionProducedText } from "services/tasks";
 import { useQueryClient } from "@tanstack/react-query";
 import { EditableText } from "components/EditableText";
+import useOnSaveTaskExecutionTitle from "modules/Tasks/hooks/useOnSaveTaskExecutionTitle";
+import useAlert from "helpers/hooks/useAlert";
+
 
 const DraftDetail = () => {
   const [tabs, setTabs] = useState<TabType[]>([]);
@@ -78,7 +81,8 @@ const DraftDetail = () => {
   const [chatIsVisible, setChatIsVisible] = useState(selectedTab === "result" && currentTask!.result_chat_enabled); 
   const [editingInputs, setEditingInputs] = useState(false);
 
-
+  const onSaveTitleTaskExecutionTitle = useOnSaveTaskExecutionTitle();
+  const { showAlert } = useAlert();
 
   const { t } = useTranslation("dynamic");
 
@@ -419,7 +423,20 @@ const DraftDetail = () => {
       setWorkflowStepExecutions(newStepExecutions);
     }
   }
-
+  const onSaveTaskExecutionTitle = (title : string) => {
+    onSaveTitleTaskExecutionTitle.mutate({
+        user_task_execution_pk: taskExecutionPK!,
+        title: title
+    }, {
+        onSuccess: (data) => {},
+        onError: (error) => {
+            showAlert({
+                title: t('errorMessages.globalSnackBarMessage'),
+                type: "error",
+            });
+        }
+    });
+};
 
 
   return (
@@ -441,7 +458,7 @@ const DraftDetail = () => {
                   </div>
                   <EditableText
                     text={taskExecutionTitle ?? ""}
-                    onSave={(title: string) => {}}
+                    onSave={onSaveTaskExecutionTitle}
                     />
                                
                 </div>

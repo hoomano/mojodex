@@ -87,9 +87,7 @@ const Step: React.FC<StepProps> = ({
             result: editedResult.map(obj => Object.fromEntries(obj))
         }, {
             onSuccess: (data) => {
-                console.log(data);
                 stepExecution.result = data['new_result'];
-                console.log(stepExecution.result);
                 setEditing(false);
             },
             onError: (error) => {

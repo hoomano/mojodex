@@ -1,6 +1,7 @@
 import time
 
-from app import db, main_logger, server_socket, executor
+from app import main_logger, server_socket, executor
+from mojodex_core.db import with_db_session
 from mojodex_core.logging_handler import log_error
 from mojodex_core.entities.db_base_entities import *
 
@@ -8,13 +9,14 @@ class SocketioMessageSender:
     def __init__(self):
         self.mojo_messages_waiting_for_acknowledgment, self.produced_text_messages_waiting_for_acknowledgment = {}, {}
 
-    def _mojo_message_received(self, data, *args):
+    @with_db_session
+    def _mojo_message_received(self, data, *args, db_session):
         if "backend_event_manager" in data and data["backend_event_manager"]:
             # any backend event manager receiving a message should not prevent the message to be re-sent to the user while they have not acknowledged it
             return
         session_id = data["session_id"]
 
-        session_db = db.session.query(MdSession).filter(MdSession.session_id == session_id).first()
+        session_db = db_session.query(MdSession).filter(MdSession.session_id == session_id).first()
         if session_db is None:
             main_logger.error(f"Session {session_id} not found in db", None)
             return

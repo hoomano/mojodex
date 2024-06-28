@@ -1,8 +1,9 @@
 import os
 from datetime import datetime
 from models.assistant.execution_manager import ExecutionManager
-from mojodex_core.entities.db_base_entities import *
-from app import db, server_socket, main_logger, socketio_message_sender
+from mojodex_core.db import with_db_session
+from mojodex_core.entities.db_base_entities import MdProducedTextVersion, MdMessage
+from app import server_socket, main_logger, socketio_message_sender
 from mojodex_core.logging_handler import log_error
 from models.voice_generator import VoiceGenerator
 from mojodex_core.llm_engine.providers.model_loader import ModelLoader
@@ -45,7 +46,8 @@ class TextEditActionManager:
         else:
             self.voice_generator = None
 
-    def edit_text(self, input_prompt, app_version):
+    @with_db_session
+    def edit_text(self, input_prompt, app_version, db_session):
         # Edit text
         try:
             edited_text = ModelLoader().main_llm.invoke(
@@ -84,8 +86,8 @@ class TextEditActionManager:
                 embedding=embedding
             )
             # Add the new produced text version pk to the message saved in db
-            db.session.add(new_produced_text_version)
-            db.session.flush()
+            db_session.add(new_produced_text_version)
+            db_session.flush()
             draft_message["produced_text_version_pk"] = new_produced_text_version.produced_text_version_pk
 
             # Save message to db
@@ -96,11 +98,11 @@ class TextEditActionManager:
                 message=draft_message,
                 creation_date=datetime.now(),
                 message_date=datetime.now())
-            db.session.add(db_message)
-            db.session.flush()
+            db_session.add(db_message)
+            db_session.flush()
             draft_message["message_pk"] = db_message.message_pk
 
-            db.session.commit()
+            db_session.commit()
 
             draft_message["audio"] = "text" in draft_message and self.platform == "mobile" and self.voice_generator
 
@@ -115,10 +117,7 @@ class TextEditActionManager:
             if draft_message["audio"]:
                 self.__text_to_speech(draft_message, db_message)
 
-            db.session.close()
-
         except Exception as e:
-            db.session.close()
             socketio_message_sender.send_error(f"Error running text edit action: {e}", self.session_id,
                                                user_message_pk=self.user_message_pk)
 

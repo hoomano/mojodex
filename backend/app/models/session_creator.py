@@ -1,6 +1,6 @@
-from app import db
+from mojodex_core.db import with_db_session
 from mojodex_core.logging_handler import log_error
-from mojodex_core.entities.db_base_entities import *
+from mojodex_core.entities.db_base_entities import MdUser, MdSession
 from datetime import datetime
 import hashlib
 import random
@@ -14,10 +14,11 @@ class SessionCreator:
         encoded_string = hashlib.md5(clear_string.encode())
         return encoded_string.hexdigest()
 
-    def create_session(self, user_id, platform, starting_mode):
+    @with_db_session
+    def create_session(self, user_id, platform, starting_mode, db_session):
         try:
 
-            user = db.session.query(MdUser).filter(MdUser.user_id == user_id).first()
+            user = db_session.query(MdUser).filter(MdUser.user_id == user_id).first()
             if user is None:
                 log_error(f"Error creating session : User with user_id {user_id} does not exist")
                 return {"error": f"Invalid user user_id: {user_id}"}, 400
@@ -32,8 +33,8 @@ class SessionCreator:
 
             session = MdSession(session_id=session_id, user_id=user.user_id,
                                 creation_date=datetime.now(), platform=platform, starting_mode=starting_mode, language=user.language_code)
-            db.session.add(session)
-            db.session.commit()
+            db_session.add(session)
+            db_session.commit()
 
             return {"session_id": session_id, "intro_done": user.company_fk is not None}, 200
 

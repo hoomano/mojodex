@@ -1,9 +1,7 @@
-import json
 from mojodex_core.produced_text_managers.task_produced_text_manager import TaskProducedTextManager
-from models.knowledge.knowledge_manager import KnowledgeManager
+from mojodex_core.knowledge_manager import KnowledgeManager
 from models.assistant.chat_assistant import ChatAssistant
 from app import placeholder_generator
-
 from models.tasks.workflows.workflow_manager import WorkflowManager
 from mojodex_core.entities.user_workflow_execution import UserWorkflowExecution
 from mojodex_core.llm_engine.mpt import MPT
@@ -69,11 +67,8 @@ class WorkflowAssistant(ChatAssistant):
     @property
     def _mpt(self):
         try:
-            mojo_knowledge = KnowledgeManager.get_mojo_knowledge()
-            global_context = KnowledgeManager.get_global_context_knowledge()
-            
-            return MPT(self.mpt_file, mojo_knowledge=mojo_knowledge,
-                       global_context=global_context,
+            return MPT(self.mpt_file, mojo_knowledge=KnowledgeManager().mojodex_knowledge,
+                       global_context=self.workflow_execution.user.datetime_context,
                        username=self.workflow_execution.user.name,
                        user_company_knowledge=self.workflow_execution.user.company_description,
                        infos_to_extract=self.workflow_execution.task.infos_to_extract,

@@ -1,5 +1,5 @@
 from mojodex_core.entities.abstract_entities.user_task_execution import UserTaskExecution
-from mojodex_core.knowledge_manager import knowledge_manager
+from mojodex_core.knowledge_manager import KnowledgeManager
 from mojodex_core.entities.db_base_entities import MdUserTaskExecution
 from mojodex_core.entities.db_base_entities import MdTask, MdUserTask
 from mojodex_core.llm_engine.mpt import MPT
@@ -25,8 +25,8 @@ class TaskExecutionTitleSummaryGenerator:
                 from mojodex_core.entities.instruct_user_task_execution import InstructTaskExecution
                 user_task_execution = db_session.query(InstructTaskExecution).get(user_task_execution_pk)
             task_execution_summary = MPT("mojodex_core/instructions/task_execution_summary.mpt",
-                                        mojo_knowledge=knowledge_manager.mojodex_knowledge,
-                                        global_context=knowledge_manager.global_context_knowledge,
+                                        mojo_knowledge=KnowledgeManager().mojodex_knowledge,
+                                        global_context=user_task_execution.user.datetime_context,
                                         username=user_task_execution.user.name,
                                         user_company_knowledge=user_task_execution.user,
                                         task=user_task_execution.task,

@@ -94,8 +94,8 @@ class HomeChat(Resource):
             message = responses[0].strip()
             header_tag_mananger = TagManager('message_header')
             body_tag_manager = TagManager('message_body')
-            header = header_tag_mananger.remove_tags_from_text(message)
-            body = body_tag_manager.remove_tags_from_text(message)
+            header = header_tag_mananger.extract_text(message)
+            body = body_tag_manager.extract_text(message)
             return {"header": header,
                     "body": body,
                     "text": f"{header}\n{body}"}

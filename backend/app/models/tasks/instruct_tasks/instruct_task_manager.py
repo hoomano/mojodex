@@ -26,7 +26,7 @@ class InstructTaskManager:
     def manage_response_task_tags(self, response):
         try:
             if self.task_input_manager.start_tag in response:
-                text_without_tags = self.task_input_manager.remove_tags_from_text(response)
+                text_without_tags = self.task_input_manager.extract_text(response)
                 return {"text": text_without_tags, "text_with_tags": response}
             return {"text": response}
         except Exception as e:
@@ -36,13 +36,13 @@ class InstructTaskManager:
         try:
             text = None
             if self.task_input_manager.start_tag in partial_text:
-                text = self.task_input_manager.remove_tags_from_text(partial_text)
+                text = self.task_input_manager.extract_text(partial_text)
             if text and mojo_message_token_stream_callback:
                 mojo_message_token_stream_callback(text)
 
             elif ExecutionManager.tag_manager.start_tag in partial_text:
                 # take the text between <execution> and </execution>
-                text = ExecutionManager.tag_manager.remove_tags_from_text(partial_text)
+                text = ExecutionManager.tag_manager.extract_text(partial_text)
                 draft_token_stream_callback(text)
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} :: manage_task_stream :: {e}")

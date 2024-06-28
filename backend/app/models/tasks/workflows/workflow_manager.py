@@ -36,13 +36,13 @@ class WorkflowManager:
     def manage_response_task_tags(self, response: str, workflow_execution: UserWorkflowExecution):
         try:
             if self.workflow_step_no_go_explanation_manager.start_tag in response:
-                text_without_tags = self.workflow_step_no_go_explanation_manager.remove_tags_from_text(response)
+                text_without_tags = self.workflow_step_no_go_explanation_manager.extract_text(response)
                 return {"text": text_without_tags, "text_with_tags": response}
             elif self.workflow_step_clarification_manager.start_tag in response:
-                text_without_tags = self.workflow_step_clarification_manager.remove_tags_from_text(response)
+                text_without_tags = self.workflow_step_clarification_manager.extract_text(response)
                 return {"text": text_without_tags, "text_with_tags": response}
             elif self.workflow_step_instruction_manager.start_tag in response:
-                instruction = self.workflow_step_instruction_manager.remove_tags_from_text(response)
+                instruction = self.workflow_step_instruction_manager.extract_text(response)
                 workflow_process_controller = WorkflowProcessController(workflow_execution.user_task_execution_pk)
                 workflow_process_controller.invalidate_current_step(instruction)
                 server_socket.start_background_task(workflow_process_controller.run)
@@ -56,16 +56,16 @@ class WorkflowManager:
         try:
             text = None
             if self.workflow_step_clarification_manager.start_tag in partial_text:
-                text = self.workflow_step_clarification_manager.remove_tags_from_text(partial_text)
+                text = self.workflow_step_clarification_manager.extract_text(partial_text)
             elif self.workflow_step_instruction_manager.start_tag in partial_text:
-                text = self.workflow_step_instruction_manager.remove_tags_from_text(partial_text)
+                text = self.workflow_step_instruction_manager.extract_text(partial_text)
 
             if text and mojo_message_token_stream_callback:
                 mojo_message_token_stream_callback(text)
 
             elif ExecutionManager.tag_manager.start_tag in partial_text:
                 # take the text between <execution> and </execution>
-                text = ExecutionManager.tag_manager.remove_tags_from_text(partial_text)
+                text = ExecutionManager.tag_manager.extract_text(partial_text)
                 draft_token_stream_callback(text)
 
         except Exception as e:

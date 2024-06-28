@@ -84,8 +84,8 @@ class SessionController:
         try:
             title_tag_manager = TagManager("title")
             draft_tag_manager = TagManager("draft")
-            title = title_tag_manager.remove_tags_from_text(partial_text.strip())
-            production = draft_tag_manager.remove_tags_from_text(partial_text.strip())
+            title = title_tag_manager.extract_text(partial_text.strip())
+            production = draft_tag_manager.extract_text(partial_text.strip())
             return {"produced_text_title": title,
                     "produced_text": production,
                     "session_id": self.session.session_id,

@@ -106,7 +106,7 @@ class ChatAssistant(ABC):
         try:
             if self.tag_manager.start_tag in response:
                 try:
-                    self.language = self.tag_manager.remove_tags_from_text(response).lower()
+                    self.language = self.tag_manager.extract_text(response).lower()
                 except Exception as e:
                     pass
         except Exception as e:

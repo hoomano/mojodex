@@ -23,11 +23,11 @@ class TaskProducedTextManager(ProducedTextManager):
     def extract_produced_text_from_tagged_text(mojo_text):
         try:
             # Extract title
-            title = TaskProducedTextManager.title_tag_manager.remove_tags_from_text(
+            title = TaskProducedTextManager.title_tag_manager.extract_text(
                 mojo_text) if TaskProducedTextManager.title_tag_manager.start_tag and TaskProducedTextManager.title_tag_manager.end_tag in mojo_text else None
             # Extract production
             if TaskProducedTextManager.draft_tag_manager.start_tag and TaskProducedTextManager.draft_tag_manager.end_tag in mojo_text:
-                production = TaskProducedTextManager.draft_tag_manager.remove_tags_from_text(mojo_text)
+                production = TaskProducedTextManager.draft_tag_manager.extract_text(mojo_text)
             else:
                 # Backup in case text does not contains correct tags:
                 # Remove the one that are presents and returns the whole text without tags

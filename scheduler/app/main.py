@@ -20,7 +20,6 @@ from scheduler_logger import SchedulerLogger
 logger = SchedulerLogger("main", file_path=f"./main.log")
 
 def _check_emails_are_configured():
-    print("_check_emails_are_configured")
     # http request to backend
     try:
         uri = f"{os.environ['MOJODEX_BACKEND_URI']}/is_email_service_configured"

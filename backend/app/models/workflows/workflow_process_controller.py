@@ -5,7 +5,8 @@ from jinja2 import Template
 from app import server_socket, socketio_message_sender
 
 
-from models.produced_text_managers.task_produced_text_manager import TaskProducedTextManager
+from mojodex_core.tag_manager import TagManager
+from mojodex_core.produced_text_managers.task_produced_text_manager import TaskProducedTextManager
 from mojodex_core.entities.db_base_entities import MdMessage, MdUserTask, MdUserWorkflowStepExecutionResult, \
     MdWorkflowStep
 from mojodex_core.db import MojodexCoreDB, Session
@@ -149,21 +150,22 @@ class WorkflowProcessController:
         try:
 
             self.add_state_message()
-            produced_text, produced_text_version = self._generate_produced_text()
+            produced_text_pk, produced_text_version_pk, title, production = self._generate_produced_text()
             
+            title_tag_manager = TagManager("title")
+            draft_tag_manager = TagManager("draft")
             # add it as a mojo_message
-            produced_text_with_tags = f"""{TaskProducedTextManager.title_start_tag}{produced_text_version.title}{TaskProducedTextManager.title_end_tag}
-{TaskProducedTextManager.draft_start_tag}{produced_text_version.production}{TaskProducedTextManager.draft_end_tag}"""
+            produced_text_with_tags = f"{title_tag_manager.add_tags_to_text(title)}\n{draft_tag_manager.add_tags_to_text(production)}"
 
             mojo_message = MdMessage(
                 session_id=self.workflow_execution.session_id, sender='mojo',
                 event_name='workflow_execution_produced_text',
-                message={"produced_text": produced_text_version.production,
-                         "produced_text_title": produced_text_version.title,
-                         "produced_text_pk": produced_text.produced_text_pk,
-                         "produced_text_version_pk": produced_text_version.produced_text_version_pk,
+                message={"produced_text": production,
+                         "produced_text_title": title,
+                         "produced_text_pk": produced_text_pk,
+                         "produced_text_version_pk": produced_text_version_pk,
                          "user_task_execution_pk": self.workflow_execution.user_task_execution_pk,
-                         "text": f"{produced_text_version.title}\n{produced_text_version.production}",
+                         "text": f"{title}\n{production}",
                          "text_with_tags": f"<execution>{produced_text_with_tags}</execution>"
                          },
                 creation_date=datetime.now(), message_date=datetime.now()
@@ -174,10 +176,10 @@ class WorkflowProcessController:
             # send event
             server_socket.emit('workflow_execution_produced_text', {
                 "user_task_execution_pk": self.workflow_execution.user_task_execution_pk,
-                "produced_text": produced_text_version.production,
-                "produced_text_title": produced_text_version.title,
-                "produced_text_pk": produced_text.produced_text_pk,
-                "produced_text_version_pk": produced_text_version.produced_text_version_pk,
+                "produced_text": production,
+                "produced_text_title": title,
+                "produced_text_pk": produced_text_pk,
+                "produced_text_version_pk": produced_text_version_pk,
                 "session_id": self.workflow_execution.session_id
             }, to=self.workflow_execution.session_id)
         except Exception as e:
@@ -215,9 +217,9 @@ class WorkflowProcessController:
                                                                 self.workflow_execution.user.user_id,
                                                                 self.workflow_execution.user_task_execution_pk,
                                                                 self.workflow_execution.task.name_for_system)
-            produced_text, produced_text_version = produced_text_manager.save_produced_text(production, title="", text_type_pk=self.workflow_execution.task.output_text_type_fk)
+            produced_text_pk, produced_text_version_pk, title, production, text_type = produced_text_manager.save_produced_text(production, title="", text_type_pk=self.workflow_execution.task.output_text_type_fk)
 
-            return produced_text, produced_text_version
+            return produced_text_pk, produced_text_version_pk, title, production
 
         except Exception as e:
             raise Exception(f"_generate_produced_text :: {e}")

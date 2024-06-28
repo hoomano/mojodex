@@ -1,10 +1,9 @@
 import os
 from app import server_socket, time_manager, socketio_message_sender, main_logger
-from models.produced_text_managers.task_produced_text_manager import TaskProducedTextManager
+from mojodex_core.tag_manager import TagManager
+from mojodex_core.produced_text_managers.task_produced_text_manager import TaskProducedTextManager
 from models.assistant.instruct_task_assistant import InstructTaskAssistant
 from models.assistant.home_chat_assistant import HomeChatAssistant
-from models.assistant.chat_assistant import ChatAssistant
-
 from models.assistant.workflow_assistant import WorkflowAssistant
 from mojodex_core.entities.instruct_user_task_execution import InstructTaskExecution
 from mojodex_core.entities.message import Message
@@ -84,16 +83,14 @@ class SessionController:
     @token_stream_callback('draft_token')
     def _produced_text_stream_callback(self, partial_text):
         try:
-            title = ChatAssistant.remove_tags_from_text(partial_text.strip(),
-                                                        TaskProducedTextManager.title_start_tag,
-                                                        TaskProducedTextManager.title_end_tag)
-            production = ChatAssistant.remove_tags_from_text(partial_text.strip(),
-                                                             TaskProducedTextManager.draft_start_tag,
-                                                             TaskProducedTextManager.draft_end_tag)
+            title_tag_manager = TagManager("title")
+            draft_tag_manager = TagManager("draft")
+            title = title_tag_manager.remove_tags_from_text(partial_text.strip())
+            production = draft_tag_manager.remove_tags_from_text(partial_text.strip())
             return {"produced_text_title": title,
                     "produced_text": production,
                     "session_id": self.session.session_id,
-                    "text": TaskProducedTextManager.remove_tags(partial_text)}
+                    "text": TaskProducedTextManager.get_produced_text_without_tags(partial_text)}
         except Exception as e:
             raise Exception(f"_produced_text_stream_callback :: {e}")
 

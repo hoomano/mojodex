@@ -2,6 +2,7 @@ from jinja2 import Template
 from sqlalchemy.orm import object_session
 from mojodex_core.entities.abstract_entities.user_task_execution import UserTaskExecution
 from mojodex_core.entities.instruct_user_task import InstructUserTask
+from mojodex_core.produced_text_managers.task_produced_text_manager import TaskProducedTextManager
 
 
 class InstructTaskExecution(UserTaskExecution):
@@ -24,11 +25,10 @@ class InstructTaskExecution(UserTaskExecution):
                 template = Template(f.read())
             return template.render(task=self.task,
                                    user_task_inputs=self.json_input_values,
-                                   # TODO
-                                   title_start_tag="<title>",#InstructTaskProducedTextManager.title_start_tag,
-                                   title_end_tag="</title>",#InstructTaskProducedTextManager.title_end_tag,
-                                   draft_start_tag="<draft>",#InstructTaskProducedTextManager.draft_start_tag,
-                                   draft_end_tag="</draft>"#InstructTaskProducedTextManager.draft_end_tag
+                                   title_start_tag=TaskProducedTextManager.title_tag_manager.start_tag,
+                                   title_end_tag=TaskProducedTextManager.title_tag_manager.end_tag,
+                                   draft_start_tag=TaskProducedTextManager.draft_tag_manager.start_tag,
+                                   draft_end_tag=TaskProducedTextManager.draft_tag_manager.end_tag,
                                    )
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} :: instructions :: {e}")

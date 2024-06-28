@@ -1,4 +1,5 @@
 import os
+from mojodex_core.tag_manager import TagManager
 from flask import request
 from flask_restful import Resource
 from app import authenticate, db, server_socket
@@ -88,12 +89,10 @@ class HomeChat(Resource):
                                                   user_task_execution_pk=None,
                                                   task_name_for_system=None)
             message = responses[0].strip()
-            header = ChatAssistant.remove_tags_from_text(message,
-                                                                   self.message_header_start_tag,
-                                                                   self.message_header_end_tag)
-            body = ChatAssistant.remove_tags_from_text(message,
-                                                                 self.message_body_start_tag,
-                                                                 self.message_body_end_tag)
+            header_tag_mananger = TagManager('message_header')
+            body_tag_manager = TagManager('message_body')
+            header = header_tag_mananger.remove_tags_from_text(message)
+            body = body_tag_manager.remove_tags_from_text(message)
             return {"header": header,
                     "body": body,
                     "text": f"{header}\n{body}"}

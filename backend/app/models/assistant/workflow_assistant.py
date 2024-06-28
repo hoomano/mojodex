@@ -1,5 +1,5 @@
 import json
-from models.produced_text_managers.task_produced_text_manager import TaskProducedTextManager
+from mojodex_core.produced_text_managers.task_produced_text_manager import TaskProducedTextManager
 from models.knowledge.knowledge_manager import KnowledgeManager
 from models.assistant.chat_assistant import ChatAssistant
 from app import placeholder_generator
@@ -78,10 +78,10 @@ class WorkflowAssistant(ChatAssistant):
                        user_company_knowledge=self.workflow_execution.user.company_description,
                        infos_to_extract=self.workflow_execution.task.infos_to_extract,
                        workflow=self.workflow_execution.task,
-                       title_start_tag=TaskProducedTextManager.title_start_tag,
-                       title_end_tag=TaskProducedTextManager.title_end_tag,
-                       draft_start_tag=TaskProducedTextManager.draft_start_tag,
-                       draft_end_tag=TaskProducedTextManager.draft_end_tag,
+                       title_start_tag=TaskProducedTextManager.title_tag_manager.start_tag,
+                       title_end_tag=TaskProducedTextManager.title_tag_manager.end_tag,
+                       draft_start_tag=TaskProducedTextManager.draft_tag_manager.start_tag,
+                       draft_end_tag=TaskProducedTextManager.draft_tag_manager.end_tag,
                        user_workflow_inputs=self.workflow_execution.json_input_values,
                        produced_text_done=self.workflow_execution.produced_text_done,
                        audio_message=self.user_messages_are_audio,

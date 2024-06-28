@@ -17,7 +17,15 @@ class TaskProducedTextManager(ProducedTextManager):
     @staticmethod
     def get_produced_text_without_tags(text):
         title, production = TaskProducedTextManager.extract_produced_text_from_tagged_text(text)
+        return TaskProducedTextManager.get_produced_text_from_title_and_production(title, production)
+    
+    @staticmethod
+    def get_text_without_tags_from_title_and_production(title, production):
         return f"{title}\n{production}"
+    
+    @staticmethod
+    def get_text_with_tags_from_title_and_production(title, production):
+        return f"{TaskProducedTextManager.title_tag_manager.add_tags_to_text(title)}{TaskProducedTextManager.draft_tag_manager.add_tags_to_text(production)}"
 
     @staticmethod
     def extract_produced_text_from_tagged_text(mojo_text):

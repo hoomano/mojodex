@@ -9,7 +9,7 @@ import EmptyState from "./components/EmptyState";
 import TaskListModal from "./components/TaskListModal";
 import useGetAllTasks from "./hooks/useGetAllTasks";
 import useGetExecuteTask from "./hooks/useGetExecuteTask";
-import ProactiveFollowup from "./components/TaskExecutions";
+import TaskExecutions from "./components/TaskExecutions";
 import Loader from "components/Loader";
 import globalContext, { GlobalContextType } from "helpers/GlobalContext";
 import TaskDoneModal from "./components/TaskDoneModal";
@@ -52,7 +52,7 @@ const Tasks = () => {
     );
   }, [executeTasks]);
 
-  const isFollowupsAvailable = !!userTaskExecutions?.length;
+  const userTaskExecutionsExist = !!userTaskExecutions?.length;
 
   const handleRefetchOnScrollEnd = async (e: any) => {
     const { scrollHeight, scrollTop, clientHeight } = e.target;
@@ -77,7 +77,7 @@ const Tasks = () => {
   };
 
   const isShowSearchFilter =
-    isFollowupsAvailable ||
+    userTaskExecutionsExist ||
     !!searchInput.length ||
     !!userTasksSuggestions.length;
 
@@ -88,7 +88,7 @@ const Tasks = () => {
     >
       <div className="flex justify-between mb-[30px]">
         <div className="text-h2">{t("appDrawer.taskListButton")}</div>
-        {isFollowupsAvailable && (
+        {userTaskExecutionsExist && (
           <Button
             onClick={startANewTaskHandler}
             size="middle"
@@ -159,15 +159,15 @@ const Tasks = () => {
         </div>
       )}
 
-      {isFollowupsAvailable ? (
-        <ProactiveFollowup tasks={userTaskExecutions} isListView={isListView} />
+      {userTaskExecutionsExist ? (
+        <TaskExecutions tasks={userTaskExecutions} isListView={isListView} />
       ) : isLoading ? (
         <Loader />
       ) : (
         <EmptyState
           startANewTaskHandler={startANewTaskHandler}
           searchInput={searchInput}
-          isFollowupsAvailable={isFollowupsAvailable}
+          userTaskExecutionsExist={userTaskExecutionsExist}
           userTasksSuggestions={userTasksSuggestions}
         />
       )}
@@ -181,7 +181,7 @@ const Tasks = () => {
         closed={() => setGlobalState({ showTaskDoneModal: false })}
       />
 
-      {isFetching && isFollowupsAvailable && (
+      {isFetching && userTaskExecutionsExist && (
         <div className="button-loader m-auto !w-10 !h-10 mt-5" />
       )}
     </div>

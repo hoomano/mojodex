@@ -39,15 +39,23 @@ class WorkflowStep(MdWorkflowStep):
             raise Exception(f"{self.__class__.__name__} :: get_definition_in_language :: {e}")
 
 
-    @property
-    def dependency_step(self):
-        """The dependency step of a workflow step is the step of its workflow which rank is the previous one."""
+    def _get_relative_step_by_rank(self, relative_rank: int):
+        """
+        Get the relative step of a workflow step by its rank."""
         try:
             session = object_session(self)
             return session.query(MdWorkflowStep) \
                 .filter(MdWorkflowStep.task_fk == self.task_fk) \
-                .filter(MdWorkflowStep.rank == self.rank - 1) \
+                .filter(MdWorkflowStep.rank == self.rank + relative_rank) \
                 .first()
+        except Exception as e:
+            raise Exception(f"{self.__class__.__name__} :: _get_relative_step_by_rank :: {e}")
+
+    @property
+    def dependency_step(self):
+        """The dependency step of a workflow step is the step of its workflow which rank is the previous one."""
+        try:
+            return self._get_relative_step_by_rank(-1)
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} :: dependency_step :: {e}")
 
@@ -55,14 +63,9 @@ class WorkflowStep(MdWorkflowStep):
     def next_step(self):
         """
         The next step of a workflow step is the step of its workflow which rank is the next one.
-        :return:
         """
         try:
-            session = object_session(self)
-            return session.query(MdWorkflowStep) \
-                .filter(MdWorkflowStep.task_fk == self.task_fk) \
-                .filter(MdWorkflowStep.rank == self.rank + 1) \
-                .first()
+            return self._get_relative_step_by_rank(+1)
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} :: next_step :: {e}")
 

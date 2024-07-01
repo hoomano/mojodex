@@ -154,18 +154,12 @@ class WorkflowProcessController:
 
     def _generate_produced_text(self):
         try:
-            # For now, production of a workflow is the concatenation of results of all last step's validated executions' results
-            last_step = self.workflow_execution.task.steps[-1]
-            validated_last_step_executions = self.workflow_execution.get_valid_executions_of_a_step(last_step.workflow_step_pk)
-
-            production = "\n\n".join([list(step.result[0].values())[0] for step in validated_last_step_executions])
-
             produced_text_manager = TaskProducedTextManager(self.workflow_execution.session_id,
                                                             self.workflow_execution.user.user_id,
                                                             self.workflow_execution.user_task_execution_pk,
                                                             self.workflow_execution.task.name_for_system)
             produced_text_pk, produced_text_version_pk, title, production, text_type = produced_text_manager.save_produced_text(
-                production, title="", text_type_pk=self.workflow_execution.task.output_text_type_fk)
+                self.workflow_execution.result, title="", text_type_pk=self.workflow_execution.task.output_text_type_fk)
 
             return produced_text_pk, produced_text_version_pk, title, production
 

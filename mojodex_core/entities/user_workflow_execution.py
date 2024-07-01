@@ -136,3 +136,16 @@ class UserWorkflowExecution(UserTaskExecution):
                 .all()
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} :: get_valid_executions_of_a_step :: {e}")
+        
+
+    @property
+    def result(self):
+        """
+        For now, result of a workflow is the concatenation of results of all last step's validated executions' results
+        """
+        try:
+            last_step = self.task.steps[-1]
+            validated_last_step_executions = self.get_valid_executions_of_a_step(last_step.workflow_step_pk)
+            return "\n\n".join([list(step.result[0].values())[0] for step in validated_last_step_executions])
+        except Exception as e:
+            raise Exception(f"{self.__class__.__name__} :: result :: {e}")

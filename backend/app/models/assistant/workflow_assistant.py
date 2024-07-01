@@ -106,12 +106,14 @@ class WorkflowAssistant(ChatAssistant):
         try:
             execution = self._manage_execution_tags(response)
             if execution:
-                return self.workflow_manager.task_executor.manage_execution_text(execution_text=execution,
+                message= self.workflow_manager.task_executor.manage_execution_text(execution_text=execution,
                                                                              task=self.workflow_execution.task,
                                                                              task_name=self.workflow_execution.task_name_in_user_language,
                                                                              user_task_execution_pk=self.workflow_execution.user_task_execution_pk,
                                                                              use_draft_placeholder=self.use_draft_placeholder
                                                                              )
+                message['text_with_tags'] = response
+                return message
             return self.workflow_manager.manage_response_task_tags(response, self.workflow_execution)
         except Exception as e:
             raise Exception(f"_manage_response_tags :: {e}")

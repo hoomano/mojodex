@@ -167,10 +167,12 @@ class HomeChatAssistant(ChatAssistant):
             execution = self._manage_execution_tags(response)
             if execution:
                 if self.instruct_task_execution:
-                    return self.task_manager.task_executor.manage_execution_text(execution_text=execution,
+                    message = self.task_manager.task_executor.manage_execution_text(execution_text=execution,
                                                                                  task=self.instruct_task_execution.task,
                                                                                  task_name=self.instruct_task_execution.task_name_in_user_language,
                                                                                  user_task_execution_pk=self.instruct_task_execution.user_task_execution_pk)
+                    message['text_with_tags'] = response
+                    return message
             if self.user_message_start_tag in response:
                 text = self.user_message_tag_manager.extract_text(response)
                 return {"text": text, 'text_with_tags': response}

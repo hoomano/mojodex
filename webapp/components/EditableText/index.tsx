@@ -1,10 +1,5 @@
-// A React component that add renders an edit button that will switch between a text + edit butto into an Input with save button that calls a backend route on save
-
 import React, { useState } from "react";
 import { FaEdit, FaSave } from "react-icons/fa";
-// import { useTranslation } from "next-i18next";
-
-import TextareaAutosize from 'react-textarea-autosize';
 
 interface EditableTextProps {
     text: string;
@@ -14,7 +9,6 @@ interface EditableTextProps {
 export const EditableText: React.FC<EditableTextProps> = ({ text, onSave }) => {
     const [isEditing, setIsEditing] = useState(false);
     const [title, setTitle] = useState(text);
-    // const { t } = useTranslation('dynamic');
 
     const handleSave = () => {
         onSave(title);
@@ -40,7 +34,7 @@ export const EditableText: React.FC<EditableTextProps> = ({ text, onSave }) => {
                 <>
 
                     <div className="text-h4 font-semibold text-gray-darker">
-                      {title}
+                        {title}
                     </div>
                     <button onClick={() => setIsEditing(true)} className="ml-2">
                         <FaEdit className="text-gray-dark flex-none" />

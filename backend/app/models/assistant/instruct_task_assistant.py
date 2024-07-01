@@ -99,6 +99,7 @@ class InstructTaskAssistant(ChatAssistant):
 
     def _manage_response_tags(self, response):
         try:
+            message=None
             execution = self._manage_execution_tags(response)
             if execution:
                 message = self.task_manager.task_executor.manage_execution_text(execution_text=execution,
@@ -107,8 +108,10 @@ class InstructTaskAssistant(ChatAssistant):
                                                                              user_task_execution_pk=self.instruct_task_execution.user_task_execution_pk,
                                                                              use_draft_placeholder=self.use_draft_placeholder
                                                                              )
+            else:
+                message = self.task_manager.manage_response_task_tags(response)
+            if message:
                 message['text_with_tags'] = response
-                return message
-            return self.task_manager.manage_response_task_tags(response)
+            return message
         except Exception as e:
             raise Exception(f"_manage_response_tags :: {e}")

@@ -28,7 +28,7 @@ class InstructTaskManager:
         try:
             if self.task_input_manager.start_tag in response:
                 text_without_tags = self.task_input_manager.extract_text(response)
-                return {"text": text_without_tags, "text_with_tags": response}
+                return {"text": text_without_tags}
             return {"text": response}
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} :: manage_response_task_tags :: {e}")

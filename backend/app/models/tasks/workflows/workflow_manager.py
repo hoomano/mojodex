@@ -36,10 +36,10 @@ class WorkflowManager:
         try:
             if self.workflow_step_no_go_explanation_manager.start_tag in response:
                 text_without_tags = self.workflow_step_no_go_explanation_manager.extract_text(response)
-                return {"text": text_without_tags, "text_with_tags": response}
+                return {"text": text_without_tags}
             elif self.workflow_step_clarification_manager.start_tag in response:
                 text_without_tags = self.workflow_step_clarification_manager.extract_text(response)
-                return {"text": text_without_tags, "text_with_tags": response}
+                return {"text": text_without_tags}
             elif self.workflow_step_instruction_manager.start_tag in response:
                 instruction = self.workflow_step_instruction_manager.extract_text(response)
                 workflow_process_controller = WorkflowProcessController(workflow_execution.user_task_execution_pk)

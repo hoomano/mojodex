@@ -14,15 +14,25 @@ export const EditableText: React.FC<EditableTextProps> = ({ text, onSave }) => {
         onSave(title);
         setIsEditing(false);
     }
-
+    
+    const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+        if (isEditing && event.key === "Enter") {
+            handleSave();
+        }
+    };
+    
     return (
-        <div className="flex flex-row items-center">
+        <div className="flex flex-row items-center"
+        tabIndex={0}
+        onKeyDown={handleKeyDown}
+        >
             {isEditing ? (
                 <>
                     <input
                         type="text"
                         value={title}
                         onChange={(e) => setTitle(e.target.value)}
+                        onKeyDown={handleKeyDown} // Add the onKeyDown event here
                         className="border-2 border-primary-main grow py-0.5 text-h4 font-semibold leading-5 text-gray-darker resize-none w-full"
 
                     />

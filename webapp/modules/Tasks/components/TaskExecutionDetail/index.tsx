@@ -423,12 +423,18 @@ const DraftDetail = () => {
       setWorkflowStepExecutions(newStepExecutions);
     }
   }
+
+  useEffect(() => {}, [taskExecutionTitle]);
+  
   const onSaveTaskExecutionTitle = (title : string) => {
     onSaveTitleTaskExecutionTitle.mutate({
         user_task_execution_pk: taskExecutionPK!,
         title: title
     }, {
-        onSuccess: (data) => {},
+        onSuccess: (data) => {
+            setTaskExecutionTitle(title);
+            
+        },
         onError: (error) => {
             showAlert({
                 title: t('errorMessages.globalSnackBarMessage'),

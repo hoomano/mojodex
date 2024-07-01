@@ -21,6 +21,10 @@ import { ArrowLeftIcon } from "@heroicons/react/24/outline";
 import TaskInputs from "./TaskInputs";
 import { getUserTaskExecutionProducedText } from "services/tasks";
 import { useQueryClient } from "@tanstack/react-query";
+import { EditableText } from "components/EditableText";
+import useOnSaveTaskExecutionTitle from "modules/Tasks/hooks/useOnSaveTaskExecutionTitle";
+import useAlert from "helpers/hooks/useAlert";
+
 
 const DraftDetail = () => {
   const [tabs, setTabs] = useState<TabType[]>([]);
@@ -67,7 +71,7 @@ const DraftDetail = () => {
 
   const [isSocketLoaded, setIsSocketLoaded] = useState(false);
   const [isTask, setIsTask] = useState(false);
-  const [streamTitle, setStreamTitle] = useState<string | null>(null);
+  const [taskExecutionTitle, setTaskExecutionTitle] = useState<string | null>(currentTask?.title ?? null);
   const [editorDetails, setEditorDetails] = useState<EditerProducedText>({
     text: "",
     title: "",
@@ -77,7 +81,8 @@ const DraftDetail = () => {
   const [chatIsVisible, setChatIsVisible] = useState(selectedTab === "result" && currentTask!.result_chat_enabled); 
   const [editingInputs, setEditingInputs] = useState(false);
 
-
+  const onSaveTitleTaskExecutionTitle = useOnSaveTaskExecutionTitle();
+  const { showAlert } = useAlert();
 
   const { t } = useTranslation("dynamic");
 
@@ -251,7 +256,7 @@ const DraftDetail = () => {
     });
 
     socket.on(socketEvents.USER_TASK_EXECUTION_TITLE, ({ title }) => {
-      setStreamTitle(title);
+      setTaskExecutionTitle(title);
     });
 
     socket.on(socketEvents.DRAFT_MESSAGE, (message: any, ack) => {
@@ -419,6 +424,25 @@ const DraftDetail = () => {
     }
   }
 
+  useEffect(() => {}, [taskExecutionTitle]);
+  
+  const onSaveTaskExecutionTitle = (title : string) => {
+    onSaveTitleTaskExecutionTitle.mutate({
+        user_task_execution_pk: taskExecutionPK!,
+        title: title
+    }, {
+        onSuccess: (data) => {
+            setTaskExecutionTitle(title);
+            
+        },
+        onError: (error) => {
+            showAlert({
+                title: t('errorMessages.globalSnackBarMessage'),
+                type: "error",
+            });
+        }
+    });
+};
 
 
   return (
@@ -429,20 +453,20 @@ const DraftDetail = () => {
             <TaskLoader />
           ) : (
             <>
-              <div className="flex items-center mb-5">
+              <div className="flex items-center mb-5 w-full">
                 <ArrowLeftIcon
                   onClick={() => router.push(`/tasks`)}
                   className="w-[24px] h-[24px] text-gray-lighter cursor-pointer mr-2"
                 />
-                <div>
-                  <div className="text-subtitle6 font-semibold text-gray-lighter">
+                <div className="w-full">
+                  <div className="text-subtitle6 font-semibold text-gray-lighter w-full">
                     {currentTask?.task_name}
                   </div>
-                  {!!streamTitle && (
-                    <div className="text-h4 font-semibold text-gray-darker">
-                      {streamTitle}
-                    </div>
-                  )}
+                  <EditableText
+                    text={taskExecutionTitle ?? ""}
+                    onSave={onSaveTaskExecutionTitle}
+                    />
+                               
                 </div>
               </div>
               <Tab

@@ -91,8 +91,13 @@ class WorkflowProcessController:
     def run(self):
         try:
             if not self.workflow_execution.title:
+                # a lambda function to provide to the generate_title_and_summary function to emit the title to the front
+                callback = lambda title, summary: server_socket.emit('user_task_execution_title',
+                                                                    {"title": title, "session_id": self.workflow_execution.session_id},
+                                                                    to=self.workflow_execution.session_id)
+
                 server_socket.start_background_task(TaskExecutionTitleSummaryGenerator.generate_title_and_summary,
-                                                    self.workflow_execution.user_task_execution_pk)
+                                                    self.workflow_execution.user_task_execution_pk, callback=callback)
             next_step_execution_to_run = self._get_next_step_execution_to_run()
             if not next_step_execution_to_run:
                 self.end_workflow_execution()

@@ -158,8 +158,15 @@ class SessionController:
         if "user_task_execution_pk" in message and message["user_task_execution_pk"] is not None:
             user_task_execution_pk = message["user_task_execution_pk"]
             user_task_execution = self._get_user_task_execution_entity(user_task_execution_pk)
-            server_socket.start_background_task(TaskExecutionTitleSummaryGenerator.generate_title_and_summary,
-                                                user_task_execution.user_task_execution_pk)
+            # Check if the task has a title to create one if necessary
+            if user_task_execution.title is None:
+                # a lambda function to provide to the generate_title_and_summary function to emit the title to the front
+                callback = lambda title, summary: server_socket.emit('user_task_execution_title',
+                                                                    {"title": title, "session_id": user_task_execution.session_id},
+                                                                    to=user_task_execution.session_id)
+
+                server_socket.start_background_task(TaskExecutionTitleSummaryGenerator.generate_title_and_summary,
+                                                    user_task_execution.user_task_execution_pk, callback=callback)
 
         # Home chat assistant here ??
         # with response_message = ...
@@ -197,8 +204,14 @@ class SessionController:
             function: The function that manages the task assistant.
         """
         instruct_task_execution = self.db_session.query(InstructTaskExecution).get(user_task_execution_pk)
-        server_socket.start_background_task(TaskExecutionTitleSummaryGenerator.generate_title_and_summary,
-                                            instruct_task_execution.user_task_execution_pk)
+        # Check if the task has a title to create one if necessary
+        if instruct_task_execution.title is None:
+            # a lambda function to provide to the generate_title_and_summary function to emit the title to the front
+            callback = lambda title, summary: server_socket.emit('user_task_execution_title',
+                                                                {"title": title, "session_id": instruct_task_execution.session_id},
+                                                                to=instruct_task_execution.session_id)
+            server_socket.start_background_task(TaskExecutionTitleSummaryGenerator.generate_title_and_summary,
+                                                instruct_task_execution.user_task_execution_pk, callback=callback)
 
         self.platform = platform
         return self.__manage_instruct_task_session(self.platform, instruct_task_execution,

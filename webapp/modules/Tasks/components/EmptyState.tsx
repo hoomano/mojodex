@@ -6,20 +6,20 @@ import { UserTaskExecution } from "../interface";
 interface EmptyStateType {
   startANewTaskHandler: () => void;
   searchInput: string;
-  isFollowupsAvailable: boolean;
+  userTaskExecutionsExist: boolean;
   userTasksSuggestions: number[];
 }
 
 const EmptyState = ({
   startANewTaskHandler,
   searchInput,
-  isFollowupsAvailable,
+  userTaskExecutionsExist,
   userTasksSuggestions,
 }: EmptyStateType) => {
   const { t } = useTranslation("dynamic");
 
   const noTasksFound =
-    (!!searchInput.length || !isFollowupsAvailable) &&
+    (!!searchInput.length || !userTaskExecutionsExist) &&
     (!!userTasksSuggestions.length || !!searchInput.length);
 
   return (

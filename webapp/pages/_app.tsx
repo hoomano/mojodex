@@ -11,6 +11,7 @@ import AlertContainer from "components/Alerts/AlertContainer";
 import AcceptTermsAndConditionModal from "components/AcceptTermsAndConditionModal";
 import { ReactElement, ReactNode } from "react";
 import { NextPage } from "next";
+import TaskProvider from "modules/Tasks/helpers/TaskContext";
 const hanken = Hanken_Grotesk({ subsets: ["latin"] });
 
 export type NextPageWithLayout<P = {}, IP = P> = NextPage<P, IP> & {
@@ -41,7 +42,9 @@ function MyApp({
             refetchOnWindowFocus={false}
             refetchWhenOffline={false}
           >
-            {getLayout(<Component {...pageProps} />)}
+            <TaskProvider>
+              {getLayout(<Component {...pageProps} />)}
+            </TaskProvider>
             <AcceptTermsAndConditionModal />
           </SessionProvider>
         </QueryClientProvider>

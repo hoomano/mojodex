@@ -24,6 +24,9 @@ import { useQueryClient } from "@tanstack/react-query";
 import { EditableText } from "components/EditableText";
 import useOnSaveTaskExecutionTitle from "modules/Tasks/hooks/useOnSaveTaskExecutionTitle";
 import useAlert from "helpers/hooks/useAlert";
+import {
+  TaskContext
+} from "modules/Tasks/helpers/TaskContext";
 
 
 const DraftDetail = () => {
@@ -37,6 +40,14 @@ const DraftDetail = () => {
   const { chatState, setChatState } = useContext(
     ChatContext
   ) as ChatContextType;
+
+  const context = useContext(TaskContext);
+  if (!context) {
+    throw new Error("useTaskContext must be used within a TaskProvider");
+  }
+  const { tasks, setTasks, updateTask } = context;
+
+
 
 
   const taskExecutionPK = router.query?.taskExecutionPK
@@ -424,7 +435,9 @@ const DraftDetail = () => {
     }
   }
 
-  useEffect(() => {}, [taskExecutionTitle]);
+  useEffect(() => { }, [taskExecutionTitle]);
+  
+  
   
   const onSaveTaskExecutionTitle = (title : string) => {
     onSaveTitleTaskExecutionTitle.mutate({
@@ -432,8 +445,9 @@ const DraftDetail = () => {
         title: title
     }, {
         onSuccess: (data) => {
-            setTaskExecutionTitle(title);
-            
+        setTaskExecutionTitle(title);
+        console.log("Task title updated successfully");
+            updateTask({ ...currentTask!, title: title });
         },
         onError: (error) => {
             showAlert({

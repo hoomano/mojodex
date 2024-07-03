@@ -11,6 +11,7 @@ import MobileView from "modules/Tasks/components/MobileView";
 import Loader from "components/Loader";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { GetStaticPaths } from "next";
+import TaskProvider from "modules/Tasks/helpers/TaskContext";
 
 const TaskDetailsPage = () => {
   const router = useRouter();
@@ -40,7 +41,7 @@ const TaskDetailsPage = () => {
             <MobileView />
           </div>
           <div className="invisible sm:visible">
-            <DraftDetail />
+              <DraftDetail />
           </div>
         </ChatProvider>
       ) : (

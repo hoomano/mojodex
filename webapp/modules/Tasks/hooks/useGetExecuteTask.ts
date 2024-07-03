@@ -12,7 +12,7 @@ const useGetExecuteTask = (searchFilter: string, userTaskPks: string = "") => {
         userTaskPks,
       }),
     {
-      staleTime: 30*1000,
+      staleTime: 0,
     }
   );
 };

@@ -111,28 +111,25 @@ const Tasks = () => {
               }}
             />
             <FunnelIcon
-              className={`h-6 w-6 cursor-pointer ${
-                userTasksSuggestions.length
+              className={`h-6 w-6 cursor-pointer ${userTasksSuggestions.length
                   ? "text-primary-main"
                   : "text-gray-lighter"
-              }`}
+                }`}
               aria-hidden="true"
               onClick={toggleFilterPanel}
             />
           </div>
           <div className="flex items-center border border-gray-lighter rounded-md">
             <div
-              className={`cursor-pointer border-r border-gray-lighter py-1 px-2 ${
-                isListView ? "text-primary-main" : "text-gray-lighter"
-              }`}
+              className={`cursor-pointer border-r border-gray-lighter py-1 px-2 ${isListView ? "text-primary-main" : "text-gray-lighter"
+                }`}
               onClick={() => setIsListView(true)}
             >
               <Bars3Icon className="h-6 w-6" />
             </div>
             <div
-              className={`cursor-pointer py-1 px-2 ${
-                !isListView ? "text-primary-main" : "text-gray-lighter"
-              }`}
+              className={`cursor-pointer py-1 px-2 ${!isListView ? "text-primary-main" : "text-gray-lighter"
+                }`}
               onClick={() => setIsListView(false)}
             >
               <Squares2X2Icon className="h-5 w-5" />
@@ -146,11 +143,10 @@ const Tasks = () => {
           {taskList?.map((result: UserTask) => (
             <button
               key={result.user_task_pk}
-              className={`${
-                userTasksSuggestions.includes(result.user_task_pk!)
+              className={`${userTasksSuggestions.includes(result.user_task_pk!)
                   ? "bg-primary-main text-white"
                   : ""
-              } ml-2 my-2 text-subtitle5 font-semibold text-primary-main border-primary-main border py-1.5 px-4 rounded-full`}
+                } ml-2 my-2 text-subtitle5 font-semibold text-primary-main border-primary-main border py-1.5 px-4 rounded-full`}
               onClick={() => suggestionsClickHandler(result.user_task_pk!)}
             >
               {result.task_icon} {result.task_name}

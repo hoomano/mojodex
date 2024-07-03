@@ -62,9 +62,9 @@ const TaskCard = ({
       if (minutes < 1) {
         setTimeAgo(t('userTaskExecutionList.date.now'));
       } else if (hours < 1) {
-        setTimeAgo(`${t('userTaskExecutionList.date.afterTimeAgo')} ${minutes}${t('userTaskExecutionList.date.minutes')} ${t('userTaskExecutionList.date.afterTimeAgo')}`);
+        setTimeAgo(`${t('userTaskExecutionList.date.beforeTimeAgo')} ${minutes}${t('userTaskExecutionList.date.minutes')} ${t('userTaskExecutionList.date.afterTimeAgo')}`);
       } else if (days < 1) {
-        setTimeAgo(`${t('userTaskExecutionList.date.beforeTimeAgo')}${hours}${t('userTaskExecutionList.date.hours')} ${t('userTaskExecutionList.date.afterTimeAgo')}`);
+        setTimeAgo(`${t('userTaskExecutionList.date.beforeTimeAgo')} ${hours}${t('userTaskExecutionList.date.hours')} ${t('userTaskExecutionList.date.afterTimeAgo')}`);
       } else if (days <= 7) {
         const dayOfWeek = [t('userTaskExecutionList.date.sunday'),
           t('userTaskExecutionList.date.monday'),

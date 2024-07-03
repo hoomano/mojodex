@@ -20,11 +20,11 @@ const TaskDetailsPage = () => {
     ? decryptId(router.query.taskExecutionPK as string)
     : null;
 
-  
+
   const { data: currentTaskInfo } = useGetExecuteTaskById(taskExecutionPK);
-  
+
   const taskSessionId = currentTaskInfo?.session_id;
- 
+
   return (
     <Layout>
       {taskSessionId ? (
@@ -55,8 +55,8 @@ export default TaskDetailsPage;
 export const getStaticPaths: GetStaticPaths<{ slug: string }> = async () => {
 
   return {
-      paths: [], //indicates that no page needs be created at build time
-      fallback: 'blocking' //indicates the type of fallback
+    paths: [], //indicates that no page needs be created at build time
+    fallback: 'blocking' //indicates the type of fallback
   }
 }
 

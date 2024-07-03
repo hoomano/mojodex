@@ -123,7 +123,8 @@
             "cancelEditionButton": "Cancelar",
             "saveEditionButton": "Guardar y Reiniciar",
             "restartError": "Error al reiniciar el flujo de trabajo. Vuelva a intentarlo o póngase en contacto con el servicio de asistencia.",
-            "imageUploadButton": "Subir imagen"
+            "imageUploadButton": "Subir imagen",
+            "missingFieldLabel": "Campo requerido"
         },
         "chatTab": {
             "title": "Chat",

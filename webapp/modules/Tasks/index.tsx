@@ -9,7 +9,7 @@ import EmptyState from "./components/EmptyState";
 import TaskListModal from "./components/TaskListModal";
 import useGetAllTasks from "./hooks/useGetAllTasks";
 import useGetExecuteTask from "./hooks/useGetExecuteTask";
-import ProactiveFollowup from "./components/TaskExecutions";
+import TaskExecutions from "./components/TaskExecutions";
 import Loader from "components/Loader";
 import globalContext, { GlobalContextType } from "helpers/GlobalContext";
 import TaskDoneModal from "./components/TaskDoneModal";
@@ -17,13 +17,14 @@ import { debounce } from "helpers/method";
 import { useTranslation } from "react-i18next";
 import { useDebounce } from "use-debounce";
 import { UserTaskExecution, UserTask } from "./interface";
-import { TaskContext } from "./helpers/TaskContext";
-import TaskExecutions from "./components/TaskExecutions";
 
 const Tasks = () => {
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   const [searchTask, setSearchTask] = useState("");
-  const [userTasksSuggestions, setUserTasksSuggestions] = useState<number[]>([]);
+  const [userTasksSuggestions, setUserTasksSuggestions] = useState<number[]>(
+    []
+  );
+  const [userTaskExecutions, setUserTaskExecutions] = useState<UserTaskExecution[]>([]);
   const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
   const [isListView, setIsListView] = useState(false);
   const { data: taskList } = useGetAllTasks();
@@ -41,32 +42,22 @@ const Tasks = () => {
     globalContext
   ) as GlobalContextType;
 
-  const taskContext = useContext(TaskContext);
-
-  if (!taskContext) {
-    throw new Error("Tasks must be used within a TaskProvider");
-  }
-
-  const { tasks, setTasks } = taskContext;
-
   const startANewTaskHandler = () => {
     setIsTaskModalOpen(true);
   };
 
   useEffect(() => {
-    setTasks(
+    setUserTaskExecutions(
       executeTasks?.pages?.flatMap((data) => data.user_task_executions) || []
     );
-  }, [executeTasks, setTasks]);
+  }, [executeTasks]);
 
-
-
-  const userTaskExecutionExists = !!tasks?.length;
+  const userTaskExecutionsExist = !!userTaskExecutions?.length;
 
   const handleRefetchOnScrollEnd = async (e: any) => {
     const { scrollHeight, scrollTop, clientHeight } = e.target;
     if (!isFetching && scrollHeight - scrollTop <= clientHeight * 1.2) {
-      await fetchNextPage({ pageParam: tasks.length });
+      await fetchNextPage({ pageParam: userTaskExecutions.length });
     }
   };
 
@@ -86,7 +77,7 @@ const Tasks = () => {
   };
 
   const isShowSearchFilter =
-    userTaskExecutionExists ||
+    userTaskExecutionsExist ||
     !!searchInput.length ||
     !!userTasksSuggestions.length;
 
@@ -97,7 +88,7 @@ const Tasks = () => {
     >
       <div className="flex justify-between mb-[30px]">
         <div className="text-h2">{t("appDrawer.taskListButton")}</div>
-        {userTaskExecutionExists && (
+        {userTaskExecutionsExist && (
           <Button
             onClick={startANewTaskHandler}
             size="middle"
@@ -121,8 +112,8 @@ const Tasks = () => {
             />
             <FunnelIcon
               className={`h-6 w-6 cursor-pointer ${userTasksSuggestions.length
-                ? "text-primary-main"
-                : "text-gray-lighter"
+                  ? "text-primary-main"
+                  : "text-gray-lighter"
                 }`}
               aria-hidden="true"
               onClick={toggleFilterPanel}
@@ -153,8 +144,8 @@ const Tasks = () => {
             <button
               key={result.user_task_pk}
               className={`${userTasksSuggestions.includes(result.user_task_pk!)
-                ? "bg-primary-main text-white"
-                : ""
+                  ? "bg-primary-main text-white"
+                  : ""
                 } ml-2 my-2 text-subtitle5 font-semibold text-primary-main border-primary-main border py-1.5 px-4 rounded-full`}
               onClick={() => suggestionsClickHandler(result.user_task_pk!)}
             >
@@ -164,15 +155,15 @@ const Tasks = () => {
         </div>
       )}
 
-      {userTaskExecutionExists ? (
-        <TaskExecutions tasks={tasks} isListView={isListView} />
+      {userTaskExecutionsExist ? (
+        <TaskExecutions tasks={userTaskExecutions} isListView={isListView} />
       ) : isLoading ? (
         <Loader />
       ) : (
         <EmptyState
           startANewTaskHandler={startANewTaskHandler}
           searchInput={searchInput}
-          userTaskExecutionsExist={userTaskExecutionExists}
+          userTaskExecutionsExist={userTaskExecutionsExist}
           userTasksSuggestions={userTasksSuggestions}
         />
       )}
@@ -186,7 +177,7 @@ const Tasks = () => {
         closed={() => setGlobalState({ showTaskDoneModal: false })}
       />
 
-      {isFetching && userTaskExecutionExists && (
+      {isFetching && userTaskExecutionsExist && (
         <div className="button-loader m-auto !w-10 !h-10 mt-5" />
       )}
     </div>

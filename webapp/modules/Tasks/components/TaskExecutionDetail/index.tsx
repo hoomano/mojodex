@@ -24,9 +24,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import { EditableText } from "components/EditableText";
 import useOnSaveTaskExecutionTitle from "modules/Tasks/hooks/useOnSaveTaskExecutionTitle";
 import useAlert from "helpers/hooks/useAlert";
-import {
-  TaskContext
-} from "modules/Tasks/helpers/TaskContext";
 
 
 const DraftDetail = () => {
@@ -40,14 +37,6 @@ const DraftDetail = () => {
   const { chatState, setChatState } = useContext(
     ChatContext
   ) as ChatContextType;
-
-  const context = useContext(TaskContext);
-  if (!context) {
-    throw new Error("useTaskContext must be used within a TaskProvider");
-  }
-  const { tasks, setTasks, updateTask } = context;
-
-
 
 
   const taskExecutionPK = router.query?.taskExecutionPK
@@ -89,7 +78,7 @@ const DraftDetail = () => {
     producedTextPk: null,
   });
   const [workflowStepExecutions, setWorkflowStepExecutions] = useState(currentTask!.step_executions);
-  const [chatIsVisible, setChatIsVisible] = useState(selectedTab === "result" && currentTask!.result_chat_enabled); 
+  const [chatIsVisible, setChatIsVisible] = useState(selectedTab === "result" && currentTask!.result_chat_enabled);
   const [editingInputs, setEditingInputs] = useState(false);
 
   const onSaveTitleTaskExecutionTitle = useOnSaveTaskExecutionTitle();
@@ -178,7 +167,7 @@ const DraftDetail = () => {
             setEditingInputs(false);
             setSelectedTab("process");
           }}
-            />
+        />
       ),
       disabled: false
     };
@@ -204,7 +193,7 @@ const DraftDetail = () => {
       if (router.query.tab === "todos") {
         setSelectedTab("todos");
       } else {
-        
+
         if (currentTask?.task_type !== "workflow") {
           setSelectedTab("result");
         } else {
@@ -218,7 +207,7 @@ const DraftDetail = () => {
     }
   }, [workflowStepExecutions, editorDetails, isTask, router.query.tab, producedTextIndex, isDraftStreaming, editingInputs]);
 
-  
+
   useEffect(() => {
     if (currentTask?.produced_text_pk) {
       setEditorDetails({
@@ -292,7 +281,7 @@ const DraftDetail = () => {
       setIsDraftStreaming(prev => false);
       setProducedTextIndex(prevIndex => prevIndex + 1);
       setNumberOfProducedTextVersions(prevVersions => prevVersions + 1);
-     
+
 
       setChatState({
         currentTaskInfo: {
@@ -436,27 +425,24 @@ const DraftDetail = () => {
   }
 
   useEffect(() => { }, [taskExecutionTitle]);
-  
-  
-  
-  const onSaveTaskExecutionTitle = (title : string) => {
+
+  const onSaveTaskExecutionTitle = (title: string) => {
     onSaveTitleTaskExecutionTitle.mutate({
-        user_task_execution_pk: taskExecutionPK!,
-        title: title
+      user_task_execution_pk: taskExecutionPK!,
+      title: title
     }, {
-        onSuccess: (data) => {
+      onSuccess: (data) => {
         setTaskExecutionTitle(title);
-        console.log("Task title updated successfully");
-            updateTask({ ...currentTask!, title: title });
-        },
-        onError: (error) => {
-            showAlert({
-                title: t('errorMessages.globalSnackBarMessage'),
-                type: "error",
-            });
-        }
+
+      },
+      onError: (error) => {
+        showAlert({
+          title: t('errorMessages.globalSnackBarMessage'),
+          type: "error",
+        });
+      }
     });
-};
+  };
 
 
   return (
@@ -479,20 +465,20 @@ const DraftDetail = () => {
                   <EditableText
                     text={taskExecutionTitle ?? ""}
                     onSave={onSaveTaskExecutionTitle}
-                    />
-                               
+                  />
+
                 </div>
               </div>
               <Tab
                 selected={selectedTab!}
-                  onChangeTab={(key: string) => {
-                    // if key is not "inputs"
-                    if (key !== "inputs") {
-                      // set editingInputs to false
-                      setEditingInputs(false);
-                    }
-                    setSelectedTab(key)
-                  }}
+                onChangeTab={(key: string) => {
+                  // if key is not "inputs"
+                  if (key !== "inputs") {
+                    // set editingInputs to false
+                    setEditingInputs(false);
+                  }
+                  setSelectedTab(key)
+                }}
                 tabs={tabs}
                 notReadTodos={currentTask?.n_not_read_todos}
               />

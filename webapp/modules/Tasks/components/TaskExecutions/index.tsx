@@ -2,7 +2,6 @@ import { UserTaskExecution } from "modules/Tasks/interface";
 import TaskCard from "../TaskCard";
 import { useRouter } from "next/router";
 import { encryptId } from "helpers/method";
-import { useEffect } from "react";
 
 interface TasksTypes {
   tasks: UserTaskExecution[];
@@ -16,16 +15,9 @@ const TaskExecutions = ({ tasks, isListView }: TasksTypes) => {
     router.push(`/tasks/${encryptId(task.user_task_execution_pk)}`);
   };
 
-  useEffect(() => {
-    console.log("tasks");
-  }
-    , [tasks]);
-
-
   return (
     <div className={`${isListView ? "" : "flex gap-5 flex-wrap"} mt-2`}>
       {tasks.map((task, index) => {
-        console.log(task.title);
         return (
           <TaskCard
             title={task.title}

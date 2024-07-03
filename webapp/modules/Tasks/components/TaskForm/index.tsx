@@ -9,11 +9,14 @@ import Button from "components/Button";
 import useGetTask from "modules/Tasks/hooks/useGetTask";
 import usePostExecuteTask from "modules/Tasks/hooks/usePostExecuteTask";
 import InputsForm from "./InputsForm";
+import useAlert from "helpers/hooks/useAlert";
+import { useTranslation } from "react-i18next";
 
 const CreateTaskForm = () => {
   const router = useRouter();
   const { query } = router;
   const taskId = query.taskId ? decryptId(query.taskId as string) : null;
+  const { t } = useTranslation('dynamic');
 
   const { data: task } = useGetTask(taskId);
 
@@ -27,6 +30,7 @@ const CreateTaskForm = () => {
   const taskExecutionPK = taskConfigDetails?.user_task_execution_pk;
   const tasksForm = taskConfigDetails?.json_input || [];
   const taskType = task?.task_type;
+  const { showAlert } = useAlert();
 
 
   const { mutate: executeTaskMutation, isLoading: isPostExecuteTaskLoading } =
@@ -36,7 +40,10 @@ const CreateTaskForm = () => {
     //check inputArray contain every dict with key that were in tasksForm;
     for (let i = 0; i < tasksForm.length; i++) {
       if (!inputArray.find((input) => input.input_name === tasksForm[i].input_name || input.input_name.split("_").slice(0, -1).join("_") == tasksForm[i].input_name)) {
-        alert("Field missing: " + tasksForm[i].input_name);
+        showAlert({
+          title: t("userTaskExecution.inputsTab.missingFieldLabel") + ":\n" + tasksForm[i].description_for_user,
+          type: "error",
+        });
         return;
       }
     }

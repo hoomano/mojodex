@@ -123,7 +123,8 @@
       "cancelEditionButton": "Cancel",
       "saveEditionButton": "Save and Restart",
       "restartError": "Error restarting workflow. Please retry or contact support.",
-      "imageUploadButton": "Upload image"
+      "imageUploadButton": "Upload image",
+      "missingFieldLabel": "Missing field"
     },
     "chatTab": {
       "title": "Chat",

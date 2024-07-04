@@ -1,5 +1,4 @@
 import glob
-from mojodex_core.stt.stt import STT
 from pydub import AudioSegment
 import os
 
@@ -7,18 +6,18 @@ from mojodex_core.user_storage_manager.user_storage_manager import UserStorageMa
 
 
 class UserAudioFileManager(UserStorageManager):
+    _instance = None
+    _initialized = False
+
+    def __new__(cls, *args, **kwargs):
+        if not cls._instance:
+            cls._instance = super(UserAudioFileManager, cls).__new__(
+                cls, *args, **kwargs)
+            cls._instance._initialized = False
+        return cls._instance
 
     mojo_messages_audios_storage_dir_name="mojo_messages_audios"
     user_messages_audios_storage_dir_name="user_messages_audios"
-
-    def __init__(self):
-        try:
-            # Setup the STT engine
-            stt, stt_conf = STT.get_stt()
-            self.stt = stt(stt_conf, label="whisper-azure")
-            super().__init__()
-        except Exception as e:
-            raise Exception(f"{self.__class__.__name__} : __init__ : {e}")
 
     def _m4a_to_mp3(self, filename, directory):
         filepath = os.path.join(directory, filename)
@@ -49,7 +48,7 @@ class UserAudioFileManager(UserStorageManager):
         except Exception as e:
             raise Exception(f"{self.__class__.__name__}:: __get_audio_storage_path: {e}")
 
-    def __store_audio_file(self, file, extension, user_id, session_id, message_type, message_id):
+    def store_audio_file(self, file, extension, user_id, session_id, message_type, message_id):
         try:
             audio_storage = self.__get_audio_storage_path(
                 user_id, session_id, message_type)
@@ -69,35 +68,25 @@ class UserAudioFileManager(UserStorageManager):
         except Exception as e:
             raise Exception(f"__store_audio_file: {e}")
 
-    def extract_text_and_duration(self, file, extension, user_id, session_id, message_type, message_id, user_task_execution_pk=None, task_name_for_system=None):
+    def find_file_from_message_id(self, user_id, session_id, message_type, message_id):
         try:
-            if file is not None:
-                audio_file_path = self.__store_audio_file(
-                    file, extension, user_id, session_id, message_type, message_id)
-            else:
-                # Else case is used to manage user_message management previous error:
-                # The audio_transcript has been correctly stored but has not been correctly set into db and sent back to user
-                # Therefore, we can find it using its message_id
-                audio_storage = self.__get_audio_storage_path(
-                    user_id, session_id, message_type)
-                # find any file in this path that name without extension is message_id
-                search_pattern = os.path.join(
-                    audio_storage,  f"{message_id}.*")
-                # Use glob.glob() to find all matching files, considering any file extension
-                matching_files = glob.glob(search_pattern)
-                if not matching_files:
-                    raise Exception(
-                        f"Audio file not found for message_id: {message_id}")
-                audio_file_path = matching_files[0]
-
-            transcription, file_duration = self.stt.transcript(audio_file_path, user_id,
-                                                               user_task_execution_pk=user_task_execution_pk,
-                                                               task_name_for_system=task_name_for_system)
-
-            return transcription, file_duration
+            # Else case is used to manage user_message management previous error:
+            # The audio_transcript has been correctly stored but has not been correctly set into db and sent back to user
+            # Therefore, we can find it using its message_id
+            audio_storage = self.__get_audio_storage_path(
+                user_id, session_id, message_type)
+            # find any file in this path that name without extension is message_id
+            search_pattern = os.path.join(
+                audio_storage,  f"{message_id}.*")
+            # Use glob.glob() to find all matching files, considering any file extension
+            matching_files = glob.glob(search_pattern)
+            if not matching_files:
+                raise Exception(
+                    f"Audio file not found for message_id: {message_id}")
+            return matching_files[0]
         except Exception as e:
-            raise Exception(f"{self.__class__.__name__} :: extract_text_and_duration: {e}")
-
+            raise Exception(f"find_file_from_message_id: {e}")
+   
     def get_mojo_messages_audio_storage(self, user_id, session_id):
         try:
             session_storage = self._get_session_storage(user_id, session_id)

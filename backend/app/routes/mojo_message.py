@@ -6,7 +6,7 @@ from flask_restful import Resource
 from app import db, main_logger
 from mojodex_core.logging_handler import log_error
 from mojodex_core.entities.db_base_entities import *
-
+from mojodex_core.user_storage_manager.user_audio_file_manager import UserAudioFileManager
 from models.voice_generator import VoiceGenerator
 from datetime import datetime
 
@@ -61,9 +61,7 @@ class MojoMessage(Resource):
             message_db.message["message_pk"] = message_db.message_pk
 
             try:
-                from mojodex_core.user_storage_manager.user_audio_file_manager import UserAudioFileManager
-                user_audio_file_manager = UserAudioFileManager()
-                mojo_messages_audio_storage = user_audio_file_manager.get_mojo_messages_audio_storage(self.user_id, self.id)
+                mojo_messages_audio_storage = UserAudioFileManager().get_mojo_messages_audio_storage(self.user_id, self.id)
                 output_filename = os.path.join(mojo_messages_audio_storage, f"{message_db.message_pk}.mp3")
 
 

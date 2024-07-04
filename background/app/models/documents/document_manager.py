@@ -1,20 +1,12 @@
 import os
 import requests
 from datetime import datetime
-
 from models.documents.document_chunk_manager import DocumentChunkManager
-
 from mojodex_core.llm_engine.providers.model_loader import ModelLoader
 
-from background_logger import BackgroundLogger
-
-
 class DocumentManager:
-    logger_prefix = "DocumentManager"
 
     def __init__(self):
-        self.logger = BackgroundLogger(f"{DocumentManager.logger_prefix}")
-
         self.document_chunk_manager = DocumentChunkManager()
 
     def _embedded(self, text, user_id, user_task_execution_pk=None, task_name_for_system=None):
@@ -64,14 +56,10 @@ class DocumentManager:
                                                                old_chunks_pks=document_chunks_pks)
             self.__save_document_to_db(document_pk)
         except Exception as e:
-            self.logger.error(
-                f"{DocumentManager.logger_prefix} :: update_document : {e}")
-            raise Exception(
-                f"{DocumentManager.logger_prefix} :: update_document : {e}")
+            raise Exception(f"{self.__class__.__name__} :: update_document : {e}")
 
     def __save_document_to_db(self, document_pk):
         try:
-            self.logger.debug(f"__save_document_to_db : {document_pk}")
             uri = f"{os.environ['MOJODEX_BACKEND_URI']}/document"
             pload = {'datetime': datetime.now().isoformat(), 'document_pk': document_pk,
                      'update_date': datetime.now().isoformat()}
@@ -105,5 +93,4 @@ class DocumentManager:
             return document_chunks
 
         except Exception as e:
-            self.logger.error(f"retrieve : {e}")
-            return None
+            raise Exception(f"{self.__class__.__name__} :: retrieve : {e}")

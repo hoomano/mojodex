@@ -5,6 +5,7 @@ from app import db, document_manager
 from models.documents.website_parser import WebsiteParser
 
 from app import executor
+from mojodex_core.logging_handler import log_error
 
 
 class UpdateDocument(Resource):
@@ -42,10 +43,13 @@ class UpdateDocument(Resource):
             document_chunks_pks = [document_chunk_pk[0] for document_chunk_pk in document_chunks_pks]
 
             def launch_document_update(document_name, document_type, document_manager_app, user_id, edition, document_chunks_pks, company_name, website_parser):
-                if document_type == "learned_by_mojo":
-                    document_manager_app.update_document(user_id, document_pk, document_chunks_pks, edition)
-                elif document_type == "webpage":
-                    website_parser.update_website_document( user_id, document_name, document_pk, document_chunks_pks, company_name)
+                try:
+                    if document_type == "learned_by_mojo":
+                        document_manager_app.update_document(user_id, document_pk, document_chunks_pks, edition)
+                    elif document_type == "webpage":
+                        website_parser.update_website_document( user_id, document_name, document_pk, document_chunks_pks, company_name)
+                except Exception as e:
+                    log_error(f"launch_document_update : {e}", notify_admin=True)
 
             executor.submit(launch_document_update, document.name, document.document_type, document_manager, user_id, edition, document_chunks_pks, company_name, self.website_parser)
 

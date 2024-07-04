@@ -1,15 +1,9 @@
 import os
 from datetime import datetime
-
 import requests
 import tiktoken
 
-from background_logger import BackgroundLogger
-
-
-
 class DocumentChunkManager:
-    logger_prefix = "DocumentChunkManager"
 
     # Constants
     CHUNK_SIZE = 200  # The target size of each text chunk in tokens
@@ -19,10 +13,9 @@ class DocumentChunkManager:
 
     def __init__(self):
         try:
-            self.logger = BackgroundLogger(f"{DocumentChunkManager.logger_prefix}")
             self.tokenizer = tiktoken.get_encoding("cl100k_base")  # The encoding scheme to use for tokenization
         except Exception as e:
-            raise Exception(f"{DocumentChunkManager.logger_prefix} : __init__ : {e}")
+            raise Exception(f"{self.__class__.__name__} : __init__ : {e}")
 
     def _get_text_chunks(self, text, chunk_token_size=None):
         """
@@ -136,7 +129,7 @@ class DocumentChunkManager:
 
             return valid_chunks_pk
         except Exception as e:
-            raise Exception(f"{DocumentChunkManager.logger_prefix} : create_document_chunks : {e}")
+            raise Exception(f"{self.__class__.__name__} : create_document_chunks : {e}")
 
     def __add_document_chunk_to_db(self, document_fk, chunk_index, chunk_text, embedding):
         try:
@@ -180,9 +173,7 @@ class DocumentChunkManager:
                     document_chunk_pk = self.__add_document_chunk_to_db(document_pk, i, new_valid_chunks[i], new_embeddeding)
 
         except Exception as e:
-            raise Exception(f"{DocumentChunkManager.logger_prefix} : update_document_chunks : {e}")
-
-
+            raise Exception(f"{self.__class__.__name__} : update_document_chunks : {e}")
 
     def __update_document_chunk_in_db(self, chunk_pk, chunk_text, embedding):
         try:

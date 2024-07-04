@@ -35,10 +35,6 @@ app.config[
 db = SQLAlchemy(app)
 api = Api(app)
 
-from background_logger import BackgroundLogger
-
-main_logger = BackgroundLogger("main_logger")
-
 from models.documents.document_manager import DocumentManager
 document_manager = DocumentManager()
 

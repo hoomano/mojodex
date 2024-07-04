@@ -1,12 +1,7 @@
-import os
-
 import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
 from app import document_manager
-
-from background_logger import BackgroundLogger
-
 from mojodex_core.llm_engine.mpt import MPT
 
 
@@ -17,12 +12,8 @@ class WebsiteParser:
 
     website_chunk_validation_mpt_filename = "instructions/is_website_chunk_relevant.mpt"
 
-    def __init__(self):
-        self.logger = BackgroundLogger(f"{WebsiteParser.logger_prefix}")
-
     def __get_all_page_urls(self, base_url):
         try:
-            self.logger.debug(f"__get_all_page_urls: {base_url}")
             # Send a GET request to the base URL
             response = requests.get(base_url)
 
@@ -47,17 +38,14 @@ class WebsiteParser:
 
     def __get_webpage_text(self, url, retry=2):
         try:
-            self.logger.debug(f"__get_webpage_text: {url}")
             response = requests.get(url)
             html_content = response.text
             soup = BeautifulSoup(html_content, 'html.parser')
             webpage_text = soup.text.strip()
             if webpage_text.strip() == "":
                 if retry > 0:
-                    self.logger.warning("🟠 Empty webpage text, retrying...")
                     return self.__get_webpage_text(url, retry - 1)
                 else:
-                    self.logger.warning("🔴 Empty webpage text, giving up...")
                     return None
             # remove multiple \n by only one
             webpage_text = "\n".join(
@@ -65,26 +53,21 @@ class WebsiteParser:
 
             return webpage_text
         except Exception as e:
-            self.logger.error(f"__get_webpage_text: {e}")
             return None
 
     def website_to_doc(self, base_url, all_urls=False):
         try:
-            self.logger.debug(f"website_to_doc: {base_url}")
             # Remove ending "/" from base_url
             if base_url[-1] == "/":
                 base_url = base_url[:-1]
             all_page_urls = self.__get_all_page_urls(
                 base_url) if all_urls else [base_url]
-            self.logger.debug(
-                f"website_to_doc: found {len(all_page_urls)} pages")
             text_list = []
             for link in all_page_urls[:WebsiteParser.MAX_WEBSITE_PAGES]:
                 text = self.__get_webpage_text(link)
                 if text is not None:
                     text_list.append({"link": link, "text": text})
 
-            self.logger.debug(f"website_to_doc: Done")
             return text_list
 
         except Exception as e:
@@ -105,7 +88,6 @@ class WebsiteParser:
         try:
             # useful for validation
             self.company_name = company_name
-            self.logger.debug(f"update_website: {base_url}")
             responses = self.website_to_doc(base_url, all_urls=False)
             document_manager.update_document(user_id, document_pk, document_chunks_pks, responses[0]["text"],
                                              chunk_validation_callback=self.__validate_website_chunk)
@@ -116,7 +98,6 @@ class WebsiteParser:
     def create_website_document(self, user_id, base_url, company_name):
         try:
             self.company_name = company_name  # useful for validation
-            self.logger.debug(f"update_website: {base_url}")
             responses = self.website_to_doc(base_url, all_urls=True)
             for response in responses:
                 document_manager.new_document(user_id, response["text"], response["link"], document_type='webpage',

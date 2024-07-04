@@ -59,10 +59,6 @@ from time_manager import TimeManager
 
 time_manager = TimeManager()
 
-from models.documents.document_manager import DocumentManager
-
-document_manager = DocumentManager()
-
 from timing_logger import TimingLogger
 
 timing_logger = TimingLogger("/data/timing_logs.log")

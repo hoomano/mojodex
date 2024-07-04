@@ -3,7 +3,19 @@ from datetime import datetime
 import requests
 import tiktoken
 
+from mojodex_core.db import with_db_session
+from mojodex_core.entities.db_base_entities import MdDocumentChunk
+
 class DocumentChunkManager:
+    _instance = None
+    _initialized = False
+
+    def __new__(cls, *args, **kwargs):
+        if not cls._instance:
+            cls._instance = super(DocumentChunkManager, cls).__new__(
+                cls, *args, **kwargs)
+            cls._instance._initialized = False
+        return cls._instance
 
     # Constants
     CHUNK_SIZE = 200  # The target size of each text chunk in tokens
@@ -12,10 +24,11 @@ class DocumentChunkManager:
     MAX_NUM_CHUNKS = 10000  # The maximum number of chunks to generate from a text
 
     def __init__(self):
-        try:
-            self.tokenizer = tiktoken.get_encoding("cl100k_base")  # The encoding scheme to use for tokenization
-        except Exception as e:
-            raise Exception(f"{self.__class__.__name__} : __init__ : {e}")
+        if not self.__class__._initialized:
+            try:
+                self.tokenizer = tiktoken.get_encoding("cl100k_base")  # The encoding scheme to use for tokenization
+            except Exception as e:
+                raise Exception(f"{self.__class__.__name__} : __init__ : {e}")
 
     def _get_text_chunks(self, text, chunk_token_size=None):
         """
@@ -124,25 +137,22 @@ class DocumentChunkManager:
                     if not valid_chunk:
                         continue
                 embedding = embeddeding_function(chunks[chunk_index], user_id, user_task_execution_pk, task_name_for_system)
-                document_chunk_pk = self.__add_document_chunk_to_db(document_pk, chunk_index, chunks[chunk_index], embedding)
+                document_chunk_pk = self._add_document_chunk_to_db(document_pk, chunk_index, chunks[chunk_index], embedding)
                 valid_chunks_pk.append(document_chunk_pk)
 
             return valid_chunks_pk
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} : create_document_chunks : {e}")
 
-    def __add_document_chunk_to_db(self, document_fk, chunk_index, chunk_text, embedding):
+    @with_db_session
+    def _add_document_chunk_to_db(self, document_fk, chunk_index, chunk_text, embedding, db_session):
         try:
-            uri = f"{os.environ['MOJODEX_BACKEND_URI']}/document_chunk"
-            pload = {'datetime': datetime.now().isoformat(), 'document_fk': document_fk, 'chunk_index': chunk_index, 'chunk_text': chunk_text, 'embedding': embedding}
-            headers = {'Authorization': os.environ['MOJODEX_BACKGROUND_SECRET'], 'Content-Type': 'application/json'}
-            internal_request = requests.put(uri, json=pload, headers=headers)
-            if internal_request.status_code != 200:
-                raise Exception(f"__add_document_chunk_to_db : {internal_request.status_code} - {internal_request.text}")
-            document_chunk_pk = internal_request.json()["document_chunk_pk"]
-            return document_chunk_pk
+            chunk_db = MdDocumentChunk(document_fk=document_fk, index=chunk_index, chunk_text=chunk_text, embedding=embedding)
+            db_session.add(chunk_db)
+            db_session.commit()
+            return chunk_db.document_chunk_pk
         except Exception as e:
-            raise Exception(f"__add_document_chunk_to_db : {e}")
+            raise Exception(f"_add_document_chunk_to_db : {e}")
 
     def update_document_chunks(self, document_pk, text, embeddeding_function, user_id, old_chunks_pks,
                                chunk_validation_callback=None, chunk_token_size=None):
@@ -159,46 +169,42 @@ class DocumentChunkManager:
                 chunk_pk = old_chunks_pks[index]
                 chunk_text = new_valid_chunks[index]
                 embedding = embeddeding_function(new_valid_chunks[index], user_id)
-                self.__update_document_chunk_in_db(chunk_pk, chunk_text, embedding)
+                self._update_document_chunk_in_db(chunk_pk, chunk_text, embedding)
 
             # if the old list is longer than the new one
             # 4. For each remaining old chunk, delete the chunk
             if len(old_chunks_pks) > len(new_valid_chunks):
                 for old_chunk_pk in old_chunks_pks[len(new_valid_chunks):]:
-                    self.__delete_document_chunk_in_db(old_chunk_pk)
+                    self._delete_document_chunk_in_db(old_chunk_pk)
             # 5. For each remaining new chunk, add the chunk
             else:
                 for i in range(common_chunks, len(new_valid_chunks)):
                     new_embeddeding = embeddeding_function(new_valid_chunks[i], user_id)
-                    document_chunk_pk = self.__add_document_chunk_to_db(document_pk, i, new_valid_chunks[i], new_embeddeding)
+                    document_chunk_pk = self._add_document_chunk_to_db(document_pk, i, new_valid_chunks[i], new_embeddeding)
 
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} : update_document_chunks : {e}")
 
-    def __update_document_chunk_in_db(self, chunk_pk, chunk_text, embedding):
+    @with_db_session
+    def _update_document_chunk_in_db(self, chunk_pk, chunk_text, embedding, db_session):
         try:
-            uri = f"{os.environ['MOJODEX_BACKEND_URI']}/document_chunk"
-            pload = {'datetime': datetime.now().isoformat(), 'chunk_pk': chunk_pk,
-                     'chunk_text': chunk_text, 'embedding': embedding}
-            headers = {'Authorization': os.environ['MOJODEX_BACKGROUND_SECRET'], 'Content-Type': 'application/json'}
-            internal_request = requests.post(uri, json=pload, headers=headers)
-            if internal_request.status_code != 200:
-                raise Exception(f"__update_document_chunk_in_db : {internal_request.status_code} - {internal_request.text}")
-            document_chunk_pk = internal_request.json()["document_chunk_pk"]
-            return document_chunk_pk
+            chunk = db_session.query(MdDocumentChunk).filter(MdDocumentChunk.document_chunk_pk == chunk_pk).first()
+            if chunk is None:
+                return {"error": f"Chunk not found"}, 404
+            chunk.chunk_text = chunk_text
+            chunk.embedding = embedding
+            db_session.commit()
         except Exception as e:
-            raise Exception(f"__update_document_chunk_in_db : {e}")
+            raise Exception(f"_update_document_chunk_in_db : {e}")
 
-    def __delete_document_chunk_in_db(self, chunk_pk):
+    @with_db_session
+    def _delete_document_chunk_in_db(self, chunk_pk, db_session):
         try:
-            uri = f"{os.environ['MOJODEX_BACKEND_URI']}/document_chunk"
-            pload = {'datetime': datetime.now().isoformat(), 'chunk_pk': chunk_pk}
-            headers = {'Authorization': os.environ['MOJODEX_BACKGROUND_SECRET'], 'Content-Type': 'application/json'}
-            internal_request = requests.delete(uri, data=pload, headers=headers)
-            if internal_request.status_code != 200:
-                raise Exception(
-                    f"__delete_document_chunk_in_db : {internal_request.status_code} - {internal_request.text}")
-            document_chunk_pk = internal_request.json()["document_chunk_pk"]
-            return document_chunk_pk
+            chunk = db_session.query(MdDocumentChunk).filter(MdDocumentChunk.document_chunk_pk == chunk_pk).first()
+            if chunk is None:
+                return {"error": f"Chunk not found"}, 404
+
+            chunk.deleted = datetime.now()
+            db_session.commit()
         except Exception as e:
-            raise Exception(f"__delete_document_chunk_in_db : {e}")
+            raise Exception(f"_delete_document_chunk_in_db : {e}")

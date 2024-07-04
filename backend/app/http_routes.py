@@ -16,8 +16,6 @@ from routes.task import Task
 from routes.user_summary import UserSummary
 from routes.user_task_execution_title import UserTaskExecutionTitle
 from routes.password import Password
-from routes.document import Document
-from routes.document_chunk import DocumentChunk
 from routes.message import Message
 from routes.resource import MojoResource
 from routes.goal import Goal
@@ -80,8 +78,6 @@ class HttpRouteManager:
         api.add_resource(UserSummary, '/user_summary')
         api.add_resource(UserTaskExecutionTitle, '/user_task_execution_title')
         api.add_resource(Password, '/password')
-        api.add_resource(Document, '/document')
-        api.add_resource(DocumentChunk, '/document_chunk')
         api.add_resource(Message, "/message")
         api.add_resource(MojoResource, "/resource")
         api.add_resource(Goal, "/goal")

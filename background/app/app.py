@@ -30,9 +30,6 @@ app.config[
 db = SQLAlchemy(app)
 api = Api(app)
 
-from models.documents.document_manager import DocumentManager
-document_manager = DocumentManager()
-
 from http_routes import HttpRouteManager
 HttpRouteManager(api)
 

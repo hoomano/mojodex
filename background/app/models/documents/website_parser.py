@@ -1,7 +1,10 @@
 import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
-from app import document_manager
+from mojodex_core.db import with_db_session
+from mojodex_core.documents.document_manager import DocumentManager
+from mojodex_core.entities.db_base_entities import MdCompany, MdDocument, MdUser
+from mojodex_core.entities.document import Document
 from mojodex_core.llm_engine.mpt import MPT
 
 
@@ -84,14 +87,20 @@ class WebsiteParser:
         except Exception as e:
             raise Exception(f"__validate_website_chunk: {e}")
 
-    def update_website_document(self, user_id, base_url, document_pk, document_chunks_pks, company_name):
+    @with_db_session
+    def update_website_document(self, document_pk, db_session):
         try:
+            document: Document = db_session.query(Document).filter(Document.document_pk == document_pk).first()
+                  
+            company_name =db_session.query(MdCompany.name) \
+            .join(MdUser, MdUser.company_fk == MdCompany.company_pk) \
+            .join(MdDocument, MdDocument.author_user_id == MdUser.user_id) \
+            .filter(MdDocument.document_pk == document_pk) \
+            .first()[0]
             # useful for validation
             self.company_name = company_name
-            responses = self.website_to_doc(base_url, all_urls=False)
-            document_manager.update_document(user_id, document_pk, document_chunks_pks, responses[0]["text"],
-                                             chunk_validation_callback=self.__validate_website_chunk)
-
+            responses = self.website_to_doc(document.name, all_urls=False)
+            document.update(responses[0]["text"], chunk_validation_callback=self.__validate_website_chunk)
         except Exception as e:
             raise Exception(f"update_website: {e}")
 
@@ -100,7 +109,7 @@ class WebsiteParser:
             self.company_name = company_name  # useful for validation
             responses = self.website_to_doc(base_url, all_urls=True)
             for response in responses:
-                document_manager.new_document(user_id, response["text"], response["link"], document_type='webpage',
+                DocumentManager().new_document(user_id, response["text"], response["link"], document_type='webpage',
                                               chunk_validation_callback=self.__validate_website_chunk)
         except Exception as e:
             raise Exception(f"update_website: {e}")

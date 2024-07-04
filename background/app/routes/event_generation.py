@@ -1,14 +1,8 @@
 from flask import request
 from flask_restful import Resource
-from app import db, executor
-
-from models.events.daily_notifications_generator import DailyNotificationsGenerator
-from models.events.daily_emails_generator import DailyEmailsGenerator
-
+from app import executor
 from models.knowledge.knowledge_collector import KnowledgeCollector
-
 from models.events.todo_daily_emails_generator import TodoDailyEmailsGenerator
-
 from models.events.calendar_suggestion_notifications_generator import CalendarSuggestionNotificationsGenerator
 
 
@@ -22,11 +16,7 @@ class EventsGeneration(Resource):
             return {"error": "invalid inputs"}, 400
 
         try:
-            if event_type == 'daily_notifications':
-                events_generator = DailyNotificationsGenerator()
-            elif event_type == 'daily_emails':
-                events_generator = DailyEmailsGenerator()
-            elif event_type == 'todo_daily_emails':
+            if event_type == 'todo_daily_emails':
                 events_generator = TodoDailyEmailsGenerator()
             elif event_type == 'calendar_suggestion_notifications':
                 events_generator = CalendarSuggestionNotificationsGenerator()

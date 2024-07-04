@@ -5,6 +5,7 @@ import requests
 from flask import request
 from flask_restful import Resource
 from app import db
+from mojodex_core.entities.user import User
 from mojodex_core.logging_handler import log_error
 from mojodex_core.entities.db_base_entities import *
 from datetime import datetime
@@ -42,8 +43,8 @@ class CalendarSuggestionNotifications(Resource):
         try:
 
             # Get all calendar_suggestion_pks with notification_time_utc is not none and between since_date and until_date
-            results = db.session.query(MdCalendarSuggestion, MdUser, MdTask) \
-                .join(MdUser, MdUser.user_id == MdCalendarSuggestion.user_id) \
+            results = db.session.query(MdCalendarSuggestion, User, MdTask) \
+                .join(User, User.user_id == MdCalendarSuggestion.user_id) \
                 .join(MdTask, MdTask.task_pk == MdCalendarSuggestion.proposed_task_fk) \
                 .filter(MdCalendarSuggestion.reminder_date.isnot(None)) \
                 .filter(MdCalendarSuggestion.reminder == True) \
@@ -57,7 +58,7 @@ class CalendarSuggestionNotifications(Resource):
                                   "suggestion_text": calendar_suggestion.suggestion_text,
                                   "task_pk": calendar_suggestion.proposed_task_fk,
                                   "task_name": task.name_for_system,
-                                  "user_timezone_offset": user.timezone_offset,
+                                  "datetime_context": user.datetime_context,
                                   "user_name": user.name,
                                   "user_company_description": user.company_description,
                                   "user_goal": user.goal

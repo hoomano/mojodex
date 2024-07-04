@@ -1,7 +1,6 @@
 from flask import request
 from flask_restful import Resource
 from app import executor
-from models.knowledge.knowledge_collector import KnowledgeCollector
 from models.events.todo_daily_emails_generator import TodoDailyEmailsGenerator
 from models.events.calendar_suggestion_notifications_generator import CalendarSuggestionNotificationsGenerator
 
@@ -23,15 +22,7 @@ class EventsGeneration(Resource):
             else:
                 raise Exception(f"Unknown event type {event_type}")
 
-            mojo_knowledge = KnowledgeCollector.get_mojo_knowledge()
-
-            def run_generate_events(events_generator, mojo_knowledge, data):
-                try:
-                    events_generator.generate_events(mojo_knowledge, data)
-                except Exception as err:
-                    print("🔴" + str(err))
-
-            executor.submit(run_generate_events, events_generator, mojo_knowledge, data)
+            executor.submit(events_generator.generate_events, data)
             return {"success": "Process started"}, 200
         except Exception as e:
             return {"error": f"Error generating events : {e}"}, 404

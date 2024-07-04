@@ -18,18 +18,22 @@ logging.basicConfig(level=logging.INFO)
 class ModelLoader:
     llm_conf_filename = "models.conf"
     _instance = None
+    _initialized = False
 
     def __new__(cls, *args, **kwargs):
         if not cls._instance:
             cls._instance = super(ModelLoader, cls).__new__(
                 cls, *args, **kwargs)
+            cls._instance._initialized = False
         return cls._instance
 
     def __init__(self):
-        self.providers = self._get_providers()
-        self.main_llm: LLM = self.get_main_llm_provider()
-        self.main_vision_llm: LLM = self.get_main_vision_llm_provider()
-        self.embedding_provider: EmbeddingProvider = self._get_embedding_provider()
+        if not self.__class__._initialized:
+            self.providers = self._get_providers()
+            self.main_llm: LLM = self.get_main_llm_provider()
+            self.main_vision_llm: LLM = self.get_main_vision_llm_provider()
+            self.embedding_provider: EmbeddingProvider = self._get_embedding_provider()
+            self.__class__._initialized = True
 
     def get_main_llm_provider(self):
         """

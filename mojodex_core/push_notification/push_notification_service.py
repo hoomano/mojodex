@@ -8,19 +8,23 @@ from mojodex_core.push_notification.push_notification_sender import PushNotifica
 
 class PushNotificationService:  # Singleton
     _instance = None
+    _initialized = False
 
     def __new__(cls, *args, **kwargs):
         if not cls._instance:
             cls._instance = super(PushNotificationService, cls).__new__(
                 cls, *args, **kwargs)
+            cls._instance._initialized = False
         return cls._instance
 
     def __init__(self):
-        try:
-            self.push_notification_logger = MojodexCoreLogger("push_notification_logger")
-            self._push_notification_sender: PushNotificationSender = self._configure_push_notification_sender()
-        except Exception as e:
-            self.push_notification_logger.error(f"Error initializing push notification client :: {e}")
+        if not self.__class__._initialized:
+            try:
+                self.push_notification_logger = MojodexCoreLogger("push_notification_logger")
+                self._push_notification_sender: PushNotificationSender = self._configure_push_notification_sender()
+            except Exception as e:
+                self.push_notification_logger.error(f"Error initializing push notification client :: {e}")
+            self.__class__._initialized = True
 
     @property
     def configured(self):

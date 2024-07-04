@@ -43,7 +43,7 @@ class TodosCreator:
                 self._save_to_db(todo['todo_definition'], todo['due_date'])
             self._mark_todo_extracted()
         except Exception as e:
-            log_error(f"{self.__class__.__name__} : extract_and_save: {e}", notify_admin=False)
+            log_error(f"{self.__class__.__name__} : extract_and_save: {e}", notify_admin=True)
 
     @with_db_session
     def _collect_data(self, db_session):
@@ -71,8 +71,10 @@ class TodosCreator:
                     .all()
                 
             related_previous_user_task_executions_todos = [{"scheduled_date": str(scheduled_date), "description": description} for description, scheduled_date in todos]
+
+            task_result = f"{user_task_execution.last_produced_text_version.title}\n{user_task_execution.last_produced_text_version.production}"
             
-            return user.user_id, user.datetime_context, user.name, user.goal, user.company_description, user_task_execution.task.name_for_system, user_task_execution.task.definition_for_system, user_task_execution.session.get_conversation_as_string(with_tags=False), f"{user_task_execution.last_produced_text_version.title}\n{user_task_execution.last_produced_text_version.production}", related_previous_user_task_executions_todos, user.language_code
+            return user.user_id, user.datetime_context, user.name, user.goal, user.company_description, user_task_execution.task.name_for_system, user_task_execution.task.definition_for_system, user_task_execution.session.get_conversation_as_string(with_tags=False), task_result, related_previous_user_task_executions_todos, user.language_code
         except Exception as e:
             raise Exception(f"_collect_data: {e}")
 

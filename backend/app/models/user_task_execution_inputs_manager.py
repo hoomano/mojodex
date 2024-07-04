@@ -7,9 +7,6 @@ class UserTaskExecutionInputsManager:
     image_type = "image"
     multiple_images_type = "multiple_images"
 
-    def __init__(self):
-         self.user_image_file_manager = UserImagesFileManager()
-
     def construct_inputs_from_request(self, user_task_execution_json_input_values, inputs, files, user_id, session_id):
         try:
             # ensure inputs is a list of dicts and each dict has the required fields (input_name and input_value)
@@ -43,13 +40,13 @@ class UserTaskExecutionInputsManager:
                     if input["type"] == self.image_type:
                         if input["input_name"] == image_input:
                             filename = input["value"]
-                            self.user_image_file_manager.store_image_file(files[image_input], filename, user_id, session_id)
+                            UserImagesFileManager().store_image_file(files[image_input], filename, user_id, session_id)
                     if input["type"] == self.multiple_images_type:
                         image_name = "_".join(image_input.split("_")[:-1])
                         image_index = int(image_input.split("_")[-1])
                         if input["input_name"] == image_name:
                             filename = input["value"][image_index]
-                            self.user_image_file_manager.store_image_file(files[image_input], filename, user_id, session_id)
+                            UserImagesFileManager().store_image_file(files[image_input], filename, user_id, session_id)
 
             return user_task_execution_json_input_values
         except Exception as e:

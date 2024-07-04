@@ -3,6 +3,16 @@ from mojodex_core.user_storage_manager.user_storage_manager import UserStorageMa
 
 
 class UserImagesFileManager(UserStorageManager):
+    _instance = None
+    _initialized = False
+
+    def __new__(cls, *args, **kwargs):
+        if not cls._instance:
+            cls._instance = super(UserImagesFileManager, cls).__new__(
+                cls, *args, **kwargs)
+            cls._instance._initialized = False
+        return cls._instance
+
 
     def get_images_storage_path(self, user_id, session_id):
         try:

@@ -11,7 +11,6 @@ from mojodex_core.user_storage_manager.user_images_file_manager import UserImage
 class Image(Resource):
     def __init__(self):
         Image.method_decorators = [authenticate()]
-        self.user_image_file_manager = UserImagesFileManager()
 
     def get(self, user_id):
 
@@ -25,7 +24,7 @@ class Image(Resource):
 
         # Logic
         try:
-            images_storage = self.user_image_file_manager.get_images_storage_path(user_id, session_id)
+            images_storage = UserImagesFileManager().get_images_storage_path(user_id, session_id)
             filepath = os.path.join(images_storage, filename)
            
             if not os.path.isfile(filepath):

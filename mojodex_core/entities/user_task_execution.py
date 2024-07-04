@@ -1,5 +1,5 @@
 from mojodex_core.entities.user_task import UserTask
-from mojodex_core.entities.db_base_entities import MdUserTaskExecution, MdProducedText
+from mojodex_core.entities.db_base_entities import MdProducedTextVersion, MdUserTaskExecution, MdProducedText
 from sqlalchemy.orm import object_session
 from mojodex_core.entities.session import Session
 
@@ -79,3 +79,43 @@ class UserTaskExecution(MdUserTaskExecution):
         except Exception as e:
             raise Exception(f"{self.__class__} :: session :: {e}")
 
+    @property
+    def last_produced_text_version(self):
+        try:
+            session = object_session(self)
+            return session.query(MdProducedTextVersion).\
+                join(MdProducedText, MdProducedTextVersion.produced_text_fk == MdProducedText.produced_text_pk).\
+                filter(MdProducedText.user_task_execution_fk == self.user_task_execution_pk).\
+                order_by(MdProducedTextVersion.creation_date.desc()).first()
+        except Exception as e:
+            raise Exception(f"{self.__class__.__name__} :: produced_text :: {e}")
+        
+    @property
+    def derives_from_a_previous_user_task_execution(self) -> bool:
+        """On mobile app, some tasks can display "predefined_actions" at the end of the execution. 
+        Those are other task the user can launch to chain task executions on a same subject.
+
+        Returns True if the current UserTaskExecution is the result of a predefined_action launched from a previous UserTaskExecution.
+        """
+        return self.predefined_action_from_user_task_execution_fk is not None
+
+    @property
+    def previous_related_user_task_executions(self) -> list:
+        """On mobile app, some tasks can display "predefined_actions" at the end of the execution. 
+        Those are other task the user can launch to chain task executions on a same subject.
+
+        This methods retrieves the previous related user task execution of this chain, if any.
+        """
+        try:
+            session = object_session(self)
+            previous_related_user_task_execution = []
+            user_task_execution = self
+            while user_task_execution and user_task_execution.derives_from_a_previous_user_task_execution:
+                user_task_execution = session.query(UserTaskExecution) \
+                    .filter(UserTaskExecution.user_task_execution_pk == user_task_execution.predefined_action_from_user_task_execution_fk) \
+                    .first()
+                if user_task_execution:
+                    previous_related_user_task_execution.append(user_task_execution)
+            return previous_related_user_task_execution
+        except Exception as e:
+            raise Exception(f"{self.__class__.__name__} :: previous_related_user_task_execution :: {e}")

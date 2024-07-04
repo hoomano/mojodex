@@ -21,6 +21,6 @@ export const timezoneSet = (payload: any) =>
   axiosClient.post(apiRoutes.timezone, payload);
 
 export const getIsEmailServiceConfigured = (): Promise<isEmailServiceConfiguredResponseType> =>
-  axiosClient.get(apiRoutes.isEmailServiceConfigured);
+ axiosClient.get(apiRoutes.isEmailServiceConfigured);
 
 export { updateSession, acceptTermsAndCondition };

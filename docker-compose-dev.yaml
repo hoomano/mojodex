@@ -72,6 +72,7 @@ services:
           - TERMS_URI= # optional
           - PRIVACY_URI= # optional
           - CHROME_EXTENSION_ID= # optional
+          - MOJODEX_WEBAPP_SECRET=webapp_secret # use defaut for local execution
     env_file:
       - .env
     ports:

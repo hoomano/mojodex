@@ -47,9 +47,9 @@ class EmailService:  # Singleton
         except Exception as e:
             raise Exception(f"_configure_email_sender: {e}")
         
-    def send(self, subject, recipients, text):
+    def send(self, subject, recipients, text=None, html_body=None):
         try:
-            self._email_sender.send_email(subject=subject, recipients=recipients, text_body=text)
+            self._email_sender.send_email(subject=subject, recipients=recipients, text_body=text, html_body=html_body)
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} :: send :: {e}")
 
@@ -58,7 +58,7 @@ class EmailService:  # Singleton
             if self.configured:
                 self.send(subject=f"MOJODEX ERROR - {os.environ['ENVIRONMENT']}",
                                             recipients=self.technical_email_receivers,
-                                            text_body=error_message)
+                                            text=error_message)
             else:
                 self.email_service_logger.info(f"No email client configured - email to send was tech error: {error_message}")
         except Exception as e:
@@ -68,7 +68,7 @@ class EmailService:  # Singleton
     def send_admin_email(self, subject, text):
         try:
             if self.configured:
-                self.send(subject=subject, recipients=self.admin_email_receivers, text_body=text)
+                self.send(subject=subject, recipients=self.admin_email_receivers, text=text)
             else:
                 self.email_service_logger.info(f"No email client configured - email to send was admin info: {text}")
         except Exception as e:

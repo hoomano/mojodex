@@ -5688,17 +5688,61 @@ paths:
                   user_task_execution_pk:
                     type: integer
                   json_input:
-                    type: array
-                    items:
-                      type: object
+                        type: object
+                        required:
+                          - type
+                          - input_name
+                          - description_for_user
+                          - description_for_system
+                        properties:
+                          type:
+                            type: string
+                            enum:
+                              - text_area
+                              - image
+                              - drop_down_list
+                              - multiple_images
+                          input_name:
+                            type: string
+                          description_for_user:
+                            type: string
+                          description_for_system:
+                            type: string
+                          value:
+                            type: string
+                
                   actions:
-                    type: array
-                    items:
-                      type: object
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          task_pk:
+                            type: integer
+                          predifined_action_fk:
+                            type: integer
+                          displayed_data:
+                            type: object
+                            properties:
+                              name:
+                                type: string
+                              button_text:
+                                type: string
+                              message_prefix:
+                                type: string
                   text_edit_actions:
                     type: array
                     items:
                       type: object
+                      properties:
+                        text_edit_action_pk:
+                          type: integer
+                        name:
+                          type: string
+                        description:
+                          type: string
+                        emoji:
+                          type: string
+                        
                   session_id:
                     type: string
         '400':

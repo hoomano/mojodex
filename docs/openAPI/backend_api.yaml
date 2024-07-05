@@ -1219,7 +1219,7 @@ paths:
         '200':
           description: Successfully retrieved image
           content:
-            bytes:
+            image/*:
               schema:
                 type: string
                 format: binary
@@ -5506,6 +5506,8 @@ paths:
                 properties:
                   error:
                     type: string 
+  
+  
   /user_task_execution_run:
     post:
       tags:
@@ -5520,7 +5522,7 @@ paths:
       requestBody:
         required: true
         content:
-          application/json:
+          multipart/form-data:
             schema:
               type: object
               required:
@@ -5594,8 +5596,8 @@ paths:
   /user_task_execution_title:
     post:
       tags:
-        - Background
-      summary: Update the summary of a user task execution
+        - Application
+      summary: Update the title of a user task execution
       parameters:
         - in: header
           name: Authorization
@@ -5611,15 +5613,12 @@ paths:
               required:
                 - datetime
                 - title
-                - summary
                 - user_task_execution_pk
               properties:
                 datetime:
                   type: string
                   format: date-time
                 title:
-                  type: string
-                summary:
                   type: string
                 user_task_execution_pk:
                   type: integer
@@ -5861,6 +5860,126 @@ paths:
                     type: array
                     items:
                       type: object
+                      properties:
+                        user_task_execution_pk:
+                          type: integer
+                        start_date:
+                          type: string
+                          format: date-time
+                        end_date:
+                          type: string
+                          format: date-time
+                        deleted_by_user:
+                          type: boolean
+                        title:
+                          type: string
+                        summary:
+                          type: string
+                        session_id:
+                          type: string
+                        json_inputs_values:
+                          type: array
+                          items:
+                            type: object
+                        icon:
+                          type: string
+                        task_name:
+                          type: string
+                        task_type:
+                          type: string
+                        result_chat_enabled:
+                          type: boolean
+                        actions:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              task_pk:
+                                type: integer
+                              predifined_action_fk:
+                                type: integer
+                              displayed_data:
+                                type: object
+                                properties:
+                                  name:
+                                    type: string
+                                  button_text:
+                                    type: string
+                                  message_prefix:
+                                    type: string
+                        user_task_pk:
+                          type: integer
+                        n_todos:
+                          type: integer
+                        n_not_read_todos:
+                          type: integer
+                        produced_text_pk:
+                          type: integer
+                        produced_text_title:
+                          type: string
+                        produced_text_production:
+                          type: string
+                        produced_text_version_pk:
+                          type: integer
+                        produced_text_version_index:
+                          type: integer
+                        text_edit_actions:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              text_edit_action_pk:
+                                type: integer
+                              name:
+                                type: string
+                              description:
+                                type: string
+                              emoji:
+                                type: string
+                        working_on_todos:
+                          type: boolean
+                        step_executions:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              user_workflow_step_execution_pk:
+                                type: integer
+                              workflow_step_pk:
+                                type: integer
+                              step_name_for_user:
+                                type: string
+                              step_definition_for_user:
+                                type: string
+                              creation_date:
+                                type: string
+                                format: date-time
+                              user_validation_required:
+                                type: boolean
+                              validated:
+                                type: boolean
+                              parameter:
+                                type: object
+                              result:
+                                type: array
+                                items:
+                                  type: object
+                              error_status:
+                                type: object
+                              review_chat_enabled:
+                                type: boolean
+                        steps:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              workflow_step_pk:
+                                type: integer
+                              step_name_for_user:
+                                type: string
+                              step_definition_for_user:
+                                type: string
+
         '400':
           description: Bad request, missing or invalid fields
           content:
@@ -6122,20 +6241,10 @@ paths:
                     type: string
                   name:
                     type: string
-                  perception_token:
-                    type: string
-                  perception_usernamespace:
-                    type: string
                   terms_and_conditions_agreed:
                     type: boolean
                   company_fk:
                     type: integer
-                  emotion_engine_uri:
-                    type: string
-                  emotion_engine_uuid:
-                    type: string
-                  emotion_engine_token:
-                    type: string
         '400':
           description: Error in user login or registration
           content:
@@ -6187,20 +6296,10 @@ paths:
                     type: string
                   name:
                     type: string
-                  perception_token:
-                    type: string
-                  perception_usernamespace:
-                    type: string
                   terms_and_conditions_agreed:
                     type: boolean
                   company_fk:
                     type: integer
-                  emotion_engine_uri:
-                    type: string
-                  emotion_engine_uuid:
-                    type: string
-                  emotion_engine_token:
-                    type: string
         '400':
           description: Error in user registration
           content:
@@ -6386,15 +6485,9 @@ paths:
           schema:
             type: string
           description: Filename of the welcome text audio
-        - in: query
-          name: app_version
-          required: false
-          schema:
-            type: string
-          description: Version of the application making the request
       responses:
         '200':
-          description: Voice message or welcome text audio retrieved successfully
+          description: Voice message audio retrieved successfully
           content:
             audio/*:
               schema:
@@ -6405,7 +6498,7 @@ paths:
               schema:
                 type: string
         '400':
-          description: Error in retrieving voice message or welcome text audio
+          description: Error in retrieving voice message audio
           content:
             application/json:
               schema:

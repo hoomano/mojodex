@@ -15,7 +15,6 @@ class CreateDocumentFromWebsite(Resource):
             return {"error": "invalid inputs"}, 400
 
         try:
-
             executor.submit(WebsiteParser().create_document_from_website, user_id, website_url)
 
             return {"success": "ok"}, 200

@@ -51,7 +51,12 @@ class MojoResource(Resource):
                     document.deleted_by_user = False
                     db.session.commit()
 
-                    server_socket.start_background_task(self.update_document, document.document_pk, user_id, None)
+                    # call background backend /update_document to update document
+                    uri = f"{os.environ['BACKGROUND_BACKEND_URI']}/update_document"
+                    pload = {'datetime': datetime.now().isoformat(), 'document_pk': document.document_pk, "user_id": user_id, "edition": None}
+                    internal_request = requests.post(uri, json=pload)
+                    if internal_request.status_code != 200:
+                        log_error(f"Error while calling background update_document : {internal_request.json()}")
                     return {"success": "ok"}, 200
 
                 return {"error": "Website already exist in user's documents"}, 400

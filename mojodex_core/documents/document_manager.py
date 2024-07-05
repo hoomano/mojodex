@@ -21,7 +21,7 @@ class DocumentManager:
         try:
             embedding_response = ModelLoader().embedding_provider.embed(text, user_id, label="DOCUMENT_EMBEDDING", user_task_execution_pk=user_task_execution_pk,
                                                      task_name_for_system=task_name_for_system, )
-            embedding = embedding_response["data"][0]["embedding"]
+            embedding = embedding_response
             return embedding
         except Exception as e:
             raise Exception(f"embedded : {e}")

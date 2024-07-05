@@ -15,7 +15,7 @@ class WebsiteParser:
 
     def __new__(cls, *args, **kwargs):
         if not cls._instance:
-            cls._instance = super(DocumentManager, cls).__new__(
+            cls._instance = super(WebsiteParser, cls).__new__(
                 cls, *args, **kwargs)
             cls._instance._initialized = False
         return cls._instance
@@ -121,7 +121,6 @@ class WebsiteParser:
         try:
             website_chunk_validation = MPT(
                 WebsiteParser.website_chunk_validation_mpt_filename, chunk_text=chunk_text)
-
             responses = website_chunk_validation.run(
                 user_id=user_id, temperature=0, max_tokens=5)
             return responses[0].lower().strip() == "yes"
@@ -134,7 +133,7 @@ class WebsiteParser:
         Turn website into a Mojodex Document
         """
         try:
-            responses = self._extract_text_of_pages_from_website(base_url, all_urls=True)
+            responses = self._extract_text_of_pages_from_website(base_url)
             for response in responses:
                 DocumentManager().new_document(user_id, response["text"], response["link"], document_type='webpage',
                                               chunk_validation_callback=self._validate_website_chunk)

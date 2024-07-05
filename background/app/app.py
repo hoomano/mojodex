@@ -1,10 +1,5 @@
 from gevent import monkey
-
-
 monkey.patch_all()
-
-
-from mojodex_core.mail import mojo_mail_client
 
 
 from flask import Flask

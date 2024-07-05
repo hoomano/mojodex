@@ -119,3 +119,10 @@ class UserTaskExecution(MdUserTaskExecution):
             return previous_related_user_task_execution
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} :: previous_related_user_task_execution :: {e}")
+        
+    @property
+    def predefined_actions(self):
+        try:
+            return self.task.get_predifined_actions_in_language(self.user.language_code)
+        except Exception as e:
+            raise Exception(f"{self.__class__.__name__} :: predefined_actions :: {e}")

@@ -4192,6 +4192,10 @@ paths:
                           properties:
                             language_code:
                               type: string
+                            button_text:
+                              type: string
+                            message_prefix:
+                              type: string
                 output_type:
                   type: string
                 result_chat_enabled:
@@ -4346,6 +4350,10 @@ paths:
                             - name
                           properties:
                             language_code:
+                              type: string
+                            button_text:
+                              type: string
+                            message_prefix:
                               type: string
                 name_for_system:
                   type: string

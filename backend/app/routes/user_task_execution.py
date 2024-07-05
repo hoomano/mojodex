@@ -2,10 +2,11 @@ import os
 from flask import request
 from flask_restful import Resource
 from app import db, authenticate, time_manager
+from mojodex_core.entities.user_task import UserTask
 from mojodex_core.entities.user_workflow_execution import UserWorkflowExecution
 from mojodex_core.logging_handler import log_error
 from mojodex_core.entities.db_base_entities import *
-
+from mojodex_core.entities.user_task_execution import UserTaskExecution as DBUserTaskExecution
 from models.session_creator import SessionCreator
 from sqlalchemy import func, and_, or_, text
 from sqlalchemy.sql.functions import coalesce
@@ -46,106 +47,24 @@ class UserTaskExecution(Resource):
             if "error" in session_creation[0]:
                 return session_creation
             session_id = session_creation[0]["session_id"]
+
+            user_task: UserTask = db.session.query(UserTask).get(user_task_pk)
+            if user_task is None:
+                log_error(f"Error creating UserTaskExecution : UserTask {user_task_pk} not found")
+                return {"error": f"UserTask {user_task_pk} not found"}, 400
+
             empty_json_input_values = []
 
-            # get task in user's language or english if not translated
-            md_displayed_data = (
-                db.session
-                .query(
-                    MdTaskDisplayedData,
-                )
-                .join(
-                    MdTask,
-                    MdTask.task_pk == MdTaskDisplayedData.task_fk
-                )
-                .join(
-                    MdUserTask, 
-                    MdUserTask.task_fk == MdTask.task_pk
-                )
-                .join(
-                    MdUser,
-                    MdUser.user_id == user_id
-                )
-                .filter(
-                    or_(
-                        MdTaskDisplayedData.language_code == MdUser.language_code,
-                        MdTaskDisplayedData.language_code == 'en'
-                    )
-                )
-                .order_by(
-                    # Sort by user's language first otherwise by english
-                    func.nullif(MdTaskDisplayedData.language_code, 'en').asc()
-                )
-                .filter(MdUserTask.user_task_pk == user_task_pk)
-            .first())
-
-            json_input = md_displayed_data.json_input
-
-
-            # get predefined actions translated in english
-            predefined_actions_data_en = (
-                db.session
-                .query(
-                    MdPredefinedActionDisplayedData.task_predefined_action_association_fk.label("task_predefined_action_association_fk"),
-                    MdPredefinedActionDisplayedData.displayed_data.label("displayed_data_en"),
-                )
-                .filter(MdPredefinedActionDisplayedData.language_code == 'en')
-            ).subquery()
-
-            # get predefined actions translated in user's language
-            predefined_actions_data_user_lang = (
-                db.session
-                .query(
-                    MdPredefinedActionDisplayedData.task_predefined_action_association_fk.label("task_predefined_action_association_fk"),
-                    MdPredefinedActionDisplayedData.displayed_data.label("displayed_data_user_lang"),
-                )
-                .join(
-                    MdUser,
-                    MdUser.user_id == user_id
-                )
-                .filter(MdPredefinedActionDisplayedData.language_code == MdUser.language_code)
-            ).subquery()
-
-            # get predefined actions translated in user's language or english if not translated
-            predefined_actions_data = (
-                db.session
-                .query(
-                    MdTaskPredefinedActionAssociation.predefined_action_fk.label("task_fk"),
-                    coalesce(
-                        predefined_actions_data_user_lang.c.displayed_data_user_lang, 
-                        predefined_actions_data_en.c.displayed_data_en
-                    ).label("displayed_data"),
-                )
-                .outerjoin(
-                    predefined_actions_data_user_lang, 
-                    predefined_actions_data_user_lang.c.task_predefined_action_association_fk == MdTaskPredefinedActionAssociation.task_predefined_action_association_pk
-                )
-                .outerjoin(
-                    predefined_actions_data_en,
-                    predefined_actions_data_en.c.task_predefined_action_association_fk == MdTaskPredefinedActionAssociation.task_predefined_action_association_pk
-                )
-                .join(
-                    MdUserTask,
-                    MdUserTask.user_task_pk == user_task_pk
-                )
-                .filter(
-                    MdTaskPredefinedActionAssociation.task_fk == MdUserTask.task_fk
-                )
-            ).all()
-            predefined_actions_data = [predefined_action._asdict() for predefined_action in predefined_actions_data]
-
-            predefined_actions = []
-            for predefined_action in predefined_actions_data:
-                action = predefined_action["displayed_data"]
-                action["task_pk"] = predefined_action["task_fk"]
-                predefined_actions.append(action)
-
+            json_input = user_task.task.get_json_input_in_language(user_task.user.language_code)
+            
             for input in json_input:
                 # append input to empty_json_input_values but with additional field "value" without editing json_input
                 new_input = input.copy()
                 new_input["value"] = None
                 empty_json_input_values.append(new_input)
-            task_execution = MdUserTaskExecution(user_task_fk=user_task_pk,
+
+            
+            task_execution: DBUserTaskExecution = DBUserTaskExecution(user_task_fk=user_task_pk,
                                                  json_input_values=empty_json_input_values, session_id=session_id)
             if "user_task_execution_fk" in request.json:
                 task_execution.predefined_action_from_user_task_execution_fk = request.json["user_task_execution_fk"]
@@ -222,6 +141,10 @@ class UserTaskExecution(Resource):
                 except Exception as e:
                     raise Exception(f"recover_text_edit_actions: {e}")
 
+            predefined_actions_data = [predefined_action._asdict() for predefined_action in task_execution.predefined_actions]
+            predefined_actions = [{**predefined_action.displayed_data, "task_pk": predefined_action.task_fk} for predefined_action in predefined_actions_data]
+
+            
             return {**{"user_task_execution_pk": task_execution.user_task_execution_pk,
                      "json_input": json_input,
                      "actions": predefined_actions,

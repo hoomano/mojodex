@@ -29,3 +29,4 @@ class UserTask(MdUserTask):
             return self.task.get_json_input_in_language(self.user.language_code)
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} :: json_input_in_user_language :: {e}")
+        

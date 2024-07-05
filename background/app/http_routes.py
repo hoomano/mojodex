@@ -1,4 +1,4 @@
-from background.app.routes.create_document_from_website import CreateDocumentFromWebsite
+from routes.create_document_from_website import CreateDocumentFromWebsite
 from routes.update_document import UpdateDocument
 from routes.event_generation import EventsGeneration
 from routes.extract_todos import ExtractTodos

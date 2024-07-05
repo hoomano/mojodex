@@ -4,10 +4,10 @@ from flask import request
 from flask_restful import Resource
 from app import db, authenticate, server_socket, translator
 from mojodex_core.db import with_db_session
+from mojodex_core.documents.website_parser import WebsiteParser
 from mojodex_core.entities.document import Document
 from mojodex_core.logging_handler import log_error
 from mojodex_core.entities.db_base_entities import MdCompany, MdUser
-from models.documents.website_parser import WebsiteParser
 from typing import List, Dict, Any
 from datetime import datetime
 
@@ -16,16 +16,8 @@ class MojoResource(Resource):
 
     def __init__(self):
         MojoResource.method_decorators = [authenticate()]
-        self.website_parser = WebsiteParser()
 
 
-    @with_db_session
-    def update_document(self, document_pk, new_value, db_session):
-        try:
-            document: Document = db_session.query(Document).filter(Document.document_pk == document_pk).first()
-            document.update(new_value)
-        except Exception as e:
-            log_error(f"simple_doc_update : {e}", notify_admin=True)
 
     def put(self, user_id):
         if not request.is_json:
@@ -44,7 +36,7 @@ class MojoResource(Resource):
             user = db.session.query(MdUser).filter(MdUser.user_id == user_id).first()
 
             try:
-                website_url = self.website_parser.check_url_validity(website_url)
+                website_url = WebsiteParser().check_url_validity(website_url)
                 website_url = website_url[:-1] if website_url[-1] == "/" else website_url
             except Exception:
                 return {"error": "invalid_url"}, 400
@@ -64,16 +56,13 @@ class MojoResource(Resource):
 
                 return {"error": "Website already exist in user's documents"}, 400
 
-            def website_to_document(website_url, user_id, company_pk):
-                # call background backend /end_user_task_execution to parse website
-                uri = f"{os.environ['BACKGROUND_BACKEND_URI']}/parse_website"
-                pload = {'datetime': datetime.now().isoformat(), 'website_url': website_url, "user_id": user_id,
-                         "company_pk": company_pk}
-                internal_request = requests.post(uri, json=pload)
-                if internal_request.status_code != 200:
-                    log_error(f"Error while calling background parse_website : {internal_request.json()}")
 
-            server_socket.start_background_task(website_to_document, website_url, user_id, user.company_fk)
+            # call background backend /create_document_from_website to create document from website
+            uri = f"{os.environ['BACKGROUND_BACKEND_URI']}/create_document_from_website"
+            pload = {'datetime': datetime.now().isoformat(), 'website_url': website_url, "user_id": user_id}
+            internal_request = requests.post(uri, json=pload)
+            if internal_request.status_code != 200:
+                log_error(f"Error while calling background create_document_from_website : {internal_request.json()}")
 
             return {"success": "ok"}, 200
         except Exception as e:
@@ -119,7 +108,12 @@ class MojoResource(Resource):
 
             edition = request.json["edition"] if document.document_type == "learned_by_mojo" else None
 
-            server_socket.start_background_task(self.update_document, document_pk, user_id, edition)
+            # call background backend /update_document to update document
+            uri = f"{os.environ['BACKGROUND_BACKEND_URI']}/update_document"
+            pload = {'datetime': datetime.now().isoformat(), 'document_pk': document_pk, "user_id": user_id, "edition": edition}
+            internal_request = requests.post(uri, json=pload)
+            if internal_request.status_code != 200:
+                log_error(f"Error while calling background update_document : {internal_request.json()}")
 
             return {"document_pk": document_pk}, 200
         except Exception as e:

@@ -5372,8 +5372,6 @@ paths:
                 message_date:
                   type: string
                   format: date-time
-                version:
-                  type: string
                 platform:
                   type: string
                 use_message_placeholder:
@@ -5433,47 +5431,65 @@ paths:
                 properties:
                   error:
                     type: string
-  /user_summary:
-    post:
+  /user_task_execution_produced_text:
+    get:
       tags:
-        - Background
-      summary: Update user summary
+        - Application
+      summary: Retrieve a certain produced text version of a given user task execution from its index
       parameters:
         - in: header
           name: Authorization
           required: true
           schema:
             type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - datetime
-                - summary
-                - session_id
-              properties:
-                datetime:
-                  type: string
-                  format: date-time
-                summary:
-                  type: string
-                session_id:
-                  type: string
+        - name: datetime
+          in: query
+          required: true
+          description: Timestamp of the request
+          schema:
+            type: string
+            format: date-time
+        - name: produced_text_version_index
+          in: query
+          required: false
+          description: Index of the produced text version to retrieve
+          schema:
+            type: integer
+        - name: user_task_execution_pk
+          in: query
+          required: false
+          description: Primary key of the user task execution
+          schema:
+            type: integer
       responses:
         '200':
-          description: User summary updated successfully
+          description: Successfully retrieved produced text
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  success:
-                    type: boolean
+                  produced_text_version_pk:
+                    type: integer
+                  produced_text_version_index:
+                    type: integer
+                  produced_text_pk:
+                    type: integer
+                  produced_text_title:
+                    type: string
+                  produced_text_production:
+                    type: string
         '400':
-          description: Bad request, missing or invalid fields
+          description: Bad request due to missing or invalid parameters
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '404':
+          description: Error occurred while retrieving produced texts
           content:
             application/json:
               schema:
@@ -5482,16 +5498,14 @@ paths:
                   error:
                     type: string
         '403':
-          description: Authentication error, wrong or missing secret
+          description: Authentication error
           content:
             application/json:
               schema:
                 type: object
                 properties:
                   error:
-                    type: string
-  /user_task_execution_produced_text:
-    TODO
+                    type: string 
   /user_task_execution_run:
     post:
       tags:

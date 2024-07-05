@@ -126,7 +126,6 @@ class UserMessage(Resource):
             message_id = request.form['message_id']
             message_pk = request.form['message_pk'] if 'message_pk' in request.form else None
             message_date = request.form['message_date']
-            app_version = version.parse(request.form['version'])
             platform = request.form['platform'] if 'platform' in request.form else "webapp"
             use_message_placeholder = request.form[
                                           'use_message_placeholder'] == "true" if 'use_message_placeholder' in request.form else False

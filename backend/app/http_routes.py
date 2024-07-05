@@ -13,7 +13,6 @@ from routes.user_task import UserTask
 from routes.user_task_execution import UserTaskExecution
 from routes.user_task_execution_run import UserTaskExecutionRun
 from routes.task import Task
-from routes.user_summary import UserSummary
 from routes.user_task_execution_title import UserTaskExecutionTitle
 from routes.password import Password
 from routes.message import Message
@@ -73,7 +72,6 @@ class HttpRouteManager:
         api.add_resource(UserTaskExecution, '/user_task_execution')
         api.add_resource(UserTaskExecutionRun, '/user_task_execution_run')
         api.add_resource(Task, '/task')
-        api.add_resource(UserSummary, '/user_summary')
         api.add_resource(UserTaskExecutionTitle, '/user_task_execution_title')
         api.add_resource(Password, '/password')
         api.add_resource(Message, "/message")

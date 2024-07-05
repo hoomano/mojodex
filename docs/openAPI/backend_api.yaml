@@ -5506,8 +5506,6 @@ paths:
                 properties:
                   error:
                     type: string 
-  
-  
   /user_task_execution_run:
     post:
       tags:
@@ -6185,9 +6183,199 @@ paths:
                   error:
                     type: string
   /user_workflow_step_execution_result:
-    TODO
+    put:
+      tags:
+        - Application
+      summary: Create a new user workflow execution step result
+      parameters:
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - datetime
+                - user_workflow_step_execution_pk
+                - result
+              properties:
+                datetime:
+                  type: string
+                  format: date-time
+                user_workflow_step_execution_pk:
+                  type: integer
+                result:
+                  type: string
+      responses:
+        '200':
+          description: User workflow step execution result created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  new_result:
+                    type: string
+        '400':
+          description: Bad request, missing or invalid fields
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '403':
+          description: Authentication error wrong or missing secret
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
   /user_workflow_step_execution:
-    TODO
+    put:
+      tags:
+        - Application
+      summary: Create a new user workflow execution step
+      parameters:
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - datetime
+                - user_workflow_step_execution_pk
+              properties:
+                datetime:
+                  type: string
+                  format: date-time
+                user_workflow_step_execution_pk:
+                  type: integer
+      responses:
+        '200':
+          description: User workflow step execution created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Bad request, missing or invalid fields
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '403':
+          description: Authentication error wrong or missing secret
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+    post:
+      tags:
+        - Application
+      summary: Create a new user workflow execution step
+      parameters:
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - datetime
+                - user_workflow_step_execution_pk
+                - validated
+              properties:
+                datetime:
+                  type: string
+                  format: date-time
+                user_workflow_step_execution_pk:
+                  type: integer
+                validated:
+                  type: boolean
+      responses:
+        '200':
+          description: User workflow step execution validated or invalidated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Bad request, missing or invalid fields
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '403':
+          description: Authentication error wrong or missing secret
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string    
   /user:
     post:
       tags:

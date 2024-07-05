@@ -104,59 +104,7 @@ paths:
                 properties:
                   error:
                     type: string
-  /first_session_message:
-    post:
-      summary: Start a process to generate a session title based on the first message
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - session_id
-                - datetime
-                - sender
-                - message
-              properties:
-                session_id:
-                  type: string
-                datetime:
-                  type: string
-                  format: date-time
-                sender:
-                  type: string
-                message:
-                  type: string
-      responses:
-        '200':
-          description: Process to generate session title started successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success:
-                    type: string
-        '400':
-          description: Invalid input provided
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-        '404':
-          description: Session not found or error in first session message
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-  /parse_website:
+  /create_document_from_website:
     post:
       summary: Parse a website and create a document
       requestBody:
@@ -167,7 +115,6 @@ paths:
               type: object
               required:
                 - datetime
-                - company_pk
                 - website_url
                 - user_id
               properties:
@@ -201,7 +148,7 @@ paths:
                   error:
                     type: string
         '404':
-          description: Error occurred during website parsing or company not found
+          description: Error occurred during website parsing
           content:
             application/json:
               schema:
@@ -300,52 +247,6 @@ paths:
                     type: string
         '404':
           description: Document not found for this user or error updating document
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-  /user_task_execution_title_and_summary:
-    post:
-      summary: Start the process for managing user task execution title and summary
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - datetime
-                - user_task_execution_pk
-              properties:
-                datetime:
-                  type: string
-                  format: date-time
-                user_task_execution_pk:
-                  type: integer
-      responses:
-        '200':
-          description: Process started successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success:
-                    type: string
-        '400':
-          description: Invalid inputs provided
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-        '404':
-          description: Error in managing user task execution title and summary or user_task_execution not found
           content:
             application/json:
               schema:

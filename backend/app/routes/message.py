@@ -5,7 +5,7 @@ from flask_restful import Resource
 from app import db, authenticate
 from mojodex_core.logging_handler import log_error
 from mojodex_core.entities.db_base_entities import *
-
+from mojodex_core.user_storage_manager.user_audio_file_manager import UserAudioFileManager
 from sqlalchemy import or_
 from mojodex_core.entities.message import Message as MessageEntity
 from datetime import datetime
@@ -16,12 +16,10 @@ class Message(Resource):
 
     @staticmethod
     def has_audio_file(message_pk, sender, user_id, session_id):
-        from mojodex_core.user_storage_manager.user_audio_file_manager import UserAudioFileManager
-        user_audio_file_manager = UserAudioFileManager()
         if sender == MessageEntity.user_message_key:
-            audio_storage = user_audio_file_manager.get_user_messages_audio_storage(user_id, session_id)
+            audio_storage = UserAudioFileManager().get_user_messages_audio_storage(user_id, session_id)
         else:
-            audio_storage = user_audio_file_manager.get_mojo_messages_audio_storage(user_id, session_id)
+            audio_storage = UserAudioFileManager().get_mojo_messages_audio_storage(user_id, session_id)
         files = [os.path.join(audio_storage, f'{message_pk}.{ext}') for ext in ('wav', 'mp3', 'm4a')]
         return any(glob.glob(file) for file in files)
 

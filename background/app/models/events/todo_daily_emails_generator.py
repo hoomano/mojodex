@@ -1,5 +1,8 @@
 import os
 from jinja2 import Template
+
+from mojodex_core.email_sender.email_service import EmailService
+
 from mojodex_core.knowledge_manager import KnowledgeManager
 from models.events.events_generator import EventsGenerator
 from mojodex_core.json_loader import json_decode_retry
@@ -34,13 +37,12 @@ class TodoDailyEmailsGenerator(EventsGenerator):
                     self.send_event(user_id, message={"subject": subject, "body": body, 'email': email},
                                     event_type=TodoDailyEmailsGenerator.todo_daily_email_type)
                 except Exception as e:
-                    log_error(
-                        f"{self.__class__.__name__} : generate_events : Error sending todo daily remind_email to {email} : {e}", notify_admin=True)
+                    EmailService().send_technical_error_email(
+                        f"{self.__class__.__name__} : generate_events : Error sending todo daily remind_email to {email} : {e}")
 
         except Exception as e:
-            log_error(
-                f"{self.__class__.__name__} : generate_events: {e}", notify_admin=True)
-
+            EmailService().send_technical_error_email(
+                f"{self.__class__.__name__} : generate_events : Error preparing emails: {e}")
 
     @json_decode_retry(retries=3, required_keys=["subject", "body"], on_json_error=on_json_error)
     def _generate_emails_text(self, mojo_knowledge, user_datetime_context, user_id, username, user_company_knowledge,

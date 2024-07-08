@@ -8,8 +8,10 @@ from mojodex_core.entities.user import User
 from mojodex_core.entities.user_task import UserTask
 from mojodex_core.entities.user_task_execution import UserTaskExecution
 from mojodex_core.json_loader import json_decode_retry
+from mojodex_core.logging_handler import on_json_error
 from mojodex_core.knowledge_manager import KnowledgeManager
-from mojodex_core.logging_handler import log_error, on_json_error
+from mojodex_core.email_sender.email_service import EmailService
+
 from mojodex_core.llm_engine.mpt import MPT
 
 
@@ -32,7 +34,8 @@ class TodosCreator:
             for todo in json_todos['todos']:
                 if todo['mentioned_as_todo'].strip().lower() != "yes":
                     if todo['mentioned_as_todo'].strip().lower() != 'no':
-                        log_error(f"{self.__class__.__name__} - (Warning) Extracting todos for user_task_execution_pk {self.user_task_execution_pk} : {todo['mentioned_as_todo']} is not a valid value for mentioned_as_todo")
+                        EmailService().send_technical_error_email(
+                            f"{self.__class__.__name__} - (Warning) Extracting todos for user_task_execution_pk {self.user_task_execution.user_task_execution_pk} : {todo['mentioned_as_todo']} is not a valid value for mentioned_as_todo")
                     continue
                 try:
                     # check reminder_date is a DateTime in format yyyy-mm-dd

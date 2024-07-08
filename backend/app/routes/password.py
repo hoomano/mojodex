@@ -1,7 +1,7 @@
 import jwt
 from flask_restful import Resource, request
 from app import db
-from mojodex_core.mail import mojo_mail_client
+from mojodex_core.email_sender.email_service import EmailService
 from mojodex_core.logging_handler import log_error
 from mojodex_core.entities.db_base_entities import *
 from jinja2 import Template
@@ -77,7 +77,7 @@ class Password(Resource):
                                 mojodex_webapp_url=os.environ["MOJODEX_WEBAPP_URI"])
 
             
-            mojo_mail_client.send_email(subject=subject,
+            EmailService().send(subject=subject,
                                         recipients=[email],
                                         html_body=mail)
             return {"message": "Email sent."}, 200

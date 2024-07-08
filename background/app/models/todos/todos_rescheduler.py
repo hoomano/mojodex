@@ -7,8 +7,13 @@ from mojodex_core.entities.user import User
 from mojodex_core.entities.user_task import UserTask
 from mojodex_core.entities.user_task_execution import UserTaskExecution
 from mojodex_core.json_loader import json_decode_retry
+
+from mojodex_core.logging_handler import on_json_error
+
+
+from mojodex_core.email_sender.email_service import EmailService
 from mojodex_core.knowledge_manager import KnowledgeManager
-from mojodex_core.logging_handler import log_error, on_json_error
+
 from mojodex_core.llm_engine.mpt import MPT
 
 
@@ -28,13 +33,13 @@ class TodosRescheduler:
                 # check reminder_date is a DateTime in format yyyy-mm-dd
                 datetime.strptime(json_result['reschedule_date'], "%Y-%m-%d")
             except ValueError:
-                log_error(f"Error in {self.__class__.__name__} - reschedule_and_save: Invalid reschedule_date {json_result['reschedule_date']} - Not saving to db."
+                EmailService().send_technical_error_email(f"Error in {self.__class__.__name__} - reschedule_and_save: Invalid reschedule_date {json_result['reschedule_date']} - Not saving to db."
                                        f"This is not blocking, only this todo {self.todo_pk} will not be rescheduled.")
                 return
             
             self._save_to_db(json_result['argument'], json_result['reschedule_date'])
         except Exception as e:
-            log_error(f"{self.__class__.__name__} : extract_and_save: {e}", notify_admin=True)
+            EmailService().send_technical_error_email(f"{self.__class__.__name__} : extract_and_save: {e}")
         
 
     @with_db_session

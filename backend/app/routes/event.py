@@ -5,7 +5,7 @@ from app import db
 from mojodex_core.push_notification.push_notification_service import PushNotificationService
 from mojodex_core.logging_handler import log_error
 from mojodex_core.entities.db_base_entities import *
-from mojodex_core.mail import mojo_mail_client
+from mojodex_core.email_sender.email_service import EmailService
 from datetime import datetime
 
 
@@ -61,7 +61,7 @@ class Event(Resource):
                     return {"error": f"Mojo tried to send a notification to user {user_id} but failed either because the user has no device or because the notification failed to be sent on every devices."}, 500
             elif "email" in event_type:
                 subject, body, email = request.json['message']['subject'], request.json['message']['body'], request.json['message']['email']
-                mojo_mail_client.send_email(subject=subject,
+                EmailService().send(subject=subject,
                                            recipients=[email],
                                            html_body=body)
                 # add notification to db

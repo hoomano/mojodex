@@ -1,7 +1,5 @@
 import logging
 import os
-
-
 from mojodex_core.db import with_db_session
 from mojodex_core.entities.db_base_entities import MdError
 from datetime import datetime
@@ -55,10 +53,8 @@ def log_error(error_message, db_session, session_id=None, notify_admin=False):
             db_session.add(error)
             db_session.commit()
         if notify_admin:
-            from mojodex_core.mail import send_admin_email, technical_email_receivers
-            send_admin_email(subject=f"MOJODEX ERROR - {os.environ['ENVIRONMENT']}",
-                            recipients=technical_email_receivers,
-                            text=str(error_message))
+            from mojodex_core.email_sender.email_service import EmailService
+            EmailService().send_technical_error_email(error_message=f"MOJODEX ERROR - {os.environ['ENVIRONMENT']}\n{error_message}")
     except Exception as e:
         if db_session is not None:
             db_session.rollback()

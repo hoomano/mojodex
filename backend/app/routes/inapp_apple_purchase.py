@@ -12,7 +12,7 @@ from models.purchase_manager import PurchaseManager
 from mojodex_backend_logger import MojodexBackendLogger
 from appstoreserverlibrary.models.Environment import Environment
 
-from mojodex_core.mail import send_admin_email
+from mojodex_core.email_sender.email_service import EmailService
 from mojodex_core.logging_handler import log_error
 from datetime import datetime
 class InAppApplePurchase(Resource):
@@ -88,7 +88,7 @@ class InAppApplePurchase(Resource):
             if transactionId is None:
                 log_error(
                     f"Received apple purchase webhook with no transactionId")
-                send_admin_email("🚨 URGENT: Apple purchase callback with no transactionId",
+                EmailService().send("🚨 URGENT: Apple purchase callback with no transactionId",
                                  PurchaseManager.purchases_email_receivers,
                                  f"signed_transaction_info : {signed_transaction_info}"
                                  f"\nEvent: NOTIFICATION_TYPE: {notificationType} - Subtype: {notificationSubType} - originalTransactionId: {originalTransactionId}")
@@ -125,7 +125,7 @@ class InAppApplePurchase(Resource):
                         # The expired subscription that previously failed to renew has successfully renewed
                         # If last purchase is not active, activate it again
                         self.logger.debug('The expired subscription that previously failed to renew has successfully renewed')
-                        send_admin_email( "Subscription renewed after billing recovery",
+                        EmailService().send( "Subscription renewed after billing recovery",
                                              PurchaseManager.purchases_email_receivers,
                             f"Subscription with originalTransactionId {originalTransactionId} and transactionId {transactionId} that previously failed to renew has successfully renewed."
                                       f"It has been re-activated")
@@ -139,7 +139,7 @@ class InAppApplePurchase(Resource):
                 if purchase is None:
                     log_error(
                         f"Purchase with transactionId {originalTransactionId} does not exist in mojodex db")
-                    send_admin_email("🚨 URGENT: Subscription error",
+                    EmailService().send("🚨 URGENT: Subscription error",
                                      PurchaseManager.purchases_email_receivers,
                                         f"Apple originalTransactionId {originalTransactionId} subscription event but associated purchase was not found in db."
                                         f"\nEvent: NOTIFICATION_TYPE: {notificationType} - Subtype: {notificationSubType} - TransactionID: {transactionId}")
@@ -148,7 +148,7 @@ class InAppApplePurchase(Resource):
 
                 if purchase.user_id is None:
                     log_error(f"Purchase with apple_transaction_id {originalTransactionId} has no user associated")
-                    send_admin_email("🚨 URGENT: Subscription error",
+                    EmailService().send("🚨 URGENT: Subscription error",
                                      PurchaseManager.purchases_email_receivers,
                                         f"Apple originalTransactionId {originalTransactionId} - purchase_pk: {purchase.purchase_pk} - subscription event but associated purchase has no user associated."
                                         f"\nEvent: NOTIFICATION_TYPE: {notificationType} - Subtype: {notificationSubType} - TransactionID: {transactionId}")
@@ -158,7 +158,7 @@ class InAppApplePurchase(Resource):
                 user = db.session.query(MdUser).filter(MdUser.user_id == purchase.user_id).first()
                 if user is None:
                     log_error(f"Purchase with apple_transaction_id {originalTransactionId} has unknown user associated")
-                    send_admin_email("🚨 URGENT: Subscription error",
+                    EmailService().send("🚨 URGENT: Subscription error",
                                      PurchaseManager.purchases_email_receivers,
                                         f"Apple originalTransactionId {originalTransactionId} - purchase_pk: {purchase.purchase_pk} - subscription event but associated purchase has unknown user associated."
                                         f"\nEvent: NOTIFICATION_TYPE: {notificationType} - Subtype: {notificationSubType} - TransactionID: {transactionId}")
@@ -174,7 +174,7 @@ class InAppApplePurchase(Resource):
                         # But let access
                         self.logger.debug('The subscription enters the billing retry period')
                         # Send email to admins
-                        send_admin_email("Subscription entering billing retry period",
+                        EmailService().send("Subscription entering billing retry period",
                                             PurchaseManager.purchases_email_receivers,
                             f"Subscription of user {user.email} enters the billing retry period."
                                       f"We should inform them that there may be an issue with their billing information.\n"
@@ -184,7 +184,7 @@ class InAppApplePurchase(Resource):
                         self.logger.debug('Stop access to service')
                         purchase_manager.deactivate_purchase(purchase)
                         # Send email to admins
-                        send_admin_email("Subscription ended",
+                        EmailService().send("Subscription ended",
                                          PurchaseManager.purchases_email_receivers,
                             f"Subscription of user {user.email} ended")
 
@@ -195,14 +195,14 @@ class InAppApplePurchase(Resource):
                     # Send email to Admin with subtype to understand why
                     purchase_manager.deactivate_purchase(purchase)
                     # Send email to admins
-                    send_admin_email(
+                    EmailService().send(
                         "Subscription ended",
                         PurchaseManager.purchases_email_receivers,
                         f"Subscription of user {user.email} ended. notificationType=EXPIRED - Subtype: {notificationSubType}")
                 else:
                     # Many possible causes, just send email to admin for manual check
                     self.logger.debug('Many possible causes, just send email to Admin for manual check')
-                    send_admin_email(
+                    EmailService().send(
                         "🚨 URGENT: Something unexpected happened on a purchase",
                         PurchaseManager.purchases_email_receivers,
                         f"notificationType={notificationType} - Subtype: {notificationSubType} - TransactionID: {transactionId} "
@@ -213,7 +213,7 @@ class InAppApplePurchase(Resource):
         except Exception as e:
             db.session.rollback()
             log_error(f"Error on apple purchase webhook : {e}")
-            send_admin_email(
+            EmailService().send(
                 "🚨 URGENT: Error happened on a purchase",
                 PurchaseManager.purchases_email_receivers,
                 f"notificationType={notificationType} - Subtype: {notificationSubType} - TransactionID: {transactionId} "
@@ -264,7 +264,7 @@ class InAppApplePurchase(Resource):
             user = db.session.query(MdUser).filter(MdUser.user_id == user_id).first()
             if not user:
                 log_error(f"Error adding purchase : Unknown user {user_id}")
-                send_admin_email("🚨 URGENT: New client purchase error",
+                EmailService().send("🚨 URGENT: New client purchase error",
                                     PurchaseManager.purchases_email_receivers,
                                     f"Trying to associate user to a purchase but user {user_id} not found in mojodex db")
                 return {"error": f"Unknown user {user_id}"}, 400
@@ -281,7 +281,7 @@ class InAppApplePurchase(Resource):
                 if transactionId is None:
                     log_error(
                         f"Error adding purchase : transaction with no transactionId")
-                    send_admin_email("🚨 URGENT: New client purchase error",
+                    EmailService().send("🚨 URGENT: New client purchase error",
                                      PurchaseManager.purchases_email_receivers,
                                      f"PUT /purchase signed_transaction_info : {signed_transaction_info}")
                     return {
@@ -304,7 +304,7 @@ class InAppApplePurchase(Resource):
             if purchase.user_id is not None:
                 if purchase.user_id != user_id:
                     log_error(f"Error adding purchase : Purchase with apple_transaction_id {transaction_id} already has a different user associated")
-                    send_admin_email("🚨 URGENT: New client purchase error",
+                    EmailService().send("🚨 URGENT: New client purchase error",
                                         PurchaseManager.purchases_email_receivers,
                                         f"Trying to associate user to a purchase but purchase with apple_transaction_id {transaction_id} already has a different user associated")
                     return {"error": f"Purchase with apple_transaction_id {transaction_id} already has a different user associated"}, 400
@@ -321,7 +321,7 @@ class InAppApplePurchase(Resource):
 
             purchase.completed_date = datetime.now()
             if purchase.apple_original_transaction_id == purchase.apple_transaction_id: # NEW PURCHASE
-                send_admin_email(subject="🥳 New client purchase",
+                EmailService().send(subject="🥳 New client purchase",
                                  recipients=PurchaseManager.purchases_email_receivers,
                                  text=f"🎉 Congratulations ! {user.email} just bought {product.label} !")
             # Activate purchase

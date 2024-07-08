@@ -11,7 +11,7 @@ from mojodex_core.logging_handler import log_error
 from mojodex_core.entities.db_base_entities import *
 from flask import send_file
 from packaging import version
-
+from mojodex_core.user_storage_manager.user_audio_file_manager import UserAudioFileManager
 
 class Voice(Resource):
     def __init__(self):
@@ -44,12 +44,10 @@ class Voice(Resource):
                     return {"error": f"Invalid message message_pk for user: {message_pk}"}, 400
                 filename=message_pk
                 session_id = message.session_id
-            from mojodex_core.user_storage_manager.user_audio_file_manager import UserAudioFileManager
-            user_audio_file_manager = UserAudioFileManager()
             if message_pk and message.sender == Message.user_message_key:
-                audio_storage = user_audio_file_manager.get_user_messages_audio_storage(user_id, session_id)
+                audio_storage = UserAudioFileManager().get_user_messages_audio_storage(user_id, session_id)
             elif message_pk and message.sender == Message.agent_message_key:
-                audio_storage = user_audio_file_manager.get_mojo_messages_audio_storage(user_id, session_id)
+                audio_storage = UserAudioFileManager().get_mojo_messages_audio_storage(user_id, session_id)
             file_pattern = os.path.join(audio_storage, f"{filename}.*")
             matching_files = glob.glob(file_pattern)
             if len(matching_files) == 0:

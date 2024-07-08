@@ -1,0 +1,14 @@
+ACHIEVED WORKFLOW STEPS
+{%for step in steps_executions%}{%if step.initialized%}{%for run in step.runs%}{%if run.validated%}---
+Step: {{step.name}} - {{step.description}}
+Parameter: {{run.parameter}}
+Result: {{run.result}}
+---
+{%endif%}{%endfor%}{%endif%}{%endfor%}
+
+CURRENT WORKFLOW STEP
+---
+Step: {{current_step.name}} - {{current_step.description}}
+Parameter: {{current_step.current_run.parameter}}
+Result: {{current_step.current_run.result}}
+---

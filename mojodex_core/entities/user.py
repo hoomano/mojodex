@@ -1,9 +1,8 @@
 
 
 from sqlalchemy import func, text
-from mojodex_core.entities.db_base_entities import MdTodo, MdTodoScheduling, MdUser, MdTask, MdUserTask, MdUserTaskExecution
+from mojodex_core.entities.db_base_entities import MdTodo, MdTodoScheduling, MdUser, MdUserTask, MdUserTaskExecution
 from sqlalchemy.orm import object_session
-
 from mojodex_core.entities.instruct_task import InstructTask
 from mojodex_core.llm_engine.mpt import MPT
 from datetime import datetime, timedelta, timezone
@@ -74,3 +73,6 @@ class User(MdUser):
             return [{'description': description, 'scheduled_date': scheduled_date} for description, scheduled_date in results]
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} :: todo_list :: {e}")
+        
+
+   

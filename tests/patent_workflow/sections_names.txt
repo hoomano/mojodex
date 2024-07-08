@@ -1,0 +1,12 @@
+Extract sections from the following patent:
+
+---
+{{text}}
+---
+
+List the sections' titles as they appear in the patent in their original language in the following format:
+<Title of section 1>
+<Title of section 2>
+...
+
+No talk, only list of all sections.

@@ -1,0 +1,14 @@
+Translate provided patent's text to {{language}}.
+Use the provided lexical field as context.
+
+LEXICAL FIELD
+---
+{{lexical_field}}
+---
+
+PATENT'S TEXT
+---
+{{patent}}
+---
+
+No talk, just translation.

@@ -1,0 +1,59 @@
+{
+    "datetime":"",
+    "task_type": "workflow",
+    "platforms": ["webapp"],
+    "name_for_system": "write_poem",
+    "output_type": "poem",
+    "steps": [{
+        "name_for_system": "stanza_divider",
+        "definition_for_system": "Determines topic of each stanza",
+         "review_chat_enabled": false,
+        "step_displayed_data":[
+            {
+                "language_code": "en",
+                "name_for_user": "Stanza divider",
+                "definition_for_user": "Determines topic of each stanza"
+            },
+            {
+                "language_code": "fr",
+                "name_for_user": "Diviseur de strophes",
+                "definition_for_user": "Détermine le sujet de chaque strophe"
+            }
+        ]},
+        {
+        "name_for_system": "stanza_writer",
+        "definition_for_system": "Write a stanza",
+        "review_chat_enabled": true,
+        "step_displayed_data":[
+            {
+                "language_code": "en",
+                "name_for_user": "Stanza writer",
+                "definition_for_user": "Writes a stanza"
+            },
+            {
+                "language_code": "fr",
+                "name_for_user": "Ecrivain de strophes",
+                "definition_for_user": "Ecrit une strophe"
+            }
+        ]}],
+    "icon": "🌸",
+    "definition_for_system": "Write a poem stanza by stanza",
+    "task_displayed_data": [
+        {   "language_code":"en",
+            "name_for_user": "Write a poem",
+            "definition_for_user": "Write a poem stanza by stanza.",
+            "json_input": [
+                {"input_name": "poem_topic", "type": "text_area", "description_for_user":"Topic of the poem", "description_for_system":"Topic of the poem"},
+                {"input_name": "n_stanzas", "type": "text_area", "description_for_user": "Number of stanzas",
+                "description_for_system": "Number of stanzas"}]
+        },
+         {   "language_code":"fr",
+            "name_for_user": "Ecrire un poème",
+            "definition_for_user": "Ecrire un poème strophe par strophe",
+            "json_input": [
+                {"input_name": "poem_topic", "type": "text_area", "description_for_user": "Sujet du poème", "description_for_system":"Topic of the poem"},
+                {"input_name": "n_stanzas", "type": "text_area", "description_for_user": "Nombre de strophes", "description_for_system": "Number of stanzas"}]
+        }
+    ]
+
+}

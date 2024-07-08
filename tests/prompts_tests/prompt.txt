@@ -1,0 +1,32 @@
+Here is part of my db schema:
+---
+md_user_workflow_step_execution_result (
+    user_workflow_step_execution_result_pk,
+    user_workflow_step_execution_fk integer,
+    creation_date,
+    result
+);
+
+md_user_workflow_step_execution (
+    user_workflow_step_execution_pk integer DEFAULT nextval('public.md_user_workflow_step_execution_seq'::regclass) NOT NULL,
+    creation_date timestamp without time zone NOT NULL DEFAULT now(),
+    error_status json
+);
+---
+
+In my python webapp using sqlalchemy, I am collecting the steps that:
+- have no error status
+- have been cretaed for more than 2 hours
+```
+locked_steps = db.session.query(MdUserWorkflowStepExecution)\
+        .filter(MdUserWorkflowStepExecution.error_status.is_(None))\
+        .filter(MdUserWorkflowStepExecution.creation_date < two_hours_ago)\
+        .all()
+```
+
+Now, I want to add a new condition to the query. I want all the steps that:
+- have no error status
+- have been cretaed for more than 2 hours
+- have no result in the md_user_workflow_step_execution_result table
+
+

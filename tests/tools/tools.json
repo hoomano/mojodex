@@ -1,0 +1,49 @@
+[
+    {
+        "type": "function",
+        "function": {
+            "name": "ask_user_primary_info",
+            "description": "If any primary information is missing, ask the user for it",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "language": {
+                        "type": "string",
+                        "description": "2 letters language code used by the user"
+                    },
+                    "message_to_user": {
+                        "type": "string",
+                        "description": "Question to ask the user to collect missing info you need to complete the task. Speak same language as the user."
+                    }
+                },
+                "required": [
+                    "language", "message_to_user"
+                ]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "execute_task",
+            "description": "If all primary information is provided, execute the task",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "language": {
+                        "type": "string",
+                        "description": "2 letters language code used by the user"
+                    },
+                    "execution": {
+                        "type": "string",
+                        "description": "Task delivery in TASK OUTPUT FORMAT. Speak same language as the user."
+                    }
+                },
+                "required": [
+                    "language",
+                    "execution"
+                ]
+            }
+        }
+    }
+]

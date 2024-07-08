@@ -1,0 +1,19 @@
+Extract this patent's content lexical field.
+
+PATENT
+---
+{{patent}}
+---
+
+Answer in following format - one word per line:
+{{starting_list_tag}}
+word1
+word2
+word3
+...
+{{ending_list_tag}}
+
+Focus on words that are specific to the patent's invention. Don't include proper nouns.
+Include {{starting_list_tag}} and {{ending_list_tag}} tags to delimit the list of words.
+You can list up to {{max_words}} words maximum.
+No talk, just the list.

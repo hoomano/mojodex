@@ -1,0 +1,3 @@
+<user_language>en</user_language>
+<user_instruction>Make the query more specific.</user_instruction>
+<inform_user>I will re-execute the step with the instruction to make the query more specific. I will modify the search query to be more detailed in finding the industry for *Hoomano*.</inform_user>

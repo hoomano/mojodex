@@ -1,0 +1,524 @@
+DESCRIPTION
+
+Dispositif de distribution d&#39;une formulation d&#39;au moins deux composés choisis parmi un
+
+ensemble de composés sélectionnables et contenant associé
+
+Domaine technique
+
+L&#39;invention concerne un dispositif de distribution d&#39;une formulation d&#39;au moins deux composés
+choisis parmi un ensemble de composés sélectionnables.
+
+Les différents contenants intégrant ces composés sélectionnables peuvent se présenter sous la forme de
+contenants interchangeables permettant un réapprovisionnement des composés sélectionnables du
+dispositif de distribution. Ainsi, l&#39;invention concerne également un contenant associé au dispositif de
+distribution.
+
+L&#39;invention peut être mise en oeuvre dans un grand nombre de domaines pour lesquels il est
+recherché d&#39;obtenir une formulation à partir de différents composés possibles.
+
+L&#39;invention trouve une application particulièrement avantageuse dans le domaine des
+20cosmétiques dans lequel il est recherché de pouvoir formuler une crème s&#39;adaptant sur mesure aux
+besoins de traitement de la peau d&#39;un utilisateur.
+
+Etat de la technique
+
+25Les produits cosmétiques ont évolué ces dernières années pour répondre spécifiquement aux besoins de
+traitement de la peau d&#39;un utilisateur. Pour ce faire, plusieurs solutions proposent désormais de tester les
+caractéristiques physiologiques de la peau d&#39;un utilisateur afin de le guider vers l&#39;achat d&#39;une crème
+adaptée pour ses besoins. Au lieu de conseiller l&#39;achat d&#39;une crème standard, la société IOMA ® propose
+une solution nommée « IOMA In.Lab » permettant
+30de tester les paramètres physiologiques d&#39;un utilisateur dans un magasin afin de formuler une crème
+sur mesure.
+
+Cependant, les paramètres physiologiques de la peau d&#39;un utilisateur peuvent varier au cours du temps et il
+est recherché de pouvoir formuler des traitements sur-mesure qui évoluent dans le
+
+EP 21 152 163.8DESCRIPTION (18.01.2021)2 -&gt; 3
+2
+
+temps en fonction des sollicitations subies par la peau de l&#39;utilisateur. Pour ce faire, la société IEVA® propose
+un bijoux « Twin.C » destiné à être porté par l&#39;utilisateur pour mesurer, au cours du temps, les paramètres
+du milieu dans lequel l&#39;utilisateur évolue. Ce bijoux « Twin.C» permet de mesurer les pollutions extérieure ou
+intérieure, l&#39;exposition au soleil, le bruit ambiant,
+5la luminosité, la température et l&#39;humidité, et le nombre de pas. Avec toutes ces informations,
+il est possible de conseiller un rituel santé/bien-être adapté à chaque utilisateur et capable d&#39;évoluer au
+cours du temps. En outre, il est possible de déterminer la formulation d&#39;une crème spécifiquement adaptée
+aux besoins d&#39;un utilisateur.
+
+10La réalisation de cette crème peut ensuite être formulée en magasin, par exemple avec la
+solution « 1OMA In.Lab ». Pour être plus indépendant et réactif, cette crème peut également être réalisée
+à domicile. Pour ce faire, plusieurs sociétés proposent des machines de formulation d&#39;un produit
+cosmétique sur mesure, par exemple le formulateur « HyLab » de la société Romy ° ou la solution
+«Custom D.O.S.E » de la société L&#39;Oréal ° dont la machine est décrite dans le
+15brevet WO 2017/95854.
+
+Pour générer sa crème sur mesure, l&#39;utilisateur dispose d&#39;un certain nombre de capsules contenant les
+composés des différentes crèmes qu&#39;il peut formuler à partir de la machine. Lors de la fabrication de la
+crème, la machine procède à l&#39;extraction des quantités recherchées des
+20composés présents dans les différentes capsules insérées dans la machine. La machine mélange
+ensuite les composés extraits pour obtenir une crème dont l&#39;aspect correspond à une crème standard mais
+dont les composés et leurs quantités sont déterminés sur mesure.
+
+Ce type de solution est néanmoins très peu transportable car, à l&#39;instar d&#39;une machine à café,
+25cette machine nécessite une alimentation électrique et un grand nombre d&#39;actionneurs
+électromécaniques pour obtenir la formulation recherchée, et notamment pour procéder au
+mélange des composés.
+
+En outre, l&#39;utilisation de capsules pour intégrer les différents composés pouvant être utilisés
+30pour obtenir la formulation entraîne des contraintes de stockage et de pollution générée par les
+rebus des capsules usagées.
+
+EP 21 152 163.8DESCRIPTION (18.01.2021)&quot;AMENDED&quot;3 -&gt; 4
+
+3
+
+Le problème technique de l&#39;invention consiste à obtenir une formulation d&#39;au moins deux
+composés choisis parmi un ensemble de composés sélectionnables de manière beaucoup plus
+transportable que les solutions existantes.
+5Description de l&#39;invention
+Pour résoudre ce problème technique, l&#39;invention propose un dispositif de distribution
+permettant d&#39;extraire des composés stockés dans des contenants pour les acheminer sur une surface
+de distribution. Ainsi, au lieu de réaliser complètement une crème avec l&#39;étape
+10nécessaire de mélange, l&#39;invention propose de délivrer une quantité recherchée de la
+formulation pour chaque application.
+En délivrant les composés sur la surface de distribution, l&#39;utilisateur peut alors récupérer les
+composés avec son doigt pour appliquer la formulation sur sa peau. Le doigt de l&#39;utilisateur
+15récupérant les composants effectue ainsi l&#39;association des composés.
+L&#39;invention est donc issue d&#39;une découverte selon laquelle les principes actifs d&#39;une crème ne
+découlent pas de l&#39;étape de mélange classiquement effectuée mais des composés pris
+indépendamment. Ainsi, une simple association des composés, réalisée avec le doigt d&#39;un
+20utilisateur, suffit à obtenir les mêmes effets sur la peau.
+A cet effet, selon un premier aspect, l&#39;invention concerne un dispositif de distribution d&#39;une
+formulation d&#39;au moins deux composés choisis parmi un ensemble de composés sélectionnables,
+ledit dispositif comportant :
+25- une pluralité de contenants stockant lesdits différents composés sélectionnables ;
+- des moyens de pompage associés à chaque contenant ;
+- une surface de distribution comportant au moins deux orifices débouchant destinés à
+acheminer au moins deux composés choisis ;
+- des moyens de sélection permettant de Z r disposer lesdits au moins deux orifices débouchant en face des moyens
+de pompage desdits composés choisis de sorte à permettre auxdits moyens de pompage desdits composés choisis
+d&#39;acheminer lesdits composés choisis sur la surface de distribution; J Z
+Ul_111111.A,11J J111au 111u111J ll 1..11A u11f1.,1,J UlrUuul,llaiL
+QUA 1 Lb intiy GlIJ uG 1J01111JaY~G UGJu1W 1.,01111JOJGJ 1,1101 J1 J GL u VULul G1 1GJ au L1 GJ intiy Gllb uG
+rennet
+- un actionneur configuré pour Z r n&#39;activer que les J 2-
+a, iv,„.; mmoyens de pompage Z T desdits composés choisis J Z et ne
+délivrer que lesdits
+au moins deux composés choisis sur ladite surface de distribution.
+
+EP 21 152 163.8DESCRIPTION (18.01.2021)4 -&gt; 5
+4
+
+L&#39;invention permet ainsi de délivrer, sur une surface de distribution, une formulation spécifique obtenue à
+partir d&#39;un ensemble de composés sélectionnables. Ce faisant, l&#39;invention permet à un utilisateur de réaliser
+une dose d&#39;une crème adaptée à ses besoins.
+
+5Contrairement aux machines de formulation sur mesure existantes qui visent à fabriquer un pot
+de crème complet, l&#39;invention propose de distribuer uniquement une ou plusieurs doses nécessaires pour
+une application, si bien que le dispositif de l&#39;invention peut être beaucoup plus compact et transportable que
+les machines de formulation existantes.
+
+10Selon l&#39;invention, les moyens de pompage peuvent correspondre à des pompes actionnées
+mécaniquement ou électromécaniquement. Dans le cas de pompes électromécaniques, le dispositif de
+distribution intègre préférentiellement des batteries et une carte de contrôle des actionneurs
+électromécaniques intégrés dans le dispositif de distribution de sorte à former un dispositif de distribution
+autonome et compact.
+15
+De préférence, le dispositif de distribution comporte des pompes mécaniques pour former les moyens de
+pompage de sorte à obtenir un dispositif de distribution purement mécanique. Dans ce mode de réalisation,
+ledit actionneur correspond préférentiellement à un bouton poussoir dont la face supérieure correspond à
+ladite surface de distribution, lesdits moyens de pompage
+20ayant une course supérieure ou égale à la course du bouton poussoir. Ainsi, l&#39;activation du
+bouton poussoir active les pompes et permet de délivrer les composés sélectionnés sur la
+surface de distribution.
+
+La sélection des composés peut être réalisée par tous moyens mécaniques ou
+25électromécaniques. De préférence, les moyens de sélection correspondent à des moyens
+mécaniques qui permettent de déplacer les orifices ou les contenants pour modifier la
+correspondance entre les orifices et les contenants.
+
+Selon un premier mode de réalisation dans lequel les orifices sont fixes, au moins un desdits
+30moyens de sélection correspond à un barillet intégrant plusieurs contenants, une rotation dudit
+barillet entrainant une modification de la correspondance entre un orifice et l&#39;un des contenants intégrés
+dans ledit barillet.
+
+EP 21 152 163.8DESCRIPTION (18.01.2021)*AMENDED*5 -&#39;6
+
+5
+
+LILA u111. I j1a1lv11 Ul. laUI1l.1.41 1C11111... .
+lalaav.,la illiulivll
+d l,• r
+1 / 4 .1%./ F 1 LULA.
+iiivIri 1 / 4 ,cul;vii a., la%Alti 1%.,11l&#39;imuy%,11,3
+Z r Ce mode J Z CC3med,ide réalisation Z r permet J Z
+reeffleitet, de sélectionner mécaniquement les composés choisis
+pour distribuer la formulation. Lorsque les composés sont sélectionnés, l&#39;utilisateur peut alors
+10simplement activer les moyens de pompage via l&#39;actionneur pour obtenir les composés de la
+formulation sur la surface de distribution.
+Il est possible d&#39;inhiber le fonctionnement de l&#39;actionneur pour éviter d&#39;éventuelles fausses
+manipulations du dispositif de distribution. Pour ce faire, il est possible d&#39;utiliser un bouchon
+15de protection qui, une fois en place, bloque l&#39;accès à l&#39;actionneur. Selon ce mode de réalisation, ledit dispositif
+comporte un bouchon de protection amovible configuré pour recouvrir ladite surface de distribution et
+inhiber l&#39;activation dudit actionneur.
+En ce qui concerne les composés utilisés par le dispositif de distribution, ils peuvent varier en
+20fonction des applications du dispositif de distribution. De préférence, ledit dispositif comporte deux types de
+composés distincts stockés dans deux types de contenants distincts ; lesdits au moins deux composés
+étant choisis pour obtenir une formulation d&#39;au moins un premier type de composés et d&#39;au moins un
+second type de composés.
+25Par exemple, ledit dispositif comporte entre un et trois composés du premier type et entre six et
+huit composés du second type de sorte à permettre l&#39;obtention d&#39;un grand nombre de
+formulations possibles.
+En fonction des applications, des composés de natures distinctes peuvent être utilisés. Par
+30exemple, l&#39;invention peut être mise en oeuvre pour la formulation d&#39;une crème cosmétique. Dans ce mode de
+réalisation, ledit premier type de composés peut correspondre à des bases, par exemple des bases
+aqueuses ou huileuses, et ledit second type de composés peut correspondre à des sérums.
+
+EP 21 152 163.8DESCRIPTION (18.01.2021)&quot;AMENDED&quot;6 -, 7
+
+6
+
+Pour une crème cosmétique, une formulation comporte classiquement une base et un sérum
+avec une quantité plus importante de base que de sérum. Pour obtenir cette différence de volume avec le
+dispositif de distribution, les premiers contenants présentent un volume supérieur à des seconds contenants et
+lesdits moyens de pompage associés auxdits premiers contenants
+5présentent un volume de pompage plus important que lesdits moyens de pompage associés
+auxdits seconds contenants pour une même activation dudit actionneur.
+De préférence, ladite pluralité de contenants est intégrée dans au moins un support présentant
+au moins deux parties amovibles de sorte à permettre un remplacement ou un remplissage d&#39;au
+10moins un contenant. En remplaçant les contenants selon ses besoins, un utilisateur peut
+augmenter le nombre de formulations possibles qu&#39;il peut réaliser avec ledit dispositif de distribution de
+l&#39;invention en utilisant des contenants avec d&#39;autres composés que ceux présents dans le dispositif de
+distribution.
+15En outre, le remplacement des contenants permet également d&#39;augmenter la durée de vie du
+dispositif de distribution en remplaçant ou en remplissant les contenants vides. La possibilité de pouvoir
+remplir les contenants vidés limite également les rebus générés par le dispositif de distribution de
+l&#39;invention améliorant donc son empreinte écologique.
+20Eck,n crettep,,ctrSiereernt-tm-ermtena111 peul
+
+F 1 / 4 1 / 4 ., 1 / 4 1 / 4 1 / 4 ; 1 / 4 ., 1 / 4 (UJF,.A.,1V1 &#39; 111 V „AC—J.1,V 11 VV111.,11d111 1 / 4 ,..,„ 1 / 4 1 / 4 1 .1 .,„ 1 / 4 tut .
+
+· •
+- un 1 / 4 ., 1 / 4 _npDp1uJu111a11L Ju11J1U1u111u111 la 1Vllllu u Lun., put. Lun uu l,ylillull. av 1 / 4 ., 1 / 4 .,, 1 / 4 .,11 1 1 / 4 ., mn.,
+· , •
+in 1 / 4 ., 1 1 / 4 .,Lu 1 / 4 ., uL un 1 / 4 .,p1a11LuL un 1 / 4 ., Iav,v, ul,ulll,ylluullllul , 1 / 4 .,
+u 1 / 4 ., pup 1 / 4 .,, 1 / 4 .)lad 1 / 4 .,u.up 1 / 4 ., 1 / 4 .,u 1 / 4 .,,fput,&#39; 1 / 4 .,a 1 / 4 ., upu 1 / 4 .,u 1 / 4 .,k 1 / 4 .,
+an 1 1 / 4 .,,
+· ,.
+aUiL 1 / 4 ., 1al,l, llulllluylLn Liquu 1J1l,Jl,HHLanL au 111u111l&#39;UA 1UY J l,llll,llw ul,J L111uJ a a 1 / 4 ., 1 / 4 ., u 1 / 4 .4l&#39;UA
+L&#39;un 1 / 4 .,nan Dy in ILLILL 1 / 4 .,D, ullalluu lur,1,1111,11L uulluuu11a11LJul lauiL1, D Ul au 1 / 4 .. D up 1 / 4 ,11 1 / 4 .,w 1 / 4 .,
+a 1 / 4 .:un aut,%.,tuLdit,la tuyau., la laukui llua lluaL,L,
+30Description sommaire des figures
+La manière de réaliser l&#39;invention ainsi que les avantages qui en découlent, ressortiront bien
+des modes de réalisation qui suivent, donnés à titre indicatif mais non limitatif, à l&#39;appui des
+figures annexées dans lesquelles les figures 1 à 16 représentent :
+
+EP 21 152 163.8DESCRIPTION (18.01.2021)&quot;AMENDED&quot;7 -, 8
+
+7
+
+La figure 1 est une vue de face d&#39;un dispositif de distribution d&#39;une formulation selon un premier mode de
+réalisation de l&#39;invention 2- T qui n&#39;est pas inclus dans l&#39;objet des revendications J 2.
+La figure 2 est une vue en perspective éclatée du dispositif de distribution de la figure 1 ; La figure 3
+est une vue en coupe du dispositif de distribution de la figure 1 ;
+5La figure 4 est une vue de dessus d&#39;une bague inférieure du dispositif de distribution de la figure
+1;
+La figure 5 est une vue en perspective de la bague inférieure de la figure 4 ;
+La figure 6 est une vue en perspective d&#39;une bague supérieure du dispositif de distribution de la
+figure 1 ;
+10La figure 7 est une vue en coupe partielle du dispositif de distribution de la figure 1 ;
+La figure 8 est une vue en perspective d&#39;un contenant adapté au dispositif de distribution de la
+figure 1 ;
+La figure 9 est une vue de face d&#39;un dispositif de distribution d&#39;une formulation selon un second
+mode de réalisation de l&#39;invention ;
+15La figure 10 est une vue en perspective éclatée du dispositif de distribution de la figure 9 ;
+La figure 11 est une vue en coupe du dispositif de distribution de la figure 9 ;
+La figure 12 est une vue en perspective d&#39;un barillet inférieur du dispositif de distribution de la
+figure 9 ;
+La figure 13 est une vue en perspective d&#39;un barillet supérieur du dispositif de distribution de
+20la figure 9 ;
+La figure 14 est une vue de dessus du barillet supérieur de la figure 13 ;
+La figure 15 est une vue en perspective de dessous de la surface de distribution du dispositif de
+distribution de la figure 9 ; et
+La figure 16 est une vue en perspective de dessus de la surface de distribution du dispositif de
+25distribution de la figure 9.
+Description détaillée de l&#39;invention
+Dans la description qui suit, deux modes de réalisation distincts illustrent un dispositif de
+30distribution entièrement mécanique. En variante, l&#39;invention peut être mise en oeuvre avec des
+composants électromécaniques.
+Les figures 1 à 3 illustrent un dispositif de distribution 10a selon un premier mode de réalisation
+de 2- r l&#39;invention qui n&#39;est pas inclus dans l&#39;objet des revendications. J 2.
+1 &#39; ;..,..1;,,... Dans ce mode de réalisation, le dispositif de distribution 10a présente une forme
+
+EP 21 152 163.8DESCRIPTION (18.01.2021)8 -&gt; 9
+8
+
+sensiblement cylindrique avec une hauteur comprise entre 7 et 15 cm et un diamètre compris
+entre 3 et 10 cm.
+
+Ainsi, le dispositif de distribution 10a se présente sous la forme d&#39;un flacon transportable.
+5
+Ce dispositif de distribution 10a présente une coque externe formée par plusieurs parties superposées
+lla-lle et fixées entre elles. Les trois parties inférieures lla à 11c présentent des formes cylindriques
+tronquées complémentaires permettant d&#39;obtenir un cylindre intégrant les différents composés
+sélectionnables. L&#39;assemblage de ces trois parties inférieures lla à 11c
+10permet de varier les matières, les textures ou les couleurs de ce cylindre. Au-dessus de ce cylindre, la coque
+présente un épaulement lld surmonté par un rebord lle cylindrique. En outre, ces différentes parties lla-
+lle de la coque sont montés de manière amovible de sorte à pour ouvrir la coque et remplacer ou remplir
+un des contenants 14a, 15. L&#39;épaulement lld et le rebord lle permettent d&#39;intégrer les moyens de
+pompage 16-17 et les moyens de sélection
+1518-19.
+
+En outre, le rebord lle est configuré pour supporter un bouchon de protection 12 permettant de fermer le
+dispositif de distribution 10a. Par exemple, le bouchon de protection 12 peut-être monté par clipsage ou
+par vissage sur le rebord lle.
+20
+À l&#39;intérieur du dispositif de distribution 10a, les différents composés sélectionnables sont intégrés dans des
+contenants 14a-15. Les composés sélectionnables peuvent être répartis dans des contenants de fort
+volume 14a intégrant des composés de base et des contenants de faible volume 15 intégrant des sérums
+permettant de formuler une crème cosmétique. Par exemple,
+25les contenants 14a présentent un volume compris entre 20 et 35 ml alors que les contenants 15
+présentent un volume compris entre 3 et 8 ml.
+
+Bien entendu, d&#39;autres types de composés peuvent être utilisés pour obtenir d&#39;autres formulations
+sans changer invention.
+30
+L&#39;extraction des composés stockés dans ces contenants 14a-15 est préférentiellement réalisée
+par une pompe manuelle 16 ou 17 associée à chaque contenant 14a-15.
+
+EP 21 152 163.8DESCRIPTION (18.01.2021)9 -&gt; 10
+9
+
+Une pompe manuelle peut aspirer les composés à travers un tuyau d&#39;alimentation s&#39;étendant jusqu&#39;au fond
+du contenant. De préférence, un piston est intégré dans chaque contenant 14a15 de sorte qu&#39;une pression
+effectuée sur sa pompe 16-17 entraine une dépression qui tend à déplacer le piston vers le sommet du
+contenant pour extraire le composé à travers une ouverture
+5ménagée au sommet de la pompe 16-17.
+
+Pour obtenir la formulation recherchée, le dispositif de distribution 10a permet d&#39;acheminer les composés
+choisis sur une surface de distribution 20a afin qu&#39;un utilisateur puisse la collecter avec son doigt. Pour
+former les moyens de sélection, le mode de réalisation des figures 1 à 8
+10propose d&#39;utiliser deux bagues concentriques 18-19 formant à la fois la surface de distribution
+20a, les moyens de sélection des composés choisis et un actionneur pour les pompes 16-17. La bague 19
+étant montée sur la bague 18, la bague 18 est appelée « bague inférieure » alors que la bague 19 est
+appelée « bague supérieure » dans la suite de la description.
+
+15Tel qu&#39;illustré sur les figures 4 et 5, la bague inférieure 18 présente un cylindre central 35 dont
+la face inférieure est pourvue d&#39;un pion de guidage 36. Par exemple, le cylindre central 35 peut présenter
+une épaisseur comprise entre 0.8 et 5mm et un diamètre compris entre 2 et 8 cm. La face inférieure de la
+bague inférieure 18 s&#39;étend sous la forme d&#39;un disque 37 dont le diamètre est supérieur à celui du cylindre
+central 35. Par exemple, le disque 37 peut présenter une
+20épaisseur comprise entre 0.4 et 2mm et un diamètre compris entre 3 et 10 cm. La partie
+terminale de ce disque 37 présente un rebord 38 s&#39;étendant orthoradialement en direction de la face
+supérieure 40 du cylindre central 35. La hauteur de ce rebord 38 peut être comprise entre 0.2 et 2 mm.
+
+25Le cylindre central 35 présente un orifice cylindrique 21 débouchant sur les deux faces
+supérieure 40 et inférieure et réalisé proche des bords du cylindre central 35. Cet orifice cylindrique 21 peut
+présenter un diamètre compris entre 0.4 et 2 mm. En outre, six autres orifices 22a sont régulièrement
+répartis dans le disque 37. Ces autres orifices cylindriques 22a peuvent également présenter un diamètre
+compris entre 0.4 et 2 mm.
+30
+Tel qu&#39;illustré sur la figure 6, la bague supérieure 19 se présente sous la forme d&#39;un anneau 19. Cet anneau 19
+peut présenter un diamètre interne compris entre 2 et 8 cm et un diamètre externe compris entre 3 et 10 cm.
+L&#39;épaisseur de cet anneau 19 est préférentiellement comprise entre
+
+EP 21 152 163.8DESCRIPTION (18.01.2021)10 -&gt; 11
+10
+
+0.4 et 2 mm. Un orifice cylindrique débouchant 22b est ménagé dans l&#39;épaisseur de cet anneau
+19. Cet orifice 22b peut présenter un diamètre compris entre 0.4 et 2 mm.
+
+Tel qu&#39;illustré sur la figure 7, la surface de distribution 20a est obtenue par les deux surfaces
+5supérieures 40-41 des deux bagues 18-19. Ces deux surfaces supérieures 40-41 sont
+sensiblement coplanaires lorsque la bague supérieure 19 est montée autour de la bague inférieure 18.
+Ainsi, le centre de la surface de distribution 20a est formé par la face supérieure 40 de la bague inférieure
+18 passant à travers la bague supérieure 19 alors que le pourtour de cette surface de distribution 20a est
+formé par la face supérieure 41 de la bague inférieure 18.
+10
+Pour sélectionner les composés et les acheminer sur la surface de distribution 20a, les deux bagues 18-19
+sont mobiles en rotation autour d&#39;un axe central Al. De préférence, ces bagues 18-19 ne peuvent être
+entraînées en rotation que lorsque le bouchon de protection 12 est retiré du dispositif de distribution 10a.
+15
+La bague inférieure 18 est montée directement au-dessus de l&#39;ensemble des pompes 16-17 et son orifice
+débouchant 21 permet d&#39;acheminer un composé présent dans un contenant 14a sur sa face supérieure
+40, c&#39;est-à-dire sur la surface de distribution 20a. L&#39;acheminement d&#39;un composé présent dans un
+contenant 15 est réalisé en traversant les orifices 22a de la bague
+20inférieure 18 et l&#39;orifice 22b de la bague supérieure 19.
+
+L&#39;activation des pompes 16-17 est obtenue par le déplacement des deux bagues 18-19. Pour ce faire, les
+deux bagues 18-19 sont posées sur l&#39;ensemble des pompes 16-17 et le pion 36 assure le guidage du
+déplacement des deux bagues 18-19.
+25
+En outre, la bague supérieure 19 est cintrée sur la bague inférieure 18 au niveau du rebord 38 de sorte que
+les deux bagues 18-19 soient mobiles conjointement selon l&#39;axe Al. Le déplacement des deux bagues 18-19
+est consécutif à un appui d&#39;un utilisateur sur la surface de distribution 20a. Cet appui a pour effet de
+compresser toutes les pompes 16-17 et d&#39; entrainer
+30une distribution de la formulation des composés sélectionnés. En effet, lors de l&#39;activation des
+pompes 16-17, seules les pompes disposées en face des orifices 21 et 22b voient leurs composés
+acheminés sur la surface de distribution 20a. Après l&#39;activation, c&#39;est-à-dire après l&#39;appui de l&#39;utilisateur, les
+deux bagues 18-19 sont repositionnées à leurs positions initiales par la décompression des ressorts des
+pompes 16-17.
+
+EP 21 152 163.8DESCRIPTION (18.01.2021)*AMENDED*11 -&gt; 12
+
+11
+
+Pour faciliter la sélection des différents composés et éviter qu&#39;un des orifices 21 et 22b ne se
+retrouve disposé entre deux pompes 16-17, des détrompeurs de positions sont
+préférentiellement mis en oeuvre. Par exemple, la figure 7 illustre un pion 50 et un ressort
+5intégrés dans un alésage de la bague inférieure 18 et configurés pour coopérer avec des alésages
+présents à chaque position possible de la bague supérieure 19. Ainsi, l&#39;utilisateur peut ressentir une
+différence d&#39;effort de rotation de la bague supérieure 19 entre les positions possibles et les positions
+intermédiaires de la bague 19.
+
+10Ce mode de réalisation, illustré sur les figures 1 à 7, Z T qui n&#39;est pas inclus dans l&#39;objet des
+revendications, J Zpeut être mis en oeuvre quel que soit la
+forme des contenants. Par exemple, l&#39;invention peut être mise en oeuvre avec des contenants
+standard présentant une forme cylindrique.
+De préférence, pour optimiser l&#39;espace à l&#39;intérieur de la coque lla-11e, le contenant de fort
+15volume 14a présente une forme spécifique permettant à la fois de contenir un composé et
+d&#39;intégrer des logements 30 pour positionner des contenants cylindriques 15 de plus faible
+volume.
+Tel qu&#39;illustré sur la figure 8, le contenant 14a présente un corps creux 25 présentant
+20sensiblement la forme d&#39;une portion de cylindre avec deux faces planes et une face
+hémisphérique 29 s&#39;étendant dans la hauteur de la portion de cylindre.
+La face inférieure du corps 25 présente une surface sensiblement plane alors que la face
+supérieure 26 du corps 25 intègre une pompe 16 permettant d&#39;extraire le composé stocké dans
+25le corps 25. En outre, la face hémisphérique 29 présente deux logements 30 débouchant sur la
+face supérieure 26 s&#39;étendant sensiblement entre la moitié de la hauteur du corps 25 et la surface supérieure 26.
+Outre l&#39;utilisation des bagues 18-19 pour sélectionner les composés de la formulation, il est
+30également possible d&#39;utiliser un ou plusieurs barillets 33-34 en remplacement d&#39;une des
+bagues 18-19. En outre, il est possible de sélectionner plus de deux composés en augmentant le nombre de
+moyens de sélection. Par exemple, en utilisant trois bagues, il est possible de sélectionner trois composés
+distincts pour distribuer une formulation. Les moyens de sélection peuvent également posséder une position
+intermédiaire entre plusieurs contenants dans laquelle
+
+EP 21 152 163.8DESCRIPTION (18.01.2021)12 -&gt; 13
+12
+
+aucun composé n&#39;est délivré si bien qu&#39;il est possible de ne délivrer qu&#39;un seul composé en
+positionnant l&#39;un des moyens de sélection dans cette position intermédiaire.
+
+Les figures 9 à 16 illustrent un second mode de réalisation utilisant deux barillets 33-34 pour
+5sélectionner les composés. De la même manière que dans le premier mode de réalisation, une
+surface de distribution 20b est disposée en regard d&#39;un ensemble de pompes 16-17 montées sur des
+contenants 14b-15. Cependant, cette surface de distribution 20b est fixe et ce sont les contenants 14b-15
+qui sont mobiles par rapport à cette surface de distribution 20b.
+
+10Pour ce faire, le dispositif de distribution 20b présente un premier barillet 33 comportant un
+cylindre inférieur 52 et un cylindre supérieur 53 de plus faible diamètre formant un épaulement
+32. Trois contenants 14b cylindriques sont insérés dans les deux cylindres et dépassent en
+hauteur.
+
+15L&#39;épaulement 32 permet de monter un second barillet 34 prenant la forme d&#39;un cylindre creux
+supportant douze contenants 15.
+
+Un bouchon de distribution 51 est monté fixe au-dessus des deux barillets 33-34. Ce bouchon de distribution
+51 présente un axe 57 monté sur un axe central 58 du premier barillet 33 de sorte
+20que l&#39;axe 58 du premier barillet 33 soit mobile en rotation par rapport à l&#39;axe 57 du bouchon de
+distribution 51.
+
+Le second barillet 34 est contraint en translation entre l&#39;épaulement 32 et le bouchon de distribution 51 de
+sorte que ce second barillet 34 soit mobile en rotation autour des axes 57-58,
+25indépendamment des rotations du premier barillet 33. Tel qu&#39;illustré sur la figure 14, l&#39;extrémité
+supérieure du second barillet 33 peut comporter des ergots 54 de sorte à former des détrompeurs de
+positions par rapport à la surface de distribution 20b.
+
+Le premier barillet 33 est monté de manière amovible sur l&#39;axe 57 de sorte que les deux barillets
+30puissent être démontés pour remplacer ou remplir un des contenants 14b, 15. En outre, le niveau
+des contenants 15 peut être directement visible pour les ouvertures 31.
+
+Dans le bouchon de distribution 51, deux orifices 55 et 56 sont ménagés de sorte à permettre aux
+pompes 16-17 disposées en face de ces orifices 55-56 d&#39;acheminer leurs contenus sur la
+
+EP 21 152 163.8DESCRIPTION (18.01.2021)13 -&gt; 1
+13
+
+surface de distribution 20b. En outre, les orifices 55 et 56 étant fixes, la surface de distribution 20b peut être
+structurée pour faciliter la préhension des composés par l&#39;utilisateur, tel qu&#39;illustré sur la figure 16. De la
+même manière que pour le premier mode de réalisation, l&#39;actionnement des pompes 16-17 peut être réalisé
+en déplaçant la surface de distribution 20b.
+
+L&#39;invention permet ainsi d&#39;obtenir un dispositif de distribution d&#39;une formulation d&#39;au moins deux composés
+choisis parmi un ensemble de composés sélectionnables beaucoup plus transportable que les solutions
+existantes. En outre, ce dispositif de distribution peut être entièrement mécanique.
+
+Ainsi, un utilisateur peut formuler rapidement et simplement une formulation sur mesure en fonction de ses
+besoins. Par exemple, avec l&#39;invention, un utilisateur peut formuler une ou plusieurs doses d&#39;une crème
+cosmétique adaptée pour traiter sa peau.
+
+EP 21 152 163.8CLAIMS (07.02.2023)*AMENDED*1 -, 2
+Revlications
+
+Dispositif de distribution (10b) dune formulation d&#39;au moins deux composés.
+choisis parmi.un . :ensernble de compcséssélectionnables, ledit dispositif
+:comportant:
+une pluralité de contenants (14b. 15) stockant lesdits-différents
+composés seiectionnables ;-
+des . moyens dé pompage (1 6-17.):associes :à-chaque.contenant (14b, 15).;
+une-surface de distribution (20b) comportant au moins deux orifices.
+(55-56) débouchant destinés à acheminer au moins deux composés-
+. choisis
+des moyens de sélection (33-34) permettant de disposer lesdits au moine
+deux orifices (55-56) débouchant en face des moyens de pompage (1&#39;6-
+17;1 desdits composés choisis de sorte à permettre auxdits moyens de
+pompage (16-17) desdits composés choisis d&#39;acheminer lesdits composés
+choisis sur la surface de distribution et
+un actionneur configure pour n&#39;actver que les moyens de pompage (16-
+17) desdits composés choisis et ne délivrer que lesdits au moins deux
+composés choisis sur ladite surface de distribution (2014.
+
+2. Dispositif de distribution selon la revendication 1, dans lequel ledit actionneur correspond à un bouton
+poussoir dont la face supérieure correspond à ladite surface de distribution (- -20b), lesdits moyens de
+pompage (16-17) ayant une course supérieure ou égale à la course du bouton poussoir.
+
+3. Dispositif de distribution selon la revendication 1 ou 2, dans lequel au moins un desdits moyens de
+sélection correspond à un barillet (33-34) intégrant plusieurs contenants (1 &quot; 14b, 15), une rotation dudit
+barillet (33-34) entrainant une modification de la correspondance entre
+un orifice (55-56) et l&#39;un des contenants (14b, 15) intégré dans ledit barillet (33-34).
+
+EP 21 152 163.8CLAIMS (07.02.2023)*AMENDED*2 -, 1/12
+
+2
+
+Z r 4 J Z s. Dispositif de distribution selon l&#39;une des revendications 1 à Z T 3, J Z .4r dans
+lequel ledit dispositif
+comporte un bouchon de protection amovible (12) configuré pour recouvrir ladite surface de
+distributionr(20b)Z
+
+2 -et inhiber l&#39;activation dudit actionneur.
+
+Z T 5 J Z E. Dispositif de distribution selon l&#39;une des revendications 1 à Z r 4 , J Z dans
+lequel ledit dispositif
+comporte deux types de composés distincts stockés dans deux types de contenants distincts (-1-4-el4b, 15)
+; lesdits au moins deux composés étant choisis pour obtenir une formulation d&#39;au moins un premier type de
+composés et d&#39;au moins un second type de composés.
+Z T 6 J Z Dispositif de distribution selon la revendication Z T 5, J 2-.67dans
+lequel des premiers contenants I 4-4er
+14b) présentant un volume supérieur à des seconds contenants (15) ; lesdits moyens de pompage (16)
+associés auxdits premiers contenants (4-4-el 4b) présentent un volume de pompage plus important que
+lesdits moyens de pompage (17) associés auxdits seconds contenants (15) pour une même activation dudit
+actionneur.
+Z r7 J Z€ Dispositif de distribution selon la revendication Z r5 ou 6, J 2-.6-imieg,
+dans lequel ledit dispositif comporte
+entre un et trois composés du premier type et entre six et huit composés du second type.
+Z T 8 J Z Dispositif de distribution selon l&#39;une des revendications Z r 5 à 7, J Z .6-à-O7
+dans lequel, ladite formulation
+correspondant à une crème cosmétique, ledit premier type de composés correspond à des bases et ledit
+second type de composés correspond à des sérums.
+Z T 9 J Z 44. Dispositif de distribution selon l&#39;une des revendications 1 à Z T 8 , J 2.97 dans
+lequel, ladite pluralité
+de contenants (-1-+a--14b, 15) est intégrée dans au moins un support (11a 11,, 33, 34) présentant au moins
+deux parties amovibles de sorte à permettre un remplacement ou un remplissage d&#39;au moins un contenant (-1-4-
+el4b, 15).
+11.d, 1,1.1,41;,,.. „1,,..J,110, 1,11
+eatréenegré-ernmereiegré.•
+
+EP 21 152 163.8CLAIMS (07.02.2023)*AMENDED*2 (part 2) -&gt; 1/12
+
+(.111 %,-AJ1 JJJ 1.11. LAA1.11J1u11.1111.11L la U1111%., U ulll. FUI 1..y1%.v
+ullt iu faut., nift.4iu faut., up iit uit (26), L1l Uh faw plant..unt., faut.. LAJUI(29)
+t i r
+
+16 oLu 1 ,1(.4 f „...int..26 f L.AJE,LA

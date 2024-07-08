@@ -141,13 +141,10 @@ class UserTaskExecution(Resource):
                 except Exception as e:
                     raise Exception(f"recover_text_edit_actions: {e}")
 
-            predefined_actions_data = [predefined_action._asdict() for predefined_action in task_execution.predefined_actions]
-            predefined_actions = [{**predefined_action.displayed_data, "task_pk": predefined_action.task_fk} for predefined_action in predefined_actions_data]
-
             
             return {**{"user_task_execution_pk": task_execution.user_task_execution_pk,
                      "json_input": json_input,
-                     "actions": predefined_actions,
+                     "actions": task_execution.predefined_actions,
                      "text_edit_actions" : recover_text_edit_actions(user_task_pk=user_task_pk)
                      }, **session_creation[0]}, 200 # append session_creation to returned dict
         except Exception as e:

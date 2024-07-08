@@ -170,7 +170,7 @@ class HomeChatAssistant(ChatAssistant):
             if execution and self.instruct_task_execution:
                     message = self.task_manager.task_executor.manage_execution_text(execution_text=execution,
                                                                                  task=self.instruct_task_execution.task,
-                                                                                 task_name=self.instruct_task_execution.task_name_in_user_language,
+                                                                                 task_name=self.instruct_task_execution.user_task.task_name_in_user_language,
                                                                                  user_task_execution_pk=self.instruct_task_execution.user_task_execution_pk)
                     
             elif self.user_message_start_tag in response:

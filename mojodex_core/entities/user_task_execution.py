@@ -43,12 +43,6 @@ class UserTaskExecution(MdUserTaskExecution):
         except Exception as e:
             raise Exception(f"{self.__class__.__name__}:: images_input_names :: {e}")
 
-    @property
-    def task_name_in_user_language(self):
-        try:
-            return self.task.get_name_in_language(self.user.language_code)
-        except Exception as e:
-            raise Exception(f"{self.__class__.__name__} :: get_task_name_in_user_language :: {e}")
 
     @property
     def user_task(self):
@@ -94,7 +88,7 @@ class UserTaskExecution(MdUserTaskExecution):
             raise Exception(f"{self.__class__.__name__} :: produced_text :: {e}")
         
     @property
-    def n_produced_text_version(self):
+    def n_produced_text_versions(self):
         try:
             session = object_session(self)
             return session.query(MdProducedTextVersion).\

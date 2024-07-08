@@ -30,6 +30,14 @@ class UserTask(MdUserTask):
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} :: json_input_in_user_language :: {e}")
         
+
+    @property
+    def task_name_in_user_language(self):
+        try:
+            return self.task.get_name_in_language(self.user.language_code)
+        except Exception as e:
+            raise Exception(f"{self.__class__.__name__} :: get_task_name_in_user_language :: {e}")
+    
     @property
     def predefined_actions(self):
         try:

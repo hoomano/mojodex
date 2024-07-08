@@ -197,7 +197,7 @@ class UserTaskExecution(Resource):
                     "session_id": user_task_execution.session_id,
                     "json_inputs_values": None if all(input.get('value') is None for input in user_task_execution.json_input_values) else user_task_execution.json_input_values,
                     "icon": user_task_execution.task.icon,
-                    "task_name": user_task_execution.task_name_in_user_language,
+                    "task_name": user_task_execution.user_task.task_name_in_user_language,
                     "task_type": user_task_execution.task.type,
                     "result_chat_enabled": user_task_execution.task.result_chat_enabled,
                     "actions": user_task_execution.user_task.predefined_actions,
@@ -208,7 +208,7 @@ class UserTaskExecution(Resource):
                     "produced_text_title": user_task_execution.last_produced_text_version.title if user_task_execution.last_produced_text_version else None,
                     "produced_text_production": user_task_execution.last_produced_text_version.production if user_task_execution.last_produced_text_version else None,
                     "produced_text_version_pk": user_task_execution.last_produced_text_version.produced_text_version_pk if user_task_execution.last_produced_text_version else None,
-                    "produced_text_version_index": user_task_execution.n_produced_text_version,
+                    "produced_text_version_index": user_task_execution.n_produced_text_versions,
                     "text_edit_actions": user_task_execution.user_task.text_edit_actions,
                     "working_on_todos": user_task_execution.todos_extracted is None,
                     "steps": workflow_execution.user_task.steps_as_json if workflow_execution else None,
@@ -247,7 +247,7 @@ class UserTaskExecution(Resource):
                     search_user_tasks_filter_list = search_user_tasks_filter.split(";")
                     result = result.filter(MdUserTask.user_task_pk.in_(search_user_tasks_filter_list))
 
-            user_task_executions:  List[DBUserTaskExecution] = (result.group_by(DBUserTaskExecution.user_task_execution_pk)
+            user_task_executions:  list[DBUserTaskExecution] = (result.group_by(DBUserTaskExecution.user_task_execution_pk)
                       .order_by(DBUserTaskExecution.user_task_execution_pk.desc())
                       .limit(n_user_task_executions)
                       .offset(offset)
@@ -271,7 +271,7 @@ class UserTaskExecution(Resource):
                 "session_id": user_task_execution.session_id,
                 "json_inputs_values": None if all(input.get('value') is None for input in user_task_execution.json_input_values) else user_task_execution.json_input_values,
                 "icon": user_task_execution.task.icon,
-                "task_name": user_task_execution.task_name_in_user_language,
+                "task_name": user_task_execution.user_task.task_name_in_user_language,
                 "task_type": user_task_execution.task.type,
                 "result_chat_enabled": user_task_execution.task.result_chat_enabled,
                 "actions": user_task_execution.user_task.predefined_actions,
@@ -282,7 +282,7 @@ class UserTaskExecution(Resource):
                 "produced_text_title": user_task_execution.last_produced_text_version.title if user_task_execution.last_produced_text_version else None,
                 "produced_text_production": user_task_execution.last_produced_text_version.production if user_task_execution.last_produced_text_version else None,
                 "produced_text_version_pk": user_task_execution.last_produced_text_version.produced_text_version_pk if user_task_execution.last_produced_text_version else None,
-                "produced_text_version_index": user_task_execution.n_produced_text_version,
+                "produced_text_version_index": user_task_execution.n_produced_text_versions,
                 "text_edit_actions": user_task_execution.user_task.text_edit_actions,
                 "working_on_todos": user_task_execution.todos_extracted is None,
                 **(get_workflow_specific_data(user_task_execution.user_task_execution_pk) if user_task_execution.task.type == "workflow" else {})

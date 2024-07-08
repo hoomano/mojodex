@@ -7,6 +7,7 @@ from mojodex_core.logging_handler import MojodexCoreLogger
 
 class EmailService:  # Singleton
     _instance = None
+    _initialized = False
 
     admin_email_receivers = os.environ["ADMIN_EMAIL_RECEIVERS"].split(",") if "ADMIN_EMAIL_RECEIVERS" in os.environ else []
     technical_email_receivers = os.environ["TECHNICAL_EMAIL_RECEIVERS"].split(",") if "TECHNICAL_EMAIL_RECEIVERS" in os.environ else []
@@ -16,15 +17,17 @@ class EmailService:  # Singleton
         if not cls._instance:
             cls._instance = super(EmailService, cls).__new__(
                 cls, *args, **kwargs)
+            cls._instance._initialized = False
         return cls._instance
     
     def __init__(self):
-        self.email_service_logger = MojodexCoreLogger("email_service_logger")
-        try:
-            self._email_sender: EmailSender = self._configure_email_sender()
-        except Exception as e:
-            self.email_service_logger.error(f"Error initializing email service :: {e}")
-
+        if not self.__class__._initialized:
+            self.email_service_logger = MojodexCoreLogger("email_service_logger")
+            try:
+                self._email_sender: EmailSender = self._configure_email_sender()
+            except Exception as e:
+                self.email_service_logger.error(f"Error initializing email service :: {e}")
+            self.__class__._initialized = True
 
     @property
     def configured(self):

@@ -6,20 +6,24 @@ import logging
 
 class MojodexCoreDB:
     _instance = None
+    _initialized = False
 
     def __new__(cls, *args, **kwargs):
         if not cls._instance:
             cls._instance = super(MojodexCoreDB, cls).__new__(
                 cls, *args, **kwargs)
+            cls._instance._initialized = False
         return cls._instance
 
     def __init__(self) -> None:
-        
-        try:
-            connection_string = f"postgresql+psycopg2://{os.environ['DBUSER']}:{os.environ['DBPASS']}@{os.environ['DBHOST']}:5432/{os.environ['DBNAME']}"
-            self.engine = create_engine(connection_string)
-        except Exception as e:
-            logging.warning(f"Error initializing db_session :: {e}")
+        if not self.__class__._initialized:
+            try:
+                connection_string = f"postgresql+psycopg2://{os.environ['DBUSER']}:{os.environ['DBPASS']}@{os.environ['DBHOST']}:5432/{os.environ['DBNAME']}"
+                self.engine = create_engine(connection_string)
+            except Exception as e:
+                logging.warning(f"Error initializing db_session :: {e}")
+            self.__class__._initialized = True
+
 
 
 

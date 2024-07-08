@@ -3,7 +3,7 @@ from mojodex_core.llm_engine.mpt import MPT
 from mojodex_core.llm_engine.providers.openai_vision_llm import VisionMessagesData
 from abc import ABC, abstractmethod
 from mojodex_core.llm_engine.providers.model_loader import ModelLoader
-
+from mojodex_core.user_storage_manager.user_images_file_manager import UserImagesFileManager
 
 class ChatAssistant(ABC):
 
@@ -66,10 +66,8 @@ class ChatAssistant(ABC):
     def __call_vision_llm(self, conversation_list, temperature, max_tokens, user_id, session_id,
                           user_task_execution_pk, task_name_for_system):
         try:
-            from mojodex_core.user_storage_manager.user_images_file_manager import UserImagesFileManager
-            user_image_file_manager = UserImagesFileManager()
             initial_system_message_data = [VisionMessagesData(role="system", text=self._mpt.prompt, images_path=[
-                user_image_file_manager.get_image_file_path(image, user_id, session_id)
+                UserImagesFileManager().get_image_file_path(image, user_id, session_id)
                 for image in self.input_images])]
             conversation_messages_data = [
                 VisionMessagesData(role=message["role"], text=message["content"], images_path=[]) for message in

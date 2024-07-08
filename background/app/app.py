@@ -1,6 +1,4 @@
 from gevent import monkey
-
-
 monkey.patch_all()
 
 
@@ -32,19 +30,8 @@ app.config[
 db = SQLAlchemy(app)
 api = Api(app)
 
-from background_logger import BackgroundLogger
-
-main_logger = BackgroundLogger("main_logger")
-
 from models.documents.document_manager import DocumentManager
 document_manager = DocumentManager()
-
-from language_retriever import LanguageRetriever
-language_retriever = LanguageRetriever()
-
-from conversation_retriever import ConversationRetriever
-conversation_retriever = ConversationRetriever()
-
 
 from http_routes import HttpRouteManager
 HttpRouteManager(api)

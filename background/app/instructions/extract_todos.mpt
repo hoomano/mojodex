@@ -50,7 +50,7 @@ Return those in the following json format:
             "todo_definition": "<Definition as it will be displayed in the user's todo list.
                 The definition should help the user remember what was the original task.
                 Mention any name, company,... that can help them get the context.>",
-            "mentioned_as_todo": <Did the user explicitly mentioned this as a todo? yes/no>,
+            "mentioned_as_todo": <Did the user explicitly mentioned this as a todo? yes/no (in english)>,
             "due_date": "<Date at which the todo will be displayed in user's todo list. Format yyyy-mm-dd>"
         }]
 }

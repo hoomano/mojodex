@@ -6,6 +6,7 @@ import requests
 from flask import request
 from flask_restful import Resource
 from app import db
+from mojodex_core.entities.user import User
 from mojodex_core.logging_handler import log_error
 from mojodex_core.entities.db_base_entities import *
 from sqlalchemy import func, text, extract, and_
@@ -159,14 +160,14 @@ class TodoDailyEmails(Resource):
             deleted_todos_today = [deleted_todo_today._asdict() for deleted_todo_today in deleted_todos_today]
 
             # Users whose timezone is not null and whose hour is between 8 and 9 am and who are not on weekends
-            base_user_query = db.session.query(MdUser) \
-                .filter(MdUser.timezone_offset != None) \
+            base_user_query = db.session.query(User) \
+                .filter(User.timezone_offset != None) \
                 .filter(extract("hour", text('NOW() - md_user.timezone_offset * interval \'1 minute\'')) >= int(os.environ.get('DAILY_TODO_EMAIL_TIME', 8))) \
                 .filter(extract("hour", text('NOW() - md_user.timezone_offset * interval \'1 minute\'')) < int(os.environ.get('DAILY_TODO_EMAIL_TIME', 8))+1) \
                 .filter(extract("dow", text('NOW() - md_user.timezone_offset * interval \'1 minute\'')) != int(0)) \
                 .filter(extract("dow", text('NOW() - md_user.timezone_offset * interval \'1 minute\'')) != int(6)) \
-                .filter(MdUser.todo_email_reception == True) \
-                .order_by(MdUser.user_id) \
+                .filter(User.todo_email_reception == True) \
+                .order_by(User.user_id) \
                 .offset(offset).limit(n_emails) \
                 .all()
 
@@ -189,7 +190,7 @@ class TodoDailyEmails(Resource):
                         "user_id": user.user_id,
                         "email": user.email,
                         "username": user.name,
-                        "user_timezone_offset": user.timezone_offset,
+                        "datetime_context": user.datetime_context,
                         "company_description": user.company_description,
                         "goal": user.goal,
                         "language": user.language_code,

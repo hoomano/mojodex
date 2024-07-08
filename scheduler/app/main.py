@@ -4,8 +4,6 @@ import requests
 import schedule
 import time
 from scheduled_tasks.check_disengaged_free_users import CheckDisengagedFreeTrialUsers
-from scheduled_tasks.send_daily_emails import SendDailyEmails
-from scheduled_tasks.send_daily_notifications import SendDailyNotifications
 from scheduled_tasks.extract_todos import ExtractTodos
 from scheduled_tasks.reschedule_todos import RescheduleTodos
 from scheduled_tasks.send_todo_daily_emails import SendTodoDailyEmails
@@ -67,9 +65,7 @@ ExtractTodos(600) # extract todos every 10 minutes
 RescheduleTodos(3600) # reschedule todos every 1 hour
 if _check_push_notifications_are_configured():
     CalendarSuggestionNotificationSender(600) # send calendar suggestion notifications every 10 minutes
-    SendDailyNotifications(3600) # send daily notifications every 1 hour (filtered by timezone)
 if _check_emails_are_configured():
-    #SendDailyEmails(3600) # send daily emails every 1 hour (filtered by timezone)
     SendTodoDailyEmails(3600) # send todo daily emails every 1 hour (filtered by timezone)
     CheckDisengagedFreeTrialUsers(86400)  # check disengaged free trial users every day
 FirstHomeChatOfWeek(3600)

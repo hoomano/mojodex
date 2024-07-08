@@ -24,8 +24,6 @@ from routes.goal import Goal
 from routes.purchase_end_stripe_webhook import PurchaseEndStripeWebHook
 from routes.check_expired_purchases import ExpiredPurchasesChecker
 from routes.device import Device
-from routes.daily_notifications import DailyNotifications
-from routes.daily_emails import DailyEmails
 from routes.event import Event
 from routes.text_type import TextType
 from routes.text_edit_action import TextEditAction
@@ -90,8 +88,6 @@ class HttpRouteManager:
         api.add_resource(PurchaseEndStripeWebHook, "/subscription_end")
         api.add_resource(ExpiredPurchasesChecker, "/check_expired_purchases")
         api.add_resource(Device, "/device")
-        api.add_resource(DailyNotifications, "/send_daily_notifications")
-        api.add_resource(DailyEmails, "/send_daily_emails")
         api.add_resource(Event, "/event")
         api.add_resource(TextType, "/text_type")
         api.add_resource(TextEditAction, "/text_edit_action")

@@ -1,88 +1,100 @@
 import os
 from datetime import datetime
-
 import requests
+from mojodex_core.db import with_db_session
+from mojodex_core.entities.todo import Todo
+from mojodex_core.entities.user import User
+from mojodex_core.entities.user_task import UserTask
+from mojodex_core.entities.user_task_execution import UserTaskExecution
 from mojodex_core.json_loader import json_decode_retry
-from background_logger import BackgroundLogger
+
 from mojodex_core.logging_handler import on_json_error
 
 
 from mojodex_core.email_sender.email_service import EmailService
+from mojodex_core.knowledge_manager import KnowledgeManager
 
 from mojodex_core.llm_engine.mpt import MPT
 
 
 class TodosRescheduler:
-    logger_prefix = "TodosRescheduler"
     todos_scheduling_url = "/todos_scheduling"
 
     todos_rescheduler_mpt_filename = "instructions/reschedule_todo.mpt"
 
-    def __init__(self, todo_pk, user_task_execution, knowledge_collector, todo_description, n_scheduled,
-                 first_scheduled_date, todo_list):
+    def __init__(self, todo_pk):
         self.todo_pk = todo_pk
-        self.user_task_execution = user_task_execution
-        self.knowledge_collector = knowledge_collector
-        self.todo_description = todo_description
-        self.n_scheduled = n_scheduled
-        self.first_scheduled_date = first_scheduled_date
-        self.todo_list = todo_list
-        self.logger = BackgroundLogger(
-            f"{TodosRescheduler.logger_prefix} - todo_pk {todo_pk}")
 
     def reschedule_and_save(self):
         try:
-            json_result = self.__reschedule()
-            # check reminder_date is a DateTime in format yyyy-mm-dd
+            collected_data = self._collect_data()
+            json_result = self._reschedule(*collected_data)
             try:
+                # check reminder_date is a DateTime in format yyyy-mm-dd
                 datetime.strptime(json_result['reschedule_date'], "%Y-%m-%d")
-                save_to_db = True
             except ValueError:
-                self.logger.error(
-                    f"Error extracting todos : Invalid reschedule_date {json_result['reschedule_date']} - Not saving to db")
-                EmailService().send_technical_error_email(f"Error in {self.logger_prefix} - reschedule_and_save: Invalid reschedule_date {json_result['reschedule_date']} - Not saving to db."
+                EmailService().send_technical_error_email(f"Error in {self.__class__.__name__} - reschedule_and_save: Invalid reschedule_date {json_result['reschedule_date']} - Not saving to db."
                                        f"This is not blocking, only this todo {self.todo_pk} will not be rescheduled.")
-                save_to_db = False
-            if save_to_db:
-                self.__save_to_db(
-                    json_result['argument'], json_result['reschedule_date'])
-
+                return
+            
+            self._save_to_db(json_result['argument'], json_result['reschedule_date'])
         except Exception as e:
-            raise Exception(f"{self.logger_prefix} : reschedule_and_save: {e}")
+            EmailService().send_technical_error_email(f"{self.__class__.__name__} : extract_and_save: {e}")
+        
+
+    @with_db_session
+    def _collect_data(self, db_session):
+        try:
+            todo: Todo
+            user_task_execution: UserTaskExecution
+            user: User
+            todo, user_task_execution, user = db_session.query(Todo, UserTaskExecution, User) \
+                .join(UserTaskExecution, UserTaskExecution.user_task_execution_pk == Todo.user_task_execution_fk) \
+                .join(UserTask, UserTask.user_task_pk == UserTaskExecution.user_task_fk) \
+                .join(User, User.user_id == UserTask.user_id) \
+                .filter(Todo.todo_pk == self.todo_pk) \
+                .first()
+            task_result = f"{user_task_execution.last_produced_text_version.title}\n{user_task_execution.last_produced_text_version.production}"
+            
+            return user.user_id, user_task_execution.user_task_execution_pk, user_task_execution.task.name_for_system, user.datetime_context, user.name, user.goal, user.company_description, user_task_execution.task.definition_for_system, task_result, todo.description, user.todo_list, todo.n_times_scheduled
+            
+        except Exception as e:
+            raise Exception(f"_collect_data :: {e}")
 
     @json_decode_retry(retries=3, required_keys=['reschedule_date', 'argument'], on_json_error=on_json_error)
-    def __reschedule(self):
-        self.logger.debug(f"_reschedule")
+    def _reschedule(self, user_id, user_task_execution_pk, task_name_for_system, user_datetime_context, username, user_business_goal,
+                    user_company_knowledge, task_definition_for_system, task_result, todo_definition, todo_list, n_scheduled):
         try:
             todos_rescheduler = MPT(TodosRescheduler.todos_rescheduler_mpt_filename,
-                                    mojo_knowledge=self.knowledge_collector.mojodex_knowledge,
-                                    user_datetime_context=self.knowledge_collector.localized_context,
-                                    username=self.knowledge_collector.user_name,
-                                    user_business_goal=self.knowledge_collector.user_business_goal,
-                                    user_company_knowledge=self.knowledge_collector.user_company_knowledge,
-                                    task_name=self.user_task_execution.task_name,
-                                    task_definition=self.user_task_execution.task_definition,
-                                    task_result=self.user_task_execution.task_result,
-                                    todo_definition=self.todo_description,
-                                    todo_list=self.todo_list,
-                                    n_scheduled=self.n_scheduled
+                                    mojo_knowledge=KnowledgeManager().mojodex_knowledge,
+                                    user_datetime_context=user_datetime_context,
+                                    username=username,
+                                    user_business_goal=user_business_goal,
+                                    user_company_knowledge=user_company_knowledge,
+                                    task_name=task_name_for_system,
+                                    task_definition=task_definition_for_system,
+                                    task_result=task_result,
+                                    todo_definition=todo_definition,
+                                    todo_list=todo_list,
+                                    n_scheduled=n_scheduled
                                     )
-            results = todos_rescheduler.run(user_id=self.user_task_execution.user_id,
-                                            temperature=0, max_tokens=500, json_format=True,
-                                            user_task_execution_pk=self.user_task_execution.user_task_execution_pk,
-                                            task_name_for_system=self.user_task_execution.task_name)
 
+            results = todos_rescheduler.run(user_id=user_id,
+                                            temperature=0, max_tokens=500, json_format=True,
+                                            user_task_execution_pk=user_task_execution_pk,
+                                            task_name_for_system=task_name_for_system)
+        
             result = results[0]
             return result
-
         except Exception as e:
-            raise Exception(f"_extract :: {e}")
+            raise Exception(f"_reschedule :: {e}")
 
-    def __save_to_db(self, argument, reschedule_date):
+    def _save_to_db(self, argument, reschedule_date):
+        """
+        Save new todo due-date in db by sending it to mojodex-backend through appropriated route because backend is the only responsible for writing in db
+        """
         try:
-            self.logger.debug(f"_save_to_db: {reschedule_date}")
             uri = f"{os.environ['MOJODEX_BACKEND_URI']}/{TodosRescheduler.todos_scheduling_url}"
-            # Save follow-ups in db => send to mojodex-backend
             pload = {'datetime': datetime.now().isoformat(), 'argument': argument, 'reschedule_date': reschedule_date,
                      'todo_fk': self.todo_pk}
             headers = {
@@ -92,4 +104,4 @@ class TodosRescheduler:
                 raise Exception(str(internal_request.json()))
             return
         except Exception as e:
-            raise Exception(f"__save_to_db: {e}")
+            raise Exception(f"_save_to_db: {e}")

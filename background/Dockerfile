@@ -21,6 +21,7 @@ RUN pip install -r requirements.txt
 # Install Mojodex core
 COPY ./mojodex_core /app/mojodex_core
 COPY ./models.conf /app/mojodex_core/llm_engine/providers
+COPY ./embedding_models.conf /app/mojodex_core/embedder
 
 WORKDIR /app/mojodex_core
 RUN pip install --no-cache-dir -r requirements.txt

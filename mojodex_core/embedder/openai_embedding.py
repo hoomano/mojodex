@@ -1,4 +1,4 @@
-from mojodex_core.llm_engine.embedding_provider import EmbeddingProvider
+from mojodex_core.embedder.embedding_provider import EmbeddingProvider
 
 from mojodex_core.costs_manager.tokens_costs_manager import TokensCostsManager
 
@@ -13,6 +13,7 @@ import os
 class OpenAIEmbedding(EmbeddingProvider):
     dataset_dir = "/data/prompts_dataset"
     default_embedding_model = "text-embedding-ada-002"
+    
     
     def __init__(self, embedding_conf):
         try:
@@ -34,6 +35,10 @@ class OpenAIEmbedding(EmbeddingProvider):
 
         except Exception as e:
             log_error(f"Error in OpenAIEmbedding __init__: {e}", notify_admin=False)
+
+    @property
+    def tokenizer(self):
+        return tiktoken.get_encoding("cl100k_base") # The encoding scheme to use for tokenization
 
     # calculate the number of tokens in a given string
     def _num_tokens_from_string(self, string):

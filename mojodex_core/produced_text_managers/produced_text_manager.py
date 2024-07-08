@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
 from mojodex_core.db import with_db_session
+from mojodex_core.embedder.embedding_service import EmbeddingService
 from mojodex_core.logging_handler import log_error
 from mojodex_core.entities.db_base_entities import MdProducedText, MdProducedTextVersion, MdTextType
-from mojodex_core.llm_engine.providers.model_loader import ModelLoader
 from mojodex_core.llm_engine.mpt import MPT
 from datetime import datetime
 
@@ -82,7 +82,7 @@ class ProducedTextManager(ABC):
     def embed_produced_text(title, production, user_id, user_task_execution_pk=None, task_name_for_system=None):
         try:
             text_to_embedded = f"{title}\n\n{production}"
-            embedded_text = ModelLoader().embedding_provider.embed(text_to_embedded, user_id,
+            embedded_text = EmbeddingService().embed(text_to_embedded, user_id,
                                                                    label="PRODUCED_TEXT_EMBEDDER",
                                                                    user_task_execution_pk=user_task_execution_pk,
                                                                    task_name_for_system=task_name_for_system)

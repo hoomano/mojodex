@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
 from mojodex_core.db import with_db_session
 from mojodex_core.documents.document_chunk_manager import DocumentChunkManager
+from mojodex_core.embedder.embedding_service import EmbeddingService
 from mojodex_core.entities.db_base_entities import MdDocument, MdDocumentChunk, MdUser, MdUserTask, MdUserTaskExecution
 from mojodex_core.llm_engine.providers.model_loader import ModelLoader
 
@@ -19,7 +20,7 @@ class DocumentManager:
 
     def embed(self, text, user_id, user_task_execution_pk=None, task_name_for_system=None):
         try:
-            embedding_response = ModelLoader().embedding_provider.embed(text, user_id, label="DOCUMENT_EMBEDDING", user_task_execution_pk=user_task_execution_pk,
+            embedding_response = EmbeddingService().embed(text, user_id, label="DOCUMENT_EMBEDDING", user_task_execution_pk=user_task_execution_pk,
                                                      task_name_for_system=task_name_for_system, )
             embedding = embedding_response
             return embedding

@@ -35,7 +35,7 @@ class MPT:
 
         try:
             from mojodex_core.llm_engine.providers.model_loader import ModelLoader
-            self.available_models, _ = ModelLoader().providers
+            self.available_models = ModelLoader().providers
         except Exception as e:
             self.logger.debug(
                 f"{self.filepath} > available_models loading: {e}")
@@ -61,7 +61,7 @@ class MPT:
 
         # TODO: move import to the top
         from mojodex_core.llm_engine.providers.model_loader import ModelLoader
-        self.available_models, _ = ModelLoader().providers
+        self.available_models = ModelLoader().providers
         self.models = [d['model_name'] for d in self.shebangs]
 
     @property

@@ -1,8 +1,6 @@
 import configparser
 
-from mojodex_core.llm_engine.embedding_provider import EmbeddingProvider
 from mojodex_core.llm_engine.llm import LLM
-from mojodex_core.llm_engine.providers.openai_embedding import OpenAIEmbedding
 from mojodex_core.llm_engine.providers.openai_llm import OpenAILLM
 from mojodex_core.llm_engine.providers.mistralai_llm import MistralAILLM
 from mojodex_core.llm_engine.providers.ollama_llm import OllamaLLM
@@ -32,7 +30,6 @@ class ModelLoader:
             self.providers = self._get_providers()
             self.main_llm: LLM = self.get_main_llm_provider()
             self.main_vision_llm: LLM = self.get_main_vision_llm_provider()
-            self.embedding_provider: EmbeddingProvider = self._get_embedding_provider()
             self.__class__._initialized = True
 
     def get_main_llm_provider(self):
@@ -42,10 +39,6 @@ class ModelLoader:
         """
         try:
             providers = self._get_llm_providers()
-
-            # keep only the providers with name different from OpenAIEmbedding.default_embedding_model
-            providers = [provider for provider in providers if provider.split(
-                '/')[1] != OpenAIEmbedding.default_embedding_model]
 
             provider = providers[0]
             _, _, llm, conf = self._build_provider(provider)
@@ -87,29 +80,14 @@ class ModelLoader:
                 f"🔴: ERROR: ModelLoader.get_main_vision_llm_provider() >> {e}")
             return None
 
-    def _get_embedding_provider(self):
-        """
-        Get the Embedding Provider.
-
-        Returns:
-            The Embedding Provider based on the configuration file `LLM.llm_conf_filename`.
-        """
-        _, embedding_providers = self._get_providers()
-
-        # find the embedding provider in the list of providers with model_name = 'embedding'
-        if len(embedding_providers) == 0:
-            raise Exception(
-                "No embedding provider found in the providers list")
-        return type(embedding_providers[0]['provider'])(embedding_providers[0]['config'])
 
     def _get_providers(self):
         """
-        Returns the list of available LLM & Embedding providers in the models.conf file
+        Returns the list of available LLM providers in the models.conf file
 
         """
         try:
             llm_providers_list = []
-            embedding_providers_list = []
             providers = self._get_llm_providers()
 
             for provider in providers:
@@ -121,12 +99,10 @@ class ModelLoader:
                     "provider": llm,
                     "config": conf
                 }
-                if model_name != OpenAIEmbedding.default_embedding_model:
-                    llm_providers_list.append(provider_conf)
-                else:
-                    embedding_providers_list.append(provider_conf)
+                llm_providers_list.append(provider_conf)
+              
 
-            return llm_providers_list, embedding_providers_list
+            return llm_providers_list
 
         except Exception as e:
             logging.error(
@@ -156,9 +132,7 @@ class ModelLoader:
                     "api_type": provider_name,
                     "model_name": model_name
                 }
-                if model_name == OpenAIEmbedding.default_embedding_model:
-                    provider = OpenAIEmbedding(conf)
-                elif model_name in OpenAIVisionLLM.available_vision_models:
+                if model_name in OpenAIVisionLLM.available_vision_models:
                     provider = OpenAIVisionLLM(conf)
                 else:
                     provider = OpenAILLM(conf)
@@ -224,18 +198,6 @@ class ModelLoader:
                         "model_name": model_name
                     }
                     provider = MistralAILLM(conf)
-
-                # TODO: migrate to new embedding v3
-                elif model_name == OpenAIEmbedding.default_embedding_model:
-                    conf = {
-                        "api_key": provider_conf["ada_embedding_azure_openai_key"],
-                        "api_base": provider_conf["ada_embedding_azure_openai_api_base"],
-                        "api_type": provider_name,
-                        "api_version": provider_conf["ada_embedding_azure_openai_api_version"],
-                        "deployment_id": provider_conf["ada_embedding_azure_openai_deployment_id"] if not provider_conf["ada_embedding_azure_openai_deployment_id"] is None else OpenAIEmbedding.default_embedding_model,
-                        "model_name": model_name
-                    }
-                    provider = OpenAIEmbedding(conf)
 
             elif provider_name == "mistral":
                 conf = {

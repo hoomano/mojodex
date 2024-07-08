@@ -1,3 +1,4 @@
+import json
 from mojodex_core.entities.db_base_entities import MdPredefinedActionDisplayedData, MdTask, MdTaskDisplayedData, MdTaskPredefinedActionAssociation
 from sqlalchemy.orm import object_session
 from sqlalchemy import case, func, or_
@@ -35,7 +36,7 @@ class Task(MdTask):
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} :: get_json_input_in_language :: {e}")
         
-    def get_predifined_actions_in_language(self, language_code):
+    def get_predefined_actions_in_language(self, language_code):
         try:
             session = object_session(self)
             # get predefined actions translated in english
@@ -60,6 +61,9 @@ class Task(MdTask):
                     MdTaskPredefinedActionAssociation.task_fk == self.task_pk
                 )
             ).all()
-            return predefined_actions_data
+            # predefined_actions_data = (2, {'name': 'Send poem in email', 'button_text': 'Send as email', 'message_prefix': 'Prepare a nice email to send this poem to a friend'})
+            # return {"task_pk": 2, 'name': 'Send poem in email', 'button_text': 'Send as email', 'message_prefix': 'Prepare a nice email to send this poem to a friend'}
+            return [{"task_pk": task_fk, **displayed_data} for task_fk, displayed_data in predefined_actions_data]
+            
         except Exception as e:
             raise Exception(f"{self.__class__.__name__}:: get_predifined_actions_in_language :: {e}") 

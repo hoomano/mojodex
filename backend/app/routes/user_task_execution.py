@@ -313,61 +313,7 @@ class UserTaskExecution(Resource):
                         .scalar()
                         )
 
-            def get_predefined_actions(task_pk):
-
-                # Subquery to retrieve the predefined actions in the user_language_code
-                predefined_actions_data_user_lang = (
-                    db.session
-                    .query(
-                        MdPredefinedActionDisplayedData.task_predefined_action_association_fk.label(
-                            "task_predefined_action_association_fk"),
-                        MdPredefinedActionDisplayedData.displayed_data.label("displayed_data_user_lang"),
-                    )
-                    .join(
-                        MdUser,
-                        MdUser.user_id == user_id
-                    )
-                    .filter(MdPredefinedActionDisplayedData.language_code == MdUser.language_code)
-                ).subquery()
-
-                # Subquery to retrieve the predefined actions in 'en
-                predefined_actions_data_en = (
-                    db.session
-                    .query(
-                        MdPredefinedActionDisplayedData.task_predefined_action_association_fk.label(
-                            "task_predefined_action_association_fk"),
-                        MdPredefinedActionDisplayedData.displayed_data.label("displayed_data_en"),
-                    )
-                    .filter(MdPredefinedActionDisplayedData.language_code == 'en')
-                ).subquery()
-
-                result = db.session.query(
-                    func.json_build_object(
-                        "task_pk",
-                        MdTaskPredefinedActionAssociation.predefined_action_fk,
-                        "displayed_data",
-                        coalesce(
-                            predefined_actions_data_user_lang.c.displayed_data_user_lang,
-                            predefined_actions_data_en.c.displayed_data_en
-                        )
-                    )) \
-                    .filter(MdTaskPredefinedActionAssociation.task_fk == task_pk) \
-                    .outerjoin(
-                    predefined_actions_data_user_lang,
-                    predefined_actions_data_user_lang.c.task_predefined_action_association_fk == MdTaskPredefinedActionAssociation.task_predefined_action_association_pk
-                ) \
-                    .outerjoin(
-                    predefined_actions_data_en,
-                    predefined_actions_data_en.c.task_predefined_action_association_fk == MdTaskPredefinedActionAssociation.task_predefined_action_association_pk
-                ).all()
-
-                result = [predefined_action[0] for predefined_action in
-                          result]  # {task_pk: 12, displayed_data: {name: followup_email, button_text: Send follow-up email, message_prefix: Prepare follow-up email for this lead to engage them.}}
-                # remove displayed_data depth
-                result = [predefined_action["displayed_data"].update({"task_pk": predefined_action["task_pk"]}) or
-                          predefined_action["displayed_data"] for predefined_action in result]
-                return result
-
+          
             if "user_task_execution_pk" in request.args:
                 user_task_execution_pk = int(request.args["user_task_execution_pk"])
                 produced_text_subquery = db.session.query(MdProducedText.produced_text_pk,
@@ -392,7 +338,7 @@ class UserTaskExecution(Resource):
                 ).group_by(produced_text_subquery.c.user_task_execution_fk).subquery()
 
                 result =( db.session.query(
-                        MdUserTaskExecution,
+                        DBUserTaskExecution,
                         MdTask,
                         MdTaskDisplayedData,
                         produced_text_subquery.c.produced_text_pk.label("produced_text_pk"),
@@ -402,17 +348,17 @@ class UserTaskExecution(Resource):
                         produced_text_subquery.c.row_number.label("produced_text_version_index"),
                         MdUser.timezone_offset,
                         MdUser.language_code
-                    ).join(MdUserTask, MdUserTask.user_task_pk == MdUserTaskExecution.user_task_fk)
+                    ).join(MdUserTask, MdUserTask.user_task_pk == DBUserTaskExecution.user_task_fk)
                     .join(MdUser, MdUser.user_id == MdUserTask.user_id)
                     .join(MdTask, MdTask.task_pk == MdUserTask.task_fk)
                     .join(MdTaskDisplayedData, MdTaskDisplayedData.task_fk == MdTask.task_pk)
                     .outerjoin(highest_row_number_subquery,
-                        highest_row_number_subquery.c.user_task_execution_fk == MdUserTaskExecution.user_task_execution_pk)
+                        highest_row_number_subquery.c.user_task_execution_fk == DBUserTaskExecution.user_task_execution_pk)
                     .outerjoin(produced_text_subquery,
                             and_(
-                                produced_text_subquery.c.user_task_execution_fk == MdUserTaskExecution.user_task_execution_pk,
+                                produced_text_subquery.c.user_task_execution_fk == DBUserTaskExecution.user_task_execution_pk,
                                 produced_text_subquery.c.row_number == highest_row_number_subquery.c.max_row_number))
-                    .filter(MdUserTaskExecution.user_task_execution_pk == user_task_execution_pk)
+                    .filter(DBUserTaskExecution.user_task_execution_pk == user_task_execution_pk)
                     .filter(MdUser.user_id == user_id)
                     .filter(
                         or_(
@@ -424,7 +370,7 @@ class UserTaskExecution(Resource):
                         # Sort by user's language first otherwise by english
                         func.nullif(MdTaskDisplayedData.language_code, 'en').asc()
                     )
-                    .group_by(MdUserTaskExecution.user_task_execution_pk, MdTask.task_pk,
+                    .group_by(DBUserTaskExecution.user_task_execution_pk, MdTask.task_pk,
                               MdTaskDisplayedData.task_displayed_data_pk,
                               produced_text_subquery.c.produced_text_pk, produced_text_subquery.c.produced_text_title,
                               produced_text_subquery.c.produced_text_production,
@@ -435,41 +381,41 @@ class UserTaskExecution(Resource):
                               )
                     .first())._asdict()
                 if result["MdTask"].type == "workflow":
-                    workflow_execution = db.session.query(UserWorkflowExecution).get(result["MdUserTaskExecution"].user_task_execution_pk)
+                    workflow_execution = db.session.query(UserWorkflowExecution).get(result["UserTaskExecution"].user_task_execution_pk)
                 else:
                     workflow_execution = None
 
                 return {
-                    "user_task_execution_pk": result["MdUserTaskExecution"].user_task_execution_pk,
-                    "start_date": time_manager.backend_date_to_user_date(result["MdUserTaskExecution"].start_date,
+                    "user_task_execution_pk": result["UserTaskExecution"].user_task_execution_pk,
+                    "start_date": time_manager.backend_date_to_user_date(result["UserTaskExecution"].start_date,
                                                                          result["timezone_offset"]).isoformat() if
-                    result["MdUserTaskExecution"].start_date and result["timezone_offset"] else None,
-                    "end_date": time_manager.backend_date_to_user_date(result["MdUserTaskExecution"].end_date,
+                    result["UserTaskExecution"].start_date and result["timezone_offset"] else None,
+                    "end_date": time_manager.backend_date_to_user_date(result["UserTaskExecution"].end_date,
                                                                        result["timezone_offset"]).isoformat() if result[
-                                                                                                                     "MdUserTaskExecution"].end_date and
+                                                                                                                     "UserTaskExecution"].end_date and
                                                                                                                  result[
                                                                                                                      "timezone_offset"] else None,
-                    "deleted_by_user": result["MdUserTaskExecution"].deleted_by_user is not None,
-                    "title": result["MdUserTaskExecution"].title,
-                    "summary": result["MdUserTaskExecution"].summary,
-                    "session_id": result["MdUserTaskExecution"].session_id,
-                    "json_inputs_values": None if all(input.get('value') is None for input in result["MdUserTaskExecution"].json_input_values) else result["MdUserTaskExecution"].json_input_values,
+                    "deleted_by_user": result["UserTaskExecution"].deleted_by_user is not None,
+                    "title": result["UserTaskExecution"].title,
+                    "summary": result["UserTaskExecution"].summary,
+                    "session_id": result["UserTaskExecution"].session_id,
+                    "json_inputs_values": None if all(input.get('value') is None for input in result["UserTaskExecution"].json_input_values) else result["UserTaskExecution"].json_input_values,
                     "icon": result["MdTask"].icon,
                     "task_name": result["MdTaskDisplayedData"].name_for_user,
                     "task_type": result["MdTask"].type,
                     "result_chat_enabled": result["MdTask"].result_chat_enabled,
-                    "actions": get_predefined_actions(result["MdTask"].task_pk),
-                    "user_task_pk": result["MdUserTaskExecution"].user_task_fk,
-                    "n_todos": get_n_todos(result["MdUserTaskExecution"].user_task_execution_pk),
-                    "n_not_read_todos": get_n_todos_not_read(result["MdUserTaskExecution"].user_task_execution_pk),
+                    "actions": result['UserTaskExecution'].predefined_actions,
+                    "user_task_pk": result["UserTaskExecution"].user_task_fk,
+                    "n_todos": get_n_todos(result["UserTaskExecution"].user_task_execution_pk),
+                    "n_not_read_todos": get_n_todos_not_read(result["UserTaskExecution"].user_task_execution_pk),
                     "produced_text_pk": result["produced_text_pk"],
                     "produced_text_title": result["produced_text_title"],
                     "produced_text_production": result["produced_text_production"],
                     "produced_text_version_pk": result["produced_text_version_pk"],
                     "produced_text_version_index": result["produced_text_version_index"],
                     "text_edit_actions": recover_text_edit_actions(
-                        result["MdUserTaskExecution"].user_task_fk),
-                    "working_on_todos": result["MdUserTaskExecution"].todos_extracted is None,
+                        result["UserTaskExecution"].user_task_fk),
+                    "working_on_todos": result["UserTaskExecution"].todos_extracted is None,
                     "step_executions": workflow_execution.get_steps_execution_json() if result["MdTask"].type == "workflow" else None,
                     "steps": workflow_execution.task.get_json_steps_with_translation(result["language_code"]) if result["MdTask"].type == "workflow" else None
                 }, 200
@@ -523,7 +469,7 @@ class UserTaskExecution(Resource):
           
             result = (
                 db.session.query(
-                    MdUserTaskExecution,
+                    DBUserTaskExecution,
                     MdTask,
                     coalesce(
                         user_lang_subquery.c.user_lang_name_for_user, 
@@ -537,21 +483,21 @@ class UserTaskExecution(Resource):
                     MdUser.timezone_offset,
                     MdUser.language_code
                 )
-                .distinct(MdUserTaskExecution.user_task_execution_pk)
-                .join(MdUserTask, MdUserTask.user_task_pk == MdUserTaskExecution.user_task_fk)
+                .distinct(DBUserTaskExecution.user_task_execution_pk)
+                .join(MdUserTask, MdUserTask.user_task_pk == DBUserTaskExecution.user_task_fk)
                 .join(MdUser, MdUser.user_id == MdUserTask.user_id)
                 .join(MdTask, MdTask.task_pk == MdUserTask.task_fk)
                 .outerjoin(user_lang_subquery, MdTask.task_pk == user_lang_subquery.c.task_fk)
                 .outerjoin(en_subquery, MdTask.task_pk == en_subquery.c.task_fk)
                  .outerjoin(highest_row_number_subquery,
-                        highest_row_number_subquery.c.user_task_execution_fk == MdUserTaskExecution.user_task_execution_pk)
+                        highest_row_number_subquery.c.user_task_execution_fk == DBUserTaskExecution.user_task_execution_pk)
                     .outerjoin(produced_text_subquery,
                             and_(
-                                produced_text_subquery.c.user_task_execution_fk == MdUserTaskExecution.user_task_execution_pk,
+                                produced_text_subquery.c.user_task_execution_fk == DBUserTaskExecution.user_task_execution_pk,
                                 produced_text_subquery.c.row_number == highest_row_number_subquery.c.max_row_number))
                 .filter(MdUserTask.user_id == user_id)
-                .filter(MdUserTaskExecution.start_date.isnot(None))
-                .filter(MdUserTaskExecution.deleted_by_user.is_(None)))
+                .filter(DBUserTaskExecution.start_date.isnot(None))
+                .filter(DBUserTaskExecution.deleted_by_user.is_(None)))
 
             if "search_filter" in request.args:
                 search_filter = request.args["search_filter"]
@@ -566,7 +512,7 @@ class UserTaskExecution(Resource):
                     search_user_tasks_filter_list = search_user_tasks_filter.split(";")
                     result = result.filter(MdUserTask.user_task_pk.in_(search_user_tasks_filter_list))
 
-            result = (result.group_by(MdUserTaskExecution.user_task_execution_pk, MdTask.task_pk,
+            result = (result.group_by(DBUserTaskExecution.user_task_execution_pk, MdTask.task_pk,
                                       user_lang_subquery.c.user_lang_name_for_user,
                                       en_subquery.c.en_name_for_user,
                                       produced_text_subquery.c.produced_text_pk,
@@ -577,7 +523,7 @@ class UserTaskExecution(Resource):
                                       MdUser.timezone_offset,
                                       MdUser.language_code
                                       )
-                      .order_by(MdUserTaskExecution.user_task_execution_pk.desc())
+                      .order_by(DBUserTaskExecution.user_task_execution_pk.desc())
                       .limit(n_user_task_executions)
                       .offset(offset)
                       .all())
@@ -585,43 +531,45 @@ class UserTaskExecution(Resource):
             result = [row._asdict() for row in result]
 
             def get_workflow_specific_data(row):
-                workflow_execution = db.session.query(UserWorkflowExecution).get(row["MdUserTaskExecution"].user_task_execution_pk)
+                workflow_execution = db.session.query(UserWorkflowExecution).get(row["UserTaskExecution"].user_task_execution_pk)
                 return {
                     "steps": workflow_execution.task.get_json_steps_with_translation(row["language_code"]),
                     "step_executions": workflow_execution.get_steps_execution_json()
                 }
+            
+          
 
             results_list = [{
-                "user_task_execution_pk": row["MdUserTaskExecution"].user_task_execution_pk,
-                "start_date": time_manager.backend_date_to_user_date(row["MdUserTaskExecution"].start_date,
+                "user_task_execution_pk": row["UserTaskExecution"].user_task_execution_pk,
+                "start_date": time_manager.backend_date_to_user_date(row["UserTaskExecution"].start_date,
                                                                      row["timezone_offset"]).isoformat() if row[
-                                                                                                                "MdUserTaskExecution"].start_date and
+                                                                                                                "UserTaskExecution"].start_date and
                                                                                                             row[
                                                                                                                 "timezone_offset"] else None,
-                "end_date": time_manager.backend_date_to_user_date(row["MdUserTaskExecution"].end_date,
+                "end_date": time_manager.backend_date_to_user_date(row["UserTaskExecution"].end_date,
                                                                    row["timezone_offset"]).isoformat() if row[
-                                                                                                              "MdUserTaskExecution"].end_date and
+                                                                                                              "UserTaskExecution"].end_date and
                                                                                                           row[
                                                                                                               "timezone_offset"] else None,
-                "title": row["MdUserTaskExecution"].title,
-                "summary": row["MdUserTaskExecution"].summary,
-                "session_id": row["MdUserTaskExecution"].session_id,
-               "json_inputs_values": None if all(input.get('value') is None for input in row["MdUserTaskExecution"].json_input_values) else row["MdUserTaskExecution"].json_input_values,
+                "title": row["UserTaskExecution"].title,
+                "summary": row["UserTaskExecution"].summary,
+                "session_id": row["UserTaskExecution"].session_id,
+               "json_inputs_values": None if all(input.get('value') is None for input in row["UserTaskExecution"].json_input_values) else row["UserTaskExecution"].json_input_values,
                 "icon": row["MdTask"].icon,
                 "task_name": row["name_for_user"],
                 "task_type": row["MdTask"].type,
                 "result_chat_enabled": row["MdTask"].result_chat_enabled,
-                "actions": get_predefined_actions(row["MdTask"].task_pk),
-                "user_task_pk": row["MdUserTaskExecution"].user_task_fk,
-                "n_todos": get_n_todos(row["MdUserTaskExecution"].user_task_execution_pk),
-                "n_not_read_todos": get_n_todos_not_read(row["MdUserTaskExecution"].user_task_execution_pk),
+                "actions": row['UserTaskExecution'].predefined_actions,
+                "user_task_pk": row["UserTaskExecution"].user_task_fk,
+                "n_todos": get_n_todos(row["UserTaskExecution"].user_task_execution_pk),
+                "n_not_read_todos": get_n_todos_not_read(row["UserTaskExecution"].user_task_execution_pk),
                 "produced_text_pk": row["produced_text_pk"],
                 "produced_text_title": row["produced_text_title"],
                 "produced_text_production": row["produced_text_production"],
                 "produced_text_version_pk": row["produced_text_version_pk"],
                 "produced_text_version_index": row["produced_text_version_index"],
-                "text_edit_actions": recover_text_edit_actions(row["MdUserTaskExecution"].user_task_fk),
-                "working_on_todos": row["MdUserTaskExecution"].todos_extracted is None,
+                "text_edit_actions": recover_text_edit_actions(row["UserTaskExecution"].user_task_fk),
+                "working_on_todos": row["UserTaskExecution"].todos_extracted is None,
                 **(get_workflow_specific_data(row) if row["MdTask"].type == "workflow" else {})
             } for row in result]
 

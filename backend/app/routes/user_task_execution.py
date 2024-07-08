@@ -2,7 +2,7 @@ import os
 from typing import Tuple
 from flask import request
 from flask_restful import Resource
-from app import db, authenticate, time_manager
+from app import db, authenticate
 from mojodex_core.entities.user import User
 from mojodex_core.entities.user_task import UserTask
 from mojodex_core.entities.user_workflow_execution import UserWorkflowExecution
@@ -325,12 +325,8 @@ class UserTaskExecution(Resource):
 
                 return {
                     "user_task_execution_pk": user_task_execution.user_task_execution_pk,
-                    "start_date": time_manager.backend_date_to_user_date(user_task_execution.start_date,
-                                                                         user_task_execution.user.timezone_offset).isoformat() if
-                    user_task_execution.start_date and user_task_execution.user.timezone_offset else None,
-                    "end_date": time_manager.backend_date_to_user_date(user_task_execution.end_date,
-                                                                       user_task_execution.user.timezone_offset).isoformat() if user_task_execution.end_date and
-                                                                                                                 user_task_execution.user.timezone_offset else None,
+                    "start_date": user_task_execution.start_date_user_timezone.isoformat() if user_task_execution.start_date_user_timezone else None,
+                    "end_date": user_task_execution.end_date_user_timezone.isoformat() if user_task_execution.end_date_user_timezone else None,
                     "deleted_by_user": user_task_execution.deleted_by_user is not None,
                     "title": user_task_execution.title,
                     "summary": user_task_execution.summary,
@@ -404,12 +400,8 @@ class UserTaskExecution(Resource):
 
             results_list = [{
                 "user_task_execution_pk": user_task_execution.user_task_execution_pk,
-                "start_date": time_manager.backend_date_to_user_date(user_task_execution.start_date,
-                                                                        user_task_execution.user.timezone_offset).isoformat() if user_task_execution.start_date and
-                                                                                                                user_task_execution.user.timezone_offset else None,
-                "end_date": time_manager.backend_date_to_user_date(user_task_execution.end_date,
-                                                                     user_task_execution.user.timezone_offset).isoformat() if user_task_execution.end_date and
-                                                                                                              user_task_execution.user.timezone_offset else None,
+                "start_date": user_task_execution.start_date_user_timezone.isoformat() if user_task_execution.start_date_user_timezone else None,
+                "end_date": user_task_execution.end_date_user_timezone.isoformat() if user_task_execution.end_date_user_timezone else None,
                 "title": user_task_execution.title,
                 "summary": user_task_execution.summary,
                 "session_id": user_task_execution.session_id,

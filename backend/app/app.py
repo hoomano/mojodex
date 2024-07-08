@@ -55,10 +55,6 @@ from translator import Translator
 
 translator = Translator()
 
-from time_manager import TimeManager
-
-time_manager = TimeManager()
-
 from timing_logger import TimingLogger
 
 timing_logger = TimingLogger("/data/timing_logs.log")

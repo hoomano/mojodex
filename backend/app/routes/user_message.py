@@ -1,13 +1,14 @@
 from flask import request
 from flask_restful import Resource
-from app import db, authenticate, server_socket, time_manager
+from app import db, authenticate, server_socket
 from mojodex_core.entities.message import Message
 from mojodex_core.logging_handler import log_error
 from mojodex_core.entities.db_base_entities import *
 from models.assistant.session_controller import SessionController
 from mojodex_core.stt.stt import STTService
-from packaging import version
 from datetime import datetime
+
+from mojodex_core.time_manager import TimeManager
 
 class UserMessage(Resource):
     general_backend_error_message = "Oops, something weird has happened. We'll help you by email!"
@@ -108,7 +109,7 @@ class UserMessage(Resource):
                 db_user_task_execution.start_date = datetime.now()
                 db.session.commit()
                 try:
-                    iso_start_date = time_manager.backend_date_to_user_date(db_user_task_execution.start_date,
+                    iso_start_date = TimeManager().backend_date_to_user_date(db_user_task_execution.start_date,
                                                                             timezone_offset if timezone_offset else 0).isoformat()
                     server_socket.emit("user_task_execution_start", {"start_date": iso_start_date,
                                                                      "user_task_execution_pk": db_user_task_execution.user_task_execution_pk,
@@ -141,7 +142,7 @@ class UserMessage(Resource):
 
         try:
             user = db.session.query(MdUser).filter(MdUser.user_id == user_id).first()
-            message_date = time_manager.device_date_to_backend_date(message_date,
+            message_date = TimeManager().device_date_to_backend_date(message_date,
                                                                     user.timezone_offset if user.timezone_offset else 0)
 
             db_session = db.session.query(MdSession).filter(MdSession.session_id == session_id).first()

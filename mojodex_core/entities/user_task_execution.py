@@ -5,6 +5,8 @@ from sqlalchemy.orm import object_session
 from mojodex_core.entities.session import Session
 from datetime import datetime, timezone
 
+from mojodex_core.time_manager import TimeManager
+
 class UserTaskExecution(MdUserTaskExecution):
     """UserTaskExecution entity class that contains all the common properties and methods of an InstructUserTaskExecution or UserWorkflowExecution.
     """
@@ -131,8 +133,7 @@ class UserTaskExecution(MdUserTaskExecution):
             return previous_related_user_task_execution
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} :: previous_related_user_task_execution :: {e}")
-        
-         
+            
     @property
     def n_todos(self):
         """
@@ -162,4 +163,30 @@ class UserTaskExecution(MdUserTaskExecution):
             raise Exception(f"{self.__class__.__name__} :: n_todos_not_read :: {e}")
         
 
-    
+    @property
+    def start_date_user_timezone(self):
+        """
+        Returns the start date of the UserTaskExecution in the user timezone.
+        """
+        try:
+            if not self.start_date:
+                  return None
+            if self.user.timezone_offset is None:
+                return self.start_date
+            return TimeManager().backend_date_to_user_date(self.start_date, self.user.timezone_offset)
+        except Exception as e:
+            raise Exception(f"{self.__class__.__name__} :: start_date_user_timezone :: {e}")
+        
+    @property
+    def end_date_user_timezone(self):
+        """
+        Returns the end date of the UserTaskExecution in the user timezone.
+        """
+        try:
+            if not self.end_date:
+                return None
+            if self.user.timezone_offset is None:
+                return self.end_date
+            return TimeManager().backend_date_to_user_date(self.end_date, self.user.timezone_offset)
+        except Exception as e:
+            raise Exception(f"{self.__class__.__name__} :: end_date_user_timezone :: {e}")

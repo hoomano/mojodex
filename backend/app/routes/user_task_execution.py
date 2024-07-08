@@ -3,18 +3,15 @@ from typing import Tuple
 from flask import request
 from flask_restful import Resource
 from app import db, authenticate
-from mojodex_core.entities.user import User
 from mojodex_core.entities.user_task import UserTask
 from mojodex_core.entities.user_workflow_execution import UserWorkflowExecution
 from mojodex_core.logging_handler import log_error
-from mojodex_core.entities.db_base_entities import *
+from mojodex_core.entities.db_base_entities import MdProducedText, MdUserTask, MdUserTaskExecution, MdProducedTextVersion
 from mojodex_core.entities.user_task_execution import UserTaskExecution as DBUserTaskExecution
 from models.session_creator import SessionCreator
-from sqlalchemy import func, and_, or_, text
-from sqlalchemy.sql.functions import coalesce
-
+from sqlalchemy import func, and_, or_
 from models.purchase_manager import PurchaseManager
-from datetime import datetime, timezone
+from datetime import datetime
 
 class UserTaskExecution(Resource):
 
@@ -76,78 +73,11 @@ class UserTaskExecution(Resource):
 
             db.session.commit()
 
-            def recover_text_edit_actions(user_task_pk):
-                try:
-                    # Subquery for user_language_code
-                    user_lang_subquery = (
-                        db.session.query(
-                            MdTextEditActionDisplayedData.text_edit_action_fk.label("text_edit_action_fk"),
-                            MdTextEditActionDisplayedData.name.label("user_lang_name"),
-                            MdTextEditActionDisplayedData.description.label("user_lang_description"),
-                        )
-                        .join(MdUser, MdUser.user_id == user_id)
-                        .filter(MdTextEditActionDisplayedData.language_code == MdUser.language_code)
-                        .subquery()
-                    )
 
-                    # Subquery for 'en'
-                    en_subquery = (
-                        db.session.query(
-                            MdTextEditActionDisplayedData.text_edit_action_fk.label("text_edit_action_fk"),
-                            MdTextEditActionDisplayedData.name.label("en_name"),
-                            MdTextEditActionDisplayedData.description.label("en_description"),
-                        )
-                        .filter(MdTextEditActionDisplayedData.language_code == "en")
-                        .subquery()
-                    )
-
-                    # Main query
-                    text_edit_actions = (
-                        db.session.query(
-                            MdTextEditAction.text_edit_action_pk,
-                            coalesce(user_lang_subquery.c.user_lang_name, en_subquery.c.en_name).label(
-                                "name"
-                            ),
-                            coalesce(user_lang_subquery.c.user_lang_description, en_subquery.c.en_description).label(
-                                "description"
-                            ),
-                            MdTextEditAction.emoji,
-                        )
-                        .outerjoin(user_lang_subquery, MdTextEditAction.text_edit_action_pk == user_lang_subquery.c.text_edit_action_fk)
-                        .outerjoin(en_subquery, MdTextEditAction.text_edit_action_pk == en_subquery.c.text_edit_action_fk)
-                        .join(
-                            MdTextEditActionTextTypeAssociation,
-                            MdTextEditActionTextTypeAssociation.text_edit_action_fk == MdTextEditAction.text_edit_action_pk,
-                        )
-                        .join(
-                            MdTextType,
-                            MdTextType.text_type_pk == MdTextEditActionTextTypeAssociation.text_type_fk,
-                        )
-                        .join(
-                            MdTask,
-                            MdTask.output_text_type_fk == MdTextType.text_type_pk,
-                        )
-                        .join(
-                            MdUserTask,
-                            MdUserTask.task_fk == MdTask.task_pk,
-                        )
-                        .filter(
-                            MdUserTask.user_task_pk == user_task_pk,
-                        )
-                    ).all()
-
-                    actions = [text_edit_action._asdict() for text_edit_action in text_edit_actions]
-
-                    return actions
-
-                except Exception as e:
-                    raise Exception(f"recover_text_edit_actions: {e}")
-
-            
             return {**{"user_task_execution_pk": task_execution.user_task_execution_pk,
                      "json_input": json_input,
                      "actions": task_execution.user_task.predefined_actions,
-                     "text_edit_actions" : recover_text_edit_actions(user_task_pk=user_task_pk)
+                     "text_edit_actions" : task_execution.user_task.text_edit_actions,
                      }, **session_creation[0]}, 200 # append session_creation to returned dict
         except Exception as e:
             db.session.rollback()
@@ -213,73 +143,6 @@ class UserTaskExecution(Resource):
 
         try:
 
-            def recover_text_edit_actions(user_task_pk):
-                try:
-                    # Subquery for user_language_code
-                    user_lang_subquery = (
-                        db.session.query(
-                            MdTextEditActionDisplayedData.text_edit_action_fk.label("text_edit_action_fk"),
-                            MdTextEditActionDisplayedData.name.label("user_lang_name"),
-                            MdTextEditActionDisplayedData.description.label("user_lang_description"),
-                        )
-                        .join(MdUser, MdUser.user_id == user_id)
-                        .filter(MdTextEditActionDisplayedData.language_code == MdUser.language_code)
-                        .subquery()
-                    )
-
-                    # Subquery for 'en'
-                    en_subquery = (
-                        db.session.query(
-                            MdTextEditActionDisplayedData.text_edit_action_fk.label("text_edit_action_fk"),
-                            MdTextEditActionDisplayedData.name.label("en_name"),
-                            MdTextEditActionDisplayedData.description.label("en_description"),
-                        )
-                        .filter(MdTextEditActionDisplayedData.language_code == "en")
-                        .subquery()
-                    )
-
-                    # Main query
-                    text_edit_actions = (
-                        db.session.query(
-                            MdTextEditAction.text_edit_action_pk,
-                            coalesce(user_lang_subquery.c.user_lang_name, en_subquery.c.en_name).label(
-                                "name"
-                            ),
-                            coalesce(user_lang_subquery.c.user_lang_description, en_subquery.c.en_description).label(
-                                "description"
-                            ),
-                            MdTextEditAction.emoji,
-                        )
-                        .outerjoin(user_lang_subquery, MdTextEditAction.text_edit_action_pk == user_lang_subquery.c.text_edit_action_fk)
-                        .outerjoin(en_subquery, MdTextEditAction.text_edit_action_pk == en_subquery.c.text_edit_action_fk)
-                        .join(
-                            MdTextEditActionTextTypeAssociation,
-                            MdTextEditActionTextTypeAssociation.text_edit_action_fk == MdTextEditAction.text_edit_action_pk,
-                        )
-                        .join(
-                            MdTextType,
-                            MdTextType.text_type_pk == MdTextEditActionTextTypeAssociation.text_type_fk,
-                        )
-                        .join(
-                            MdTask,
-                            MdTask.output_text_type_fk == MdTextType.text_type_pk,
-                        )
-                        .join(
-                            MdUserTask,
-                            MdUserTask.task_fk == MdTask.task_pk,
-                        )
-                        .filter(
-                            MdUserTask.user_task_pk == user_task_pk,
-                        )
-                    ).all()
-
-                    actions = [text_edit_action._asdict() for text_edit_action in text_edit_actions]
-
-                    return actions
-
-                except Exception as e:
-                    raise Exception(f"recover_text_edit_actions: {e}")
-
             # Subquery to get the last produced text versions
             produced_text_subquery = db.session.query(MdProducedText.produced_text_pk,
                                                         MdProducedText.user_task_execution_fk.label(
@@ -314,7 +177,8 @@ class UserTaskExecution(Resource):
                                 produced_text_subquery.c.user_task_execution_fk == DBUserTaskExecution.user_task_execution_pk,
                                 produced_text_subquery.c.row_number == highest_row_number_subquery.c.max_row_number))
                     .filter(DBUserTaskExecution.user_task_execution_pk == user_task_execution_pk)
-                    .filter(MdUser.user_id == user_id)
+                    .join(MdUserTask, MdUserTask.user_task_pk == DBUserTaskExecution.user_task_fk)
+                    .filter(MdUserTask.user_id == user_id)
                     .group_by(DBUserTaskExecution.user_task_execution_pk)
                     .first())
                 
@@ -446,8 +310,7 @@ class UserTaskExecution(Resource):
             user_task_execution = db.session.query(MdUserTaskExecution) \
                 .filter(MdUserTaskExecution.user_task_execution_pk == user_task_execution_pk) \
                 .join(MdUserTask, MdUserTaskExecution.user_task_fk == MdUserTask.user_task_pk) \
-                .join(MdUser, MdUserTask.user_id == MdUser.user_id) \
-                .filter(MdUser.user_id == user_id) \
+                .filter(MdUserTask.user_id == user_id) \
                 .first()
             if user_task_execution is None:
                 return {"error": "User task execution not found"}, 404

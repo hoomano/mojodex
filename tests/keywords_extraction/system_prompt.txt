@@ -1,2 +1,0 @@
-You will be provided with a block of text, and your task is to extract a list of keywords from it.
-Answer by the list of keywords, separated by semi-colons.

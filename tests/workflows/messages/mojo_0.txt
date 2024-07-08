@@ -1,1 +1,0 @@
-<user_language>en</user_language>\n<user_instruction>None</user_instruction>\n<ask_for_clarification>Could you please clarify the reason for the rejection and what specific instruction you would like me to take into account for re-executing the step?</ask_for_clarification>

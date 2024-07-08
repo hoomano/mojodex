@@ -278,13 +278,6 @@ class UserTaskExecution(Resource):
                 except Exception as e:
                     raise Exception(f"recover_text_edit_actions: {e}")
 
-            def get_n_todos(user_task_execution_pk):
-                # count the number of todos for a user_task_execution_pk
-                return (db.session.query(func.count(MdTodo.todo_pk))
-                        .filter(MdTodo.user_task_execution_fk == user_task_execution_pk)
-                        .filter(MdTodo.deleted_by_user.is_(None))
-                        .scalar()
-                        )
 
             def get_n_todos_not_read(user_task_execution_pk):
                 now_utc = datetime.now(timezone.utc).date()
@@ -403,7 +396,7 @@ class UserTaskExecution(Resource):
                     "result_chat_enabled": result["MdTask"].result_chat_enabled,
                     "actions": result['UserTaskExecution'].predefined_actions,
                     "user_task_pk": result["UserTaskExecution"].user_task_fk,
-                    "n_todos": get_n_todos(result["UserTaskExecution"].user_task_execution_pk),
+                    "n_todos": result["UserTaskExecution"].n_todos,
                     "n_not_read_todos": get_n_todos_not_read(result["UserTaskExecution"].user_task_execution_pk),
                     "produced_text_pk": result["produced_text_pk"],
                     "produced_text_title": result["produced_text_title"],
@@ -558,7 +551,7 @@ class UserTaskExecution(Resource):
                 "result_chat_enabled": row["MdTask"].result_chat_enabled,
                 "actions": row['UserTaskExecution'].predefined_actions,
                 "user_task_pk": row["UserTaskExecution"].user_task_fk,
-                "n_todos": get_n_todos(row["UserTaskExecution"].user_task_execution_pk),
+                "n_todos": row["UserTaskExecution"].n_todos,
                 "n_not_read_todos": get_n_todos_not_read(row["UserTaskExecution"].user_task_execution_pk),
                 "produced_text_pk": row["produced_text_pk"],
                 "produced_text_title": row["produced_text_title"],

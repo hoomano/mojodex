@@ -1,8 +1,9 @@
+from sqlalchemy import func, text
 from mojodex_core.entities.user_task import UserTask
-from mojodex_core.entities.db_base_entities import MdProducedTextVersion, MdUserTaskExecution, MdProducedText
+from mojodex_core.entities.db_base_entities import MdProducedTextVersion, MdTodo, MdTodoScheduling, MdUser, MdUserTask, MdUserTaskExecution, MdProducedText
 from sqlalchemy.orm import object_session
 from mojodex_core.entities.session import Session
-
+from datetime import datetime, timezone
 
 class UserTaskExecution(MdUserTaskExecution):
     """UserTaskExecution entity class that contains all the common properties and methods of an InstructUserTaskExecution or UserWorkflowExecution.
@@ -126,3 +127,46 @@ class UserTaskExecution(MdUserTaskExecution):
             return self.task.get_predefined_actions_in_language(self.user.language_code)
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} :: predefined_actions :: {e}")
+         
+    @property
+    def n_todos(self):
+        """
+        Returns the number of todos associated with this UserTaskExecution.
+        """
+        try:
+            session = object_session(self)
+            return  session.query(func.count(MdTodo.todo_pk)).\
+                filter(MdTodo.user_task_execution_fk == self.user_task_execution_pk).\
+                filter(MdTodo.deleted_by_user.is_(None)).\
+                scalar()
+        except Exception as e:
+            raise Exception(f"{self.__class__.__name__} :: n_todos :: {e}")
+        
+    @property
+    def n_todos_not_read(self):
+        try:
+            session = object_session(self)
+            now_utc = datetime.now(timezone.utc).date()
+            # Subquery to get the latest todo_scheduling for each todo
+            latest_todo_scheduling = session.query(
+                MdTodoScheduling.todo_fk,
+                func.max(MdTodoScheduling.scheduled_date).label('latest_scheduled_date')) \
+                .group_by(MdTodoScheduling.todo_fk) \
+                .subquery()
+            # count the number of todos not read for a user_task_execution_pk
+            return (session.query(func.count(MdTodo.todo_pk))
+                    .join(MdUserTaskExecution,
+                            MdTodo.user_task_execution_fk == MdUserTaskExecution.user_task_execution_pk)
+                    .join(MdUserTask, MdUserTaskExecution.user_task_fk == MdUserTask.user_task_pk)
+                    .join(MdUser, MdUserTask.user_id == MdUser.user_id)
+                    .join(latest_todo_scheduling, MdTodo.todo_pk == latest_todo_scheduling.c.todo_fk)
+                    .filter((latest_todo_scheduling.c.latest_scheduled_date - text(
+                'md_user.timezone_offset * interval \'1 minute\'')) >= now_utc)
+                    .filter(MdTodo.user_task_execution_fk == self.user_task_execution_pk)
+                    .filter(MdTodo.deleted_by_user.is_(None))
+                    .filter(MdTodo.read_by_user.is_(None))
+                    .filter(MdTodo.completed.is_(None))
+                    .scalar()
+                    )
+        except Exception as e:
+            raise Exception(f"{self.__class__.__name__} :: n_todos_not_read :: {e}")

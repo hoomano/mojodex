@@ -2,7 +2,7 @@ from mojodex_core.json_loader import json_decode_retry
 
 from mojodex_core.email_sender.email_service import EmailService
 from mojodex_core.knowledge_manager import KnowledgeManager
-from mojodex_core.logging_handler import log_error, on_json_error
+from mojodex_core.logging_handler import on_json_error
 from models.events.events_generator import EventsGenerator
 from mojodex_core.llm_engine.mpt import MPT
 
@@ -15,7 +15,7 @@ class CalendarSuggestionNotificationsGenerator(EventsGenerator):
             for calendar_suggestion in calendar_suggestions:
                 user_id = calendar_suggestion["user_id"]
                 try:
-                    notification_message = self._generate_notif_text(KnowledgeManager().mojodex_knowledge, user["datetime_context"],
+                    notification_message = self._generate_notif_text(KnowledgeManager().mojodex_knowledge, calendar_suggestion["datetime_context"],
                                                                       user_id,
                                                                       calendar_suggestion["user_name"],
                                                                       calendar_suggestion[

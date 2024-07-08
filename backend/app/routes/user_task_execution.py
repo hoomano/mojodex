@@ -278,31 +278,6 @@ class UserTaskExecution(Resource):
                 except Exception as e:
                     raise Exception(f"recover_text_edit_actions: {e}")
 
-
-            def get_n_todos_not_read(user_task_execution_pk):
-                now_utc = datetime.now(timezone.utc).date()
-                # Subquery to get the latest todo_scheduling for each todo
-                latest_todo_scheduling = db.session.query(
-                    MdTodoScheduling.todo_fk,
-                    func.max(MdTodoScheduling.scheduled_date).label('latest_scheduled_date')) \
-                    .group_by(MdTodoScheduling.todo_fk) \
-                    .subquery()
-                # count the number of todos not read for a user_task_execution_pk
-                return (db.session.query(func.count(MdTodo.todo_pk))
-                        .join(MdUserTaskExecution,
-                              MdTodo.user_task_execution_fk == MdUserTaskExecution.user_task_execution_pk)
-                        .join(MdUserTask, MdUserTaskExecution.user_task_fk == MdUserTask.user_task_pk)
-                        .join(MdUser, MdUserTask.user_id == MdUser.user_id)
-                        .join(latest_todo_scheduling, MdTodo.todo_pk == latest_todo_scheduling.c.todo_fk)
-                        .filter((latest_todo_scheduling.c.latest_scheduled_date - text(
-                    'md_user.timezone_offset * interval \'1 minute\'')) >= now_utc)
-                        .filter(MdTodo.user_task_execution_fk == user_task_execution_pk)
-                        .filter(MdTodo.deleted_by_user.is_(None))
-                        .filter(MdTodo.read_by_user.is_(None))
-                        .filter(MdTodo.completed.is_(None))
-                        .scalar()
-                        )
-
           
             if "user_task_execution_pk" in request.args:
                 user_task_execution_pk = int(request.args["user_task_execution_pk"])
@@ -397,7 +372,7 @@ class UserTaskExecution(Resource):
                     "actions": result['UserTaskExecution'].predefined_actions,
                     "user_task_pk": result["UserTaskExecution"].user_task_fk,
                     "n_todos": result["UserTaskExecution"].n_todos,
-                    "n_not_read_todos": get_n_todos_not_read(result["UserTaskExecution"].user_task_execution_pk),
+                    "n_not_read_todos": result["UserTaskExecution"].n_todos_not_read,
                     "produced_text_pk": result["produced_text_pk"],
                     "produced_text_title": result["produced_text_title"],
                     "produced_text_production": result["produced_text_production"],
@@ -552,7 +527,7 @@ class UserTaskExecution(Resource):
                 "actions": row['UserTaskExecution'].predefined_actions,
                 "user_task_pk": row["UserTaskExecution"].user_task_fk,
                 "n_todos": row["UserTaskExecution"].n_todos,
-                "n_not_read_todos": get_n_todos_not_read(row["UserTaskExecution"].user_task_execution_pk),
+                "n_not_read_todos": row["UserTaskExecution"].n_todos_not_read,
                 "produced_text_pk": row["produced_text_pk"],
                 "produced_text_title": row["produced_text_title"],
                 "produced_text_production": row["produced_text_production"],

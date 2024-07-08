@@ -1,9 +1,8 @@
-from datetime import datetime, timezone
+from datetime import datetime
 from mojodex_core.db import with_db_session
 from mojodex_core.documents.document_chunk_manager import DocumentChunkManager
 from mojodex_core.embedder.embedding_service import EmbeddingService
 from mojodex_core.entities.db_base_entities import MdDocument, MdDocumentChunk, MdUser, MdUserTask, MdUserTaskExecution
-from mojodex_core.llm_engine.providers.model_loader import ModelLoader
 
 class DocumentManager:
 
@@ -18,21 +17,12 @@ class DocumentManager:
         return cls._instance
 
 
-    def embed(self, text, user_id, user_task_execution_pk=None, task_name_for_system=None):
-        try:
-            embedding_response = EmbeddingService().embed(text, user_id, label="DOCUMENT_EMBEDDING", user_task_execution_pk=user_task_execution_pk,
-                                                     task_name_for_system=task_name_for_system, )
-            embedding = embedding_response
-            return embedding
-        except Exception as e:
-            raise Exception(f"embedded : {e}")
-
     def new_document(self, user_id, text, name, document_type, user_task_execution_pk=None, task_name_for_system=None,
                      chunk_validation_callback=None, ):
         try:
             document_pk = self._add_document_to_db(
                 name, user_id, document_type)
-            chunk_db_pks = DocumentChunkManager().create_document_chunks(document_pk, text, self.embed,
+            chunk_db_pks = DocumentChunkManager().create_document_chunks(document_pk, text,
                                                                               user_id,
                                                                               user_task_execution_pk=user_task_execution_pk,
                                                                               task_name_for_system=task_name_for_system,
@@ -66,7 +56,7 @@ class DocumentManager:
                 MdUserTaskExecution, MdUserTaskExecution.user_task_fk == MdUserTask.user_task_pk).filter(
                 MdUserTaskExecution.user_task_execution_pk == user_task_execution_pk).first()[0]
 
-            embedded_query = self.embed(query, user_id, user_task_execution_pk=user_task_execution_pk,
+            embedded_query = EmbeddingService().embed(query, user_id, user_task_execution_pk=user_task_execution_pk,
                                             task_name_for_system=task_name_for_system)
 
 

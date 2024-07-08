@@ -1,11 +1,7 @@
-import os
-from datetime import datetime
-import requests
-import tiktoken
-
 from mojodex_core.db import with_db_session
 from mojodex_core.embedder.embedding_service import EmbeddingService
 from mojodex_core.entities.db_base_entities import MdDocumentChunk
+from datetime import datetime
 
 class DocumentChunkManager:
     _instance = None
@@ -104,7 +100,7 @@ class DocumentChunkManager:
         except Exception as e:
             raise Exception(f"_get_text_chunks: {e}")
 
-    def create_document_chunks(self, document_pk, text, embeddeding_function, user_id,
+    def create_document_chunks(self, document_pk, text, user_id,
                                user_task_execution_pk=None, task_name_for_system=None,
                                chunk_validation_callback=None, chunk_token_size=None):
         """
@@ -113,7 +109,6 @@ class DocumentChunkManager:
         Args:
             document_pk: The document pk to associate with the chunks.
             text: The text to create chunks from.
-            embeddeding_function: The function to use to embed the chunks.
             user_id: The user id to associate with the chunks.
             chunk_validation_callback: Callback to validate chunk before saving it. Returns True if chunk is valid, False otherwise.
             chunk_token_size: The target size of each chunk in tokens, or None to use the default CHUNK_SIZE.
@@ -149,7 +144,7 @@ class DocumentChunkManager:
         except Exception as e:
             raise Exception(f"_add_document_chunk_to_db : {e}")
 
-    def update_document_chunks(self, document_pk, text, embeddeding_function, user_id, old_chunks_pks,
+    def update_document_chunks(self, document_pk, text, user_id, old_chunks_pks,
                                chunk_validation_callback=None, chunk_token_size=None):
         try:
             # 1. Split the text into chunks

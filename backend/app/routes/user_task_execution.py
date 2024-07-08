@@ -1,7 +1,9 @@
 import os
+from typing import Tuple
 from flask import request
 from flask_restful import Resource
 from app import db, authenticate, time_manager
+from mojodex_core.entities.user import User
 from mojodex_core.entities.user_task import UserTask
 from mojodex_core.entities.user_workflow_execution import UserWorkflowExecution
 from mojodex_core.logging_handler import log_error
@@ -278,6 +280,7 @@ class UserTaskExecution(Resource):
                 except Exception as e:
                     raise Exception(f"recover_text_edit_actions: {e}")
 
+
           
             if "user_task_execution_pk" in request.args:
                 user_task_execution_pk = int(request.args["user_task_execution_pk"])
@@ -406,57 +409,17 @@ class UserTaskExecution(Resource):
                 .subquery()
             
             highest_row_number_subquery = db.session.query(
-                    produced_text_subquery.c.user_task_execution_fk,
-                    func.max(produced_text_subquery.c.row_number).label('max_row_number')
+                produced_text_subquery.c.user_task_execution_fk,
+                func.max(produced_text_subquery.c.row_number).label('max_row_number')
                 ).group_by(produced_text_subquery.c.user_task_execution_fk).subquery()
 
-
-            # Subquery to retrieve the tasks in the user_language_code
-            user_lang_subquery = (
-                db.session.query(
-                    MdTaskDisplayedData.task_fk.label("task_fk"),
-                    MdTaskDisplayedData.name_for_user.label("user_lang_name_for_user"),
-                )
-                .join(MdUser, MdUser.user_id == user_id)
-                .filter(MdTaskDisplayedData.language_code == MdUser.language_code)
-                .subquery()
-            )
-
-            # Subquery to retrieve the tasks in 'en'
-            en_subquery = (
-                db.session.query(
-                    MdTaskDisplayedData.task_fk.label("task_fk"),
-                    MdTaskDisplayedData.name_for_user.label("en_name_for_user"),
-                )
-                .filter(MdTaskDisplayedData.language_code == "en")
-                .subquery()
-            )
           
-            result = (
-                db.session.query(
-                    DBUserTaskExecution,
-                    MdTask,
-                    coalesce(
-                        user_lang_subquery.c.user_lang_name_for_user, 
-                        en_subquery.c.en_name_for_user
-                    ).label("name_for_user"),
-                    produced_text_subquery.c.produced_text_pk.label("produced_text_pk"),
-                    produced_text_subquery.c.produced_text_title.label("produced_text_title"),
-                    produced_text_subquery.c.produced_text_production.label("produced_text_production"),
-                    produced_text_subquery.c.produced_text_version_pk.label("produced_text_version_pk"),
-                    produced_text_subquery.c.row_number.label("produced_text_version_index"),
-                    MdUser.timezone_offset,
-                    MdUser.language_code
-                )
+            result = (db.session.query(DBUserTaskExecution)
                 .distinct(DBUserTaskExecution.user_task_execution_pk)
                 .join(MdUserTask, MdUserTask.user_task_pk == DBUserTaskExecution.user_task_fk)
-                .join(MdUser, MdUser.user_id == MdUserTask.user_id)
-                .join(MdTask, MdTask.task_pk == MdUserTask.task_fk)
-                .outerjoin(user_lang_subquery, MdTask.task_pk == user_lang_subquery.c.task_fk)
-                .outerjoin(en_subquery, MdTask.task_pk == en_subquery.c.task_fk)
-                 .outerjoin(highest_row_number_subquery,
+                .outerjoin(highest_row_number_subquery,
                         highest_row_number_subquery.c.user_task_execution_fk == DBUserTaskExecution.user_task_execution_pk)
-                    .outerjoin(produced_text_subquery,
+                .outerjoin(produced_text_subquery,
                             and_(
                                 produced_text_subquery.c.user_task_execution_fk == DBUserTaskExecution.user_task_execution_pk,
                                 produced_text_subquery.c.row_number == highest_row_number_subquery.c.max_row_number))
@@ -477,67 +440,53 @@ class UserTaskExecution(Resource):
                     search_user_tasks_filter_list = search_user_tasks_filter.split(";")
                     result = result.filter(MdUserTask.user_task_pk.in_(search_user_tasks_filter_list))
 
-            result = (result.group_by(DBUserTaskExecution.user_task_execution_pk, MdTask.task_pk,
-                                      user_lang_subquery.c.user_lang_name_for_user,
-                                      en_subquery.c.en_name_for_user,
-                                      produced_text_subquery.c.produced_text_pk,
-                                      produced_text_subquery.c.produced_text_title,
-                                      produced_text_subquery.c.produced_text_production,
-                                      produced_text_subquery.c.produced_text_version_pk,
-                                        produced_text_subquery.c.row_number,
-                                      MdUser.timezone_offset,
-                                      MdUser.language_code
-                                      )
+            user_task_executions:  List[DBUserTaskExecution] = (result.group_by(DBUserTaskExecution.user_task_execution_pk)
                       .order_by(DBUserTaskExecution.user_task_execution_pk.desc())
                       .limit(n_user_task_executions)
                       .offset(offset)
                       .all())
 
-            result = [row._asdict() for row in result]
 
-            def get_workflow_specific_data(row):
-                workflow_execution = db.session.query(UserWorkflowExecution).get(row["UserTaskExecution"].user_task_execution_pk)
-                return {
-                    "steps": workflow_execution.task.get_json_steps_with_translation(row["language_code"]),
-                    "step_executions": workflow_execution.get_steps_execution_json()
-                }
+           # def get_workflow_specific_data(row):
+           #     workflow_execution = db.session.query(UserWorkflowExecution).get(row["UserTaskExecution"].user_task_execution_pk)
+           #     return {
+           #         "steps": workflow_execution.task.get_json_steps_with_translation(row["language_code"]),
+           #         "step_executions": workflow_execution.get_steps_execution_json()
+           #     }
             
-          
 
             results_list = [{
-                "user_task_execution_pk": row["UserTaskExecution"].user_task_execution_pk,
-                "start_date": time_manager.backend_date_to_user_date(row["UserTaskExecution"].start_date,
-                                                                     row["timezone_offset"]).isoformat() if row[
-                                                                                                                "UserTaskExecution"].start_date and
-                                                                                                            row[
-                                                                                                                "timezone_offset"] else None,
-                "end_date": time_manager.backend_date_to_user_date(row["UserTaskExecution"].end_date,
-                                                                   row["timezone_offset"]).isoformat() if row[
-                                                                                                              "UserTaskExecution"].end_date and
-                                                                                                          row[
-                                                                                                              "timezone_offset"] else None,
-                "title": row["UserTaskExecution"].title,
-                "summary": row["UserTaskExecution"].summary,
-                "session_id": row["UserTaskExecution"].session_id,
-               "json_inputs_values": None if all(input.get('value') is None for input in row["UserTaskExecution"].json_input_values) else row["UserTaskExecution"].json_input_values,
-                "icon": row["MdTask"].icon,
-                "task_name": row["name_for_user"],
-                "task_type": row["MdTask"].type,
-                "result_chat_enabled": row["MdTask"].result_chat_enabled,
-                "actions": row['UserTaskExecution'].predefined_actions,
-                "user_task_pk": row["UserTaskExecution"].user_task_fk,
-                "n_todos": row["UserTaskExecution"].n_todos,
-                "n_not_read_todos": row["UserTaskExecution"].n_todos_not_read,
-                "produced_text_pk": row["produced_text_pk"],
-                "produced_text_title": row["produced_text_title"],
-                "produced_text_production": row["produced_text_production"],
-                "produced_text_version_pk": row["produced_text_version_pk"],
-                "produced_text_version_index": row["produced_text_version_index"],
-                "text_edit_actions": recover_text_edit_actions(row["UserTaskExecution"].user_task_fk),
-                "working_on_todos": row["UserTaskExecution"].todos_extracted is None,
-                **(get_workflow_specific_data(row) if row["MdTask"].type == "workflow" else {})
-            } for row in result]
+                "user_task_execution_pk": user_task_execution.user_task_execution_pk,
+                "start_date": time_manager.backend_date_to_user_date(user_task_execution.start_date,
+                                                                        user_task_execution.user.timezone_offset).isoformat() if user_task_execution.start_date and
+                                                                                                                user_task_execution.user.timezone_offset else None,
+                "end_date": time_manager.backend_date_to_user_date(user_task_execution.end_date,
+                                                                     user_task_execution.user.timezone_offset).isoformat() if user_task_execution.end_date and
+                                                                                                              user_task_execution.user.timezone_offset else None,
+                "title": user_task_execution.title,
+                "summary": user_task_execution.summary,
+                "session_id": user_task_execution.session_id,
+                "json_inputs_values": None if all(input.get('value') is None for input in user_task_execution.json_input_values) else user_task_execution.json_input_values,
+                "icon": user_task_execution.task.icon,
+                "task_name": user_task_execution.task_name_in_user_language,
+                "task_type": user_task_execution.task.type,
+                "result_chat_enabled": user_task_execution.task.result_chat_enabled,
+                "actions": user_task_execution.predefined_actions,
+                "user_task_pk": user_task_execution.user_task_fk,
+                "n_todos": user_task_execution.n_todos,
+                "n_not_read_todos": user_task_execution.n_todos_not_read,
+                "produced_text_pk": user_task_execution.last_produced_text_version.produced_text_fk if user_task_execution.last_produced_text_version else None,
+                "produced_text_title": user_task_execution.last_produced_text_version.title if user_task_execution.last_produced_text_version else None,
+                "produced_text_production": user_task_execution.last_produced_text_version.production if user_task_execution.last_produced_text_version else None,
+                "produced_text_version_pk": user_task_execution.last_produced_text_version.produced_text_version_pk if user_task_execution.last_produced_text_version else None,
+                "produced_text_version_index": user_task_execution.n_produced_text_version,
+                "text_edit_actions": recover_text_edit_actions(user_task_execution.user_task_fk),
+                "working_on_todos": user_task_execution.todos_extracted is None,
+              #  **(get_workflow_specific_data(user_task_execution) if user_task_execution.task.type == "workflow" else {})
 
+            } for user_task_execution in user_task_executions]
+
+   
             return {"user_task_executions": results_list}, 200
 
         except Exception as e:

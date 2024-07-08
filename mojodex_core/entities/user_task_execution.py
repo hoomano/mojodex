@@ -92,6 +92,17 @@ class UserTaskExecution(MdUserTaskExecution):
             raise Exception(f"{self.__class__.__name__} :: produced_text :: {e}")
         
     @property
+    def n_produced_text_version(self):
+        try:
+            session = object_session(self)
+            return session.query(MdProducedTextVersion).\
+                join(MdProducedText, MdProducedTextVersion.produced_text_fk == MdProducedText.produced_text_pk).\
+                filter(MdProducedText.user_task_execution_fk == self.user_task_execution_pk).\
+                count()
+        except Exception as e:
+            raise Exception(f"{self.__class__.__name__} :: produced_text :: {e}")
+        
+    @property
     def derives_from_a_previous_user_task_execution(self) -> bool:
         """On mobile app, some tasks can display "predefined_actions" at the end of the execution. 
         Those are other task the user can launch to chain task executions on a same subject.

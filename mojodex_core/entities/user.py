@@ -73,6 +73,3 @@ class User(MdUser):
             return [{'description': description, 'scheduled_date': scheduled_date} for description, scheduled_date in results]
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} :: todo_list :: {e}")
-        
-
-   

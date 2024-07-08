@@ -4338,11 +4338,12 @@ paths:
                       task_pk:
                         type: integer
                       displayed_data:
-                        type: array
+                        type: object
                         items:
                           type: object
                           required:
-                            - language_code
+                            - language_code # TODO: Rewrite that because it's not correct
+                            - name
                           properties:
                             language_code:
                               type: string

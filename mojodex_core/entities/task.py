@@ -1,5 +1,5 @@
 import json
-from mojodex_core.entities.db_base_entities import MdPredefinedActionDisplayedData, MdTask, MdTaskDisplayedData, MdTaskPredefinedActionAssociation
+from mojodex_core.entities.db_base_entities import MdPredefinedActionDisplayedData, MdTask, MdTaskDisplayedData, MdTaskPredefinedActionAssociation, MdTextEditAction, MdTextEditActionDisplayedData, MdTextEditActionTextTypeAssociation, MdTextType
 from sqlalchemy.orm import object_session
 from sqlalchemy import case, func, or_
 from sqlalchemy.sql.functions import coalesce
@@ -67,3 +67,67 @@ class Task(MdTask):
             
         except Exception as e:
             raise Exception(f"{self.__class__.__name__}:: get_predifined_actions_in_language :: {e}") 
+        
+
+
+    def get_text_edit_actions_in_language(self, language_code):
+        """
+        Return the text edit actions in the specified language.
+        """
+        try:
+            session = object_session(self)
+            # Subquery for user_language_code
+            specified_language_subquery = (
+                session.query(
+                    MdTextEditActionDisplayedData.text_edit_action_fk.label("text_edit_action_fk"),
+                    MdTextEditActionDisplayedData.name.label("user_lang_name"),
+                    MdTextEditActionDisplayedData.description.label("user_lang_description"),
+                )
+                .filter(MdTextEditActionDisplayedData.language_code == language_code)
+                .subquery()
+            )
+
+            # Subquery for 'en'
+            en_subquery = (
+                session.query(
+                    MdTextEditActionDisplayedData.text_edit_action_fk.label("text_edit_action_fk"),
+                    MdTextEditActionDisplayedData.name.label("en_name"),
+                    MdTextEditActionDisplayedData.description.label("en_description"),
+                )
+                .filter(MdTextEditActionDisplayedData.language_code == "en")
+                .subquery()
+            )
+
+            # Main query
+            text_edit_actions = (
+                session.query(
+                    MdTextEditAction.text_edit_action_pk,
+                    coalesce(specified_language_subquery.c.user_lang_name, en_subquery.c.en_name).label(
+                        "name"
+                    ),
+                    coalesce(specified_language_subquery.c.user_lang_description, en_subquery.c.en_description).label(
+                        "description"
+                    ),
+                    MdTextEditAction.emoji,
+                )
+                .outerjoin(specified_language_subquery, MdTextEditAction.text_edit_action_pk == specified_language_subquery.c.text_edit_action_fk)
+                .outerjoin(en_subquery, MdTextEditAction.text_edit_action_pk == en_subquery.c.text_edit_action_fk)
+                .join(
+                    MdTextEditActionTextTypeAssociation,
+                    MdTextEditActionTextTypeAssociation.text_edit_action_fk == MdTextEditAction.text_edit_action_pk,
+                )
+                .join(
+                    MdTextType,
+                    MdTextType.text_type_pk == MdTextEditActionTextTypeAssociation.text_type_fk,
+                )
+                .join(
+                    MdTask,
+                    MdTask.output_text_type_fk == MdTextType.text_type_pk,
+                )
+                .filter(
+                    MdTask.task_pk == self.task_pk,
+                )
+            ).all()
+            return [{"text_edit_action_pk": text_edit_action_pk, "name": name, "description": description, "emoji": emoji} for text_edit_action_pk, name, description, emoji in text_edit_actions]
+        except Exception as e:
+            raise Exception(f"{self.__class__.__name__} :: get_text_edit_actions_in_language :: {e}")

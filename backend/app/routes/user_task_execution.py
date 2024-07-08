@@ -146,7 +146,7 @@ class UserTaskExecution(Resource):
             
             return {**{"user_task_execution_pk": task_execution.user_task_execution_pk,
                      "json_input": json_input,
-                     "actions": task_execution.predefined_actions,
+                     "actions": task_execution.user_task.predefined_actions,
                      "text_edit_actions" : recover_text_edit_actions(user_task_pk=user_task_pk)
                      }, **session_creation[0]}, 200 # append session_creation to returned dict
         except Exception as e:
@@ -340,7 +340,7 @@ class UserTaskExecution(Resource):
                     "task_name": user_task_execution.task_name_in_user_language,
                     "task_type": user_task_execution.task.type,
                     "result_chat_enabled": user_task_execution.task.result_chat_enabled,
-                    "actions": user_task_execution.predefined_actions,
+                    "actions": user_task_execution.user_task.predefined_actions,
                     "user_task_pk": user_task_execution.user_task_fk,
                     "n_todos": user_task_execution.n_todos,
                     "n_not_read_todos": user_task_execution.n_todos_not_read,
@@ -349,9 +349,9 @@ class UserTaskExecution(Resource):
                     "produced_text_production": user_task_execution.last_produced_text_version.production if user_task_execution.last_produced_text_version else None,
                     "produced_text_version_pk": user_task_execution.last_produced_text_version.produced_text_version_pk if user_task_execution.last_produced_text_version else None,
                     "produced_text_version_index": user_task_execution.n_produced_text_version,
-                    "text_edit_actions": recover_text_edit_actions(user_task_execution.user_task_fk),
+                    "text_edit_actions": user_task_execution.user_task.text_edit_actions,
                     "working_on_todos": user_task_execution.todos_extracted is None,
-                    "steps": workflow_execution.steps_as_json if workflow_execution else None,
+                    "steps": workflow_execution.user_task.steps_as_json if workflow_execution else None,
                     "step_executions": workflow_execution.steps_execution_as_json if workflow_execution else None,
                 }, 200
 
@@ -397,7 +397,7 @@ class UserTaskExecution(Resource):
             def get_workflow_specific_data(user_task_execution_pk):
                 workflow_execution : UserWorkflowExecution = db.session.query(UserWorkflowExecution).get(user_task_execution_pk)
                 return {
-                    "steps": workflow_execution.steps_as_json,
+                    "steps": workflow_execution.user_task.steps_as_json,
                     "step_executions": workflow_execution.steps_execution_as_json
                 }
             
@@ -418,7 +418,7 @@ class UserTaskExecution(Resource):
                 "task_name": user_task_execution.task_name_in_user_language,
                 "task_type": user_task_execution.task.type,
                 "result_chat_enabled": user_task_execution.task.result_chat_enabled,
-                "actions": user_task_execution.predefined_actions,
+                "actions": user_task_execution.user_task.predefined_actions,
                 "user_task_pk": user_task_execution.user_task_fk,
                 "n_todos": user_task_execution.n_todos,
                 "n_not_read_todos": user_task_execution.n_todos_not_read,
@@ -427,7 +427,7 @@ class UserTaskExecution(Resource):
                 "produced_text_production": user_task_execution.last_produced_text_version.production if user_task_execution.last_produced_text_version else None,
                 "produced_text_version_pk": user_task_execution.last_produced_text_version.produced_text_version_pk if user_task_execution.last_produced_text_version else None,
                 "produced_text_version_index": user_task_execution.n_produced_text_version,
-                "text_edit_actions": recover_text_edit_actions(user_task_execution.user_task_fk),
+                "text_edit_actions": user_task_execution.user_task.text_edit_actions,
                 "working_on_todos": user_task_execution.todos_extracted is None,
                 **(get_workflow_specific_data(user_task_execution.user_task_execution_pk) if user_task_execution.task.type == "workflow" else {})
 

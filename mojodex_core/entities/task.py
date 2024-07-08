@@ -80,8 +80,8 @@ class Task(MdTask):
             specified_language_subquery = (
                 session.query(
                     MdTextEditActionDisplayedData.text_edit_action_fk.label("text_edit_action_fk"),
-                    MdTextEditActionDisplayedData.name.label("user_lang_name"),
-                    MdTextEditActionDisplayedData.description.label("user_lang_description"),
+                    MdTextEditActionDisplayedData.name.label("lang_name"),
+                    MdTextEditActionDisplayedData.description.label("lang_description"),
                 )
                 .filter(MdTextEditActionDisplayedData.language_code == language_code)
                 .subquery()
@@ -102,10 +102,10 @@ class Task(MdTask):
             text_edit_actions = (
                 session.query(
                     MdTextEditAction.text_edit_action_pk,
-                    coalesce(specified_language_subquery.c.user_lang_name, en_subquery.c.en_name).label(
+                    coalesce(specified_language_subquery.c.lang_name, en_subquery.c.en_name).label(
                         "name"
                     ),
-                    coalesce(specified_language_subquery.c.user_lang_description, en_subquery.c.en_description).label(
+                    coalesce(specified_language_subquery.c.lang_description, en_subquery.c.en_description).label(
                         "description"
                     ),
                     MdTextEditAction.emoji,

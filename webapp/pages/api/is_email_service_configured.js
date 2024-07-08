@@ -5,6 +5,7 @@ export default async function handler(req, res) {
 
     let headers = {
         "Content-type": req.headers["content-type"] || "application/json",
+        // This is the secret key for the webapp to access the backend. User is not logged in, and we don't need a token here.
         Authorization: process.env.MOJODEX_WEBAPP_SECRET,
     };
 

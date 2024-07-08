@@ -46,7 +46,7 @@ class TodosCreator:
                 self._save_to_db(todo['todo_definition'], todo['due_date'])
             self._mark_todo_extracted()
         except Exception as e:
-            log_error(f"{self.__class__.__name__} : extract_and_save: {e}", notify_admin=True)
+            EmailService().send_technical_error_email(f"{self.__class__.__name__} : extract_and_save: {e}")
 
     @with_db_session
     def _collect_data(self, db_session):

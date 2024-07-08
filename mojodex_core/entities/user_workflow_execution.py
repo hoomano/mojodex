@@ -51,7 +51,8 @@ class UserWorkflowExecution(UserTaskExecution):
         except Exception as e:
             raise Exception(f"{self.__class__.__name__}:: past_valid_step_executions :: {e}")
 
-    def get_steps_execution_json(self):
+    @property
+    def steps_execution_as_json(self):
         try:
             validated_steps_json = [step_execution.to_json() for step_execution in self.past_valid_step_executions]
             last_step_execution = self.last_step_execution
@@ -137,6 +138,15 @@ class UserWorkflowExecution(UserTaskExecution):
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} :: get_valid_executions_of_a_step :: {e}")
         
+    @property
+    def steps_as_json(self):
+        """
+        Returns steps of the workflows as json in user's language
+        """
+        try:
+            return self.task.get_json_steps_with_translation(self.user.language_code)
+        except Exception as e:
+            raise Exception(f"{self.__class__.__name__} :: get_json_steps :: {e}")
 
     @property
     def result(self):

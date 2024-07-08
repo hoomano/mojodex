@@ -280,46 +280,33 @@ class UserTaskExecution(Resource):
                 except Exception as e:
                     raise Exception(f"recover_text_edit_actions: {e}")
 
+            # Subquery to get the last produced text versions
+            produced_text_subquery = db.session.query(MdProducedText.produced_text_pk,
+                                                        MdProducedText.user_task_execution_fk.label(
+                                                            'user_task_execution_fk'),
+                                                        MdProducedTextVersion.title.label('produced_text_title'),
+                                                        MdProducedTextVersion.production.label(
+                                                            'produced_text_production'),
+                                                        MdProducedTextVersion.produced_text_version_pk.label(
+                                                            'produced_text_version_pk'),
+                                                        func.row_number().over(
+                                                            partition_by=MdProducedText.user_task_execution_fk,
+                                                            order_by=MdProducedTextVersion.creation_date.asc()).label(
+                                                            'row_number')) \
+                .join(MdProducedTextVersion,
+                        MdProducedTextVersion.produced_text_fk == MdProducedText.produced_text_pk) \
+                .subquery()
+            
+            highest_row_number_subquery = db.session.query(
+                produced_text_subquery.c.user_task_execution_fk,
+                func.max(produced_text_subquery.c.row_number).label('max_row_number')
+            ).group_by(produced_text_subquery.c.user_task_execution_fk).subquery()
 
           
             if "user_task_execution_pk" in request.args:
                 user_task_execution_pk = int(request.args["user_task_execution_pk"])
-                produced_text_subquery = db.session.query(MdProducedText.produced_text_pk,
-                                                          MdProducedText.user_task_execution_fk.label(
-                                                              'user_task_execution_fk'),
-                                                          MdProducedTextVersion.title.label('produced_text_title'),
-                                                          MdProducedTextVersion.production.label(
-                                                              'produced_text_production'),
-                                                          MdProducedTextVersion.produced_text_version_pk.label(
-                                                              'produced_text_version_pk'),
-                                                          func.row_number().over(
-                                                              partition_by=MdProducedText.user_task_execution_fk,
-                                                              order_by=MdProducedTextVersion.creation_date.asc()).label(
-                                                              'row_number')) \
-                    .join(MdProducedTextVersion,
-                          MdProducedTextVersion.produced_text_fk == MdProducedText.produced_text_pk) \
-                    .subquery()
-                
-                highest_row_number_subquery = db.session.query(
-                    produced_text_subquery.c.user_task_execution_fk,
-                    func.max(produced_text_subquery.c.row_number).label('max_row_number')
-                ).group_by(produced_text_subquery.c.user_task_execution_fk).subquery()
-
-                result =( db.session.query(
-                        DBUserTaskExecution,
-                        MdTask,
-                        MdTaskDisplayedData,
-                        produced_text_subquery.c.produced_text_pk.label("produced_text_pk"),
-                        produced_text_subquery.c.produced_text_title.label("produced_text_title"),
-                        produced_text_subquery.c.produced_text_production.label("produced_text_production"),
-                        produced_text_subquery.c.produced_text_version_pk.label("produced_text_version_pk"),
-                        produced_text_subquery.c.row_number.label("produced_text_version_index"),
-                        MdUser.timezone_offset,
-                        MdUser.language_code
-                    ).join(MdUserTask, MdUserTask.user_task_pk == DBUserTaskExecution.user_task_fk)
-                    .join(MdUser, MdUser.user_id == MdUserTask.user_id)
-                    .join(MdTask, MdTask.task_pk == MdUserTask.task_fk)
-                    .join(MdTaskDisplayedData, MdTaskDisplayedData.task_fk == MdTask.task_pk)
+               
+                user_task_execution: DBUserTaskExecution = (db.session.query(DBUserTaskExecution)
                     .outerjoin(highest_row_number_subquery,
                         highest_row_number_subquery.c.user_task_execution_fk == DBUserTaskExecution.user_task_execution_pk)
                     .outerjoin(produced_text_subquery,
@@ -328,90 +315,50 @@ class UserTaskExecution(Resource):
                                 produced_text_subquery.c.row_number == highest_row_number_subquery.c.max_row_number))
                     .filter(DBUserTaskExecution.user_task_execution_pk == user_task_execution_pk)
                     .filter(MdUser.user_id == user_id)
-                    .filter(
-                        or_(
-                            MdTaskDisplayedData.language_code == MdUser.language_code,
-                            MdTaskDisplayedData.language_code == 'en'
-                        )
-                    )
-                    .order_by(
-                        # Sort by user's language first otherwise by english
-                        func.nullif(MdTaskDisplayedData.language_code, 'en').asc()
-                    )
-                    .group_by(DBUserTaskExecution.user_task_execution_pk, MdTask.task_pk,
-                              MdTaskDisplayedData.task_displayed_data_pk,
-                              produced_text_subquery.c.produced_text_pk, produced_text_subquery.c.produced_text_title,
-                              produced_text_subquery.c.produced_text_production,
-                              produced_text_subquery.c.produced_text_version_pk,
-                              produced_text_subquery.c.row_number,
-                              MdUser.timezone_offset,
-                              MdUser.language_code
-                              )
-                    .first())._asdict()
-                if result["MdTask"].type == "workflow":
-                    workflow_execution = db.session.query(UserWorkflowExecution).get(result["UserTaskExecution"].user_task_execution_pk)
+                    .group_by(DBUserTaskExecution.user_task_execution_pk)
+                    .first())
+                
+                if user_task_execution.task.type == "workflow":
+                    workflow_execution: UserWorkflowExecution = db.session.query(UserWorkflowExecution).get(user_task_execution.user_task_execution_pk)
                 else:
                     workflow_execution = None
 
                 return {
-                    "user_task_execution_pk": result["UserTaskExecution"].user_task_execution_pk,
-                    "start_date": time_manager.backend_date_to_user_date(result["UserTaskExecution"].start_date,
-                                                                         result["timezone_offset"]).isoformat() if
-                    result["UserTaskExecution"].start_date and result["timezone_offset"] else None,
-                    "end_date": time_manager.backend_date_to_user_date(result["UserTaskExecution"].end_date,
-                                                                       result["timezone_offset"]).isoformat() if result[
-                                                                                                                     "UserTaskExecution"].end_date and
-                                                                                                                 result[
-                                                                                                                     "timezone_offset"] else None,
-                    "deleted_by_user": result["UserTaskExecution"].deleted_by_user is not None,
-                    "title": result["UserTaskExecution"].title,
-                    "summary": result["UserTaskExecution"].summary,
-                    "session_id": result["UserTaskExecution"].session_id,
-                    "json_inputs_values": None if all(input.get('value') is None for input in result["UserTaskExecution"].json_input_values) else result["UserTaskExecution"].json_input_values,
-                    "icon": result["MdTask"].icon,
-                    "task_name": result["MdTaskDisplayedData"].name_for_user,
-                    "task_type": result["MdTask"].type,
-                    "result_chat_enabled": result["MdTask"].result_chat_enabled,
-                    "actions": result['UserTaskExecution'].predefined_actions,
-                    "user_task_pk": result["UserTaskExecution"].user_task_fk,
-                    "n_todos": result["UserTaskExecution"].n_todos,
-                    "n_not_read_todos": result["UserTaskExecution"].n_todos_not_read,
-                    "produced_text_pk": result["produced_text_pk"],
-                    "produced_text_title": result["produced_text_title"],
-                    "produced_text_production": result["produced_text_production"],
-                    "produced_text_version_pk": result["produced_text_version_pk"],
-                    "produced_text_version_index": result["produced_text_version_index"],
-                    "text_edit_actions": recover_text_edit_actions(
-                        result["UserTaskExecution"].user_task_fk),
-                    "working_on_todos": result["UserTaskExecution"].todos_extracted is None,
-                    "step_executions": workflow_execution.get_steps_execution_json() if result["MdTask"].type == "workflow" else None,
-                    "steps": workflow_execution.task.get_json_steps_with_translation(result["language_code"]) if result["MdTask"].type == "workflow" else None
+                    "user_task_execution_pk": user_task_execution.user_task_execution_pk,
+                    "start_date": time_manager.backend_date_to_user_date(user_task_execution.start_date,
+                                                                         user_task_execution.user.timezone_offset).isoformat() if
+                    user_task_execution.start_date and user_task_execution.user.timezone_offset else None,
+                    "end_date": time_manager.backend_date_to_user_date(user_task_execution.end_date,
+                                                                       user_task_execution.user.timezone_offset).isoformat() if user_task_execution.end_date and
+                                                                                                                 user_task_execution.user.timezone_offset else None,
+                    "deleted_by_user": user_task_execution.deleted_by_user is not None,
+                    "title": user_task_execution.title,
+                    "summary": user_task_execution.summary,
+                    "session_id": user_task_execution.session_id,
+                    "json_inputs_values": None if all(input.get('value') is None for input in user_task_execution.json_input_values) else user_task_execution.json_input_values,
+                    "icon": user_task_execution.task.icon,
+                    "task_name": user_task_execution.task_name_in_user_language,
+                    "task_type": user_task_execution.task.type,
+                    "result_chat_enabled": user_task_execution.task.result_chat_enabled,
+                    "actions": user_task_execution.predefined_actions,
+                    "user_task_pk": user_task_execution.user_task_fk,
+                    "n_todos": user_task_execution.n_todos,
+                    "n_not_read_todos": user_task_execution.n_todos_not_read,
+                    "produced_text_pk": user_task_execution.last_produced_text_version.produced_text_fk if user_task_execution.last_produced_text_version else None,
+                    "produced_text_title": user_task_execution.last_produced_text_version.title if user_task_execution.last_produced_text_version else None,
+                    "produced_text_production": user_task_execution.last_produced_text_version.production if user_task_execution.last_produced_text_version else None,
+                    "produced_text_version_pk": user_task_execution.last_produced_text_version.produced_text_version_pk if user_task_execution.last_produced_text_version else None,
+                    "produced_text_version_index": user_task_execution.n_produced_text_version,
+                    "text_edit_actions": recover_text_edit_actions(user_task_execution.user_task_fk),
+                    "working_on_todos": user_task_execution.todos_extracted is None,
+                    "steps": workflow_execution.steps_as_json if workflow_execution else None,
+                    "step_executions": workflow_execution.steps_execution_as_json if workflow_execution else None,
                 }, 200
 
             n_user_task_executions = min(50,
                                          int(request.args[
                                                  "n_user_task_executions"])) if "n_user_task_executions" in request.args else 50
             offset = int(request.args["offset"]) if "offset" in request.args else 0
-
-            produced_text_subquery = db.session.query(MdProducedText.produced_text_pk,
-                                                      MdProducedText.user_task_execution_fk.label(
-                                                          'user_task_execution_fk'),
-                                                      MdProducedTextVersion.title.label('produced_text_title'),
-                                                      MdProducedTextVersion.production.label(
-                                                          'produced_text_production'),
-                                                      MdProducedTextVersion.produced_text_version_pk.label(
-                                                          'produced_text_version_pk'),
-                                                      func.row_number().over(
-                                                              partition_by=MdProducedText.user_task_execution_fk,
-                                                              order_by=MdProducedTextVersion.creation_date.asc()).label(
-                                                              'row_number')) \
-                .join(MdProducedTextVersion, MdProducedTextVersion.produced_text_fk == MdProducedText.produced_text_pk) \
-                .subquery()
-            
-            highest_row_number_subquery = db.session.query(
-                produced_text_subquery.c.user_task_execution_fk,
-                func.max(produced_text_subquery.c.row_number).label('max_row_number')
-                ).group_by(produced_text_subquery.c.user_task_execution_fk).subquery()
 
           
             result = (db.session.query(DBUserTaskExecution)
@@ -447,12 +394,12 @@ class UserTaskExecution(Resource):
                       .all())
 
 
-           # def get_workflow_specific_data(row):
-           #     workflow_execution = db.session.query(UserWorkflowExecution).get(row["UserTaskExecution"].user_task_execution_pk)
-           #     return {
-           #         "steps": workflow_execution.task.get_json_steps_with_translation(row["language_code"]),
-           #         "step_executions": workflow_execution.get_steps_execution_json()
-           #     }
+            def get_workflow_specific_data(user_task_execution_pk):
+                workflow_execution : UserWorkflowExecution = db.session.query(UserWorkflowExecution).get(user_task_execution_pk)
+                return {
+                    "steps": workflow_execution.steps_as_json,
+                    "step_executions": workflow_execution.steps_execution_as_json
+                }
             
 
             results_list = [{
@@ -482,7 +429,7 @@ class UserTaskExecution(Resource):
                 "produced_text_version_index": user_task_execution.n_produced_text_version,
                 "text_edit_actions": recover_text_edit_actions(user_task_execution.user_task_fk),
                 "working_on_todos": user_task_execution.todos_extracted is None,
-              #  **(get_workflow_specific_data(user_task_execution) if user_task_execution.task.type == "workflow" else {})
+                **(get_workflow_specific_data(user_task_execution.user_task_execution_pk) if user_task_execution.task.type == "workflow" else {})
 
             } for user_task_execution in user_task_executions]
 

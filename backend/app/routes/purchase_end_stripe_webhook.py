@@ -5,7 +5,7 @@ from flask import request
 from flask_restful import Resource
 from app import db
 from mojodex_core.entities.db_base_entities import *
-from mojodex_core.mail import send_admin_email
+from mojodex_core.email_sender.email_service import EmailService
 from mojodex_core.logging_handler import log_error
 
 from mojodex_backend_logger import MojodexBackendLogger
@@ -50,7 +50,7 @@ class PurchaseEndStripeWebHook(Resource):
             if purchase is None:
                 log_error(f"Purchase with subscription_stripe_id {subscription_id} does not exist in mojodex db")
                 message = f"Subscription id {subscription_id} ended but associated purchase was not found in db"
-                send_admin_email(subject="URGENT: Subscription end error",
+                EmailService().send(subject="URGENT: Subscription end error",
                                            recipients=PurchaseManager.purchases_email_receivers,
                                            text=message)
 
@@ -64,7 +64,7 @@ class PurchaseEndStripeWebHook(Resource):
             user_email = db.session.query(MdUser.email).filter(MdUser.user_id == purchase.user_id).first()[0]
             try:
                 message = f"Subscription of user {user_email} ended"
-                send_admin_email(subject="A client subscription ended",
+                EmailService().send(subject="A client subscription ended",
                                            recipients=PurchaseManager.purchases_email_receivers,
                                            text=message)
             except Exception as e:
@@ -76,7 +76,7 @@ class PurchaseEndStripeWebHook(Resource):
         except Exception as e:
             log_error(f"Error in stripe webhook ending purchase: {e}")
             message = f"A subscription end error occurred : {e}\n See [https://dashboard.stripe.com/] for more details"
-            send_admin_email(subject="URGENT: End of subscription error",
+            EmailService().send(subject="URGENT: End of subscription error",
                                        recipients=PurchaseManager.purchases_email_receivers,
                                        text=message)
             return {"error": f"Error in stripe webhook ending purchase: {e}"}, 409

@@ -10,10 +10,8 @@ from mojodex_core.logging_handler import log_error
 from mojodex_core.entities.db_base_entities import MdPurchase, MdProduct, MdProductCategory, MdUser, MdEvent
 from models.purchase_manager import PurchaseManager
 
-from mojodex_core.mail import send_admin_email
+from mojodex_core.email_sender.email_service import EmailService
 from sqlalchemy import or_
-
-from mojodex_core.mail import mojo_mail_client
 from datetime import datetime
 
 class FreeProductAssociation(Resource):
@@ -89,7 +87,7 @@ class FreeProductAssociation(Resource):
 
             try:
                 message = f"Free product {product.label} associated for user user_id: {user_id} email: {user.email}"
-                send_admin_email(subject="Free product associated",
+                EmailService().send(subject="Free product associated",
                                  recipients=PurchaseManager.purchases_email_receivers,
                                  text=message)
             except Exception as e:
@@ -122,8 +120,8 @@ class FreeProductAssociation(Resource):
                     log_error(f"Error parsing welcome email {email_file} : {e}", notify_admin=True)
                     subject = "Welcome to Mojodex"
 
-                if mojo_mail_client:
-                    mojo_mail_client.send_email(subject=subject,
+                if EmailService().configured:
+                    EmailService().send(subject=subject,
                                                recipients=[user.email],
                                                html_body=email_content)
                     # add notification to db

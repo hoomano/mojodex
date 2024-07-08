@@ -1,7 +1,7 @@
 from background_logger import BackgroundLogger
 from mojodex_core.json_loader import json_decode_retry
 
-from mojodex_core.mail import send_technical_error_email
+from mojodex_core.email_sender.email_service import EmailService
 from mojodex_core.logging_handler import on_json_error
 
 from models.events.events_generator import EventsGenerator
@@ -45,10 +45,10 @@ class CalendarSuggestionNotificationsGenerator(EventsGenerator):
                     self.send_event(user_id, message={"title": notification_title, "body": notification_body},
                                     event_type="calendar_suggestion_notification", data=data)
                 except Exception as e:
-                    send_technical_error_email(
+                    EmailService().send_technical_error_email(
                         f"{self.logger.name} : Error preparing notification for user {user_id}: {e}")
         except Exception as e:
-            send_technical_error_email(
+            EmailService().send_technical_error_email(
                 f"{self.logger.name} : Error preparing notifications: {e}")
 
     @json_decode_retry(retries=3, required_keys=["title", "message"], on_json_error=on_json_error)

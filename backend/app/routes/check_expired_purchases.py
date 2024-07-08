@@ -12,7 +12,7 @@ from models.purchase_manager import PurchaseManager
 
 from sqlalchemy import func, text
 
-from mojodex_core.mail import send_admin_email
+from mojodex_core.email_sender.email_service import EmailService
 from datetime import datetime
 
 class ExpiredPurchasesChecker(Resource):
@@ -65,7 +65,7 @@ class ExpiredPurchasesChecker(Resource):
                 try:
                     message = f"Purchase {expired_active_purchase.purchase_pk} of user user_id: {user.user_id} email: {user.email} " \
                               f"has been deactivated because its validity period has expired"
-                    send_admin_email(subject="🚨 A purchase has expired",
+                    EmailService().send(subject="🚨 A purchase has expired",
                                      recipients=PurchaseManager.purchases_email_receivers,
                                      text=message)
                 except Exception as e:

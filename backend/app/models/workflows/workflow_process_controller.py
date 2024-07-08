@@ -6,7 +6,7 @@ from mojodex_core.entities.db_base_entities import MdMessage
 from mojodex_core.db import MojodexCoreDB, Session
 from mojodex_core.entities.user_workflow_execution import UserWorkflowExecution
 from mojodex_core.entities.user_workflow_step_execution import UserWorkflowStepExecution
-from mojodex_core.mail import send_technical_error_email
+from mojodex_core.email_sender.email_service import EmailService
 from mojodex_core.task_execution_title_summary_generator import TaskExecutionTitleSummaryGenerator
 from datetime import datetime
 
@@ -260,5 +260,5 @@ class WorkflowProcessController:
             self.db_session.commit()
             # send email to admin
             print(f"🔴 {self.logger_prefix} - _execute_step :: {e}")
-            send_technical_error_email(
+            EmailService().send_technical_error_email(
                 f"Error while executing step {workflow_step_execution.user_workflow_step_execution_pk} for user {workflow_step_execution.user_task_execution.user.user_id} : {e}")

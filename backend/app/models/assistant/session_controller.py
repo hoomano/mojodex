@@ -18,6 +18,7 @@ from sqlalchemy.orm.attributes import flag_modified
 from mojodex_core.db import MojodexCoreDB
 from mojodex_core.db import Session as DbSession
 from mojodex_core.task_execution_title_summary_generator import TaskExecutionTitleSummaryGenerator
+from mojodex_core.user_storage_manager.user_audio_file_manager import UserAudioFileManager
 from datetime import datetime
 
 class SessionController:
@@ -260,10 +261,8 @@ class SessionController:
             socketio_message_sender.send_mojo_message_with_ack(response_message, self.session.session_id,
                                                                event_name=event_name)
             if response_message["audio"]:
-                from mojodex_core.user_storage_manager.user_audio_file_manager import UserAudioFileManager
-                user_audio_file_manager = UserAudioFileManager()
                 output_filename = os.path.join(
-                    user_audio_file_manager.get_mojo_messages_audio_storage(self.session.user_id,
+                    UserAudioFileManager().get_mojo_messages_audio_storage(self.session.user_id,
                                                                             self.session.session_id),
                     f"{message_pk}.mp3")
                 try:

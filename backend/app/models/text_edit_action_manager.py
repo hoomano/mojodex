@@ -8,7 +8,7 @@ from mojodex_core.llm_engine.providers.model_loader import ModelLoader
 from mojodex_core.produced_text_managers.produced_text_manager import ProducedTextManager
 from mojodex_core.produced_text_managers.task_produced_text_manager import TaskProducedTextManager
 from datetime import datetime
-
+from mojodex_core.user_storage_manager.user_audio_file_manager import UserAudioFileManager
 from mojodex_core.tag_manager import TagManager
 
 class TextEditActionManager:
@@ -144,9 +144,8 @@ class TextEditActionManager:
     def __text_to_speech(self, message, db_message):
 
         try:
-            from mojodex_core.user_storage_manager.user_audio_file_manager import UserAudioFileManager
-            user_audio_file_manager = UserAudioFileManager()
-            mojo_messages_audio_storage = user_audio_file_manager.get_mojo_messages_audio_storage(
+            
+            mojo_messages_audio_storage = UserAudioFileManager().get_mojo_messages_audio_storage(
                 self.user_id, self.session_id)
 
             # Define the output filename

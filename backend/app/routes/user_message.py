@@ -1,12 +1,11 @@
-import os
 from flask import request
 from flask_restful import Resource
-from app import db, authenticate, server_socket, time_manager, main_logger
+from app import db, authenticate, server_socket, time_manager
 from mojodex_core.entities.message import Message
 from mojodex_core.logging_handler import log_error
 from mojodex_core.entities.db_base_entities import *
 from models.assistant.session_controller import SessionController
-from mojodex_core.user_storage_manager.user_audio_file_manager import UserAudioFileManager
+from mojodex_core.stt.stt import STTService
 from packaging import version
 from datetime import datetime
 
@@ -14,14 +13,6 @@ class UserMessage(Resource):
     general_backend_error_message = "Oops, something weird has happened. We'll help you by email!"
 
     def __init__(self):
-        try:
-            if 'WHISPER_AZURE_OPENAI_API_BASE' in os.environ:
-                self.user_audio_file_manager = UserAudioFileManager()
-            else:
-                self.user_audio_file_manager = None
-        except Exception as e:
-            self.user_audio_file_manager = None
-            main_logger.error(f"Can't initialize user_audio_file_manager: {e}")
         UserMessage.method_decorators = [authenticate()]
 
     def _acknowledge_message_reception(self, session_id):
@@ -200,14 +191,14 @@ class UserMessage(Resource):
                 extension = filename.split(".")[-1] if 'file' in request.files else None
 
                 # Prepare transcript
-                decoded_text, file_duration = self.user_audio_file_manager.extract_text_and_duration(file,
-                                                                                                     extension,
-                                                                                                     user_id,
-                                                                                                     session_id,
-                                                                                                     "user_message",
-                                                                                                     db_message.message_pk,
-                                                                                                     user_task_execution_pk=user_task_execution_pk,
-                                                                                                     task_name_for_system=task_name_for_system)
+                decoded_text, file_duration = STTService().extract_text_and_duration(file,
+                                                                                    extension,
+                                                                                    user_id,
+                                                                                    session_id,
+                                                                                    "user_message",
+                                                                                    db_message.message_pk,
+                                                                                    user_task_execution_pk=user_task_execution_pk,
+                                                                                    task_name_for_system=task_name_for_system)
 
                 # Update db_message.message with the transcript
                 db_message.message = {"text": decoded_text, "message_pk": db_message.message_pk,

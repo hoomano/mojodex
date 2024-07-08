@@ -27,68 +27,107 @@ HttpRouteManager(api)
 The API routes are all defined in `background/app/http_routes.py` in the `HttpRouteManager` class, pointing to related Flask Resources in `background/app/routes/`.
 
 ## Usage
-When Mojodex's Backend calls Mojodex's Background to manage a process, it sends a request using REST API. Then, the route always process as follow:
+When Mojodex's Backend calls Mojodex's Background to manage a process, it sends a request using REST API. Then, the route uses the app `ThreadPoolExecutor executor` to launch the required process in a parallel thread and return a 200 status code to the Backend to indicate that the process has been launched.
 
-The Cortex are (mainly) located in `background/app/models/cortex`directory (those that are not may be refactored in coming updates). Those Cortex are classes implemented by the requested Flask Resource with 2 objectives:
+Access to the database within parallel threads is done by decorating methods requiring this access with decorator `@with_db_session`. This decorator opens a new Session accessing the database, executes the decorated method and closes the session. This ensures no database session will remain open after the method is executed.
 
-- 1. Load all data needed for the process from the database. This is done synchronously in the constructor of the Cortex. This is to keep database access in the main thread and avoid database lock issues.
+Finally, if any data needs to be inserted or updated in the database, this is done by calling a Backend API route from the Cortex. This way, we ensure responsability segregation and every data written in the database is done by the Backend.
 
-- 2. Process the data in the main method of the Cortext in a parallel thread launched in the Flask Resource. This main method does not have a consistent name for now and is specific to each process/cortex. An abstract class `Cortex`should be added in the future to ensure a consistent structure for all cortexes.
+Here is an example of a parallel process to extract To-Do items from a task:
 
-> Note: "Cortex" name is a reference to the outer most layer of the brain. The cortex is involved in higher processes in the human brain, including memory, thinking, learning, reasoning, problem-solving, emotions, consciousness and functions related to your senses. Here, this is an abstraction to suggest the autonomy of this technical component regarding its process.
-
-If any additional data from the database is needed during the process, a request to the Backend will retrieve it.
-
-- 3. Finally, if any data needs to be inserted or updated in the database, this is done by calling a Backend API route from the Cortex. This way, we ensure responsability segregation and every data written in the database is done by the Backend.
-
+`background/app/models/todos/todos_creator.py`
 ```python
-class Cortex:
+class TodosCreator:
 
-    def __init__(self, user_task_execution):
-        # Load all data needed for the process from the database
+    # The instanciation is done by passing a key and not a DB object to avoid keeping a DB session open while a parallel thread using this object will be launched
+    def __init__(self, user_task_execution_pk):
+        self.user_task_execution_pk = user_task_execution_pk
         
+    # This is the method launched in a parallel thread
+    def extract_and_save(self):
+        collected_data = self._collect_data()
+        json_todos = self._extract(*collected_data)
+        [...]
+        self._save_to_db(todo['todo_definition'], todo['due_date'])
 
-    def main_method(self):
-        # Run process
-        # Send created or updated data to backend for update in database
+    @with_db_session
+    def _collect_data(self, db_session):
+        # This method uses a dedicated db_session to access the database and retrieve all the data needed for the process
+        # It does not return any DB object but only required data to avoid keeping the DB session open
+        [...]
+        user = db_session.query(User) ...
+        [...]
+        return user.user_id, user.datetime_context, user.name, ...
+
+    def _extract(self, user_id, datetime_context, name, ...):
+        # This method processes the raw data provided by _collect_data to extract To-Do items
+        [...]
+
+    def _save_to_db(self, description, due_date):
+        # This method calls the Backend API to save the To-Do item in the database
+        # This way, the Background is not responsible for writing in the database
+        [...]
+        uri = f"{os.environ['MOJODEX_BACKEND_URI']}/{TodosCreator.todos_url}"
+        [...]
+        internal_request = requests.put(uri, json=pload, headers=headers)
+        [...]
 ```
+
+This process is launched when calling route `background/app/routes/extract_todos.py` from the Backend:
+```python
+class ExtractTodos(Resource):
+
+    def post(self):
+        [...]
+        todos_creator = TodosCreator(user_task_execution_pk)
+        executor.submit(todos_creator.extract_and_save)
+        return {"success": "Process started"}, 200
+```
+
 
 ## Functionalities
 
-For now, Mojodex's Background manages 8 processes:
+For now, Mojodex's Background manages 5 processes:
 
 ### ExtractTodos
-- Resource: `background/app/routes/extract_todos.py`
-- Cortex: `background/app/models/cortex/extract_todos_cortex.py`
-- Launched from: `backend/app/routes/extract_todos.py`
+- Route: `background/app/routes/extract_todos.py`
+- Service: `background/app/models/todos/todos_creator.py`
 
-This process is launched at the end of a task to extract any next step the user could have mentioned explictely in the task process and turn those into To-Do items to add to the user's To-Do list.
+This process is launched at the end of a task to extract any next step the user could have mentioned explicitely in the task process and turn those into To-Do items to add to the user's To-Do list.
+It is triggered by the Scheduler, calling the Backend that collects ended tasks that have not been processed yet and calls the Background to launch the extraction process for each of those tasks.
 
 ### RescheduleTodo
-- Resource: `background/app/routes/reschedule_todo.py`
-- Cortex: `background/app/models/cortex/reschedule_todo_cortex.py`
-- Launched from: `backend/app/routes/todo_scheduling.py`
+- Route: `background/app/routes/reschedule_todo.py`
+- Service: `background/app/models/todos/todos_rescheduler.py`
 
 This process is called to reschedule a To-Do item that passed its due date without being deleted or marked as completed.
+It is triggered by the Scheduler, calling the Backend that collects To-Do items that have passed their due date and calls the Background to launch the rescheduling process for each of those To-Do items.
 
 ### CreateDocumentFromWebsite
-- Resource: `background/app/routes/parse_website.py`
-- Launched from: `backend/app/routes/company.py` && `backend/app/routes/resource.py`
+- Resource: `background/app/routes/create_document_from_website.py`
+- Service: Uses `mojodex_core.website_parser` to parse the website, extract its content and turn it into a document.
 
-This process is called to parse a website, extract its content, cut it into chunks and load it in database as a document. It is used when user provides a new website as resource.
+This process is called to parse a website, extract its content, cut it into chunks, vectorized and load it in database as a document. It is used when user provides a new website as resource. It is useful to launch it in background because the process of validating chunks that are relevant and embedding them can be long.
 
 ### UpdateDocument
 - Resource: `background/app/routes/update_document.py`
-- Launched from: `backend/app/routes/resource.py`
+- Service: Uses `mojodex_core.website_parser` if the document is a website, `Document.update` otherwise.
 
 This process is called to update a document in the database when user provides a new version of a resource.
+If the document is a website, it will parse the website again, extract its content, cut it into chunks, vectorized and update associated document in database.
+If the document is not a website but directly a text, it will only update the document in database.
+Anyway, the process of updating a document requires embedding the new version, which take time and therefore is launched through the Background.
 
 ### EventsGeneration
 - Resource: `background/app/routes/event_generation.py`
 - Cortex: `background/app/models/events/event_generator.py` (abstract class, implementation depends on parameters of request)
 
-This process is called any time the backend wants to send a notification to the user whether it is a mail, push notification... The Background is only responsible for notification content generation.
+This process is called any time the Backend wants to send a notification to the user whether it is a mail, push notification... The Background is only responsible for notification content generation.
+For now, 2 types of events are generated:
+- calendar_suggestions: will be removed soon
+- todo_daily_emails: An email to remind the user of his To-Do items for the day. Launched from the Scheduler every day at 8am, the Backend selects the user that opted-in this option and triggers the Background to generate the email content.
 
+Once the content of the notification is generated, it is sent back to the Backend which is responsible to handle it by logging it in DB and sending it with the correct service to the user.
 
 ## System 1/System 2 Abstraction
 

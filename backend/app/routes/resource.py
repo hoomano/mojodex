@@ -1,22 +1,23 @@
 import os
-
-
 import requests
 from flask import request
 from flask_restful import Resource
-from app import db, document_manager, authenticate, executor, translator
+from app import db, authenticate, server_socket, translator
+from mojodex_core.db import with_db_session
+from mojodex_core.documents.website_parser import WebsiteParser
+from mojodex_core.entities.document import Document
 from mojodex_core.logging_handler import log_error
-from mojodex_core.entities.db_base_entities import *
-
-from models.documents.website_parser import WebsiteParser
+from mojodex_core.entities.db_base_entities import MdCompany, MdUser
 from typing import List, Dict, Any
 from datetime import datetime
+
 class MojoResource(Resource):
 
 
     def __init__(self):
         MojoResource.method_decorators = [authenticate()]
-        self.website_parser = WebsiteParser()
+
+
 
     def put(self, user_id):
         if not request.is_json:
@@ -35,45 +36,38 @@ class MojoResource(Resource):
             user = db.session.query(MdUser).filter(MdUser.user_id == user_id).first()
 
             try:
-                website_url = self.website_parser.check_url_validity(website_url)
+                website_url = WebsiteParser().check_url_validity(website_url)
                 website_url = website_url[:-1] if website_url[-1] == "/" else website_url
             except Exception:
                 return {"error": "invalid_url"}, 400
 
             # check website does not already exist for this user
-            document = db.session.query(MdDocument) \
-                .filter(MdDocument.author_user_id == user_id) \
-                .filter(MdDocument.name == website_url) \
+            document: Document = db.session.query(Document) \
+                .filter(Document.author_user_id == user_id) \
+                .filter(Document.name == website_url) \
                 .first()
             if document is not None:
                 if document.deleted_by_user:  # If document exists but is deleted, undelete it and update it
                     document.deleted_by_user = False
                     db.session.commit()
 
-                    def update_document(document_pk, user_id, edition):
-                        # call background backend /end_user_task_execution to update document
-                        uri = f"{os.environ['BACKGROUND_BACKEND_URI']}/update_document"
-                        pload = {'datetime': datetime.now().isoformat(), "user_id": user_id,
-                                 "document_pk": document_pk, "edition": edition}
-                        internal_request = requests.post(uri, json=pload)
-                        if internal_request.status_code != 200:
-                            log_error(f"Error while calling background update_document : {internal_request.json()}")
-
-                    executor.submit(update_document, document.document_pk, user_id, None)
+                    # call background backend /update_document to update document
+                    uri = f"{os.environ['BACKGROUND_BACKEND_URI']}/update_document"
+                    pload = {'datetime': datetime.now().isoformat(), 'document_pk': document.document_pk, "user_id": user_id, "edition": None}
+                    internal_request = requests.post(uri, json=pload)
+                    if internal_request.status_code != 200:
+                        log_error(f"Error while calling background update_document : {internal_request.json()}")
                     return {"success": "ok"}, 200
 
                 return {"error": "Website already exist in user's documents"}, 400
 
-            def website_to_document(website_url, user_id, company_pk):
-                # call background backend /end_user_task_execution to parse website
-                uri = f"{os.environ['BACKGROUND_BACKEND_URI']}/parse_website"
-                pload = {'datetime': datetime.now().isoformat(), 'website_url': website_url, "user_id": user_id,
-                         "company_pk": company_pk}
-                internal_request = requests.post(uri, json=pload)
-                if internal_request.status_code != 200:
-                    log_error(f"Error while calling background parse_website : {internal_request.json()}")
 
-            executor.submit(website_to_document, website_url, user_id, user.company_fk)
+            # call background backend /create_document_from_website to create document from website
+            uri = f"{os.environ['BACKGROUND_BACKEND_URI']}/create_document_from_website"
+            pload = {'datetime': datetime.now().isoformat(), 'website_url': website_url, "user_id": user_id}
+            internal_request = requests.post(uri, json=pload)
+            if internal_request.status_code != 200:
+                log_error(f"Error while calling background create_document_from_website : {internal_request.json()}")
 
             return {"success": "ok"}, 200
         except Exception as e:
@@ -109,26 +103,22 @@ class MojoResource(Resource):
                 db.session.commit()
                 return {"document_pk": document_pk}, 200
 
-            document = db.session.query(MdDocument) \
-                .filter(MdDocument.document_pk == document_pk) \
-                .filter(MdDocument.author_user_id == user_id) \
-                .filter(MdDocument.deleted_by_user == False) \
+            document: Document = db.session.query(Document) \
+                .filter(Document.document_pk == document_pk) \
+                .filter(Document.author_user_id == user_id) \
+                .filter(Document.deleted_by_user == False) \
                 .first()
             if document is None:
                 return {"error": "Document not found for this user"}, 404
 
             edition = request.json["edition"] if document.document_type == "learned_by_mojo" else None
 
-            def update_document(document_pk, user_id, edition):
-                # call background backend /end_user_task_execution to update update document
-                uri = f"{os.environ['BACKGROUND_BACKEND_URI']}/update_document"
-                pload = {'datetime': datetime.now().isoformat(), "user_id": user_id,
-                         "document_pk": document_pk, "edition": edition}
-                internal_request = requests.post(uri, json=pload)
-                if internal_request.status_code != 200:
-                    log_error(f"Error while calling background update_document : {internal_request.json()}")
-
-            executor.submit(update_document, document_pk, user_id, edition)
+            # call background backend /update_document to update document
+            uri = f"{os.environ['BACKGROUND_BACKEND_URI']}/update_document"
+            pload = {'datetime': datetime.now().isoformat(), 'document_pk': document_pk, "user_id": user_id, "edition": edition}
+            internal_request = requests.post(uri, json=pload)
+            if internal_request.status_code != 200:
+                log_error(f"Error while calling background update_document : {internal_request.json()}")
 
             return {"document_pk": document_pk}, 200
         except Exception as e:
@@ -150,17 +140,17 @@ class MojoResource(Resource):
             n_resources = min(50, int(request.args[
                                           "n_resources"])) if "n_resources" in request.args else 50
             offset = int(request.args["offset"]) if "offset" in request.args else 0
-            result = db.session.query(MdDocument, MdUser) \
-                .join(MdUser, MdUser.user_id == MdDocument.author_user_id) \
-                .filter(MdDocument.author_user_id == user_id) \
-                .filter(MdDocument.deleted_by_user == False)
+            result = db.session.query(Document, MdUser) \
+                .join(MdUser, MdUser.user_id == Document.author_user_id) \
+                .filter(Document.author_user_id == user_id) \
+                .filter(Document.deleted_by_user == False)
 
             if learned_by_mojo:
-                result = result.filter(MdDocument.document_type == "learned_by_mojo")
+                result = result.filter(Document.document_type == "learned_by_mojo")
             else:
-                result = result.filter(MdDocument.document_type != "learned_by_mojo")
+                result = result.filter(Document.document_type != "learned_by_mojo")
 
-            result = result.order_by(MdDocument.creation_date.desc()) \
+            result = result.order_by(Document.creation_date.desc()) \
                 .limit(n_resources) \
                 .offset(offset) \
                 .all()
@@ -172,13 +162,10 @@ class MojoResource(Resource):
                                "author": author.name,
                                "creation_date": document.creation_date.isoformat(),
                                "last_update_date": document.last_update_date.isoformat() if document.last_update_date is not None else document.creation_date.isoformat(),
+                               "text": document.text
                                } for document, author in result] if result is not None else []
 
             if learned_by_mojo:
-                for document_index in range(len(documents_list)):
-                    document_text = document_manager.get_text(documents_list[document_index]["document_pk"])
-                    documents_list[document_index]["text"] = document_text
-
                 if offset == 0:
                     user = db.session.query(MdUser).filter(MdUser.user_id == user_id).first()
                     if user.summary is not None:
@@ -221,10 +208,10 @@ class MojoResource(Resource):
 
         try:
             # check document for this user exists
-            document = db.session.query(MdDocument) \
-                .filter(MdDocument.document_pk == document_pk) \
-                .filter(MdDocument.author_user_id == user_id) \
-                .filter(MdDocument.deleted_by_user == False) \
+            document: Document = db.session.query(Document) \
+                .filter(Document.document_pk == document_pk) \
+                .filter(Document.author_user_id == user_id) \
+                .filter(Document.deleted_by_user == False) \
                 .first()
             if document is None:
                 return {"error": "Document not found for this user"}, 404

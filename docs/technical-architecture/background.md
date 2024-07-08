@@ -57,20 +57,6 @@ class Cortex:
 
 For now, Mojodex's Background manages 8 processes:
 
-### UserTaskExecutionTitleAndSummary
-- Resource: `background/app/routes/user_task_execution_title_and_summary.py`
-- Cortex: `background/app/models/cortex/user_task_execution_title_and_summary_cortex.py`
-- Launched from: `backend/app/models/tasks/task_manager.py`
-
-This process is called each time the user sends a message to a task. It updates (or creates if not exists) the title and summary of the task from the ongoing conversation.
-
-### FirstSessionMessage
-- Resource: `background/app/routes/first_session_message.py`
-- Cortex: `background/app/models/cortex/first_session_message_cortex.py`
-- Launched from: `backend/app/models/session.py`
-
-This process is called when a user starts a new session. It generates a session title that could be useful to identify the session later, in a history interface for example.
-
 ### ExtractTodos
 - Resource: `background/app/routes/extract_todos.py`
 - Cortex: `background/app/models/cortex/extract_todos_cortex.py`
@@ -85,16 +71,14 @@ This process is launched at the end of a task to extract any next step the user 
 
 This process is called to reschedule a To-Do item that passed its due date without being deleted or marked as completed.
 
-### ParseWebsite
+### CreateDocumentFromWebsite
 - Resource: `background/app/routes/parse_website.py`
-- Cortex: `background/app/models/document/website_parser.py`
 - Launched from: `backend/app/routes/company.py` && `backend/app/routes/resource.py`
 
 This process is called to parse a website, extract its content, cut it into chunks and load it in database as a document. It is used when user provides a new website as resource.
 
 ### UpdateDocument
 - Resource: `background/app/routes/update_document.py`
-- Cortex: `background/app/models/document/website_parser.py` || `background/app/models/document/document_manager.py` depending if the update is an edition or addition.
 - Launched from: `backend/app/routes/resource.py`
 
 This process is called to update a document in the database when user provides a new version of a resource.

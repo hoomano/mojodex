@@ -78,9 +78,9 @@ This process is launched at the end of a task to extract any next step the user 
 
 This process is called to reschedule a To-Do item that passed its due date without being deleted or marked as completed.
 
-### ParseWebsite
-- Resource: `background/app/routes/parse_website.py`
-- Cortex: `background/app/models/document/website_parser.py`
+### CreateDocumentFromWebsite
+- Resource: `background/app/routes/create_document_from_website.py`
+- Cortex: `background/app/models/document/create_document_from_website.py`
 - Launched from: `backend/app/routes/company.py` && `backend/app/routes/resource.py`
 
 This process is called to parse a website, extract its content, cut it into chunks and load it in database as a document. It is used when user provides a new website as resource.

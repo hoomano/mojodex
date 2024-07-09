@@ -57,15 +57,3 @@ OPENAI_API_KEY=<your api key here>
 
 # [ollama/mistral:instruct]
 # OLLAMA_ENDPOINT=http://mojodex_ollama:11434
-
-
-# ### Embeddings
-
-[openai/text-embedding-ada-002]
-OPENAI_API_KEY=<your api key>
-
-# [azure/text-embedding-ada-002]
-# ADA_EMBEDDING_AZURE_OPENAI_API_BASE=
-# ADA_EMBEDDING_AZURE_OPENAI_DEPLOYMENT_ID=
-# ADA_EMBEDDING_AZURE_OPENAI_API_VERSION=
-# ADA_EMBEDDING_AZURE_OPENAI_KEY=

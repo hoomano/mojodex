@@ -8,7 +8,7 @@ class RescheduleTodos(ScheduledTask):
 
     def job(self):
         try:
-            uri = f"{os.environ['BACKGROUND_BACKEND_URI']}/todos_scheduling"
+            uri = f"{os.environ['BACKGROUND_BACKEND_URI']}/reschedule_todo"
             pload = {'datetime': datetime.now().isoformat() }
             headers = {'Content-Type': 'application/json'}
             internal_request = requests.post(uri, json=pload, headers=headers)

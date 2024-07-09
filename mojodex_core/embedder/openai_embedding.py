@@ -15,19 +15,13 @@ class OpenAIEmbedding(EmbeddingProvider):
     default_embedding_model = "text-embedding-ada-002"
     
     
-    def __init__(self, embedding_conf):
+    def __init__(self, model, api_key, api_type, deployment=None, api_base=None, api_version=None):
         try:
-            api_key = embedding_conf["api_key"] if "api_key" in embedding_conf else None
-            api_base = embedding_conf["api_base"] if "api_base" in embedding_conf else None
-            api_version = embedding_conf["api_version"] if "api_version" in embedding_conf else None
-            api_type = embedding_conf["api_type"] if "api_type" in embedding_conf else "openai"
-            model = embedding_conf["deployment_id"] if "deployment_id" in embedding_conf else embedding_conf["model"]
-
             self.model = model
             self.client = AzureOpenAI(
                 api_version=api_version,
                 azure_endpoint=api_base,
-                azure_deployment=self.model,
+                azure_deployment=deployment,
                 api_key=api_key,
             ) if api_type == 'azure' else OpenAI(api_key=api_key)
 

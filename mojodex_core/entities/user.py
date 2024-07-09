@@ -132,3 +132,5 @@ class User(MdUser):
                 .all()
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} :: today_rescheduled_todo :: {e}")
+        
+

@@ -159,6 +159,7 @@ class TodoDailyEmails(Resource):
 
             deleted_todos_today = [deleted_todo_today._asdict() for deleted_todo_today in deleted_todos_today]
 
+            os.environ['DAILY_TODO_EMAIL_TIME'] = "11"
             # Users whose timezone is not null and whose hour is between 8 and 9 am and who are not on weekends
             base_user_query = db.session.query(User) \
                 .filter(User.timezone_offset != None) \

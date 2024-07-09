@@ -1,4 +1,3 @@
-from datetime import datetime
 from sqlalchemy import func
 from mojodex_core.db import with_db_session
 from mojodex_core.entities.db_base_entities import MdTodo, MdTodoScheduling
@@ -9,9 +8,8 @@ from mojodex_core.json_loader import json_decode_retry
 from mojodex_core.logging_handler import on_json_error
 from mojodex_core.knowledge_manager import KnowledgeManager
 from mojodex_core.email_sender.email_service import EmailService
-
 from mojodex_core.llm_engine.mpt import MPT
-
+from datetime import datetime
 
 class TodosCreator:
 

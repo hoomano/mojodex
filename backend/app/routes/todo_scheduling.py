@@ -11,65 +11,6 @@ from datetime import datetime, timedelta, timezone
 class TodosScheduling(Resource):
 
 
-    # adding new todo scheduling
-    def put(self):
-        if not request.is_json:
-            return {"error": "Invalid request"}, 400
-
-        try:
-            secret = request.headers['Authorization']
-            if secret != os.environ["MOJODEX_BACKGROUND_SECRET"]:
-                log_error(f"Error creating new todo scheduling: Authentication error : Wrong secret")
-                return {"error": "Authentication error : Wrong secret"}, 403
-        except KeyError:
-            log_error(f"Error creating new todo scheduling: Missing Authorization secret in headers")
-            return {"error": f"Missing Authorization secret in headers"}, 403
-
-        # data
-        try:
-            timestamp = request.json["datetime"]
-            todo_fk = request.json["todo_fk"]
-            argument = request.json["argument"]
-            reschedule_date = request.json["reschedule_date"] if "reschedule_date" in request.json else None
-            if reschedule_date:
-                try:
-                    reschedule_date = datetime.strptime(reschedule_date, "%Y-%m-%d")
-                except ValueError:
-                    return {"error": f"Invalid due_date {reschedule_date}"}, 400
-
-        except KeyError as e:
-            return {"error": f"Missing field {e}"}, 400
-
-        # Logic
-        try:
-            if reschedule_date:
-                # create todo_scheduling
-                new_todo_scheduling = MdTodoScheduling(
-                    todo_fk=todo_fk,
-                    scheduled_date=reschedule_date,
-                    reschedule_justification=argument
-                )
-
-                db.session.add(new_todo_scheduling)
-                db.session.commit()
-                return {"todo_pk": todo_fk, "todo_scheduling_pk": new_todo_scheduling.todo_scheduling_pk}, 200
-
-            # get md_todo
-            todo = db.session.query(MdTodo).filter(MdTodo.todo_pk == todo_fk).first()
-            if not todo:
-                return {"error": f"Todo {todo_fk} not found"}, 404
-            todo.deleted_by_mojo = datetime.now()
-            todo.deletion_justification = argument
-            db.session.commit()
-
-            return {"todo_pk": todo_fk}, 200
-
-        except Exception as e:
-            db.session.rollback()
-            log_error(f"Error creating new todo scheduling: {e}")
-            return {"error": f"Error creating new todo scheduling: {e}"}, 400
-
-
     # reschedule todo route for scheduler
     def post(self):
         if not request.is_json:

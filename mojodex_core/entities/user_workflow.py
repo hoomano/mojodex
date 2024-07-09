@@ -13,3 +13,13 @@ class UserWorkflow(UserTask):
             return session.query(Workflow).filter(Workflow.task_pk == self.task_fk).first()
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} :: task :: {e}")
+        
+    @property
+    def steps_as_json(self):
+        """
+        Returns steps of the workflows as json in user's language
+        """
+        try:
+            return self.task.get_json_steps_with_translation(self.user.language_code)
+        except Exception as e:
+            raise Exception(f"{self.__class__.__name__} :: get_json_steps :: {e}")

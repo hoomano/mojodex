@@ -1,5 +1,5 @@
 import os
-from app import server_socket, time_manager, socketio_message_sender, main_logger
+from app import server_socket, socketio_message_sender, main_logger
 from mojodex_core.tag_manager import TagManager
 from mojodex_core.produced_text_managers.task_produced_text_manager import TaskProducedTextManager
 from models.assistant.instruct_task_assistant import InstructTaskAssistant
@@ -18,6 +18,7 @@ from sqlalchemy.orm.attributes import flag_modified
 from mojodex_core.db import MojodexCoreDB
 from mojodex_core.db import Session as DbSession
 from mojodex_core.task_execution_title_summary_generator import TaskExecutionTitleSummaryGenerator
+from mojodex_core.time_manager import TimeManager
 from mojodex_core.user_storage_manager.user_audio_file_manager import UserAudioFileManager
 from datetime import datetime
 
@@ -416,7 +417,7 @@ class SessionController:
             if sender == Message.user_message_key:
                 message_date = message["message_date"]
                 timezone_offset = int(message["timezone_offset"])
-                message_date = time_manager.device_date_to_backend_date(message_date, timezone_offset)
+                message_date = TimeManager().device_date_to_backend_date(message_date, timezone_offset)
             else:
                 message_date = datetime.now()
             message = Message(session_id=self.session.session_id, sender=sender, event_name=event_name, message=message,

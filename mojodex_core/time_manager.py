@@ -5,6 +5,16 @@ from dateutil.parser import parse
 
 class TimeManager:
 
+    _instance = None
+    _initialized = False
+
+    def __new__(cls, *args, **kwargs):
+        if not cls._instance:
+            cls._instance = super(TimeManager, cls).__new__(
+                cls, *args, **kwargs)
+            cls._instance._initialized = False
+        return cls._instance
+
     def ensure_timezone(self, dt_str, default_tz=pytz.UTC):
         """
            This function takes a date string (`dt_str`) and an optional timezone object (`default_tz`), which defaults to UTC.
@@ -49,7 +59,6 @@ class TimeManager:
             return datetime.now(timezone.utc) - offset
         except Exception as e:
             raise Exception(f"Invalid timezone_offset : {e}")
-
 
     def backend_date_to_user_date(self, timestamp, user_timezone_offset):
         """

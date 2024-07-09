@@ -18,6 +18,7 @@ site/
 .vscode/
 venv/
 *.egg-info
+workdir/
 
 workbook.ipynb
 node_modules

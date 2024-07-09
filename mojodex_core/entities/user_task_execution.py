@@ -1,8 +1,11 @@
+from sqlalchemy import func
 from mojodex_core.entities.user_task import UserTask
-from mojodex_core.entities.db_base_entities import MdProducedTextVersion, MdUserTaskExecution, MdProducedText
+from mojodex_core.entities.db_base_entities import MdProducedTextVersion, MdTodo, MdTodoScheduling, MdUser, MdUserTask, MdUserTaskExecution, MdProducedText
 from sqlalchemy.orm import object_session
 from mojodex_core.entities.session import Session
+from datetime import datetime, timezone
 
+from mojodex_core.time_manager import TimeManager
 
 class UserTaskExecution(MdUserTaskExecution):
     """UserTaskExecution entity class that contains all the common properties and methods of an InstructUserTaskExecution or UserWorkflowExecution.
@@ -40,12 +43,6 @@ class UserTaskExecution(MdUserTaskExecution):
         except Exception as e:
             raise Exception(f"{self.__class__.__name__}:: images_input_names :: {e}")
 
-    @property
-    def task_name_in_user_language(self):
-        try:
-            return self.task.get_name_in_language(self.user.language_code)
-        except Exception as e:
-            raise Exception(f"{self.__class__.__name__} :: get_task_name_in_user_language :: {e}")
 
     @property
     def user_task(self):
@@ -91,6 +88,17 @@ class UserTaskExecution(MdUserTaskExecution):
             raise Exception(f"{self.__class__.__name__} :: produced_text :: {e}")
         
     @property
+    def n_produced_text_versions(self):
+        try:
+            session = object_session(self)
+            return session.query(MdProducedTextVersion).\
+                join(MdProducedText, MdProducedTextVersion.produced_text_fk == MdProducedText.produced_text_pk).\
+                filter(MdProducedText.user_task_execution_fk == self.user_task_execution_pk).\
+                count()
+        except Exception as e:
+            raise Exception(f"{self.__class__.__name__} :: produced_text :: {e}")
+        
+    @property
     def derives_from_a_previous_user_task_execution(self) -> bool:
         """On mobile app, some tasks can display "predefined_actions" at the end of the execution. 
         Those are other task the user can launch to chain task executions on a same subject.
@@ -119,3 +127,60 @@ class UserTaskExecution(MdUserTaskExecution):
             return previous_related_user_task_execution
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} :: previous_related_user_task_execution :: {e}")
+            
+    @property
+    def n_todos(self):
+        """
+        Returns the number of todos associated with this UserTaskExecution.
+        """
+        try:
+            session = object_session(self)
+            return  session.query(func.count(MdTodo.todo_pk)).\
+                filter(MdTodo.user_task_execution_fk == self.user_task_execution_pk).\
+                filter(MdTodo.deleted_by_user.is_(None)).\
+                scalar()
+        except Exception as e:
+            raise Exception(f"{self.__class__.__name__} :: n_todos :: {e}")
+        
+    @property
+    def n_todos_not_read(self):
+        try:
+            session = object_session(self)
+            # count the number of todos not read for a user_task_execution_pk
+            return (session.query(func.count(MdTodo.todo_pk))
+                    .filter(MdTodo.user_task_execution_fk == self.user_task_execution_pk)
+                    .filter(MdTodo.deleted_by_user.is_(None))
+                    .filter(MdTodo.read_by_user.is_(None))
+                    .filter(MdTodo.completed.is_(None))
+                    .scalar())
+        except Exception as e:
+            raise Exception(f"{self.__class__.__name__} :: n_todos_not_read :: {e}")
+        
+
+    @property
+    def start_date_user_timezone(self):
+        """
+        Returns the start date of the UserTaskExecution in the user timezone.
+        """
+        try:
+            if not self.start_date:
+                  return None
+            if self.user.timezone_offset is None:
+                return self.start_date
+            return TimeManager().backend_date_to_user_date(self.start_date, self.user.timezone_offset)
+        except Exception as e:
+            raise Exception(f"{self.__class__.__name__} :: start_date_user_timezone :: {e}")
+        
+    @property
+    def end_date_user_timezone(self):
+        """
+        Returns the end date of the UserTaskExecution in the user timezone.
+        """
+        try:
+            if not self.end_date:
+                return None
+            if self.user.timezone_offset is None:
+                return self.end_date
+            return TimeManager().backend_date_to_user_date(self.end_date, self.user.timezone_offset)
+        except Exception as e:
+            raise Exception(f"{self.__class__.__name__} :: end_date_user_timezone :: {e}")

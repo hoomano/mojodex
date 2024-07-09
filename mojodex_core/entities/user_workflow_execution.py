@@ -10,7 +10,7 @@ from sqlalchemy.sql import and_
 class UserWorkflowExecution(UserTaskExecution):
 
     @property
-    def user_task(self):
+    def user_task(self) -> UserWorkflow:
         try:
             session = object_session(self)
             return session.query(UserWorkflow).get(self.user_task_fk)
@@ -51,7 +51,8 @@ class UserWorkflowExecution(UserTaskExecution):
         except Exception as e:
             raise Exception(f"{self.__class__.__name__}:: past_valid_step_executions :: {e}")
 
-    def get_steps_execution_json(self):
+    @property
+    def steps_execution_as_json(self):
         try:
             validated_steps_json = [step_execution.to_json() for step_execution in self.past_valid_step_executions]
             last_step_execution = self.last_step_execution
@@ -136,7 +137,6 @@ class UserWorkflowExecution(UserTaskExecution):
                 .all()
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} :: get_valid_executions_of_a_step :: {e}")
-        
 
     @property
     def result(self):

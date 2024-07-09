@@ -10,8 +10,9 @@ class InstructTaskExecution(UserTaskExecution):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+
     @property
-    def user_task(self):
+    def user_task(self) -> InstructUserTask:
         try:
             session = object_session(self)
             return session.query(InstructUserTask).get(self.user_task_fk)

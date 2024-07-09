@@ -15,62 +15,7 @@ class Todos(Resource):
     def __init__(self):
         Todos.method_decorators = [authenticate(methods=["POST", "GET", "DELETE"])]
 
-    # adding new todo
-    def put(self):
-        if not request.is_json:
-            return {"error": "Invalid request"}, 400
-
-        try:
-            secret = request.headers['Authorization']
-            if secret != os.environ["MOJODEX_BACKGROUND_SECRET"]:
-                log_error(f"Error creating new todo : Authentication error : Wrong secret")
-                return {"error": "Authentication error : Wrong secret"}, 403
-        except KeyError:
-            log_error(f"Error creating new todo : Missing Authorization secret in headers")
-            return {"error": f"Missing Authorization secret in headers"}, 403
-
-        # data
-        try:
-            timestamp = request.json["datetime"]
-            description = request.json["description"]
-            due_date = request.json["due_date"]
-            try:
-                due_date = datetime.strptime(due_date, "%Y-%m-%d")
-            except ValueError:
-                return {"error": f"Invalid due_date {due_date}"}, 400
-            user_task_execution_fk = request.json["user_task_execution_fk"]
-
-        except KeyError as e:
-            return {"error": f"Missing field {e}"}, 400
-
-        # Logic
-        try:
-            # create new todo
-            new_todo = MdTodo(
-                creation_date=timestamp,
-                description=description,
-                user_task_execution_fk=user_task_execution_fk
-            )
-            db.session.add(new_todo)
-            db.session.flush()
-            db.session.refresh(new_todo)
-
-            # create todo_scheduling
-            new_todo_scheduling = MdTodoScheduling(
-                todo_fk=new_todo.todo_pk,
-                scheduled_date=due_date
-            )
-
-            db.session.add(new_todo_scheduling)
-            db.session.commit()
-
-            return {"todo_pk": new_todo.todo_pk}, 200
-
-        except Exception as e:
-            db.session.rollback()
-            log_error(f"Error creating new todo : {e}")
-            return {"error": f"Error creating new todo : {e}"}, 400
-
+   
     # marking todo as done or as read
     def post(self, user_id):
         if not request.is_json:

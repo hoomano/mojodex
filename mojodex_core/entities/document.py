@@ -21,7 +21,7 @@ class Document(MdDocument):
         
     def update(self, new_text, chunk_validation_callback=None):
         try:
-            DocumentChunkManager().update_document_chunks(self.document_pk, new_text, DocumentManager().embed, self.author_user_id,
+            DocumentChunkManager().update_document_chunks(self.document_pk, new_text, self.author_user_id,
                                                                 chunk_validation_callback=chunk_validation_callback,
                                                                 old_chunks_pks=[chunk.document_chunk_pk for chunk in self.chunks])
             self.last_update_date = datetime.now(timezone.utc)

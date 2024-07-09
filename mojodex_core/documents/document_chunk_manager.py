@@ -1,10 +1,7 @@
-import os
-from datetime import datetime
-import requests
-import tiktoken
-
 from mojodex_core.db import with_db_session
+from mojodex_core.embedder.embedding_service import EmbeddingService
 from mojodex_core.entities.db_base_entities import MdDocumentChunk
+from datetime import datetime
 
 class DocumentChunkManager:
     _instance = None
@@ -23,13 +20,7 @@ class DocumentChunkManager:
     MIN_CHUNK_LENGTH_TO_EMBED = 30  # Discard chunks shorter than this
     MAX_NUM_CHUNKS = 10000  # The maximum number of chunks to generate from a text
 
-    def __init__(self):
-        if not self.__class__._initialized:
-            try:
-                self.tokenizer = tiktoken.get_encoding("cl100k_base")  # The encoding scheme to use for tokenization
-            except Exception as e:
-                raise Exception(f"{self.__class__.__name__} : __init__ : {e}")
-
+    
     def _get_text_chunks(self, text, chunk_token_size=None):
         """
         Split a text into chunks of ~CHUNK_SIZE tokens, based on punctuation and newline boundaries.
@@ -47,7 +38,7 @@ class DocumentChunkManager:
                 return []
 
             # Tokenize the text
-            tokens = self.tokenizer.encode(text, disallowed_special=())
+            tokens = EmbeddingService().tokenizer.encode(text, disallowed_special=())
 
             # Initialize an empty list of chunks
             chunks = []
@@ -64,7 +55,7 @@ class DocumentChunkManager:
                 chunk = tokens[:chunk_size]
 
                 # Decode the chunk into text
-                chunk_text = self.tokenizer.decode(chunk)
+                chunk_text = EmbeddingService().tokenizer.decode(chunk)
 
                 # Skip the chunk if it is empty or whitespace
                 if not chunk_text or chunk_text.isspace():
@@ -94,14 +85,14 @@ class DocumentChunkManager:
                     chunks.append(chunk_text_to_append)
 
                 # Remove the tokens corresponding to the chunk text from the remaining tokens
-                tokens = tokens[len(self.tokenizer.encode(chunk_text, disallowed_special=())):]
+                tokens = tokens[len(EmbeddingService().tokenizer.encode(chunk_text, disallowed_special=())):]
 
                 # Increment the number of chunks
                 num_chunks += 1
 
             # Handle the remaining tokens
             if tokens:
-                remaining_text = self.tokenizer.decode(tokens).replace("\n", " ").strip()
+                remaining_text = EmbeddingService().tokenizer.decode(tokens).replace("\n", " ").strip()
                 if len(remaining_text) > DocumentChunkManager.MIN_CHUNK_LENGTH_TO_EMBED:
                     chunks.append(remaining_text)
 
@@ -109,7 +100,7 @@ class DocumentChunkManager:
         except Exception as e:
             raise Exception(f"_get_text_chunks: {e}")
 
-    def create_document_chunks(self, document_pk, text, embeddeding_function, user_id,
+    def create_document_chunks(self, document_pk, text, user_id,
                                user_task_execution_pk=None, task_name_for_system=None,
                                chunk_validation_callback=None, chunk_token_size=None):
         """
@@ -118,7 +109,6 @@ class DocumentChunkManager:
         Args:
             document_pk: The document pk to associate with the chunks.
             text: The text to create chunks from.
-            embeddeding_function: The function to use to embed the chunks.
             user_id: The user id to associate with the chunks.
             chunk_validation_callback: Callback to validate chunk before saving it. Returns True if chunk is valid, False otherwise.
             chunk_token_size: The target size of each chunk in tokens, or None to use the default CHUNK_SIZE.
@@ -136,7 +126,7 @@ class DocumentChunkManager:
                     valid_chunk = chunk_validation_callback(chunks[chunk_index], user_id)
                     if not valid_chunk:
                         continue
-                embedding = embeddeding_function(chunks[chunk_index], user_id, user_task_execution_pk, task_name_for_system)
+                embedding = EmbeddingService().embed(chunks[chunk_index], user_id, user_task_execution_pk, task_name_for_system)
                 document_chunk_pk = self._add_document_chunk_to_db(document_pk, chunk_index, chunks[chunk_index], embedding)
                 valid_chunks_pk.append(document_chunk_pk)
 
@@ -154,7 +144,7 @@ class DocumentChunkManager:
         except Exception as e:
             raise Exception(f"_add_document_chunk_to_db : {e}")
 
-    def update_document_chunks(self, document_pk, text, embeddeding_function, user_id, old_chunks_pks,
+    def update_document_chunks(self, document_pk, text, user_id, old_chunks_pks,
                                chunk_validation_callback=None, chunk_token_size=None):
         try:
             # 1. Split the text into chunks
@@ -168,7 +158,7 @@ class DocumentChunkManager:
             for index in range(common_chunks):
                 chunk_pk = old_chunks_pks[index]
                 chunk_text = new_valid_chunks[index]
-                embedding = embeddeding_function(new_valid_chunks[index], user_id)
+                embedding = EmbeddingService().embed(new_valid_chunks[index], user_id)
                 self._update_document_chunk_in_db(chunk_pk, chunk_text, embedding)
 
             # if the old list is longer than the new one
@@ -179,7 +169,7 @@ class DocumentChunkManager:
             # 5. For each remaining new chunk, add the chunk
             else:
                 for i in range(common_chunks, len(new_valid_chunks)):
-                    new_embeddeding = embeddeding_function(new_valid_chunks[i], user_id)
+                    new_embeddeding = EmbeddingService().embed(new_valid_chunks[i], user_id)
                     document_chunk_pk = self._add_document_chunk_to_db(document_pk, i, new_valid_chunks[i], new_embeddeding)
 
         except Exception as e:

@@ -22,7 +22,8 @@ def _check_emails_are_configured():
     try:
         uri = f"{os.environ['MOJODEX_BACKEND_URI']}/is_email_service_configured"
         args = {'datetime': datetime.now().isoformat()}
-        internal_request = requests.get(uri, params=args)
+        headers = {'Authorization': os.environ['MOJODEX_SCHEDULER_SECRET']}
+        internal_request = requests.get(uri, params=args, headers=headers)
         if internal_request.status_code != 200:
             logger.error(f"Error checking email service configuration : {internal_request.content}")
             return False

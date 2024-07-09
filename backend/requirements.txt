@@ -25,8 +25,6 @@ python-dateutil==2.8.2
 azure-cognitiveservices-speech==1.32.1
 python-json-logger==2.0.7
 cryptography==41.0.4
-tzlocal==5.0.1
-pydub==0.25.1
 grequests==0.7.0
 stripe==6.6.0
 app-store-server-library==1.0.0

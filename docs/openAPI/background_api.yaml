@@ -15,7 +15,8 @@ paths:
               required:
                 - datetime
                 - event_type
-                - data
+                - n_events
+                - offset
               properties:
                 datetime:
                   type: string
@@ -23,13 +24,12 @@ paths:
                 event_type:
                   type: string
                   enum:
-                    - action_driven_notifications
-                    - daily_notifications
-                    - daily_emails
                     - todo_daily_emails
                     - calendar_suggestion_notifications
-                data:
-                  type: object
+                n_events:
+                  type: integer
+                offset:
+                  type: integer
       responses:
         '200':
           description: Event generation process started successfully

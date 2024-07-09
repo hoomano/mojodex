@@ -1,11 +1,8 @@
 import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
-from mojodex_core.db import with_db_session
-from mojodex_core.documents.document_manager import DocumentManager
-from mojodex_core.entities.db_base_entities import MdCompany, MdDocument, MdUser
+from mojodex_core.documents.document_service import DocumentService
 from mojodex_core.entities.document import Document
-from mojodex_core.json_loader import json_decode_retry
 from mojodex_core.llm_engine.mpt import MPT
 
 
@@ -135,7 +132,7 @@ class WebsiteParser:
         try:
             responses = self._extract_text_of_pages_from_website(base_url)
             for response in responses:
-                DocumentManager().new_document(user_id, response["text"], response["link"], document_type='webpage',
+                DocumentService().new_document(user_id, response["text"], response["link"], document_type='webpage',
                                               chunk_validation_callback=self._validate_website_chunk)
         except Exception as e:
             raise Exception(f"update_website: {e}")

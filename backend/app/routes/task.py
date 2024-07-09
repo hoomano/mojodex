@@ -574,6 +574,7 @@ class Task(Resource):
                 steps_json.append({
                     "step_pk": step.workflow_step_pk,
                     "name_for_system": step.name_for_system,
+                    "definition_for_system": step.definition_for_system,
                     "rank": step.rank,
                     "step_displayed_data": step_displayed_data,
                     "review_chat_enabled": step.review_chat_enabled
@@ -679,7 +680,8 @@ class Task(Resource):
                 "output_type": output_type.name,
                 "icon": task.icon,
                 "infos_to_extract": task.infos_to_extract,
-                "steps": self._get_workflow_steps(task_pk)
+                "steps": self._get_workflow_steps(task_pk),
+                "result_chat_enabled": task.result_chat_enabled
                 }
 
             return task_json, 200

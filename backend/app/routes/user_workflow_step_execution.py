@@ -20,7 +20,6 @@ class UserWorkflowStepExecution(Resource):
             timestamp = request.json['datetime']
             user_workflow_step_execution_pk = request.json['user_workflow_step_execution_pk']
             validated = request.json['validated'] # boolean
-            platform = request.json['platform']
         except KeyError as e:
             return {"error": f"Missing parameter : {e}"}, 400
         
@@ -60,7 +59,6 @@ class UserWorkflowStepExecution(Resource):
         try:
             timestamp = request.json['datetime']
             user_workflow_step_execution_pk = request.json['user_workflow_step_execution_pk']
-            platform = request.json['platform']
         except KeyError as e:
             return {"error": f"Missing parameter : {e}"}, 400
         

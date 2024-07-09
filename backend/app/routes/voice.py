@@ -23,7 +23,6 @@ class Voice(Resource):
             timestamp = request.args["datetime"]
             message_pk = request.args["message_pk"] if "message_pk" in request.args else None
             filename = request.args["filename"] if "filename" in request.args else None # case welcome_text
-            app_version = version.parse(request.args["app_version"] if "app_version" in request.args else "0.0.0")
             if filename is None and message_pk is None:
                 log_error(f"Error getting voice : Missing field filename or message_pk")
                 return {"error": f"Missing field filename or message_pk"}, 400

@@ -22,7 +22,6 @@ class RestartUserWorkflowExecution(Resource):
             timestamp = request.form['datetime']
             user_task_execution_pk = request.form['user_task_execution_pk']
             new_inputs = json.loads(request.form["inputs"])
-            platform = request.form['platform']
         except KeyError as e:
             return {"error": f"Missing parameter : {e}"}, 400
         

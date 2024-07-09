@@ -11,7 +11,7 @@ from datetime import datetime
 class ProducedText(Resource):
 
     def __init__(self):
-        ProducedText.method_decorators = [authenticate(methods=["GET", "DELETE"])]
+        ProducedText.method_decorators = [authenticate()]
 
     def get(self, user_id):
 
@@ -87,18 +87,7 @@ class ProducedText(Resource):
 
 
     # save (new or update)
-    def post(self):
-        try:
-            user_id = None
-            secret = request.headers['Authorization']
-            if secret != os.environ["MOJODEX_BACKGROUND_SECRET"]:
-                auth = authenticate_function(request.headers['Authorization'])
-                if auth[0] is not True:
-                    return auth
-                user_id = auth[1]
-        except KeyError:
-            log_error(f"Error updating user summary : Missing Authorization secret in headers")
-            return {"error": f"Missing Authorization secret in headers"}, 403
+    def post(self, user_id):
 
         if not request.is_json:
             log_error(f"Error saving produced_text : Request must be JSON")

@@ -17,12 +17,6 @@ class TodoDailyEmailsGenerator(EmailEventGenerator):
     todo_daily_email_type = "todo_daily_email"
 
     def generate_events(self, users):
-        print("👉 generate_events")
-        self.send_event("84dd7e36829f08049c2c97d8ab8daa8d",
-                                    event_type=TodoDailyEmailsGenerator.todo_daily_email_type,
-                                    subject="test",
-                                    body="test",
-                                    email_address="kelly.roussel@hoomano.com")
         try:
             for user in users:
                 user_id, email = user["user_id"], user["email"]

@@ -3741,41 +3741,6 @@ paths:
                 properties:
                   error:
                     type: string
-    post:
-      tags:
-        - Background
-      summary: Edit session (add title)
-      parameters:
-        - name: Authorization
-          in: header
-          required: true
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - datetime
-                - title
-                - session_id
-              properties:
-                datetime:
-                  type: string
-                  format: date-time
-                title:
-                  type: string
-                session_id:
-                  type: string
-      responses:
-        '200':
-          description: Session title updated successfully
-        '400':
-          description: Error updating session title
-        '403':
-          description: Missing Authorization secret in headers
   /subscription_end:
     post:
       tags:

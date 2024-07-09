@@ -46,7 +46,7 @@ class DocumentService:
             user_task_execution: UserTaskExecution = db_session.query(UserTaskExecution).get(user_task_execution_pk)
             user_id = user_task_execution.user.user_id
 
-            embedded_query = EmbeddingService().embed(query, user_id, user_task_execution_pk=user_task_execution_pk,
+            embedded_query = EmbeddingService().embed(query, user_id, label='retrieve_document', user_task_execution_pk=user_task_execution_pk,
                                             task_name_for_system=task_name_for_system)
 
 

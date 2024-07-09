@@ -33,7 +33,7 @@ class Document(MdDocument):
         Return the text of the document.
         """
         try:
-            chunk_text = " ".join([chunk[0] for chunk in self.chunks]) if self.chunks else ""
+            chunk_text = " ".join([chunk.chunk_text for chunk in self.chunks]) if self.chunks else ""
             return chunk_text
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} :: text :: {e}")
@@ -67,7 +67,7 @@ class Document(MdDocument):
             for index in range(common_chunks):
                 old_chunk = old_chunks[index]
                 new_chunk_text = new_valid_chunks_text[index]
-                embedding = EmbeddingService().embed(new_valid_chunks_text[index], user_id)
+                embedding = EmbeddingService().embed(new_valid_chunks_text[index], user_id, label='update_document_chunk')
                 old_chunk.update(new_chunk_text, embedding)
 
             # if the old list is longer than the new one
@@ -78,7 +78,7 @@ class Document(MdDocument):
             # 5. For each remaining new chunk, add the chunk
             else:
                 for i in range(common_chunks, len(new_valid_chunks_text)):
-                    new_embeddeding = EmbeddingService().embed(new_valid_chunks_text[i], user_id)
+                    new_embeddeding = EmbeddingService().embed(new_valid_chunks_text[i], user_id, label='update_document_chunk')
                     self._add_document_chunk_to_db(i, new_valid_chunks_text[i], new_embeddeding)
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} : update_document_chunks : {e}")
@@ -178,14 +178,13 @@ class Document(MdDocument):
             """
         try:
             chunks = self._split_text_in_chunks(text, chunk_token_size)
-
             # Insert into PSQL the document chunks
             for chunk_index in range(len(chunks)):
                 if chunk_validation_callback:
                     valid_chunk = chunk_validation_callback(chunks[chunk_index], user_id)
                     if not valid_chunk:
                         continue
-                embedding = EmbeddingService().embed(chunks[chunk_index], user_id, user_task_execution_pk, task_name_for_system)
+                embedding = EmbeddingService().embed(chunks[chunk_index], user_id, label='update_document_chunk', user_task_execution_pk=user_task_execution_pk, task_name_for_system=task_name_for_system)
                 self._add_document_chunk_to_db(chunk_index, chunks[chunk_index], embedding)
 
         except Exception as e:

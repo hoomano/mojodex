@@ -2,6 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
 from mojodex_core.documents.document_service import DocumentService
+from mojodex_core.embedder.embedding_service import EmbeddingService
 from mojodex_core.entities.document import Document
 from mojodex_core.llm_engine.mpt import MPT
 

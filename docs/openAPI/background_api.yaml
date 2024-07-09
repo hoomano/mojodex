@@ -166,23 +166,22 @@ paths:
               type: object
               required:
                 - datetime
-                - todo_pk
               properties:
                 datetime:
                   type: string
                   format: date-time
-                todo_pk:
-                  type: integer
       responses:
         '200':
-          description: Process to reschedule todo started successfully
+          description: Process to reschedule todos started successfully, list of concerned todo_pks
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  success:
-                    type: string
+                  todo_pls:
+                    type: array
+                    items:
+                      type: integer
         '400':
           description: Invalid inputs provided
           content:
@@ -193,7 +192,7 @@ paths:
                   error:
                     type: string
         '404':
-          description: Todo not found or error in reschedule todos route
+          description: Error in reschedule todos route
           content:
             application/json:
               schema:

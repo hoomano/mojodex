@@ -1,4 +1,4 @@
-from mojodex_core.embedder.embedding_provider import EmbeddingProvider
+from mojodex_core.embedder.embedding_engine import EmbeddingEngine
 
 from mojodex_core.costs_manager.tokens_costs_manager import TokensCostsManager
 
@@ -10,9 +10,8 @@ import tiktoken
 import os
 
 # TODO: switch to text-embedding-3-small and text-embedding-3-large https://platform.openai.com/docs/guides/embeddings/what-are-embeddings
-class OpenAIEmbedding(EmbeddingProvider):
+class OpenAIEmbedding(EmbeddingEngine):
     dataset_dir = "/data/prompts_dataset"
-    default_embedding_model = "text-embedding-ada-002"
     
     
     def __init__(self, model, api_key, api_type, deployment=None, api_base=None, api_version=None):
@@ -38,9 +37,7 @@ class OpenAIEmbedding(EmbeddingProvider):
     def _num_tokens_from_string(self, string):
         # https://github.com/openai/openai-cookbook/blob/main/examples/How_to_count_tokens_with_tiktoken.ipynb
         """Returns the number of tokens in a text string."""
-        # TODO: find a way to dynamically find the encoding base depending on the embedding model
-        encoding = tiktoken.get_encoding("p50k_base")
-        num_tokens = len(encoding.encode(string))
+        num_tokens = len(self.tokenizer.encode(string))
         return num_tokens
 
     def embed(self, text, user_id, user_task_execution_pk, task_name_for_system, label, retries=12, wating_time=5):

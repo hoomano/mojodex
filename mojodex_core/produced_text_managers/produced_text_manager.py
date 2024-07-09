@@ -83,7 +83,7 @@ class ProducedTextManager(ABC):
         try:
             text_to_embedded = f"{title}\n\n{production}"
             embedded_text = EmbeddingService().embed(text_to_embedded, user_id,
-                                                                   label="PRODUCED_TEXT_EMBEDDER",
+                                                                   label="produced_text_embedding",
                                                                    user_task_execution_pk=user_task_execution_pk,
                                                                    task_name_for_system=task_name_for_system)
             return embedded_text

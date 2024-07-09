@@ -40,7 +40,7 @@ class OpenAIEmbedding(EmbeddingEngine):
         num_tokens = len(self.tokenizer.encode(string))
         return num_tokens
 
-    def embed(self, text, user_id, user_task_execution_pk, task_name_for_system, label, retries=12, wating_time=5):
+    def embed(self, text, user_id, label, user_task_execution_pk=None, task_name_for_system=None, retries=12, waiting_time=5):
         try:
             try:
                 n_tokens_prompt = self._num_tokens_from_string(text)
@@ -61,7 +61,7 @@ class OpenAIEmbedding(EmbeddingEngine):
             if retries == 0:
                 raise Exception(
                     f"🔴 Error in Mojodex OpenAI embed, rate limit exceeded despite all retries {e}")
-            time.sleep(wating_time)
+            time.sleep(waiting_time)
             return self.embed(text, user_id, user_task_execution_pk, task_name_for_system, retries=retries-1)
         except Exception as e:
             raise Exception(f"🔴 Error in Mojodex OpenAI embed: {e}")

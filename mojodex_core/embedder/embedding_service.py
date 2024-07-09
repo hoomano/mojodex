@@ -94,9 +94,9 @@ class EmbeddingService:
             raise Exception(f"_build_engine :: {e}")
         
 
-    def embed(self, text, user_id, label, user_task_execution_pk, task_name_for_system, retries=5):
+    def embed(self, text, user_id, label, user_task_execution_pk=None, task_name_for_system=None, retries=5, **kwargs):
         try:
-            return self.embedding_engine.embed(text, user_id, label, user_task_execution_pk, task_name_for_system, retries)
+            return self.embedding_engine.embed(text, user_id, label, user_task_execution_pk, task_name_for_system, retries, **kwargs)
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} : embed :: {e}")
         

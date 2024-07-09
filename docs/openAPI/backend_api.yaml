@@ -737,68 +737,6 @@ paths:
                 properties:
                   error:
                     type: string
-  /extract_todos:
-    post:
-      tags:
-        - Scheduler
-      summary: Extract todos from user task executions
-      parameters:
-        - in: header
-          name: Authorization
-          required: true
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - datetime
-              properties:
-                datetime:
-                  type: string
-                  format: date-time
-      responses:
-        '200':
-          description: Todos extracted successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  user_task_execution_pks:
-                    type: array
-                    items:
-                      type: integer
-        '400':
-          description: Bad request, JSON required or missing datetime
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-        '403':
-          description: Authentication error, wrong or missing secret
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-        '500':
-          description: Internal server error during todo extraction
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
   /goal:
     put:
       tags:

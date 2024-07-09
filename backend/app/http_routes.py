@@ -30,7 +30,6 @@ from routes.product_task_association import ProductTaskAssociation
 from routes.manual_purchase import ManualPurchase
 from routes.inapp_apple_purchase import InAppApplePurchase
 from routes.todos import Todos
-from routes.extract_todos import ExtractTodos
 from routes.todo_scheduling import TodosScheduling
 from routes.todo_daily_emails import TodoDailyEmails
 from routes.vocabulary import Vocabulary
@@ -88,7 +87,6 @@ class HttpRouteManager:
         api.add_resource(ManualPurchase, "/manual_purchase")
         api.add_resource(InAppApplePurchase, "/in_app_apple_purchase")
         api.add_resource(Todos, "/todos")
-        api.add_resource(ExtractTodos, "/extract_todos")
         api.add_resource(TodosScheduling, "/todos_scheduling")
         api.add_resource(TodoDailyEmails, "/todo_daily_emails")
         api.add_resource(Vocabulary, "/vocabulary")

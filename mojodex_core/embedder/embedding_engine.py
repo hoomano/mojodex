@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-class EmbeddingProvider(ABC):
+class EmbeddingEngine(ABC):
     """
     Abstract base class for Embedding implementations.
     """

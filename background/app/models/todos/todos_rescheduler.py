@@ -86,7 +86,7 @@ class TodosRescheduler:
     @with_db_session
     def _save_to_db(self, argument, reschedule_date, db_session):
         """
-        Save new todo due-date in db by sending it to mojodex-backend through appropriated route because backend is the only responsible for writing in db
+        Save new todo due-date in db
         """
         try:
             new_todo_scheduling = MdTodoScheduling(

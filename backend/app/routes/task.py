@@ -3,7 +3,9 @@ import os
 from flask import request
 from flask_restful import Resource
 from app import db
+from mojodex_core.entities.instruct_task import InstructTask
 from mojodex_core.entities.task_predefined_action_association import TaskPredefinedActionAssociation
+from mojodex_core.entities.workflow import Workflow
 from mojodex_core.logging_handler import log_error
 from mojodex_core.entities.db_base_entities import *
 from sqlalchemy import func
@@ -530,36 +532,7 @@ class Task(Resource):
             db.session.rollback()
             return {"error": f"Error editing task : {e}"}, 500
 
-    def _get_workflow_steps(self, task_pk):
-        try:
-            steps = db.session.query(MdWorkflowStep) \
-                .filter(MdWorkflowStep.task_fk == task_pk) \
-                .order_by(MdWorkflowStep.rank) \
-                .all()
-            steps_json = []
-            for step in steps:
-                step_translations = db.session.query(MdWorkflowStepDisplayedData).filter(
-                    MdWorkflowStepDisplayedData.workflow_step_fk == step.workflow_step_pk).all()
-                step_displayed_data = [
-                    {
-                        "language_code": translation.language_code,
-                        "name_for_user": translation.name_for_user,
-                        "definition_for_user": translation.definition_for_user
-                    } for translation in step_translations]
-
-                steps_json.append({
-                    "step_pk": step.workflow_step_pk,
-                    "name_for_system": step.name_for_system,
-                    "definition_for_system": step.definition_for_system,
-                    "rank": step.rank,
-                    "step_displayed_data": step_displayed_data,
-                    "review_chat_enabled": step.review_chat_enabled
-                })
-            return steps_json
-        except Exception as e:
-            raise Exception(f"Error getting workflow steps : {e}")
-
-
+  
     # Route to get json of a task
     def get(self):
         try:
@@ -579,88 +552,15 @@ class Task(Resource):
 
         # Logic
         try:
-            result = db.session.query(MdTask, MdTextType)\
+            task: TaskEntity= db.session.query(TaskEntity)\
                 .filter(MdTask.task_pk == task_pk)\
-                .join(MdTextType, MdTextType.text_type_pk == MdTask.output_text_type_fk)\
                 .first()
-            if result is None:
+            if task is None:
                 return {"error": f"Task with pk {task_pk} not found"}, 404
-            task, output_type = result
-
-            task_translations = db.session.query(MdTaskDisplayedData).filter(MdTaskDisplayedData.task_fk == task_pk).all()
-            task_displayed_data = [
-                {
-                    "language_code": translation.language_code,
-                    "name_for_user": translation.name_for_user,
-                    "definition_for_user": translation.definition_for_user,
-                    "json_input": translation.json_input
-                } for translation in task_translations]
-
-            predefined_actions = (
-                db.session
-                .query(
-                    func.json_build_object(
-                        "task_pk",
-                        MdTaskPredefinedActionAssociation.predefined_action_fk,
-                        "displayed_data",
-                        func.json_object_agg(
-                            MdPredefinedActionDisplayedData.language_code,
-                            MdPredefinedActionDisplayedData.displayed_data
-                        )
-                    )
-                )
-                .join(
-                    MdPredefinedActionDisplayedData,
-                    MdPredefinedActionDisplayedData.task_predefined_action_association_fk == MdTaskPredefinedActionAssociation.task_predefined_action_association_pk
-                )
-                .filter(
-                    MdTaskPredefinedActionAssociation.task_fk == task_pk
-                )
-                .group_by(
-                    MdTaskPredefinedActionAssociation.predefined_action_fk
-                )
-                .all())
-
-            predefined_actions = [
-                action 
-                for predefined_action in predefined_actions 
-                for action in predefined_action
-            ]
-
-            platforms = (
-                db.session
-                .query(
-                    MdPlatform
-                )
-                .join(
-                    MdTaskPlatformAssociation,
-                    MdTaskPlatformAssociation.platform_fk == MdPlatform.platform_pk
-                )
-                .filter(
-                    MdTaskPlatformAssociation.task_fk == task_pk
-                )
-                .all())
-
-            platforms = [platform.name for platform in platforms]
-
-            task_json = {
-                "type": task.type,
-                "platforms": platforms,
-                "predefined_actions": predefined_actions,
-                "task_displayed_data": task_displayed_data,
-                "name_for_system": task.name_for_system,
-                "definition_for_system": task.definition_for_system,
-                "final_instruction": task.final_instruction,
-                "output_format_instruction_title": task.output_format_instruction_title,
-                "output_format_instruction_draft": task.output_format_instruction_draft,
-                "output_type": output_type.name,
-                "icon": task.icon,
-                "infos_to_extract": task.infos_to_extract,
-                "steps": self._get_workflow_steps(task_pk),
-                "result_chat_enabled": task.result_chat_enabled
-                }
-
-            return task_json, 200
+            
+            task = db.session.query(Workflow if task.type == "workflow" else InstructTask).get(task_pk)
+            
+            return task.to_json(), 200
 
         except Exception as e:
             log_error(f"Error getting task json : {e}")

@@ -4169,9 +4169,21 @@ paths:
                             type: object
                             required:
                               - language_code
+                              - data
                             properties:
                               language_code:
                                 type: string
+                              data:
+                                type: object
+                                required:
+                                  - name
+                                properties:
+                                  name:
+                                    type: string
+                                  button_text:
+                                    type: string
+                                  message_prefix:
+                                    type: string
                   task_displayed_data:
                     type: array
                     items:

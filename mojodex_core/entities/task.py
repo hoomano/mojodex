@@ -1,8 +1,9 @@
-from mojodex_core.entities.db_base_entities import MdPredefinedActionDisplayedData, MdTask, MdTaskDisplayedData, MdTaskPredefinedActionAssociation, MdTextEditAction, MdTextEditActionDisplayedData, MdTextEditActionTextTypeAssociation, MdTextType
+from mojodex_core.entities.db_base_entities import MdPlatform, MdPredefinedActionDisplayedData, MdTask, MdTaskDisplayedData, MdTaskPlatformAssociation, MdTaskPredefinedActionAssociation, MdTextEditAction, MdTextEditActionDisplayedData, MdTextEditActionTextTypeAssociation, MdTextType
 from sqlalchemy.orm import object_session
 from sqlalchemy import case, func, or_
 from sqlalchemy.orm import aliased
 from sqlalchemy.sql.functions import coalesce
+from mojodex_core.entities.task_displayed_data import TaskDisplayedData
 from mojodex_core.entities.task_predefined_action_association import TaskPredefinedActionAssociation
 
 class Task(MdTask):
@@ -135,4 +136,54 @@ class Task(MdTask):
                         .all()
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} :: predefined_actions :: {e}")
-            
+
+
+    @property
+    def platforms(self) -> list[MdPlatform]:
+        try:
+            session = object_session(self)
+            return session.query(MdPlatform) \
+                .join(MdTaskPlatformAssociation, MdPlatform.platform_pk == MdTaskPlatformAssociation.platform_fk) \
+                .filter(MdTaskPlatformAssociation.task_fk == self.task_pk) \
+                .all()
+        except Exception as e:
+            raise Exception(f"{self.__class__.__name__} :: platforms :: {e}")
+
+
+    @property
+    def output_type(self):
+        try:
+            session = object_session(self)
+            return session.query(MdTextType).filter(MdTextType.text_type_pk == self.output_text_type_fk).first()
+        except Exception as e:
+            raise Exception(f"{self.__class__.__name__} :: output_type :: {e}")
+        
+
+    @property
+    def display_data(self) -> list[TaskDisplayedData]:
+        try:
+            session = object_session(self)
+            return session.query(TaskDisplayedData).filter(TaskDisplayedData.task_fk == self.task_pk).all()
+        except Exception as e:
+            raise Exception(f"{self.__class__.__name__} :: displayed_data :: {e}")
+        
+
+    def to_json(self):
+        try:
+            return {
+                "type": self.type,
+                "platforms": [platform.name for platform in self.platforms],
+                "predefined_actions":  [predefined_action.to_json() for predefined_action in self.predefined_actions_association],
+                "task_displayed_data": [display_data.to_json() for display_data in self.display_data],
+                "name_for_system": self.name_for_system,
+                "definition_for_system": self.definition_for_system,
+                "final_instruction": self.final_instruction,
+                "output_format_instruction_title": self.output_format_instruction_title,
+                "output_format_instruction_draft": self.output_format_instruction_draft,
+                "output_type": self.output_type.name,
+                "icon": self.icon,
+                "infos_to_extract": self.infos_to_extract,
+                "result_chat_enabled": self.result_chat_enabled
+                }
+        except Exception as e:
+            raise Exception(f"{self.__class__.__name__} :: to_json :: {e}")

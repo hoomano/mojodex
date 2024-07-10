@@ -3,11 +3,14 @@ import os
 from flask import request
 from flask_restful import Resource
 from app import db
+from mojodex_core.entities.instruct_task import InstructTask
+from mojodex_core.entities.task_predefined_action_association import TaskPredefinedActionAssociation
+from mojodex_core.entities.workflow import Workflow
 from mojodex_core.logging_handler import log_error
-from mojodex_core.entities.db_base_entities import *
-from sqlalchemy import func
+from mojodex_core.entities.db_base_entities import MdPlatform, MdTask, MdTaskDisplayedData, MdTaskPlatformAssociation, MdTextType, MdPredefinedActionDisplayedData, MdWorkflowStep, MdWorkflowStepDisplayedData
 from sqlalchemy.orm.attributes import flag_modified
 from mojodex_core.steps_library import steps_class
+from mojodex_core.entities.task import Task as TaskEntity
 
 class Task(Resource):
 
@@ -119,25 +122,33 @@ class Task(Resource):
             if not isinstance(predefined_actions, list):
                 return {"error": f"predefined_actions must be a list of dict"}, 400
             else:
-                for item in predefined_actions:
-                    if not isinstance(item, dict):
+                for predefined_action in predefined_actions:
+                    if not isinstance(predefined_action, dict):
                         return {"error": f"each predefined_action must be a dict"}, 400
-                    if "task_pk" not in item:
+                    if "task_pk" not in predefined_action:
                         return {"error": f"each predefined_action must contain 'task_pk'"}, 400
-                    if "displayed_data" not in item:
+                    if "displayed_data" not in predefined_action:
                         return {"error": f"each predefined_action must contain 'displayed_data'"}, 400
                     else:
-                        displayed_data = item["displayed_data"]
-                        # ensure displayed_data is a dict
-                        if not isinstance(displayed_data, dict):
-                            return {"error": f"'displayed_data' for task_pk : {item['task_pk']} must be a dict where each key is the corresponding language_code"}, 400
+                        displayed_data = predefined_action["displayed_data"]
+                        # ensure displayed_data is a list
+                        if not isinstance(displayed_data, list):
+                            return {"error": f"'displayed_data' for task_pk : {predefined_action['task_pk']} must be a list containing data for each language"}, 400
 
-                        for language_code in displayed_data:
-                            if not isinstance(displayed_data[language_code], dict):
-                                return {"error": f"The language_code key : '{language_code}' for the predefined_action with task_pk '{item['task_pk']}' must have a dict as value"}, 400
-                            if "name" not in displayed_data[language_code]:
-                                return {"error": f"The predefined_action with task_pk : '{item['task_pk']}' and language_code '{language_code}' must contain 'name'"}, 400
-
+                        for item in displayed_data:
+                            # check there is key 'language_code' in each item
+                            if "language_code" not in item:
+                                return {"error": f"each item in displayed_data must contain 'language_code'"}, 400
+                            # check the is key "data" in each item
+                            if "data" not in item:
+                                return {"error": f"each item in displayed_data must contain 'data'"}, 400
+                            # check item["data"] is a dict
+                            if not isinstance(item["data"], dict):
+                                return {"error": f"each item in displayed_data must contain 'data' as a dict"}, 400
+                            # check item["data"] contains "name"
+                            if "name" not in item["data"]:
+                                return {"error": f"each item in displayed_data must contain at least key 'name'"}, 400
+                            
             # ensure platform is a list
             if not isinstance(platforms, list):
                 return {"error": f"'platforms' must be a list"}, 400
@@ -201,13 +212,13 @@ class Task(Resource):
                 db.session.refresh(task_displayed_data)
 
             # associate predefined_actions
-            for item in predefined_actions:
+            for predefined_action in predefined_actions:
 
-                predefined_action_fk = item["task_pk"]
-                displayed_data = item["displayed_data"]
+                predefined_action_fk = predefined_action["task_pk"]
+                displayed_data = predefined_action["displayed_data"]
 
                 # TASK - ACTION ASSOCIATION
-                task_predefined_action_association = MdTaskPredefinedActionAssociation(
+                task_predefined_action_association = TaskPredefinedActionAssociation(
                         task_fk=task.task_pk,
                         predefined_action_fk=predefined_action_fk
                     )
@@ -216,11 +227,13 @@ class Task(Resource):
                 db.session.refresh(task_predefined_action_association)
 
                 # SAVE TRANSLATIONS
-                for language_code in displayed_data:
+                for displayed_data_in_language in displayed_data:
+                    language_code = displayed_data_in_language["language_code"]
+                    data = displayed_data_in_language["data"]
                     predefined_action_displayed_data = MdPredefinedActionDisplayedData(
                         task_predefined_action_association_fk=task_predefined_action_association.task_predefined_action_association_pk,
                         language_code=language_code,
-                        displayed_data=displayed_data[language_code]
+                        displayed_data=data
                     )
                     db.session.add(predefined_action_displayed_data)
                     db.session.flush()
@@ -332,7 +345,7 @@ class Task(Resource):
 
         # Logic
         try:
-            task = db.session.query(MdTask).filter(MdTask.task_pk == task_pk).first()
+            task: TaskEntity = db.session.query(TaskEntity).filter(TaskEntity.task_pk == task_pk).first()
             if task is None:
                 return {"error": f"Task with pk {task_pk} not found"}, 404
 
@@ -431,47 +444,21 @@ class Task(Resource):
                             return {"error": f"Missing field {e} for language_code '{language_code}'"}, 400
 
             if "predefined_actions" in request.json: 
+   
                 # Recover predefined_actions associations that are requested to be modified
                 predefined_actions = request.json["predefined_actions"]
 
-                predefined_actions_associations = (
-                    db.session
-                    .query(
-                        MdTaskPredefinedActionAssociation.task_predefined_action_association_pk,
-                        MdTaskPredefinedActionAssociation.predefined_action_fk,
-                        MdPredefinedActionDisplayedData
-                        
-                    )
-                    .join(
-                        MdPredefinedActionDisplayedData,
-                        MdPredefinedActionDisplayedData.task_predefined_action_association_fk == MdTaskPredefinedActionAssociation.task_predefined_action_association_pk
-                    )
-                    .filter(MdTaskPredefinedActionAssociation.task_fk == task_pk)
-                    .group_by(
-                        MdTaskPredefinedActionAssociation.task_predefined_action_association_pk,
-                        MdTaskPredefinedActionAssociation.predefined_action_fk,
-                        MdPredefinedActionDisplayedData.predefined_action_displayed_data_pk
-                    )
-                .all())
-
-                # Create a dict where each key is a predefined_action_fk and each value is a dict with 
-                # language_code as key and the MdPRedefinedActionDisplayedData object to modify as value
-                action_associations = {}
-                for action_data in predefined_actions_associations:
-                    if action_data["predefined_action_fk"] not in action_associations:
-                        action_associations[action_data["predefined_action_fk"]] = {}
-                        action_associations[action_data["predefined_action_fk"]]["task_predefined_action_association_pk"] = action_data["task_predefined_action_association_pk"]
-                    action_associations[action_data["predefined_action_fk"]][action_data["MdPredefinedActionDisplayedData"].language_code] = action_data["MdPredefinedActionDisplayedData"]
-                predefined_actions_associations  = action_associations
-                
                 # Modify the predefined_actions_associations on db or create new ones if they don't exist
-                for item in predefined_actions:
-                    predefined_action_fk = item["task_pk"]
-                    displayed_data = item["displayed_data"]
-                    language_codes = list(displayed_data.keys())
+                for predefined_action in predefined_actions:
+                    predefined_action_fk = predefined_action["task_pk"]
+                    displayed_data_list: list = predefined_action["displayed_data"]
 
-                    if predefined_action_fk not in predefined_actions_associations:
-                        task_predefined_action_association = MdTaskPredefinedActionAssociation(
+                    # Try to find existing predefined_action_association
+                    task_predefined_action_association = next((predefined_action_association for predefined_action_association in task.predefined_actions_association if predefined_action_association.predefined_action_fk == predefined_action_fk), None)
+
+                    # if predefined_action not in task.predefined_actions_associations, create it
+                    if task_predefined_action_association is None:
+                        task_predefined_action_association = TaskPredefinedActionAssociation(
                             task_fk=task_pk,
                             predefined_action_fk=predefined_action_fk
                         )
@@ -479,36 +466,26 @@ class Task(Resource):
                         db.session.add(task_predefined_action_association)
                         db.session.flush()
                         db.session.refresh(task_predefined_action_association)
-
-                        # add the new task_predefined_action_association to the predefined_actions_associations dict
-                        predefined_actions_associations[predefined_action_fk] = {}
-
-                        task_predefined_action_association_fk = task_predefined_action_association.task_predefined_action_association_pk
-                    else :
-                        task_predefined_action_association_fk = predefined_actions_associations[predefined_action_fk]["task_predefined_action_association_pk"]
-                        
+                   
                     
-                    for language_code in language_codes:
-                        
+                    for displayed_data in displayed_data_list:
+                        language_code = displayed_data["language_code"]
+                        data = displayed_data["data"]
                         # ensure that displayed data has "name" key
-                        if "name" not in displayed_data[language_code] : 
+                        if "name" not in data: 
                             return {"error": f"The predefined_action with task_pk : '{predefined_action_fk}' and language_code '{language_code}' must contain 'name'"}, 400
                         
-                        if language_code in predefined_actions_associations[predefined_action_fk]:
-                            displayed_data_object = predefined_actions_associations[predefined_action_fk][language_code]
-                            displayed_data_object.displayed_data = displayed_data[language_code]
-                            
-                            db.session.add(displayed_data_object)
-                            
-                        else:
-
-                            new_displayed_data = MdPredefinedActionDisplayedData(
-                                task_predefined_action_association_fk=task_predefined_action_association_fk,
+                        # Try to find existing displayed_data
+                        displayed_data_object = next((display_data for display_data in task_predefined_action_association.display_data if display_data.language_code == language_code), None)
+                        if displayed_data_object is None:
+                            displayed_data_object = MdPredefinedActionDisplayedData(
+                                task_predefined_action_association_fk=task_predefined_action_association.task_predefined_action_association_pk,
                                 language_code=language_code,
-                                displayed_data=displayed_data[language_code]
+                                displayed_data=data
                             )
-                            db.session.add(new_displayed_data)
-
+                            db.session.add(displayed_data_object)
+                        else:
+                            displayed_data_object.displayed_data = data
                         db.session.flush()
 
             if "name_for_system" in request.json:
@@ -554,36 +531,7 @@ class Task(Resource):
             db.session.rollback()
             return {"error": f"Error editing task : {e}"}, 500
 
-    def _get_workflow_steps(self, task_pk):
-        try:
-            steps = db.session.query(MdWorkflowStep) \
-                .filter(MdWorkflowStep.task_fk == task_pk) \
-                .order_by(MdWorkflowStep.rank) \
-                .all()
-            steps_json = []
-            for step in steps:
-                step_translations = db.session.query(MdWorkflowStepDisplayedData).filter(
-                    MdWorkflowStepDisplayedData.workflow_step_fk == step.workflow_step_pk).all()
-                step_displayed_data = [
-                    {
-                        "language_code": translation.language_code,
-                        "name_for_user": translation.name_for_user,
-                        "definition_for_user": translation.definition_for_user
-                    } for translation in step_translations]
-
-                steps_json.append({
-                    "step_pk": step.workflow_step_pk,
-                    "name_for_system": step.name_for_system,
-                    "definition_for_system": step.definition_for_system,
-                    "rank": step.rank,
-                    "step_displayed_data": step_displayed_data,
-                    "review_chat_enabled": step.review_chat_enabled
-                })
-            return steps_json
-        except Exception as e:
-            raise Exception(f"Error getting workflow steps : {e}")
-
-
+  
     # Route to get json of a task
     def get(self):
         try:
@@ -603,88 +551,15 @@ class Task(Resource):
 
         # Logic
         try:
-            result = db.session.query(MdTask, MdTextType)\
+            task: TaskEntity= db.session.query(TaskEntity)\
                 .filter(MdTask.task_pk == task_pk)\
-                .join(MdTextType, MdTextType.text_type_pk == MdTask.output_text_type_fk)\
                 .first()
-            if result is None:
+            if task is None:
                 return {"error": f"Task with pk {task_pk} not found"}, 404
-            task, output_type = result
-
-            task_translations = db.session.query(MdTaskDisplayedData).filter(MdTaskDisplayedData.task_fk == task_pk).all()
-            task_displayed_data = [
-                {
-                    "language_code": translation.language_code,
-                    "name_for_user": translation.name_for_user,
-                    "definition_for_user": translation.definition_for_user,
-                    "json_input": translation.json_input
-                } for translation in task_translations]
-
-            predefined_actions = (
-                db.session
-                .query(
-                    func.json_build_object(
-                        "task_pk",
-                        MdTaskPredefinedActionAssociation.predefined_action_fk,
-                        "displayed_data",
-                        func.json_object_agg(
-                            MdPredefinedActionDisplayedData.language_code,
-                            MdPredefinedActionDisplayedData.displayed_data
-                        )
-                    )
-                )
-                .join(
-                    MdPredefinedActionDisplayedData,
-                    MdPredefinedActionDisplayedData.task_predefined_action_association_fk == MdTaskPredefinedActionAssociation.task_predefined_action_association_pk
-                )
-                .filter(
-                    MdTaskPredefinedActionAssociation.task_fk == task_pk
-                )
-                .group_by(
-                    MdTaskPredefinedActionAssociation.predefined_action_fk
-                )
-                .all())
-
-            predefined_actions = [
-                action 
-                for predefined_action in predefined_actions 
-                for action in predefined_action
-            ]
-
-            platforms = (
-                db.session
-                .query(
-                    MdPlatform
-                )
-                .join(
-                    MdTaskPlatformAssociation,
-                    MdTaskPlatformAssociation.platform_fk == MdPlatform.platform_pk
-                )
-                .filter(
-                    MdTaskPlatformAssociation.task_fk == task_pk
-                )
-                .all())
-
-            platforms = [platform.name for platform in platforms]
-
-            task_json = {
-                "type": task.type,
-                "platforms": platforms,
-                "predefined_actions": predefined_actions,
-                "task_displayed_data": task_displayed_data,
-                "name_for_system": task.name_for_system,
-                "definition_for_system": task.definition_for_system,
-                "final_instruction": task.final_instruction,
-                "output_format_instruction_title": task.output_format_instruction_title,
-                "output_format_instruction_draft": task.output_format_instruction_draft,
-                "output_type": output_type.name,
-                "icon": task.icon,
-                "infos_to_extract": task.infos_to_extract,
-                "steps": self._get_workflow_steps(task_pk),
-                "result_chat_enabled": task.result_chat_enabled
-                }
-
-            return task_json, 200
+            
+            task = db.session.query(Workflow if task.type == "workflow" else InstructTask).get(task_pk)
+            
+            return task.to_json(), 200
 
         except Exception as e:
             log_error(f"Error getting task json : {e}")

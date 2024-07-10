@@ -3,6 +3,8 @@ from mojodex_core.entities.db_base_entities import MdWorkflowStep, MdWorkflowSte
 from sqlalchemy.orm import object_session
 from sqlalchemy import func, or_
 
+from mojodex_core.entities.workflow_step_displayed_data import WorkflowStepDisplayedData
+
 class WorkflowStep(MdWorkflowStep):
     """WorkflowStep contains additional properties and methods for a WorkflowStep entity."""
 
@@ -100,3 +102,27 @@ class WorkflowStep(MdWorkflowStep):
             return output
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} execute :: {e}")
+
+    
+    @property
+    def display_data(self) -> list[WorkflowStepDisplayedData]:
+        try:
+            session = object_session(self)
+            return session.query(WorkflowStepDisplayedData) \
+                .filter(WorkflowStepDisplayedData.workflow_step_fk == self.workflow_step_pk) \
+                .all()
+        except Exception as e:
+            raise Exception(f"{self.__class__.__name__} :: display_data :: {e}")
+    
+    def to_json(self):
+        try:
+            return {
+                "step_pk": self.workflow_step_pk,
+                    "name_for_system": self.name_for_system,
+                    "definition_for_system": self.definition_for_system,
+                    "rank": self.rank,
+                    "step_displayed_data": [display_data.to_json() for display_data in self.display_data],
+                    "review_chat_enabled": self.review_chat_enabled
+            }
+        except Exception as e:
+            raise Exception(f"{self.__class__.__name__} : to_json :: {e}")

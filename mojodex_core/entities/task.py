@@ -1,9 +1,10 @@
-import json
-from mojodex_core.entities.db_base_entities import MdPredefinedActionDisplayedData, MdTask, MdTaskDisplayedData, MdTaskPredefinedActionAssociation, MdTextEditAction, MdTextEditActionDisplayedData, MdTextEditActionTextTypeAssociation, MdTextType
+from mojodex_core.entities.db_base_entities import MdPlatform, MdPredefinedActionDisplayedData, MdTask, MdTaskDisplayedData, MdTaskPlatformAssociation, MdTaskPredefinedActionAssociation, MdTextEditAction, MdTextEditActionDisplayedData, MdTextEditActionTextTypeAssociation, MdTextType
 from sqlalchemy.orm import object_session
 from sqlalchemy import case, func, or_
-from sqlalchemy.sql.functions import coalesce
 from sqlalchemy.orm import aliased
+from sqlalchemy.sql.functions import coalesce
+from mojodex_core.entities.task_displayed_data import TaskDisplayedData
+from mojodex_core.entities.task_predefined_action_association import TaskPredefinedActionAssociation
 
 class Task(MdTask):
     """Task entity class represent an entity containing common informations of an InstructTask or Workflow.
@@ -40,23 +41,39 @@ class Task(MdTask):
     def get_predefined_actions_in_language(self, language_code):
         try:
             session = object_session(self)
-            # get predefined actions translated in english
-            predefined_actions_data = (
-                session
+            predefined_actions_data_en = (session
+                .query(
+                    MdPredefinedActionDisplayedData.task_predefined_action_association_fk.label("task_predefined_action_association_fk"),
+                    MdPredefinedActionDisplayedData.displayed_data.label("displayed_data_en"),
+                )
+                .filter(MdPredefinedActionDisplayedData.language_code == 'en')
+            ).subquery()
+
+            # get predefined actions translated in user's language
+            predefined_actions_lang = (session
+                .query(
+                    MdPredefinedActionDisplayedData.task_predefined_action_association_fk.label("task_predefined_action_association_fk"),
+                    MdPredefinedActionDisplayedData.displayed_data.label("displayed_data_lang"),
+                )
+                .filter(MdPredefinedActionDisplayedData.language_code == language_code)
+            ).subquery()
+
+            # get predefined actions translated in user's language or english if not translated
+            predefined_actions_data = (session
                 .query(
                     MdTaskPredefinedActionAssociation.predefined_action_fk.label("task_fk"),
                     coalesce(
-                        case(
-                            (MdPredefinedActionDisplayedData.language_code == language_code, MdPredefinedActionDisplayedData.displayed_data),
-                            else_=None),
-                        case(
-                            (MdPredefinedActionDisplayedData.language_code == 'en', MdPredefinedActionDisplayedData.displayed_data),
-                            else_=None)
-                    ).label("displayed_data")
+                        predefined_actions_lang.c.displayed_data_lang, 
+                        predefined_actions_data_en.c.displayed_data_en
+                    ).label("displayed_data"),
                 )
                 .outerjoin(
-                    MdPredefinedActionDisplayedData,
-                    MdTaskPredefinedActionAssociation.task_predefined_action_association_pk == MdPredefinedActionDisplayedData.task_predefined_action_association_fk
+                    predefined_actions_lang, 
+                    predefined_actions_lang.c.task_predefined_action_association_fk == MdTaskPredefinedActionAssociation.task_predefined_action_association_pk
+                )
+                .outerjoin(
+                    predefined_actions_data_en,
+                    predefined_actions_data_en.c.task_predefined_action_association_fk == MdTaskPredefinedActionAssociation.task_predefined_action_association_pk
                 )
                 .filter(
                     MdTaskPredefinedActionAssociation.task_fk == self.task_pk
@@ -69,8 +86,6 @@ class Task(MdTask):
         except Exception as e:
             raise Exception(f"{self.__class__.__name__}:: get_predifined_actions_in_language :: {e}") 
         
-
-
     def get_text_edit_actions_in_language(self, language_code):
         """
         Return the text edit actions in the specified language.
@@ -107,3 +122,68 @@ class Task(MdTask):
             return [{"text_edit_action_pk": text_edit_action_pk, "name": name, "description": description, "emoji": emoji} for text_edit_action_pk, name, description, emoji in text_edit_actions]
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} :: get_text_edit_actions_in_language :: {e}")
+        
+
+    @property
+    def predefined_actions_association(self) -> list[TaskPredefinedActionAssociation]:
+        """
+        Returns the predefined actions associated with the task.
+        """
+        try:
+            session = object_session(self)
+            return session.query(TaskPredefinedActionAssociation) \
+                        .filter(TaskPredefinedActionAssociation.task_fk == self.task_pk) \
+                        .all()
+        except Exception as e:
+            raise Exception(f"{self.__class__.__name__} :: predefined_actions :: {e}")
+
+
+    @property
+    def platforms(self) -> list[MdPlatform]:
+        try:
+            session = object_session(self)
+            return session.query(MdPlatform) \
+                .join(MdTaskPlatformAssociation, MdPlatform.platform_pk == MdTaskPlatformAssociation.platform_fk) \
+                .filter(MdTaskPlatformAssociation.task_fk == self.task_pk) \
+                .all()
+        except Exception as e:
+            raise Exception(f"{self.__class__.__name__} :: platforms :: {e}")
+
+
+    @property
+    def output_type(self):
+        try:
+            session = object_session(self)
+            return session.query(MdTextType).filter(MdTextType.text_type_pk == self.output_text_type_fk).first()
+        except Exception as e:
+            raise Exception(f"{self.__class__.__name__} :: output_type :: {e}")
+        
+
+    @property
+    def display_data(self) -> list[TaskDisplayedData]:
+        try:
+            session = object_session(self)
+            return session.query(TaskDisplayedData).filter(TaskDisplayedData.task_fk == self.task_pk).all()
+        except Exception as e:
+            raise Exception(f"{self.__class__.__name__} :: displayed_data :: {e}")
+        
+
+    def to_json(self):
+        try:
+            return {
+                "type": self.type,
+                "platforms": [platform.name for platform in self.platforms],
+                "predefined_actions":  [predefined_action.to_json() for predefined_action in self.predefined_actions_association],
+                "task_displayed_data": [display_data.to_json() for display_data in self.display_data],
+                "name_for_system": self.name_for_system,
+                "definition_for_system": self.definition_for_system,
+                "final_instruction": self.final_instruction,
+                "output_format_instruction_title": self.output_format_instruction_title,
+                "output_format_instruction_draft": self.output_format_instruction_draft,
+                "output_type": self.output_type.name,
+                "icon": self.icon,
+                "infos_to_extract": self.infos_to_extract,
+                "result_chat_enabled": self.result_chat_enabled
+                }
+        except Exception as e:
+            raise Exception(f"{self.__class__.__name__} :: to_json :: {e}")

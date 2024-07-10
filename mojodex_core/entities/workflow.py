@@ -17,9 +17,9 @@ class Workflow(Task):
         try:
             session = object_session(self)
             steps = []
-            md_steps = session.query(MdWorkflowStep) \
-                .filter(MdWorkflowStep.task_fk == self.task_pk) \
-                .order_by(MdWorkflowStep.rank.asc()).all()
+            md_steps = session.query(WorkflowStep) \
+                .filter(WorkflowStep.task_fk == self.task_pk) \
+                .order_by(WorkflowStep.rank.asc()).all()
             for md_step in md_steps:
                 step_class = steps_class[md_step.name_for_system] if md_step.name_for_system in steps_class else WorkflowStep
                 step = session.query(step_class).get(md_step.workflow_step_pk)
@@ -81,3 +81,13 @@ class Workflow(Task):
             'step_definition_for_user': definition_for_user
         } for db_step, name_for_user, definition_for_user in self._get_db_steps_with_translation(language_code)
         ]
+
+
+    def to_json(self):
+        try:
+            return {
+                **super().to_json(),
+                "steps": [step.to_json() for step in self.steps]
+                }
+        except Exception as e:
+            raise Exception(f"{self.__class__.__name__} :: to_json :: {e}")

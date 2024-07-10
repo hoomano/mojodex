@@ -3866,13 +3866,21 @@ paths:
                           type: object
                           required:
                             - language_code
+                            - data
                           properties:
                             language_code:
                               type: string
-                            button_text:
-                              type: string
-                            message_prefix:
-                              type: string
+                            data:
+                              type: object
+                              required:
+                                - name
+                              properties:
+                                name:
+                                  type: string
+                                button_text:
+                                  type: string
+                                message_prefix:
+                                  type: string
                 output_type:
                   type: string
                 result_chat_enabled:
@@ -4019,19 +4027,26 @@ paths:
                       task_pk:
                         type: integer
                       displayed_data:
-                        type: object
+                        type: array
                         items:
                           type: object
                           required:
-                            - language_code # TODO: Rewrite that because it's not correct
-                            - name
+                            - language_code
+                            - data
                           properties:
                             language_code:
                               type: string
-                            button_text:
-                              type: string
-                            message_prefix:
-                              type: string
+                            data:
+                              type: object
+                              required:
+                                - name
+                              properties:
+                                name:
+                                  type: string
+                                button_text:
+                                  type: string
+                                message_prefix:
+                                  type: string
                 name_for_system:
                   type: string
                 definition_for_system:
@@ -4154,9 +4169,21 @@ paths:
                             type: object
                             required:
                               - language_code
+                              - data
                             properties:
                               language_code:
                                 type: string
+                              data:
+                                type: object
+                                required:
+                                  - name
+                                properties:
+                                  name:
+                                    type: string
+                                  button_text:
+                                    type: string
+                                  message_prefix:
+                                    type: string
                   task_displayed_data:
                     type: array
                     items:

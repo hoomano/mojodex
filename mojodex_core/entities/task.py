@@ -1,10 +1,8 @@
-import json
 from mojodex_core.entities.db_base_entities import MdPredefinedActionDisplayedData, MdTask, MdTaskDisplayedData, MdTaskPredefinedActionAssociation, MdTextEditAction, MdTextEditActionDisplayedData, MdTextEditActionTextTypeAssociation, MdTextType
 from sqlalchemy.orm import object_session
 from sqlalchemy import case, func, or_
-from sqlalchemy.sql.functions import coalesce
 from sqlalchemy.orm import aliased
-
+from sqlalchemy.sql.functions import coalesce
 from mojodex_core.entities.task_predefined_action_association import TaskPredefinedActionAssociation
 
 class Task(MdTask):
@@ -42,23 +40,39 @@ class Task(MdTask):
     def get_predefined_actions_in_language(self, language_code):
         try:
             session = object_session(self)
-            # get predefined actions translated in english
-            predefined_actions_data = (
-                session
+            predefined_actions_data_en = (session
+                .query(
+                    MdPredefinedActionDisplayedData.task_predefined_action_association_fk.label("task_predefined_action_association_fk"),
+                    MdPredefinedActionDisplayedData.displayed_data.label("displayed_data_en"),
+                )
+                .filter(MdPredefinedActionDisplayedData.language_code == 'en')
+            ).subquery()
+
+            # get predefined actions translated in user's language
+            predefined_actions_lang = (session
+                .query(
+                    MdPredefinedActionDisplayedData.task_predefined_action_association_fk.label("task_predefined_action_association_fk"),
+                    MdPredefinedActionDisplayedData.displayed_data.label("displayed_data_lang"),
+                )
+                .filter(MdPredefinedActionDisplayedData.language_code == language_code)
+            ).subquery()
+
+            # get predefined actions translated in user's language or english if not translated
+            predefined_actions_data = (session
                 .query(
                     MdTaskPredefinedActionAssociation.predefined_action_fk.label("task_fk"),
                     coalesce(
-                        case(
-                            (MdPredefinedActionDisplayedData.language_code == language_code, MdPredefinedActionDisplayedData.displayed_data),
-                            else_=None),
-                        case(
-                            (MdPredefinedActionDisplayedData.language_code == 'en', MdPredefinedActionDisplayedData.displayed_data),
-                            else_=None)
-                    ).label("displayed_data")
+                        predefined_actions_lang.c.displayed_data_lang, 
+                        predefined_actions_data_en.c.displayed_data_en
+                    ).label("displayed_data"),
                 )
                 .outerjoin(
-                    MdPredefinedActionDisplayedData,
-                    MdTaskPredefinedActionAssociation.task_predefined_action_association_pk == MdPredefinedActionDisplayedData.task_predefined_action_association_fk
+                    predefined_actions_lang, 
+                    predefined_actions_lang.c.task_predefined_action_association_fk == MdTaskPredefinedActionAssociation.task_predefined_action_association_pk
+                )
+                .outerjoin(
+                    predefined_actions_data_en,
+                    predefined_actions_data_en.c.task_predefined_action_association_fk == MdTaskPredefinedActionAssociation.task_predefined_action_association_pk
                 )
                 .filter(
                     MdTaskPredefinedActionAssociation.task_fk == self.task_pk

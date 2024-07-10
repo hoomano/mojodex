@@ -7,8 +7,7 @@ from mojodex_core.entities.instruct_task import InstructTask
 from mojodex_core.entities.task_predefined_action_association import TaskPredefinedActionAssociation
 from mojodex_core.entities.workflow import Workflow
 from mojodex_core.logging_handler import log_error
-from mojodex_core.entities.db_base_entities import *
-from sqlalchemy import func
+from mojodex_core.entities.db_base_entities import MdPlatform, MdTask, MdTaskDisplayedData, MdTaskPlatformAssociation, MdTextType, MdPredefinedActionDisplayedData, MdWorkflowStep, MdWorkflowStepDisplayedData
 from sqlalchemy.orm.attributes import flag_modified
 from mojodex_core.steps_library import steps_class
 from mojodex_core.entities.task import Task as TaskEntity

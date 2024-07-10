@@ -121,25 +121,33 @@ class Task(Resource):
             if not isinstance(predefined_actions, list):
                 return {"error": f"predefined_actions must be a list of dict"}, 400
             else:
-                for item in predefined_actions:
-                    if not isinstance(item, dict):
+                for predefined_action in predefined_actions:
+                    if not isinstance(predefined_action, dict):
                         return {"error": f"each predefined_action must be a dict"}, 400
-                    if "task_pk" not in item:
+                    if "task_pk" not in predefined_action:
                         return {"error": f"each predefined_action must contain 'task_pk'"}, 400
-                    if "displayed_data" not in item:
+                    if "displayed_data" not in predefined_action:
                         return {"error": f"each predefined_action must contain 'displayed_data'"}, 400
                     else:
-                        displayed_data = item["displayed_data"]
-                        # ensure displayed_data is a dict
-                        if not isinstance(displayed_data, dict):
-                            return {"error": f"'displayed_data' for task_pk : {item['task_pk']} must be a dict where each key is the corresponding language_code"}, 400
+                        displayed_data = predefined_action["displayed_data"]
+                        # ensure displayed_data is a list
+                        if not isinstance(displayed_data, list):
+                            return {"error": f"'displayed_data' for task_pk : {predefined_action['task_pk']} must be a list containing data for each language"}, 400
 
-                        for language_code in displayed_data:
-                            if not isinstance(displayed_data[language_code], dict):
-                                return {"error": f"The language_code key : '{language_code}' for the predefined_action with task_pk '{item['task_pk']}' must have a dict as value"}, 400
-                            if "name" not in displayed_data[language_code]:
-                                return {"error": f"The predefined_action with task_pk : '{item['task_pk']}' and language_code '{language_code}' must contain 'name'"}, 400
-
+                        for item in displayed_data:
+                            # check there is key 'language_code' in each item
+                            if "language_code" not in item:
+                                return {"error": f"each item in displayed_data must contain 'language_code'"}, 400
+                            # check the is key "data" in each item
+                            if "data" not in item:
+                                return {"error": f"each item in displayed_data must contain 'data'"}, 400
+                            # check item["data"] is a dict
+                            if not isinstance(item["data"], dict):
+                                return {"error": f"each item in displayed_data must contain 'data' as a dict"}, 400
+                            # check item["data"] contains "name"
+                            if "name" not in item["data"]:
+                                return {"error": f"each item in displayed_data must contain at least key 'name'"}, 400
+                            
             # ensure platform is a list
             if not isinstance(platforms, list):
                 return {"error": f"'platforms' must be a list"}, 400
@@ -203,13 +211,13 @@ class Task(Resource):
                 db.session.refresh(task_displayed_data)
 
             # associate predefined_actions
-            for item in predefined_actions:
+            for predefined_action in predefined_actions:
 
-                predefined_action_fk = item["task_pk"]
-                displayed_data = item["displayed_data"]
+                predefined_action_fk = predefined_action["task_pk"]
+                displayed_data = predefined_action["displayed_data"]
 
                 # TASK - ACTION ASSOCIATION
-                task_predefined_action_association = MdTaskPredefinedActionAssociation(
+                task_predefined_action_association = TaskPredefinedActionAssociation(
                         task_fk=task.task_pk,
                         predefined_action_fk=predefined_action_fk
                     )
@@ -218,11 +226,13 @@ class Task(Resource):
                 db.session.refresh(task_predefined_action_association)
 
                 # SAVE TRANSLATIONS
-                for language_code in displayed_data:
+                for displayed_data_in_language in displayed_data:
+                    language_code = displayed_data_in_language["language_code"]
+                    data = displayed_data_in_language["data"]
                     predefined_action_displayed_data = MdPredefinedActionDisplayedData(
                         task_predefined_action_association_fk=task_predefined_action_association.task_predefined_action_association_pk,
                         language_code=language_code,
-                        displayed_data=displayed_data[language_code]
+                        displayed_data=data
                     )
                     db.session.add(predefined_action_displayed_data)
                     db.session.flush()

@@ -9,8 +9,8 @@ class SendTodoDailyEmails(ScheduledTask):
 
     def job(self, offset=0, batch_size=50):
         try:
-            uri = f"{os.environ['MOJODEX_BACKEND_URI']}/todo_daily_emails"
-            pload = {'datetime': datetime.now().isoformat(), 'n_emails': batch_size, 'offset': offset}
+            uri = f"{os.environ['BACKGROUND_BACKEND_URI']}/events_generation"
+            pload = {'datetime': datetime.now().isoformat(), 'event_type': 'todo_daily_emails', 'n_events': batch_size, 'offset': offset}
             headers = {'Authorization': os.environ['MOJODEX_SCHEDULER_SECRET'], 'Content-Type': 'application/json'}
             internal_request = requests.post(uri, json=pload, headers=headers)
             if internal_request.status_code != 200:

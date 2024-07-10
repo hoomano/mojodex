@@ -8,9 +8,9 @@ class RescheduleTodos(ScheduledTask):
 
     def job(self):
         try:
-            uri = f"{os.environ['MOJODEX_BACKEND_URI']}/todos_scheduling"
+            uri = f"{os.environ['BACKGROUND_BACKEND_URI']}/reschedule_todo"
             pload = {'datetime': datetime.now().isoformat() }
-            headers = {'Authorization': os.environ['MOJODEX_SCHEDULER_SECRET'], 'Content-Type': 'application/json'}
+            headers = {'Content-Type': 'application/json'}
             internal_request = requests.post(uri, json=pload, headers=headers)
             if internal_request.status_code != 200:
                 self.logger.error(f"Error rescheduling todos : {internal_request.text}")

@@ -30,14 +30,10 @@ from routes.product_task_association import ProductTaskAssociation
 from routes.manual_purchase import ManualPurchase
 from routes.inapp_apple_purchase import InAppApplePurchase
 from routes.todos import Todos
-from routes.extract_todos import ExtractTodos
-from routes.todo_scheduling import TodosScheduling
-from routes.todo_daily_emails import TodoDailyEmails
 from routes.vocabulary import Vocabulary
 from routes.product_category import ProductCategory
 from routes.associate_free_product import FreeProductAssociation
 from routes.free_users_engagement import FreeUsersEngagementChecker
-from routes.calendar_suggestion_notification import CalendarSuggestionNotifications
 from routes.home_chat import HomeChat
 from routes.task_json import TaskJson
 from routes.integrations.hubspot import Hubspot
@@ -88,14 +84,10 @@ class HttpRouteManager:
         api.add_resource(ManualPurchase, "/manual_purchase")
         api.add_resource(InAppApplePurchase, "/in_app_apple_purchase")
         api.add_resource(Todos, "/todos")
-        api.add_resource(ExtractTodos, "/extract_todos")
-        api.add_resource(TodosScheduling, "/todos_scheduling")
-        api.add_resource(TodoDailyEmails, "/todo_daily_emails")
         api.add_resource(Vocabulary, "/vocabulary")
         api.add_resource(ProductCategory, "/product_category")
         api.add_resource(FreeProductAssociation, "/associate_free_product")
         api.add_resource(FreeUsersEngagementChecker, "/check_disengaged_free_trial_users")
-        api.add_resource(CalendarSuggestionNotifications, "/calendar_suggestion_notifications")
         api.add_resource(HomeChat, "/home_chat")
         api.add_resource(TaskJson, "/task_json")
         api.add_resource(Hubspot, "/integrations/hubspot")

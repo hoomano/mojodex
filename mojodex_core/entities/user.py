@@ -1,9 +1,11 @@
 
 
-from sqlalchemy import func, text
+
+from sqlalchemy import and_, extract, func, text
 from mojodex_core.entities.db_base_entities import MdTodo, MdTodoScheduling, MdUser, MdUserTask, MdUserTaskExecution
 from sqlalchemy.orm import object_session
 from mojodex_core.entities.instruct_task import InstructTask
+from mojodex_core.entities.todo import Todo
 from mojodex_core.llm_engine.mpt import MPT
 from datetime import datetime, timedelta, timezone
 
@@ -41,7 +43,7 @@ class User(MdUser):
             raise Exception(f"{self.__class__.__name__} :: datetime_context :: {e}")
         
     @property
-    def todo_list(self):
+    def twenty_first_todo_list_items(self):
         """
         Returns the list of 20 first todos for the user along with their due dates
         """
@@ -73,3 +75,62 @@ class User(MdUser):
             return [{'description': description, 'scheduled_date': scheduled_date} for description, scheduled_date in results]
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} :: todo_list :: {e}")
+        
+
+    @property
+    def today_todo_list(self):
+        """
+        Returns the list of todos for the user that are scheduled for today
+        """
+        try:
+            session = object_session(self)
+            today = func.date_trunc('day', func.now())
+
+            # Subquery to check if the last scheduled date is today
+            last_scheduled_today = session.query(
+                MdTodoScheduling.todo_fk,
+                func.max(MdTodoScheduling.scheduled_date).label('latest_scheduled_date')) \
+                .filter(MdTodoScheduling.scheduled_date == today) \
+                .group_by(MdTodoScheduling.todo_fk) \
+                .subquery()
+            
+            return session.query(Todo) \
+                .join(last_scheduled_today, last_scheduled_today.c.todo_fk == Todo.todo_pk) \
+                .join(MdUserTaskExecution, MdUserTaskExecution.user_task_execution_pk == Todo.user_task_execution_fk) \
+                .join(MdUserTask, MdUserTask.user_task_pk == MdUserTaskExecution.user_task_fk) \
+                .filter(MdUserTask.user_id == self.user_id) \
+                .filter(Todo.deleted_by_mojo.is_(None)) \
+                .filter(Todo.deleted_by_user.is_(None)) \
+                .filter(Todo.completed.is_(None)) \
+                .all()
+        except Exception as e:
+            raise Exception(f"{self.__class__.__name__} :: today_todo_list :: {e}")
+        
+
+    # User's todo items that have been rescheduled today
+    @property
+    def today_rescheduled_todo(self):
+        """
+        Returns the todo items that have been rescheduled today
+        """
+        try:
+            today = func.date_trunc('day', func.now())
+            session = object_session(self)
+            return session.query(Todo) \
+                .join(MdTodoScheduling, MdTodoScheduling.todo_fk == MdTodo.todo_pk) \
+                .join(MdUserTaskExecution, MdUserTaskExecution.user_task_execution_pk == MdTodo.user_task_execution_fk) \
+                .join(MdUserTask, MdUserTask.user_task_pk == MdUserTaskExecution.user_task_fk) \
+                .filter(MdUserTask.user_id == self.user_id) \
+                .filter(
+                    and_(
+                        extract("day", MdTodoScheduling.creation_date) == extract("day", today),
+                        extract("month", MdTodoScheduling.creation_date) == extract("month", today),
+                        extract("year", MdTodoScheduling.creation_date) == extract("year", today),
+                    )
+                ) \
+                .filter(MdTodoScheduling.reschedule_justification.isnot(None)) \
+                .all()
+        except Exception as e:
+            raise Exception(f"{self.__class__.__name__} :: today_rescheduled_todo :: {e}")
+        
+

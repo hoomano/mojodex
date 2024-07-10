@@ -15,7 +15,8 @@ paths:
               required:
                 - datetime
                 - event_type
-                - data
+                - n_events
+                - offset
               properties:
                 datetime:
                   type: string
@@ -23,13 +24,12 @@ paths:
                 event_type:
                   type: string
                   enum:
-                    - action_driven_notifications
-                    - daily_notifications
-                    - daily_emails
                     - todo_daily_emails
                     - calendar_suggestion_notifications
-                data:
-                  type: object
+                n_events:
+                  type: integer
+                offset:
+                  type: integer
       responses:
         '200':
           description: Event generation process started successfully
@@ -69,23 +69,22 @@ paths:
               type: object
               required:
                 - datetime
-                - user_task_execution_pk
               properties:
                 datetime:
                   type: string
                   format: date-time
-                user_task_execution_pk:
-                  type: integer
       responses:
         '200':
-          description: Process to extract todos started successfully
+          description: Process to extract todos started successfully, list of concerned user_task_execution_pks
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  success:
-                    type: string
+                  user_task_execution_pks:
+                    type: array
+                    items:
+                      type: integer
         '400':
           description: Invalid inputs provided
           content:
@@ -96,7 +95,7 @@ paths:
                   error:
                     type: string
         '404':
-          description: Error in extract todos route or user_task_execution not found
+          description: Error in extract todos route
           content:
             application/json:
               schema:
@@ -167,23 +166,22 @@ paths:
               type: object
               required:
                 - datetime
-                - todo_pk
               properties:
                 datetime:
                   type: string
                   format: date-time
-                todo_pk:
-                  type: integer
       responses:
         '200':
-          description: Process to reschedule todo started successfully
+          description: Process to reschedule todos started successfully, list of concerned todo_pks
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  success:
-                    type: string
+                  todo_pls:
+                    type: array
+                    items:
+                      type: integer
         '400':
           description: Invalid inputs provided
           content:
@@ -194,7 +192,7 @@ paths:
                   error:
                     type: string
         '404':
-          description: Todo not found or error in reschedule todos route
+          description: Error in reschedule todos route
           content:
             application/json:
               schema:

@@ -50,7 +50,7 @@ class TodosRescheduler:
                 .first()
             task_result = f"{user_task_execution.last_produced_text_version.title}\n{user_task_execution.last_produced_text_version.production}"
             
-            return user.user_id, user_task_execution.user_task_execution_pk, user_task_execution.task.name_for_system, user.datetime_context, user.name, user.goal, user.company_description, user_task_execution.task.definition_for_system, task_result, todo.description, user.todo_list, todo.n_times_scheduled
+            return user.user_id, user_task_execution.user_task_execution_pk, user_task_execution.task.name_for_system, user.datetime_context, user.name, user.goal, user.company_description, user_task_execution.task.definition_for_system, task_result, todo.description, user.twenty_first_todo_list_items, todo.n_times_scheduled
             
         except Exception as e:
             raise Exception(f"_collect_data :: {e}")

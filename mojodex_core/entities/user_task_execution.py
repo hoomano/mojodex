@@ -182,3 +182,35 @@ class UserTaskExecution(MdUserTaskExecution):
             return backend_date_to_user_date(self.end_date, self.user.timezone_offset)
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} :: end_date_user_timezone :: {e}")
+        
+
+
+    def to_json(self):
+        try:
+            return {
+                "user_task_execution_pk": self.user_task_execution_pk,
+                    "start_date": self.start_date_user_timezone.isoformat() if self.start_date_user_timezone else None,
+                    "end_date": self.end_date_user_timezone.isoformat() if self.end_date_user_timezone else None,
+                    "deleted_by_user": self.deleted_by_user is not None,
+                    "title": self.title,
+                    "summary": self.summary,
+                    "session_id": self.session_id,
+                    "json_inputs_values": None if all(input.get('value') is None for input in self.json_input_values) else self.json_input_values,
+                    "icon": self.task.icon,
+                    "task_name": self.user_task.task_name_in_user_language,
+                    "task_type": self.task.type,
+                    "result_chat_enabled": self.task.result_chat_enabled,
+                    "actions": self.user_task.predefined_actions,
+                    "user_task_pk": self.user_task_fk,
+                    "n_todos": self.n_todos,
+                    "n_not_read_todos": self.n_todos_not_read,
+                    "produced_text_pk": self.last_produced_text_version.produced_text_fk if self.last_produced_text_version else None,
+                    "produced_text_title": self.last_produced_text_version.title if self.last_produced_text_version else None,
+                    "produced_text_production": self.last_produced_text_version.production if self.last_produced_text_version else None,
+                    "produced_text_version_pk": self.last_produced_text_version.produced_text_version_pk if self.last_produced_text_version else None,
+                    "produced_text_version_index": self.n_produced_text_versions,
+                    "text_edit_actions": self.user_task.text_edit_actions,
+                    "working_on_todos": self.todos_extracted is None,
+            }
+        except Exception as e:
+            raise Exception(f"{self.__class__.__name__} :: to_json :: {e}")

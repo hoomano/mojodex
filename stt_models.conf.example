@@ -1,0 +1,12 @@
+# Fill all the STT API keys and other credentials here
+
+# ### STT
+
+# [openai/whisper-1]
+# OPENAI_API_KEY=
+
+[azure/whisper]
+WHISPER_AZURE_OPENAI_API_BASE=
+WHISPER_AZURE_OPENAI_DEPLOYMENT_ID=
+WHISPER_AZURE_OPENAI_KEY=
+WHISPER_AZURE_VERSION=

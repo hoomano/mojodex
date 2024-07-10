@@ -3,11 +3,13 @@ import os
 from flask import request
 from flask_restful import Resource
 from app import db
+from mojodex_core.entities.task_predefined_action_association import TaskPredefinedActionAssociation
 from mojodex_core.logging_handler import log_error
 from mojodex_core.entities.db_base_entities import *
 from sqlalchemy import func
 from sqlalchemy.orm.attributes import flag_modified
 from mojodex_core.steps_library import steps_class
+from mojodex_core.entities.task import Task as TaskEntity
 
 class Task(Resource):
 
@@ -332,7 +334,7 @@ class Task(Resource):
 
         # Logic
         try:
-            task = db.session.query(MdTask).filter(MdTask.task_pk == task_pk).first()
+            task: TaskEntity = db.session.query(TaskEntity).filter(TaskEntity.task_pk == task_pk).first()
             if task is None:
                 return {"error": f"Task with pk {task_pk} not found"}, 404
 
@@ -431,47 +433,21 @@ class Task(Resource):
                             return {"error": f"Missing field {e} for language_code '{language_code}'"}, 400
 
             if "predefined_actions" in request.json: 
+   
                 # Recover predefined_actions associations that are requested to be modified
                 predefined_actions = request.json["predefined_actions"]
 
-                predefined_actions_associations = (
-                    db.session
-                    .query(
-                        MdTaskPredefinedActionAssociation.task_predefined_action_association_pk,
-                        MdTaskPredefinedActionAssociation.predefined_action_fk,
-                        MdPredefinedActionDisplayedData
-                        
-                    )
-                    .join(
-                        MdPredefinedActionDisplayedData,
-                        MdPredefinedActionDisplayedData.task_predefined_action_association_fk == MdTaskPredefinedActionAssociation.task_predefined_action_association_pk
-                    )
-                    .filter(MdTaskPredefinedActionAssociation.task_fk == task_pk)
-                    .group_by(
-                        MdTaskPredefinedActionAssociation.task_predefined_action_association_pk,
-                        MdTaskPredefinedActionAssociation.predefined_action_fk,
-                        MdPredefinedActionDisplayedData.predefined_action_displayed_data_pk
-                    )
-                .all())
-
-                # Create a dict where each key is a predefined_action_fk and each value is a dict with 
-                # language_code as key and the MdPRedefinedActionDisplayedData object to modify as value
-                action_associations = {}
-                for action_data in predefined_actions_associations:
-                    if action_data["predefined_action_fk"] not in action_associations:
-                        action_associations[action_data["predefined_action_fk"]] = {}
-                        action_associations[action_data["predefined_action_fk"]]["task_predefined_action_association_pk"] = action_data["task_predefined_action_association_pk"]
-                    action_associations[action_data["predefined_action_fk"]][action_data["MdPredefinedActionDisplayedData"].language_code] = action_data["MdPredefinedActionDisplayedData"]
-                predefined_actions_associations  = action_associations
-                
                 # Modify the predefined_actions_associations on db or create new ones if they don't exist
-                for item in predefined_actions:
-                    predefined_action_fk = item["task_pk"]
-                    displayed_data = item["displayed_data"]
-                    language_codes = list(displayed_data.keys())
+                for predefined_action in predefined_actions:
+                    predefined_action_fk = predefined_action["task_pk"]
+                    displayed_data_list: list = predefined_action["displayed_data"]
 
-                    if predefined_action_fk not in predefined_actions_associations:
-                        task_predefined_action_association = MdTaskPredefinedActionAssociation(
+                    # Try to find existing predefined_action_association
+                    task_predefined_action_association = next((predefined_action_association for predefined_action_association in task.predefined_actions_association if predefined_action_association.predefined_action_fk == predefined_action_fk), None)
+
+                    # if predefined_action not in task.predefined_actions_associations, create it
+                    if task_predefined_action_association is None:
+                        task_predefined_action_association = TaskPredefinedActionAssociation(
                             task_fk=task_pk,
                             predefined_action_fk=predefined_action_fk
                         )
@@ -479,36 +455,26 @@ class Task(Resource):
                         db.session.add(task_predefined_action_association)
                         db.session.flush()
                         db.session.refresh(task_predefined_action_association)
-
-                        # add the new task_predefined_action_association to the predefined_actions_associations dict
-                        predefined_actions_associations[predefined_action_fk] = {}
-
-                        task_predefined_action_association_fk = task_predefined_action_association.task_predefined_action_association_pk
-                    else :
-                        task_predefined_action_association_fk = predefined_actions_associations[predefined_action_fk]["task_predefined_action_association_pk"]
-                        
+                   
                     
-                    for language_code in language_codes:
-                        
+                    for displayed_data in displayed_data_list:
+                        language_code = displayed_data["language_code"]
+                        data = displayed_data["data"]
                         # ensure that displayed data has "name" key
-                        if "name" not in displayed_data[language_code] : 
+                        if "name" not in data: 
                             return {"error": f"The predefined_action with task_pk : '{predefined_action_fk}' and language_code '{language_code}' must contain 'name'"}, 400
                         
-                        if language_code in predefined_actions_associations[predefined_action_fk]:
-                            displayed_data_object = predefined_actions_associations[predefined_action_fk][language_code]
-                            displayed_data_object.displayed_data = displayed_data[language_code]
-                            
-                            db.session.add(displayed_data_object)
-                            
-                        else:
-
-                            new_displayed_data = MdPredefinedActionDisplayedData(
-                                task_predefined_action_association_fk=task_predefined_action_association_fk,
+                        # Try to find existing displayed_data
+                        displayed_data_object = next((display_data for display_data in task_predefined_action_association.display_data if display_data.language_code == language_code), None)
+                        if displayed_data_object is None:
+                            displayed_data_object = MdPredefinedActionDisplayedData(
+                                task_predefined_action_association_fk=task_predefined_action_association.task_predefined_action_association_pk,
                                 language_code=language_code,
-                                displayed_data=displayed_data[language_code]
+                                displayed_data=data
                             )
-                            db.session.add(new_displayed_data)
-
+                            db.session.add(displayed_data_object)
+                        else:
+                            displayed_data_object.displayed_data = data
                         db.session.flush()
 
             if "name_for_system" in request.json:

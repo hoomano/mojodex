@@ -5,6 +5,8 @@ from sqlalchemy import case, func, or_
 from sqlalchemy.sql.functions import coalesce
 from sqlalchemy.orm import aliased
 
+from mojodex_core.entities.task_predefined_action_association import TaskPredefinedActionAssociation
+
 class Task(MdTask):
     """Task entity class represent an entity containing common informations of an InstructTask or Workflow.
     """
@@ -69,8 +71,6 @@ class Task(MdTask):
         except Exception as e:
             raise Exception(f"{self.__class__.__name__}:: get_predifined_actions_in_language :: {e}") 
         
-
-
     def get_text_edit_actions_in_language(self, language_code):
         """
         Return the text edit actions in the specified language.
@@ -107,3 +107,18 @@ class Task(MdTask):
             return [{"text_edit_action_pk": text_edit_action_pk, "name": name, "description": description, "emoji": emoji} for text_edit_action_pk, name, description, emoji in text_edit_actions]
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} :: get_text_edit_actions_in_language :: {e}")
+        
+
+    @property
+    def predefined_actions_association(self) -> list[TaskPredefinedActionAssociation]:
+        """
+        Returns the predefined actions associated with the task.
+        """
+        try:
+            session = object_session(self)
+            return session.query(TaskPredefinedActionAssociation) \
+                        .filter(TaskPredefinedActionAssociation.task_fk == self.task_pk) \
+                        .all()
+        except Exception as e:
+            raise Exception(f"{self.__class__.__name__} :: predefined_actions :: {e}")
+            

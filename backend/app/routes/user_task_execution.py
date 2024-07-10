@@ -7,7 +7,7 @@ from mojodex_core.entities.user_task import UserTask
 from mojodex_core.entities.user_workflow_execution import UserWorkflowExecution
 from mojodex_core.logging_handler import log_error
 from mojodex_core.entities.db_base_entities import MdProducedText, MdUserTask, MdUserTaskExecution, MdProducedTextVersion
-from mojodex_core.entities.user_task_execution import UserTaskExecution as DBUserTaskExecution
+from mojodex_core.entities.user_task_execution import UserTaskExecution as UserTaskExecutionEntity
 from models.session_creator import SessionCreator
 from sqlalchemy import func, and_, or_
 from models.purchase_manager import PurchaseManager
@@ -63,7 +63,7 @@ class UserTaskExecution(Resource):
                 empty_json_input_values.append(new_input)
 
             
-            task_execution: DBUserTaskExecution = DBUserTaskExecution(user_task_fk=user_task_pk,
+            task_execution: UserTaskExecutionEntity = UserTaskExecutionEntity(user_task_fk=user_task_pk,
                                                  json_input_values=empty_json_input_values, session_id=session_id)
             if "user_task_execution_fk" in request.json:
                 task_execution.predefined_action_from_user_task_execution_fk = request.json["user_task_execution_fk"]
@@ -85,6 +85,8 @@ class UserTaskExecution(Resource):
             return {"error": f"{e}"}, 500
 
     # end of task
+    # Used by backend/app/user_task_execution_purchase_updater.py
+    # TODO > should be refacto to trigger on database event to update purchase status
     def post(self):
         error_message= "Error ending UserTaskExecution : "
         try:
@@ -143,7 +145,7 @@ class UserTaskExecution(Resource):
 
         try:
 
-            # Subquery to get the last produced text versions
+            # Subquery to get the last produced text versions for each user_task_execution
             produced_text_subquery = db.session.query(MdProducedText.produced_text_pk,
                                                         MdProducedText.user_task_execution_fk.label(
                                                             'user_task_execution_fk'),
@@ -160,42 +162,46 @@ class UserTaskExecution(Resource):
                         MdProducedTextVersion.produced_text_fk == MdProducedText.produced_text_pk) \
                 .subquery()
             
+            # Subquery to get the highest row number for each user_task_execution
             highest_row_number_subquery = db.session.query(
                 produced_text_subquery.c.user_task_execution_fk,
                 func.max(produced_text_subquery.c.row_number).label('max_row_number')
             ).group_by(produced_text_subquery.c.user_task_execution_fk).subquery()
 
           
+            # Return a specific user_task_execution
             if "user_task_execution_pk" in request.args:
                 user_task_execution_pk = int(request.args["user_task_execution_pk"])
                
-                user_task_execution: DBUserTaskExecution = (db.session.query(DBUserTaskExecution)
-                    .filter(DBUserTaskExecution.user_task_execution_pk == user_task_execution_pk)
-                    .join(MdUserTask, MdUserTask.user_task_pk == DBUserTaskExecution.user_task_fk)
+                user_task_execution: UserTaskExecutionEntity = (db.session.query(UserTaskExecutionEntity)
+                    .filter(UserTaskExecutionEntity.user_task_execution_pk == user_task_execution_pk)
+                    .join(MdUserTask, MdUserTask.user_task_pk == UserTaskExecutionEntity.user_task_fk)
                     .filter(MdUserTask.user_id == user_id)
-                    .group_by(DBUserTaskExecution.user_task_execution_pk)
                     .first())
                 
+                # Need to query the right implementation table to get access to the specialised "to_json" method
                 return db.session.query(UserWorkflowExecution if user_task_execution.task.type == "workflow" else InstructTaskExecution).get(user_task_execution.user_task_execution_pk).to_json(), 200
 
+
+            # Return a list of user_task_executions
             n_user_task_executions = min(50,
                                          int(request.args[
                                                  "n_user_task_executions"])) if "n_user_task_executions" in request.args else 50
             offset = int(request.args["offset"]) if "offset" in request.args else 0
 
           
-            result = (db.session.query(DBUserTaskExecution)
-                .distinct(DBUserTaskExecution.user_task_execution_pk)
-                .join(MdUserTask, MdUserTask.user_task_pk == DBUserTaskExecution.user_task_fk)
+            result = (db.session.query(UserTaskExecutionEntity)
+                .distinct(UserTaskExecutionEntity.user_task_execution_pk)
+                .join(MdUserTask, MdUserTask.user_task_pk == UserTaskExecutionEntity.user_task_fk)
                 .outerjoin(highest_row_number_subquery,
-                        highest_row_number_subquery.c.user_task_execution_fk == DBUserTaskExecution.user_task_execution_pk)
+                        highest_row_number_subquery.c.user_task_execution_fk == UserTaskExecutionEntity.user_task_execution_pk)
                 .outerjoin(produced_text_subquery,
                             and_(
-                                produced_text_subquery.c.user_task_execution_fk == DBUserTaskExecution.user_task_execution_pk,
+                                produced_text_subquery.c.user_task_execution_fk == UserTaskExecutionEntity.user_task_execution_pk,
                                 produced_text_subquery.c.row_number == highest_row_number_subquery.c.max_row_number))
                 .filter(MdUserTask.user_id == user_id)
-                .filter(DBUserTaskExecution.start_date.isnot(None))
-                .filter(DBUserTaskExecution.deleted_by_user.is_(None)))
+                .filter(UserTaskExecutionEntity.start_date.isnot(None))
+                .filter(UserTaskExecutionEntity.deleted_by_user.is_(None)))
 
             if "search_filter" in request.args:
                 search_filter = request.args["search_filter"]
@@ -210,8 +216,8 @@ class UserTaskExecution(Resource):
                     search_user_tasks_filter_list = search_user_tasks_filter.split(";")
                     result = result.filter(MdUserTask.user_task_pk.in_(search_user_tasks_filter_list))
 
-            user_task_executions:  list[DBUserTaskExecution] = (result.group_by(DBUserTaskExecution.user_task_execution_pk)
-                      .order_by(DBUserTaskExecution.user_task_execution_pk.desc())
+            user_task_executions:  list[UserTaskExecutionEntity] = (result.group_by(UserTaskExecutionEntity.user_task_execution_pk)
+                      .order_by(UserTaskExecutionEntity.user_task_execution_pk.desc())
                       .limit(n_user_task_executions)
                       .offset(offset)
                       .all())

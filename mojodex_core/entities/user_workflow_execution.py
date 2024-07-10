@@ -4,7 +4,6 @@ from mojodex_core.entities.user_workflow import UserWorkflow
 from mojodex_core.entities.user_workflow_step_execution import UserWorkflowStepExecution
 from sqlalchemy.orm import object_session
 from sqlalchemy import case
-from sqlalchemy.sql import and_
 
 
 class UserWorkflowExecution(UserTaskExecution):
@@ -149,3 +148,15 @@ class UserWorkflowExecution(UserTaskExecution):
             return "\n\n".join([list(step.result[0].values())[0] for step in validated_last_step_executions])
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} :: result :: {e}")
+        
+
+    def to_json(self):
+        try:
+            # return super().to_json() and add keys steps and step_executions 
+            return {
+                    **super().to_json(),
+                    "steps": self.user_task.steps_as_json,
+                    "step_executions": self.steps_execution_as_json,
+                    }
+        except Exception as e:
+            raise Exception(f"{self.__class__.__name__} :: to_json :: {e}")

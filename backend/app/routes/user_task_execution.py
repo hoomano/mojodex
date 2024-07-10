@@ -1,8 +1,8 @@
 import os
-from typing import Tuple
 from flask import request
 from flask_restful import Resource
 from app import db, authenticate
+from mojodex_core.entities.instruct_user_task_execution import InstructTaskExecution
 from mojodex_core.entities.user_task import UserTask
 from mojodex_core.entities.user_workflow_execution import UserWorkflowExecution
 from mojodex_core.logging_handler import log_error
@@ -179,38 +179,9 @@ class UserTaskExecution(Resource):
                     .filter(MdUserTask.user_id == user_id)
                     .first())
                 
-                if user_task_execution.task.type == "workflow":
-                    workflow_execution: UserWorkflowExecution = db.session.query(UserWorkflowExecution).get(user_task_execution.user_task_execution_pk)
-                else:
-                    workflow_execution = None
+                # Need to query the right implementation table to get access to the specialised "to_json" method
+                return db.session.query(UserWorkflowExecution if user_task_execution.task.type == "workflow" else InstructTaskExecution).get(user_task_execution.user_task_execution_pk).to_json(), 200
 
-                return {
-                    "user_task_execution_pk": user_task_execution.user_task_execution_pk,
-                    "start_date": user_task_execution.start_date_user_timezone.isoformat() if user_task_execution.start_date_user_timezone else None,
-                    "end_date": user_task_execution.end_date_user_timezone.isoformat() if user_task_execution.end_date_user_timezone else None,
-                    "deleted_by_user": user_task_execution.deleted_by_user is not None,
-                    "title": user_task_execution.title,
-                    "summary": user_task_execution.summary,
-                    "session_id": user_task_execution.session_id,
-                    "json_inputs_values": None if all(input.get('value') is None for input in user_task_execution.json_input_values) else user_task_execution.json_input_values,
-                    "icon": user_task_execution.task.icon,
-                    "task_name": user_task_execution.user_task.task_name_in_user_language,
-                    "task_type": user_task_execution.task.type,
-                    "result_chat_enabled": user_task_execution.task.result_chat_enabled,
-                    "actions": user_task_execution.user_task.predefined_actions,
-                    "user_task_pk": user_task_execution.user_task_fk,
-                    "n_todos": user_task_execution.n_todos,
-                    "n_not_read_todos": user_task_execution.n_todos_not_read,
-                    "produced_text_pk": user_task_execution.last_produced_text_version.produced_text_fk if user_task_execution.last_produced_text_version else None,
-                    "produced_text_title": user_task_execution.last_produced_text_version.title if user_task_execution.last_produced_text_version else None,
-                    "produced_text_production": user_task_execution.last_produced_text_version.production if user_task_execution.last_produced_text_version else None,
-                    "produced_text_version_pk": user_task_execution.last_produced_text_version.produced_text_version_pk if user_task_execution.last_produced_text_version else None,
-                    "produced_text_version_index": user_task_execution.n_produced_text_versions,
-                    "text_edit_actions": user_task_execution.user_task.text_edit_actions,
-                    "working_on_todos": user_task_execution.todos_extracted is None,
-                    "steps": workflow_execution.user_task.steps_as_json if workflow_execution else None,
-                    "step_executions": workflow_execution.steps_execution_as_json if workflow_execution else None,
-                }, 200
 
             # Return a list of user_task_executions
             n_user_task_executions = min(50,
@@ -251,44 +222,8 @@ class UserTaskExecution(Resource):
                       .offset(offset)
                       .all())
 
-
-            def get_workflow_specific_data(user_task_execution_pk):
-                workflow_execution : UserWorkflowExecution = db.session.query(UserWorkflowExecution).get(user_task_execution_pk)
-                return {
-                    "steps": workflow_execution.user_task.steps_as_json,
-                    "step_executions": workflow_execution.steps_execution_as_json
-                }
-            
-
-            results_list = [{
-                "user_task_execution_pk": user_task_execution.user_task_execution_pk,
-                "start_date": user_task_execution.start_date_user_timezone.isoformat() if user_task_execution.start_date_user_timezone else None,
-                "end_date": user_task_execution.end_date_user_timezone.isoformat() if user_task_execution.end_date_user_timezone else None,
-                "title": user_task_execution.title,
-                "summary": user_task_execution.summary,
-                "session_id": user_task_execution.session_id,
-                "json_inputs_values": None if all(input.get('value') is None for input in user_task_execution.json_input_values) else user_task_execution.json_input_values,
-                "icon": user_task_execution.task.icon,
-                "task_name": user_task_execution.user_task.task_name_in_user_language,
-                "task_type": user_task_execution.task.type,
-                "result_chat_enabled": user_task_execution.task.result_chat_enabled,
-                "actions": user_task_execution.user_task.predefined_actions,
-                "user_task_pk": user_task_execution.user_task_fk,
-                "n_todos": user_task_execution.n_todos,
-                "n_not_read_todos": user_task_execution.n_todos_not_read,
-                "produced_text_pk": user_task_execution.last_produced_text_version.produced_text_fk if user_task_execution.last_produced_text_version else None,
-                "produced_text_title": user_task_execution.last_produced_text_version.title if user_task_execution.last_produced_text_version else None,
-                "produced_text_production": user_task_execution.last_produced_text_version.production if user_task_execution.last_produced_text_version else None,
-                "produced_text_version_pk": user_task_execution.last_produced_text_version.produced_text_version_pk if user_task_execution.last_produced_text_version else None,
-                "produced_text_version_index": user_task_execution.n_produced_text_versions,
-                "text_edit_actions": user_task_execution.user_task.text_edit_actions,
-                "working_on_todos": user_task_execution.todos_extracted is None,
-                **(get_workflow_specific_data(user_task_execution.user_task_execution_pk) if user_task_execution.task.type == "workflow" else {})
-
-            } for user_task_execution in user_task_executions]
-
-   
-            return {"user_task_executions": results_list}, 200
+            return {"user_task_executions": [db.session.query(UserWorkflowExecution if user_task_execution.task.type == "workflow" else InstructTaskExecution).get(user_task_execution.user_task_execution_pk).to_json() 
+                                             for user_task_execution in user_task_executions]}, 200
 
         except Exception as e:
             log_error(f"Error getting user_task_executions : {e}")

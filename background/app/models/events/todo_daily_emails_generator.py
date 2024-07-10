@@ -52,7 +52,6 @@ class TodoDailyEmailsGenerator(EmailEventGenerator):
                 template = Template(f.read())
                 body = template.render(mojodex_message=body, mojodex_webapp_url=os.environ["MOJODEX_WEBAPP_URI"],
                                         button_text="View To-do List")
-            print(f"🟢 sending email to {email}")
             self.send_event(self.user_id,
                             event_type=TodoDailyEmailsGenerator.todo_daily_email_type,
                             subject=subject,
@@ -61,7 +60,6 @@ class TodoDailyEmailsGenerator(EmailEventGenerator):
                             
            
         except Exception as e:
-            print(f"🔴 generate_events: {e}")
             EmailService().send_technical_error_email(
                 f"{self.__class__.__name__} : generate_events : Error preparing email to user_id {self.user_id}: {e}")
 

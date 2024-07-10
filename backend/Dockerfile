@@ -24,6 +24,7 @@ RUN pip install -r requirements.txt
 COPY ./mojodex_core /app/mojodex_core
 COPY ./models.conf /app/mojodex_core/llm_engine/providers
 COPY ./embedding_models.conf /app/mojodex_core/embedder
+COPY ./stt_models.conf /app/mojodex_core/stt
 WORKDIR /app/mojodex_core
 RUN pip install --no-cache-dir -r requirements.txt
 RUN pip install .

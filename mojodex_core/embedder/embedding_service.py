@@ -3,9 +3,6 @@ import os
 from mojodex_core.embedder.embedding_provider import EmbeddingProvider
 from mojodex_core.embedder.openai_embedding import OpenAIEmbedding
 from mojodex_core.logging_handler import MojodexCoreLogger
-from mojodex_core.stt.openai_stt import OpenAISTT
-from mojodex_core.openai_conf import OpenAIConf
-from mojodex_core.user_storage_manager.user_audio_file_manager import UserAudioFileManager
 
 
 class EmbeddingService:

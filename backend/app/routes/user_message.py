@@ -5,7 +5,7 @@ from mojodex_core.entities.message import Message
 from mojodex_core.logging_handler import log_error
 from mojodex_core.entities.db_base_entities import *
 from models.assistant.session_controller import SessionController
-from mojodex_core.stt.stt import STTService
+from mojodex_core.stt.stt_service import STTService
 from datetime import datetime
 from mojodex_core.timezone_service import backend_date_to_user_date, device_date_to_backend_date
 

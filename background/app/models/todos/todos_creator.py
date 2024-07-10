@@ -1,6 +1,3 @@
-import os
-from datetime import datetime
-import requests
 from sqlalchemy import func
 from mojodex_core.db import with_db_session
 from mojodex_core.entities.db_base_entities import MdTodo, MdTodoScheduling
@@ -11,12 +8,10 @@ from mojodex_core.json_loader import json_decode_retry
 from mojodex_core.logging_handler import on_json_error
 from mojodex_core.knowledge_manager import KnowledgeManager
 from mojodex_core.email_sender.email_service import EmailService
-
 from mojodex_core.llm_engine.mpt import MPT
-
+from datetime import datetime
 
 class TodosCreator:
-    todos_url = "/todos"
 
     todos_extractor_mpt_filename = "instructions/extract_todos.mpt"
 
@@ -39,11 +34,11 @@ class TodosCreator:
                     continue
                 try:
                     # check reminder_date is a DateTime in format yyyy-mm-dd
-                    datetime.strptime(todo['due_date'], "%Y-%m-%d")
+                    due_date = datetime.strptime(todo['due_date'], "%Y-%m-%d")
                 except ValueError:
                     # Invalid due date, not saving to db just skip it
                     continue
-                self._save_to_db(todo['todo_definition'], todo['due_date'])
+                self._save_to_db(todo['todo_definition'], due_date)
             self._mark_todo_extracted()
         except Exception as e:
             EmailService().send_technical_error_email(f"{self.__class__.__name__} : extract_and_save: {e}")
@@ -111,37 +106,43 @@ class TodosCreator:
             raise Exception(f"_extract :: {e}")
 
 
-    def _save_to_db(self, description, due_date):
+    @with_db_session
+    def _save_to_db(self, description, due_date, db_session):
         """
-        Save todos in db by sending them to mojodex-backend through appropriated route because backend is the only responsible for writing in db
+        Save new todo in db
         """
         try:
-            uri = f"{os.environ['MOJODEX_BACKEND_URI']}/{TodosCreator.todos_url}"
-            
-            pload = {'datetime': datetime.now().isoformat(), 'description': description, 'due_date': due_date,
-                     'user_task_execution_fk': self.user_task_execution_pk}
-            headers = {
-                'Authorization': os.environ['MOJODEX_BACKGROUND_SECRET'], 'Content-Type': 'application/json'}
-            internal_request = requests.put(uri, json=pload, headers=headers)
-            if internal_request.status_code != 200:
-                raise Exception(str(internal_request.json()))
-            return internal_request.json()["todo_pk"]
+
+            # create new todo
+            new_todo = MdTodo(
+                creation_date=datetime.now(),
+                description=description,
+                user_task_execution_fk=self.user_task_execution_pk
+            )
+            db_session.add(new_todo)
+            db_session.flush()
+            db_session.refresh(new_todo)
+
+            # create todo_scheduling
+            new_todo_scheduling = MdTodoScheduling(
+                todo_fk=new_todo.todo_pk,
+                scheduled_date=due_date
+            )
+
+            db_session.add(new_todo_scheduling)
+            db_session.commit()
+
         except Exception as e:
             raise Exception(f"_save_to_db: {e}")
 
-    def _mark_todo_extracted(self):
+    @with_db_session
+    def _mark_todo_extracted(self, db_session):
         """
         Mark the user_task_execution's todos has been extracted by sending it to mojodex-backend through appropriated route
         """
         try:
-            uri = f"{os.environ['MOJODEX_BACKEND_URI']}/extract_todos"
-            # Save follow-ups in db => send to mojodex-backend
-            pload = {'datetime': datetime.now().isoformat(),
-                     'user_task_execution_fk': self.user_task_execution_pk}
-            headers = {'Authorization': os.environ['MOJODEX_BACKGROUND_SECRET'], 'Content-Type': 'application/json'}
-            internal_request = requests.put(uri, json=pload, headers=headers)
-            if internal_request.status_code != 200:
-                raise Exception(str(internal_request.json()))
-            return internal_request.json()["user_task_execution_pk"]
+            user_task_execution: UserTaskExecution = db_session.query(UserTaskExecution).get(self.user_task_execution_pk)
+            user_task_execution.todos_extracted = datetime.now()
+            db_session.commit()
         except Exception as e:
             raise Exception(f"_mark_todo_extracted: {e}")

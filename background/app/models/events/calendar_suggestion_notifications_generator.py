@@ -3,11 +3,11 @@ from mojodex_core.json_loader import json_decode_retry
 from mojodex_core.email_sender.email_service import EmailService
 from mojodex_core.knowledge_manager import KnowledgeManager
 from mojodex_core.logging_handler import on_json_error
-from models.events.events_generator import EventsGenerator
+from models.events.events_generator import PushNotificationEventGenerator
 from mojodex_core.llm_engine.mpt import MPT
 
 
-class CalendarSuggestionNotificationsGenerator(EventsGenerator):
+class CalendarSuggestionNotificationsGenerator(PushNotificationEventGenerator):
     calendar_suggestion_notification_text_mpt_filename = "instructions/calendar_suggestion_reminder_notification.mpt"
 
     def generate_events(self, calendar_suggestions):
@@ -29,8 +29,11 @@ class CalendarSuggestionNotificationsGenerator(EventsGenerator):
                     data = {"user_id": user_id,
                             "task_pk": str(calendar_suggestion["task_pk"]),
                             "type": "calendar_suggestion"}
-                    self.send_event(user_id, message={"title": notification_title, "body": notification_body},
-                                    event_type="calendar_suggestion_notification", data=data)
+                    self.send_event(user_id,
+                                    event_type="calendar_suggestion_notification", 
+                                    notification_title=notification_title,
+                                    notification_body=notification_body,
+                                    data=data)
                 except Exception as e:
                     EmailService().send_technical_error_email(
                         f"{self.__class__.__name__} : generate_events: Error preparing notification for user {user_id}: {e}")

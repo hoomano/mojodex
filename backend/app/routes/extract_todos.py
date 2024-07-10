@@ -97,41 +97,4 @@ class ExtractTodos(Resource):
             return {"error": f"Error running extract todos : {e}"}, 500
 
 
-    # mark todo as extracted
-    def put(self):
-        log_message = "Error marking todo as extracted"
-        if not request.is_json:
-            return {"error": "Invalid request"}, 400
-
-        try:
-            secret = request.headers['Authorization']
-            if secret != os.environ["MOJODEX_BACKGROUND_SECRET"]:
-                log_error(f"{log_message}: Authentication error : Wrong secret")
-                return {"error": "Authentication error : Wrong secret"}, 403
-        except KeyError:
-            log_error(f"{log_message}: Missing Authorization secret in headers")
-            return {"error": f"Missing Authorization secret in headers"}, 403
-
-        # data
-        try:
-            timestamp = request.json["datetime"]
-            user_task_execution_fk = request.json["user_task_execution_fk"]
-        except KeyError as e:
-            log_error(f"{log_message}: Missing key in body: {e}")
-            return {"error": f"Missing key in body : {e}"}, 400
-
-        try:
-            user_task_execution = db.session.query(MdUserTaskExecution).filter(MdUserTaskExecution.user_task_execution_pk == user_task_execution_fk).first()
-            if not user_task_execution:
-                log_error(f"{log_message}: user_task_execution not found")
-                return {"error": f"user_task_execution not found"}, 404
-
-            user_task_execution.todos_extracted = datetime.now()
-            db.session.commit()
-            return {"user_task_execution_pk": user_task_execution_fk}, 200
-        except Exception as e:
-            log_error(f"{log_message}: {e}")
-            return {"error": f"{log_message}: {e}"}, 500
-
-
-
+    

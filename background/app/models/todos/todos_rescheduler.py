@@ -1,24 +1,18 @@
-import os
-from datetime import datetime
-import requests
+
 from mojodex_core.db import with_db_session
+from mojodex_core.entities.db_base_entities import MdTodoScheduling
 from mojodex_core.entities.todo import Todo
 from mojodex_core.entities.user import User
 from mojodex_core.entities.user_task import UserTask
 from mojodex_core.entities.user_task_execution import UserTaskExecution
 from mojodex_core.json_loader import json_decode_retry
-
 from mojodex_core.logging_handler import on_json_error
-
-
 from mojodex_core.email_sender.email_service import EmailService
 from mojodex_core.knowledge_manager import KnowledgeManager
-
 from mojodex_core.llm_engine.mpt import MPT
-
+from datetime import datetime
 
 class TodosRescheduler:
-    todos_scheduling_url = "/todos_scheduling"
 
     todos_rescheduler_mpt_filename = "instructions/reschedule_todo.mpt"
 
@@ -31,13 +25,13 @@ class TodosRescheduler:
             json_result = self._reschedule(*collected_data)
             try:
                 # check reminder_date is a DateTime in format yyyy-mm-dd
-                datetime.strptime(json_result['reschedule_date'], "%Y-%m-%d")
+                reschedule_date=datetime.strptime(json_result['reschedule_date'], "%Y-%m-%d")
             except ValueError:
                 EmailService().send_technical_error_email(f"Error in {self.__class__.__name__} - reschedule_and_save: Invalid reschedule_date {json_result['reschedule_date']} - Not saving to db."
                                        f"This is not blocking, only this todo {self.todo_pk} will not be rescheduled.")
                 return
             
-            self._save_to_db(json_result['argument'], json_result['reschedule_date'])
+            self._save_to_db(json_result['argument'], reschedule_date)
         except Exception as e:
             EmailService().send_technical_error_email(f"{self.__class__.__name__} : extract_and_save: {e}")
         
@@ -89,19 +83,19 @@ class TodosRescheduler:
         except Exception as e:
             raise Exception(f"_reschedule :: {e}")
 
-    def _save_to_db(self, argument, reschedule_date):
+    @with_db_session
+    def _save_to_db(self, argument, reschedule_date, db_session):
         """
-        Save new todo due-date in db by sending it to mojodex-backend through appropriated route because backend is the only responsible for writing in db
+        Save new todo due-date in db
         """
         try:
-            uri = f"{os.environ['MOJODEX_BACKEND_URI']}/{TodosRescheduler.todos_scheduling_url}"
-            pload = {'datetime': datetime.now().isoformat(), 'argument': argument, 'reschedule_date': reschedule_date,
-                     'todo_fk': self.todo_pk}
-            headers = {
-                'Authorization': os.environ['MOJODEX_BACKGROUND_SECRET'], 'Content-Type': 'application/json'}
-            internal_request = requests.put(uri, json=pload, headers=headers)
-            if internal_request.status_code != 200:
-                raise Exception(str(internal_request.json()))
-            return
+            new_todo_scheduling = MdTodoScheduling(
+                todo_fk=self.todo_pk,
+                scheduled_date=reschedule_date,
+                reschedule_justification=argument
+            )
+
+            db_session.add(new_todo_scheduling)
+            db_session.commit()
         except Exception as e:
             raise Exception(f"_save_to_db: {e}")

@@ -62,67 +62,6 @@ class Session(Resource):
         except Exception as e:
             return {"error": f"Error getting sessions : {e}"}, 400
 
-    # edit session (add title)
-    def post(self):
-        if not request.is_json:
-            return {"error": "Invalid request"}, 400
-
-        try:
-            user_id=None
-            secret = request.headers['Authorization']
-            if secret != os.environ["MOJODEX_BACKGROUND_SECRET"]:
-                auth = authenticate_function(request.headers['Authorization'])
-                if auth[0] is not True:
-                    return auth
-                user_id = auth[1]
-        except KeyError:
-            log_error(f"Error updating user summary : Missing Authorization secret in headers")
-            return {"error": f"Missing Authorization secret in headers"}, 403
-
-        # data
-        try:
-            timestamp = request.json["datetime"]
-            title = request.json["title"]
-            session_id = request.json["session_id"]
-        except KeyError as e:
-            return {"error": f"Missing field {e}"}, 400
-
-        # Logic
-        try:
-            # check session exists and has no title yet
-            session = db.session.query(MdSession) \
-                .filter(MdSession.session_id == session_id) \
-                .filter(MdSession.deleted_by_user == False)
-
-            # If request does not come from background process, check that user is owner of session
-            if request.headers['Authorization'] != os.environ["MOJODEX_BACKGROUND_SECRET"]:
-                session= session.filter(MdSession.user_id == user_id)
-
-
-            session=session.first()
-
-            if session is None:
-                return {"error": f"Invalid session_id: {session_id}"}, 400
-
-            # If request comes from background process, check that session has no title yet
-            if request.headers['Authorization'] == os.environ["MOJODEX_BACKGROUND_SECRET"]:
-                if session.title is not None:
-                    return {"error": f"Session already has a title"}, 400
-
-            # update session title
-            session.title = title
-            db.session.commit()
-
-            if request.headers['Authorization'] == os.environ["MOJODEX_BACKGROUND_SECRET"]:
-                server_socket.emit('session_title', {"title": title, "session_id": session_id},  to=session_id)
-
-            return {"session_id": session_id}, 200
-        except Exception as e:
-            db.session.rollback()
-            log_error(f"Error updating session title : {e}")
-            return {"error": f"Error updating session title : {e}"}, 400
-
-
     def delete(self, user_id):
         try:
             timestamp = request.args["datetime"]

@@ -21,7 +21,6 @@ from routes.goal import Goal
 from routes.purchase_end_stripe_webhook import PurchaseEndStripeWebHook
 from routes.check_expired_purchases import ExpiredPurchasesChecker
 from routes.device import Device
-from routes.event import Event
 from routes.text_type import TextType
 from routes.text_edit_action import TextEditAction
 from routes.language import Language
@@ -80,7 +79,6 @@ class HttpRouteManager:
         api.add_resource(PurchaseEndStripeWebHook, "/subscription_end")
         api.add_resource(ExpiredPurchasesChecker, "/check_expired_purchases")
         api.add_resource(Device, "/device")
-        api.add_resource(Event, "/event")
         api.add_resource(TextType, "/text_type")
         api.add_resource(TextEditAction, "/text_edit_action")
         api.add_resource(Language, "/language")

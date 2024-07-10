@@ -3,9 +3,7 @@ from mojodex_core.entities.user_task import UserTask
 from mojodex_core.entities.db_base_entities import MdProducedTextVersion, MdTodo, MdTodoScheduling, MdUser, MdUserTask, MdUserTaskExecution, MdProducedText
 from sqlalchemy.orm import object_session
 from mojodex_core.entities.session import Session
-from datetime import datetime, timezone
-
-from mojodex_core.time_manager import TimeManager
+from mojodex_core.timezone_service import backend_date_to_user_date
 
 class UserTaskExecution(MdUserTaskExecution):
     """UserTaskExecution entity class that contains all the common properties and methods of an InstructUserTaskExecution or UserWorkflowExecution.
@@ -167,7 +165,7 @@ class UserTaskExecution(MdUserTaskExecution):
                   return None
             if self.user.timezone_offset is None:
                 return self.start_date
-            return TimeManager().backend_date_to_user_date(self.start_date, self.user.timezone_offset)
+            return backend_date_to_user_date(self.start_date, self.user.timezone_offset)
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} :: start_date_user_timezone :: {e}")
         
@@ -181,6 +179,6 @@ class UserTaskExecution(MdUserTaskExecution):
                 return None
             if self.user.timezone_offset is None:
                 return self.end_date
-            return TimeManager().backend_date_to_user_date(self.end_date, self.user.timezone_offset)
+            return backend_date_to_user_date(self.end_date, self.user.timezone_offset)
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} :: end_date_user_timezone :: {e}")

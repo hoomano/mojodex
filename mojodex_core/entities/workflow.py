@@ -6,7 +6,7 @@ from sqlalchemy.sql.functions import coalesce
 
 
 from mojodex_core.entities.workflow_step import WorkflowStep
-from mojodex_core.steps_library import steps_class
+from mojodex_core.workflows.steps_library import steps_class
 
 
 class Workflow(Task):

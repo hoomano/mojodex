@@ -9,12 +9,12 @@ from mojodex_core.entities.workflow import Workflow
 from mojodex_core.logging_handler import log_error
 from mojodex_core.entities.db_base_entities import MdPlatform, MdTask, MdTaskDisplayedData, MdTaskPlatformAssociation, MdTextType, MdPredefinedActionDisplayedData, MdWorkflowStep, MdWorkflowStepDisplayedData
 from sqlalchemy.orm.attributes import flag_modified
-from mojodex_core.steps_library import steps_class
+from mojodex_core.workflows.steps_library import steps_class
 from mojodex_core.entities.task import Task as TaskEntity
 
 class Task(Resource):
 
-    available_json_inputs_types = "text_area", "image", "drop_down_list", 'multiple_images'
+    available_json_inputs_types = "text_area", "image", "drop_down_list", 'multiple_images', "audio_file"
 
     # Route to create a new task
     # Route used only by Backoffice

@@ -3,9 +3,11 @@ from mojodex_core.user_storage_manager.user_images_file_manager import UserImage
 
 class UserTaskExecutionInputsManager:
 
+    text_area = "text_area"
     drop_down_type = "drop_down_list"
     image_type = "image"
     multiple_images_type = "multiple_images"
+    audio_file = "audio_file"
 
     def construct_inputs_from_request(self, user_task_execution_json_input_values, inputs, files, user_id, session_id):
         try:

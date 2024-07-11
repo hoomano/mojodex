@@ -1,6 +1,6 @@
 import React, { useContext } from "react";
 import Layout from "components/Layout";
-import DraftDetail from "modules/Tasks/components/TaskExecutionDetail";
+import TaskExecutionDetail from "modules/Tasks/components/TaskExecutionDetail";
 import globalContext, { GlobalContextType } from "helpers/GlobalContext";
 import { ChatProvider } from "modules/Chat/helpers/ChatContext";
 import { ChatUsedFrom } from "modules/Chat/interface/context";
@@ -40,7 +40,7 @@ const TaskDetailsPage = () => {
             <MobileView />
           </div>
           <div className="invisible sm:visible">
-            <DraftDetail />
+            <TaskExecutionDetail />
           </div>
         </ChatProvider>
       ) : (

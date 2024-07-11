@@ -1,3 +1,4 @@
+from mojodex_core.user_storage_manager.user_audio_file_manager import UserAudioFileManager
 from mojodex_core.user_storage_manager.user_images_file_manager import UserImagesFileManager
 
 
@@ -36,19 +37,23 @@ class UserTaskExecutionInputsManager:
                             else:
                                 input["value"].append(filled_input["input_value"])
 
-            for image_input in files:
+            for file_input in files:
                 # look for corresponding input in json_input_values
                 for input in user_task_execution_json_input_values:
                     if input["type"] == self.image_type:
-                        if input["input_name"] == image_input:
+                        if input["input_name"] == file_input:
                             filename = input["value"]
-                            UserImagesFileManager().store_image_file(files[image_input], filename, user_id, session_id)
+                            UserImagesFileManager().store_image_file(files[file_input], filename, user_id, session_id)
                     if input["type"] == self.multiple_images_type:
-                        image_name = "_".join(image_input.split("_")[:-1])
-                        image_index = int(image_input.split("_")[-1])
+                        image_name = "_".join(file_input.split("_")[:-1])
+                        image_index = int(file_input.split("_")[-1])
                         if input["input_name"] == image_name:
                             filename = input["value"][image_index]
-                            UserImagesFileManager().store_image_file(files[image_input], filename, user_id, session_id)
+                            UserImagesFileManager().store_image_file(files[file_input], filename, user_id, session_id)
+                    if input["type"] == self.audio_file:
+                        if input["input_name"] == file_input:
+                            filename = input["value"]
+                            UserAudioFileManager().store_audio_file_from_form(files[file_input], filename, user_id, session_id)
 
             return user_task_execution_json_input_values
         except Exception as e:

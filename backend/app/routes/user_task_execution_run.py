@@ -58,6 +58,7 @@ class UserTaskExecutionRun(Resource):
 
             user_task_execution, task = result
 
+            # Manage the inputs received from the form, this is generically done and managed before the execution of the task (instruct or workflow) itself
             json_input_values = self.user_task_execution_inputs_manager.construct_inputs_from_request(user_task_execution.json_input_values,
                                                                                     inputs, request.files, user_id,
                                                                                     user_task_execution.session_id)

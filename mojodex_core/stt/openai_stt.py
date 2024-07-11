@@ -32,12 +32,12 @@ class OpenAISTT(SttEngine):
         except Exception as e:
             raise Exception(f"_num_tokens_from_string:  {e}")
 
-    def _transcript(self, audio_file, vocab, file_duration, user_id, user_task_execution_pk=None, task_name_for_system=None):
+    def transcribe(self, audio_file, vocab, file_duration, user_id, user_task_execution_pk=None, task_name_for_system=None):
         try:
             # check size of vocab tokens
             n_tokens_vocab = self._num_tokens_from_string(vocab)
             if n_tokens_vocab > 244: # from whisper doc: https://platform.openai.com/docs/guides/speech-to-text/prompting
-                log_error(f"{self.__class__.__name__} : _transcript : user_id {user_id} vocab too long: {n_tokens_vocab} tokens ", notify_admin=True)
+                log_error(f"{self.__class__.__name__} : transcribe : user_id {user_id} vocab too long: {n_tokens_vocab} tokens ", notify_admin=True)
                 vocab = ""
 
             transcription = self.client.audio.transcriptions.create(
@@ -51,5 +51,5 @@ class OpenAISTT(SttEngine):
                                                     task_name_for_system=task_name_for_system, mode=self.model)
             return transcription.text
         except Exception as e:
-            raise Exception(f"{self.__class__.__name__} :: _transcript:  {e}")
+            raise Exception(f"{self.__class__.__name__} :: transcribe:  {e}")
 

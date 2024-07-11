@@ -25,8 +25,8 @@ class SttEngine(ABC):
             raise Exception(f"__get_audio_file_duration:  {e}")
 
     @abstractmethod
-    def _transcript(self, audio_file, vocab, file_duration, user_id, user_task_execution_pk=None, task_name_for_system=None):
-        raise NotImplementedError("transcript method is not implemented")
+    def transcribe(self, audio_file, vocab, file_duration, user_id, user_task_execution_pk=None, task_name_for_system=None):
+        raise NotImplementedError("transcribe method is not implemented")
     
     
     def get_transcript_and_file_duraction(self, audio_file_path, user_id, user_task_execution_pk=None, task_name_for_system=None):
@@ -40,7 +40,7 @@ class SttEngine(ABC):
                 log_error(f"{self.__class__.__name__} : get_transcript_and_file_duraction : user_id {user_id} - {e} ", notify_admin=True)
                 vocab = ""
 
-            transcription_text = self._transcript(audio_file, vocab, file_duration, user_id, user_task_execution_pk, task_name_for_system)
+            transcription_text = self.transcribe(audio_file, vocab, file_duration, user_id, user_task_execution_pk, task_name_for_system)
             return transcription_text, file_duration
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} :: get_transcript_and_file_duraction: {e}")

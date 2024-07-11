@@ -84,18 +84,18 @@ class STTService:
               
             if provider_name == "openai":
                 api_key = engine_conf["openai_api_key"]
-                provider = OpenAISTT(model_name, api_key, provider_name)
+                engine = OpenAISTT(model_name, api_key, provider_name)
             elif provider_name == "azure":
                 api_key = engine_conf["whisper_azure_openai_key"]
                 api_type = provider_name
                 api_base = engine_conf["whisper_azure_openai_api_base"]
                 api_version = engine_conf["whisper_azure_version"]
                 deployment_id = engine_conf["whisper_azure_openai_deployment_id"]
-                provider = OpenAISTT(model_name, api_key, api_type, deployment_id=deployment_id, api_base=api_base, api_version=api_version)
+                engine = OpenAISTT(model_name, api_key, api_type, deployment_id=deployment_id, api_base=api_base, api_version=api_version)
             else:
                 raise Exception(f"provider_name {provider_name} is not supported")
 
-            return provider
+            return engine
         except Exception as e:
             raise Exception(f"_build_engine :: {e}")
 
@@ -104,7 +104,7 @@ class STTService:
             if not self.is_stt_configured:
                 raise Exception("STT engine is not configured")
             if file is not None:
-                audio_file_path = UserAudioFileManager().store_audio_file(
+                audio_file_path = UserAudioFileManager().store_audio_file_from_vocal_chat(
                     file, extension, user_id, session_id, message_type, message_id)
             else:
                 audio_file_path = UserAudioFileManager().find_file_from_message_id(user_id, session_id, message_type, message_id)
@@ -117,3 +117,13 @@ class STTService:
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} :: extract_text_and_duration: {e}")
 
+    def transcribe(self, filepath, user_id, user_task_execution_pk, task_name_for_system):
+        try:
+            if not self.is_stt_configured:
+                raise Exception("STT engine is not configured")
+            if filepath is None:
+                raise Exception("filepath is None")
+            transcription = self.stt_engine.transcribe(filepath, user_id, user_task_execution_pk, task_name_for_system)
+            return transcription
+        except Exception as e:
+            raise Exception(f"{self.__class__.__name__} :: transcribe: {e}")

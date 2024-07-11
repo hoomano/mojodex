@@ -51,7 +51,7 @@ const AudioFile = ({ jsonInput, setInputArray }: AudioFileProps) => {
                     <input
                         ref={fileInputRef}
                         type="file"
-                        accept="audio/*"
+                        accept=".mp3,.m4a,.wav"
                         onChange={handleSoundFileChange}
                         className="hidden"
                     />

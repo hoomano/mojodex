@@ -64,9 +64,8 @@ const AudioFile = ({ jsonInput, setInputArray }: AudioFileProps) => {
                             <>
                                 <div>{soundFilePreview}</div>
                                 <FaFileAudio className="w-6 h-6" />
-                                {/* <img src={soundFilePreview as string} alt="Preview" style={{ maxWidth: '300px' }} className="rounded-lg w-full" /> */}
                             </>
-                        ) : t("userTaskExecution.inputsTab.imageUploadButton")
+                        ) : t("userTaskExecution.inputsTab.audioUploadButton")
                         }
                     </Button>
                 </div>

@@ -7,6 +7,7 @@ import ImagePreview from "../ImagePreview";
 import useOnWorkflowRestart from "modules/Tasks/hooks/useOnWorkflowRestart";
 import { useTranslation } from "next-i18next";
 import useAlert from "helpers/hooks/useAlert";
+import { FaFileAudio } from "react-icons/fa";
 
 interface TaskInputsProps {
     user_task_execution_pk: number;
@@ -102,6 +103,12 @@ const TaskInputs: FunctionComponent<TaskInputsProps> = ({ user_task_execution_pk
                                     <h1>{input.input_name}</h1>
                                     <p>{input.value}</p>
                                     <ImagePreview sessionId={sessionId} filename={input.value!} alt={input.description_for_user} />
+                                </>
+                            case TaskJsonInputType.AUDIO_FILE:
+                                return <>
+                                    <h1>{input.input_name}</h1>
+                                    <p>{input.value}</p>
+                                    <FaFileAudio className="w-6 h-6" />
                                 </>
                             default:
                                 return <>

@@ -39,6 +39,7 @@ const CreateTaskForm = () => {
   const generateAnswerHandler = () => {
     //check inputArray contain every dict with key that were in tasksForm;
     for (let i = 0; i < tasksForm.length; i++) {
+      // for the specific case of multiple values for a same input name, we define a rule that te input name is input_name_1, input_name_2, etc.
       if (!inputArray.find((input) => input.input_name === tasksForm[i].input_name || input.input_name.split("_").slice(0, -1).join("_") == tasksForm[i].input_name)) {
         showAlert({
           title: t("userTaskExecution.inputsTab.missingFieldLabel") + ":\n" + tasksForm[i].description_for_user,

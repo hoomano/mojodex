@@ -35,7 +35,7 @@ export const IMAGE: TextMatchTransformer = {
 
 export const MOJODEX_LEXICAL_TRANSFORMERS: Array<Transformer> = [
     IMAGE,
-    UNORDERED_LIST,
+    // UNORDERED_LIST,
     CODE,
     HEADING,
     QUOTE,

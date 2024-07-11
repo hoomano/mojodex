@@ -124,6 +124,7 @@
       "saveEditionButton": "Save and Restart",
       "restartError": "Error restarting workflow. Please retry or contact support.",
       "imageUploadButton": "Upload image",
+      "audioUploadButton": "Upload audio file",
       "missingFieldLabel": "Missing field"
     },
     "chatTab": {

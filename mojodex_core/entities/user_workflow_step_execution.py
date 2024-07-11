@@ -7,7 +7,7 @@ import pytz
 from sqlalchemy.orm import object_session
 
 from mojodex_core.entities.workflow_step import WorkflowStep
-from mojodex_core.steps_library import steps_class
+from mojodex_core.workflows.steps_library import steps_class
 
 
 class UserWorkflowStepExecution(MdUserWorkflowStepExecution):

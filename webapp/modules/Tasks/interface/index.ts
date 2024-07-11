@@ -49,7 +49,8 @@ export enum TaskJsonInputType {
   TEXTAREA = "text_area",
   IMAGE = "image",
   MULTIPLE_IMAGES = "multiple_images",
-  DROP_DOWN_LIST = "drop_down_list"
+  DROP_DOWN_LIST = "drop_down_list",
+  AUDIO_FILE = "audio_file"
 }
 
 export interface TaskJsonInput {

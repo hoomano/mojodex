@@ -11,6 +11,9 @@ from mojodex_core.entities.db_base_entities import MdUserTaskExecution, MdTask, 
 from sqlalchemy.orm.attributes import flag_modified
 from packaging import version
 from datetime import datetime
+
+# This route is used to start a task_execution from a Form (webapp)
+# Note: From mobile app, there is no form, so the user_task_execution is started from a message
 class UserTaskExecutionRun(Resource):
     logger_prefix = "UserTaskExecutionRun"
     image_type = "image"
@@ -26,28 +29,16 @@ class UserTaskExecutionRun(Resource):
 
         # data
         try:
-            if request.is_json: # USED UNTIL VERSION 0.4.11
-                timestamp = request.json["datetime"]
-                user_task_execution_pk = request.json["user_task_execution_pk"]
-                platform = request.json["platform"] if "platform" in request.json else "webapp"
-                app_version = version.parse(request.json["version"]) if "version" in request.json else version.parse("0.0.0")
-                inputs = request.json["inputs"]
-                use_message_placeholder = request.json['use_message_placeholder'] if (
-                    'use_message_placeholder' in request.json) else False
-                use_draft_placeholder = request.json['use_draft_placeholder'] if (
-                        'use_draft_placeholder' in request.json) else False
-            else:
-                
-                timestamp = request.form["datetime"]
-                
-                user_task_execution_pk = request.form["user_task_execution_pk"]
-                platform = request.form["platform"] if "platform" in request.form else "webapp"
-                app_version = version.parse(request.form["version"]) if "version" in request.form else version.parse("0.0.0")
-                inputs = json.loads(request.form["inputs"])
-                use_message_placeholder = request.form['use_message_placeholder'] if (
-                    'use_message_placeholder' in request.form) else False
-                use_draft_placeholder = request.form['use_draft_placeholder'] if (
-                        'use_draft_placeholder' in request.form) else False
+            timestamp = request.form["datetime"]
+            
+            user_task_execution_pk = request.form["user_task_execution_pk"]
+            platform = request.form["platform"] if "platform" in request.form else "webapp"
+            app_version = version.parse(request.form["version"]) if "version" in request.form else version.parse("0.0.0")
+            inputs = json.loads(request.form["inputs"])
+            use_message_placeholder = request.form['use_message_placeholder'] if (
+                'use_message_placeholder' in request.form) else False
+            use_draft_placeholder = request.form['use_draft_placeholder'] if (
+                    'use_draft_placeholder' in request.form) else False
         except KeyError as e:
             log_error(f"{error_message} : Missing field {e}")
             return {"error": f"Missing field {e}"}, 400
@@ -67,6 +58,7 @@ class UserTaskExecutionRun(Resource):
 
             user_task_execution, task = result
 
+            # Manage the inputs received from the form, this is generically done and managed before the execution of the task (instruct or workflow) itself
             json_input_values = self.user_task_execution_inputs_manager.construct_inputs_from_request(user_task_execution.json_input_values,
                                                                                     inputs, request.files, user_id,
                                                                                     user_task_execution.session_id)

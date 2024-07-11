@@ -124,6 +124,7 @@
             "saveEditionButton": "Guardar y Reiniciar",
             "restartError": "Error al reiniciar el flujo de trabajo. Vuelva a intentarlo o póngase en contacto con el servicio de asistencia.",
             "imageUploadButton": "Subir imagen",
+            "audioUploadButton": "Subir audio",
             "missingFieldLabel": "Campo requerido"
         },
         "chatTab": {

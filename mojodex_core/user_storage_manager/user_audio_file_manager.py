@@ -32,7 +32,7 @@ class UserAudioFileManager(UserStorageManager):
         except Exception as e:
             raise Exception(f"_m4a_to_mp3 : ERROR CONVERTING {filepath}: {e}")
 
-    def __get_audio_storage_path(self, user_id, session_id, message_type):
+    def __get_vocal_chat_audio_storage_path(self, user_id, session_id, message_type):
         try:
             session_storage = self._get_session_storage(user_id, session_id)
 
@@ -48,9 +48,24 @@ class UserAudioFileManager(UserStorageManager):
         except Exception as e:
             raise Exception(f"{self.__class__.__name__}:: __get_audio_storage_path: {e}")
 
-    def store_audio_file(self, file, extension, user_id, session_id, message_type, message_id):
+    def _get_audio_file_from_form_storage_path(self, user_id, session_id):
         try:
-            audio_storage = self.__get_audio_storage_path(
+            session_storage = self._get_session_storage(user_id, session_id)
+
+            audio_file_path = os.path.join(session_storage, "audio_files")
+
+            if not os.path.exists(audio_file_path):
+                os.makedirs(audio_file_path)
+
+            return audio_file_path
+        except Exception as e:
+            raise Exception(f"{self.__class__.__name__} :: _get_audio_file_from_form_storage_path: {e}")
+
+
+    # Store vocal chat messages
+    def store_audio_file_from_vocal_chat(self, file, extension, user_id, session_id, message_type, message_id):
+        try:
+            audio_storage = self.__get_vocal_chat_audio_storage_path(
                 user_id, session_id, message_type)
             message_id = f"{message_id}.{extension}"
             audio_file_path = os.path.join(audio_storage, message_id)
@@ -66,14 +81,35 @@ class UserAudioFileManager(UserStorageManager):
 
             return audio_file_path
         except Exception as e:
-            raise Exception(f"__store_audio_file: {e}")
+            raise Exception(f"store_audio_file_from_vocal_chat: {e}")
+
+    # Store audio files from input form
+    # files[file_input], filename, user_id, session_id
+    def store_audio_file_from_form(self, file, filename, user_id, session_id):
+        try:
+            audio_storage_path = self._get_audio_file_from_form_storage_path(
+                user_id, session_id)
+            audio_file_path = os.path.join(audio_storage_path, filename)
+
+            # save file
+            file.save(audio_file_path)
+
+            return audio_file_path
+        except Exception as e:
+            raise Exception(f"store_audio_file_from_form: {e}")
+
+    def get_audio_file_from_form_storage_path(self, filename, user_id, session_id):
+        try:
+            return os.path.join(self._get_audio_file_from_form_storage_path(user_id, session_id), filename)
+        except Exception as e:
+            raise Exception(f"get_audio_file_from_form_storage_path: {e}")
 
     def find_file_from_message_id(self, user_id, session_id, message_type, message_id):
         try:
             # Else case is used to manage user_message management previous error:
             # The audio_transcript has been correctly stored but has not been correctly set into db and sent back to user
             # Therefore, we can find it using its message_id
-            audio_storage = self.__get_audio_storage_path(
+            audio_storage = self.__get_vocal_chat_audio_storage_path(
                 user_id, session_id, message_type)
             # find any file in this path that name without extension is message_id
             search_pattern = os.path.join(

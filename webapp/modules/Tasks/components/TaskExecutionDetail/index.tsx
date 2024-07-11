@@ -26,7 +26,7 @@ import useOnSaveTaskExecutionTitle from "modules/Tasks/hooks/useOnSaveTaskExecut
 import useAlert from "helpers/hooks/useAlert";
 
 
-const DraftDetail = () => {
+const TaskExecutionDetail = () => {
   const [tabs, setTabs] = useState<TabType[]>([]);
   // selectedTab is a string, initially set to null
   const [selectedTab, setSelectedTab] = useState<string | null>(null);
@@ -495,4 +495,4 @@ const DraftDetail = () => {
   );
 };
 
-export default DraftDetail;
+export default TaskExecutionDetail;

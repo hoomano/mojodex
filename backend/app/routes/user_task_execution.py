@@ -13,6 +13,8 @@ from sqlalchemy import func, and_, or_
 from models.purchase_manager import PurchaseManager
 from datetime import datetime
 
+# This class is used to create, get and delete UserTaskExecution
+# Once created, the UserTaskExecution is "run" ==> see UserTaskExecutionRun
 class UserTaskExecution(Resource):
 
     def __init__(self):

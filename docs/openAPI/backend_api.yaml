@@ -343,7 +343,7 @@ paths:
                 properties:
                   error:
                     type: string
-   /check_disengaged_free_trial_users:
+  /check_disengaged_free_trial_users:
     post:
       tags:
         - Scheduler
@@ -3820,36 +3820,39 @@ paths:
                     required:
                       - language_code
                       - name_for_user
-                      - description_for_user
+                      - definition_for_user
                       - json_input
                     properties:
                       language_code:
                         type: string
                       name_for_user:
                         type: string
-                      description_for_user:
+                      definition_for_user:
                         type: string
                       json_input:
-                        type: object
-                        required:
-                          - type
-                          - input_name
-                          - description_for_user
-                          - description_for_system
-                        properties:
-                          type:
-                            type: string
-                            enum:
-                              - text_area
-                              - image
-                              - drop_down_list
-                              - multiple_images
-                          input_name:
-                            type: string
-                          description_for_user:
-                            type: string
-                          description_for_system:
-                            type: string
+                        type: array
+                        items:
+                          type: object
+                          required:
+                            - type
+                            - input_name
+                            - description_for_user
+                            - description_for_system
+                          properties:
+                            type:
+                              type: string
+                              enum:
+                                - text_area
+                                - image
+                                - drop_down_list
+                                - multiple_images
+                                - audio_file
+                            input_name:
+                              type: string
+                            description_for_user:
+                              type: string
+                            description_for_system:
+                             type: string
                 predefined_actions:
                   type: array
                   items:
@@ -3900,18 +3903,20 @@ paths:
                       definition_for_system:
                         type: string
                       step_displayed_data:
-                        type: object
-                        required:
-                          - language_code
-                          - name_for_user
-                          - definition_for_user
-                        properties:
-                          language_code:
-                            type: string
-                          name_for_user:
-                            type: string
-                          definition_for_user:
-                            type: string
+                        type: array
+                        items:
+                          type: object
+                          required:
+                            - language_code
+                            - name_for_user
+                            - definition_for_user
+                          properties:
+                            language_code:
+                              type: string
+                            name_for_user:
+                              type: string
+                            definition_for_user:
+                              type: string
 
       responses:
         '200':
@@ -3986,36 +3991,39 @@ paths:
                     required:
                       - language_code
                       - name_for_user
-                      - description_for_user
+                      - definition_for_user
                       - json_input
                     properties:
                       language_code:
                         type: string
                       name_for_user:
                         type: string
-                      description_for_user:
+                      definition_for_user:
                         type: string
                       json_input:
-                        type: object
-                        required:
-                          - type
-                          - input_name
-                          - description_for_user
-                          - description_for_system
-                        properties:
-                          type:
-                            type: string
-                            enum:
-                              - text_area
-                              - image
-                              - drop_down_list
-                              - multiple_images
-                          input_name:
-                            type: string
-                          description_for_user:
-                            type: string
-                          description_for_system:
-                            type: string
+                        type: array
+                        items:
+                          type: object
+                          required:
+                            - type
+                            - input_name
+                            - description_for_user
+                            - description_for_system
+                          properties:
+                            type:
+                              type: string
+                              enum:
+                                - text_area
+                                - image
+                                - drop_down_list
+                                - multiple_images
+                                - audio_file
+                            input_name:
+                              type: string
+                            description_for_user:
+                              type: string
+                            description_for_system:
+                              type: string
                 predefined_actions:
                   type: array
                   items:
@@ -4196,21 +4204,24 @@ paths:
                         description_for_user:
                           type: string
                         json_input:
-                          type: object
-                          properties:
-                            type:
-                              type: string
-                              enum:
-                                - text_area
-                                - image
-                                - drop_down_list
-                                - multiple_images
-                            input_name:
-                              type: string
-                            description_for_user:
-                              type: string
-                            description_for_system:
-                              type: string
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              type:
+                                type: string
+                                enum:
+                                  - text_area
+                                  - image
+                                  - drop_down_list
+                                  - multiple_images
+                                  - audio_file
+                              input_name:
+                                type: string
+                              description_for_user:
+                                type: string
+                              description_for_system:
+                                type: string
                   name_for_system:
                     type: string
                   definition_for_system:
@@ -5143,28 +5154,31 @@ paths:
                   user_task_execution_pk:
                     type: integer
                   json_input:
-                        type: object
-                        required:
-                          - type
-                          - input_name
-                          - description_for_user
-                          - description_for_system
-                        properties:
-                          type:
-                            type: string
-                            enum:
-                              - text_area
-                              - image
-                              - drop_down_list
-                              - multiple_images
-                          input_name:
-                            type: string
-                          description_for_user:
-                            type: string
-                          description_for_system:
-                            type: string
-                          value:
-                            type: string
+                        type: array
+                        items:
+                          type: object
+                          required:
+                            - type
+                            - input_name
+                            - description_for_user
+                            - description_for_system
+                          properties:
+                            type:
+                              type: string
+                              enum:
+                                - text_area
+                                - image
+                                - drop_down_list
+                                - multiple_images
+                                - audio_file
+                            input_name:
+                              type: string
+                            description_for_user:
+                              type: string
+                            description_for_system:
+                              type: string
+                            value:
+                              type: string
                 
                   actions:
                       type: array

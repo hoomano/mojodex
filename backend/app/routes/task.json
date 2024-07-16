@@ -1,6 +1,7 @@
 {
     "put": {
         "type": "object",
+        "additionalProperties": false,
         "required": [
             "datetime",
             "task_type",
@@ -254,6 +255,7 @@
     },
     "post": {
         "type": "object",
+        "additionalProperties": false,
         "required": [
             "datetime"
         ],

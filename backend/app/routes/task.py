@@ -174,8 +174,9 @@ class Task(Resource):
                         db.session.flush()
 
 
-            db.session.commit()
-            return {"task_pk": task.task_pk}, 200
+            #db.session.commit()
+            db.session.rollback()
+            return {"task_pk": "task.task_pk"}, 200
         except Exception as e:
             log_error(f"Error creating task : {e}")
             db.session.rollback()

@@ -22,3 +22,4 @@ grequests==0.7.0
 stripe==6.6.0
 app-store-server-library==1.0.0
 packaging==23.2
+jsonschema==4.23.0

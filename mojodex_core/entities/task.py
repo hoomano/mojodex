@@ -172,18 +172,14 @@ class Task(MdTask):
     def to_json(self):
         try:
             return {
-                "type": self.type,
+                "task_type": self.type,
                 "platforms": [platform.name for platform in self.platforms],
                 "predefined_actions":  [predefined_action.to_json() for predefined_action in self.predefined_actions_association],
                 "task_displayed_data": [display_data.to_json() for display_data in self.display_data],
                 "name_for_system": self.name_for_system,
                 "definition_for_system": self.definition_for_system,
-                "final_instruction": self.final_instruction,
-                "output_format_instruction_title": self.output_format_instruction_title,
-                "output_format_instruction_draft": self.output_format_instruction_draft,
                 "output_type": self.output_type.name,
                 "icon": self.icon,
-                "infos_to_extract": self.infos_to_extract,
                 "result_chat_enabled": self.result_chat_enabled
                 }
         except Exception as e:

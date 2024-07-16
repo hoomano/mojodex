@@ -1,8 +1,7 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
 import { getSession } from "next-auth/react";
 import { useRouter } from "next/router";
-import { Socket, io } from "socket.io-client";
-import { appVersion } from "helpers/constants";
+import { io } from "socket.io-client";
 import { envVariable } from "helpers/constants/env-vars";
 import { decryptId } from "helpers/method";
 import { EditerProducedText, UserTaskExecutionProducedTextResponse, UserTaskExecutionStepExecution } from "modules/Tasks/interface";
@@ -242,11 +241,10 @@ const TaskExecutionDetail = () => {
     });
 
     const sessionId = currentTask?.session_id;
-    console.log("🔵", process.env.NEXT_PUBLIC_VERSION_NUMBER);
     socket.on(socketEvents.CONNECT, () => {
       socket.emit(socketEvents.START_SESSION, {
         session_id: sessionId,
-        version: appVersion,
+        version: process.env.NEXT_PUBLIC_VERSION_NUMBER,
       });
     });
 

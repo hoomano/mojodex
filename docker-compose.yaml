@@ -68,7 +68,7 @@ services:
         - TERMS_URI= # optional
         - PRIVACY_URI= # optional
         - CHROME_EXTENSION_ID= # optional
-        - VERSION_NUMBER= # optional
+        - VERSION_NUMBER=0.4.13
     image: mojodex/webapp
     container_name: mojodex_webapp
     env_file:

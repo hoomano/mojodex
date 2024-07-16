@@ -1,5 +1,5 @@
 import axios from "axios";
-import { appVersion, appPlatform } from "helpers/constants/index";
+import { appPlatform } from "helpers/constants/index";
 import { SessionType } from "helpers/interface/session";
 import { getSession } from "next-auth/react";
 
@@ -15,28 +15,27 @@ axiosClient.interceptors.request.use(async (request) => {
 
   request.headers.token = token;
 
-  request.headers.version = appVersion;
+  request.headers.version = process.env.NEXT_PUBLIC_APP_VERSION;
   request.headers.platform = appPlatform;
  
 
   if (request.method === "get" || request.method === "delete") {
-    console.log("🟢", process.env.NEXT_PUBLIC_VERSION_NUMBER);
     request.params = {
       ...request.params,
       datetime: new Date().toISOString(),
-      version: appVersion,
+      version: process.env.NEXT_PUBLIC_APP_VERSION,
       platform: appPlatform
     };
   } else if(!(request.data instanceof FormData)) {
     request.data = {
       ...request.data,
       datetime: new Date().toISOString(),
-      version: appVersion,
+      version: process.env.NEXT_PUBLIC_APP_VERSION,
       platform: appPlatform
     };
   } else {
     request.data.append("datetime", new Date().toISOString());
-    request.data.append("version", appVersion);
+    request.data.append("version", process.env.NEXT_PUBLIC_APP_VERSION!);
     request.data.append("platform", appPlatform);
   }
 

@@ -2,7 +2,6 @@ import axios from "axios";
 
 export default async function handler(req, res) {
     const  apiName  = "is_email_service_configured";
-    console.log("👉 ", process.env.MOJODEX_WEBAPP_SECRET);
     let headers = {
         "Content-type": req.headers["content-type"] || "application/json",
         // This is the secret key for the webapp to access the backend. User is not logged in, and we don't need a token here.

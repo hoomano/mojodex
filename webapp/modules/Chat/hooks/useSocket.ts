@@ -3,7 +3,6 @@ import { io } from "socket.io-client";
 import ChatContext from "../helpers/ChatContext";
 import { envVariable } from "helpers/constants/env-vars";
 import { socketEvents } from "helpers/constants/socket";
-import { appVersion } from "helpers/constants/index";
 import { getSession } from "next-auth/react";
 import { ChatContextType, ChatUsedFrom } from "../interface/context";
 import { MessageType } from "../interface";
@@ -131,10 +130,9 @@ const useSocket = () => {
     });
     socket.on(socketEvents.CONNECT, () => {
       console.log("🟢 Socket connected");
-      console.log("🔴 ", process.env.NEXT_PUBLIC_VERSION_NUMBER);
       socket.emit(
         socketEvents.START_SESSION,
-        { session_id: sessionId, version: appVersion },
+        { session_id: sessionId, version: process.env.NEXT_PUBLIC_VERSION_NUMBER },
         () => { }
       );
     });

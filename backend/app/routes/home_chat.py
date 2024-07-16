@@ -88,10 +88,10 @@ class HomeChat(Resource):
                                   previous_conversations=previous_conversations,
                                   language=user_language_code)
 
-            responses = welcome_message_mpt.run(user_id=user_id, temperature=0, max_tokens=1000,
+            response = welcome_message_mpt.run(user_id=user_id, temperature=0, max_tokens=1000,
                                                   user_task_execution_pk=None,
                                                   task_name_for_system=None)
-            message = responses[0].strip()
+            message = response.strip()
             header_tag_mananger = TagManager('message_header')
             body_tag_manager = TagManager('message_body')
             header = header_tag_mananger.extract_text(message)

@@ -29,10 +29,9 @@ class TaskJson(Resource):
             generate_task_mpt = MPT(
                 self.task_json_mpt_filename, task_requirements=task_requirements, existing_text_types=existing_text_types)
 
-            responses = generate_task_mpt.run(
+            response = generate_task_mpt.run(
                 user_id="backoffice", temperature=0, max_tokens=4000, json_format=True)
 
-            response = responses[0]
             return response
         except Exception as e:
             raise Exception(f"__generate_task_json : {str(e)}")

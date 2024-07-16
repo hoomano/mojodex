@@ -29,10 +29,10 @@ class Company(Resource):
                                        company=company, company_description=company_description, correct=correct,
                                        feedback=feedback)
 
-        responses = correct_company_info_mpt.run(user_id=user_id, temperature=0, max_tokens=500,
-                                                 json_format=True)[0]
+        response = correct_company_info_mpt.run(user_id=user_id, temperature=0, max_tokens=500,
+                                                 json_format=True)
 
-        return responses
+        return response
     
     @json_decode_retry(retries=3, required_keys=["name", "description", "emoji"], on_json_error=on_json_error)
     def _extract_company_info_from_website(self, user_id, website_url, webpage_text):
@@ -40,11 +40,11 @@ class Company(Resource):
             website_info_mpt = MPT(
                 self.extract_website_info_mpt_filename, url=website_url, text_content=webpage_text)
 
-            responses = website_info_mpt.run(user_id=user_id,
+            response = website_info_mpt.run(user_id=user_id,
                                              temperature=0, max_tokens=1000,
-                                             json_format=True)[0]
+                                             json_format=True)
 
-            return responses
+            return response
         except Exception as e:
             raise Exception(f"__scrap_webpage: {e}")
 

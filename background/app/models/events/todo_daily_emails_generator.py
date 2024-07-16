@@ -81,7 +81,7 @@ class TodoDailyEmailsGenerator(EmailEventGenerator):
             email_message_json = todo_daily_email_text.run(user_id=self.user_id,
                                                            temperature=0,
                                                            max_tokens=4000,
-                                                           json_format=True)[0]
+                                                           json_format=True)
             return email_message_json
         except Exception as e:
             raise Exception(f"_generate_emails_text: {e}")

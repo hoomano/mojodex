@@ -73,7 +73,7 @@ class CalendarSuggestionNotificationsGenerator(PushNotificationEventGenerator):
                                                                         json_format=True,
                                                                         user_task_execution_pk=None,
                                                                         task_name_for_system=task_name
-                                                                        )[0]
+                                                                        )
             # try to load as json to extract title and body
             return notification_message
         except Exception as e:

@@ -65,12 +65,12 @@ class ProducedTextManager(ABC):
             get_text_type_mpt = MPT(
                 ProducedTextManager.get_text_type_mpt_filename, text=production, types_enum=types_enum)
 
-            responses = get_text_type_mpt.run(user_id=self.user_id,
+            response = get_text_type_mpt.run(user_id=self.user_id,
                                               temperature=0, max_tokens=20,
                                               user_task_execution_pk=self.user_task_execution_pk,
                                               task_name_for_system=self.task_name_for_system,
                                               )
-            text_type = responses[0].strip().lower()
+            text_type = response.strip().lower()
             if text_type not in types_enum:
                 return None
             return db_session.query(MdTextType.text_type_pk).filter(

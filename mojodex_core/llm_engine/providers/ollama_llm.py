@@ -66,8 +66,7 @@ class OllamaLLM(LLM):
                              "num_predict": max_tokens})
 
                 complete_text = response['message']['content']
-            # [content.text for content in stream_response.choices]
-            return [complete_text]
+            return complete_text
 
         except Exception as e:
             raise Exception(f"_chat_completion: {e}")
@@ -77,15 +76,15 @@ class OllamaLLM(LLM):
                task_name_for_system: str = None, **kwargs):
         try:
 
-            responses = self._chat_completion(messages, temperature, max_tokens, stream=stream,
+            response = self._chat_completion(messages, temperature, max_tokens, stream=stream,
                                               stream_callback=stream_callback)
 
             self._write_in_dataset({"temperature": temperature, "max_tokens": max_tokens, "n_responses": 1,
                                     "frequency_penalty": None, "presence_penalty": None,
                                     "messages": [{'role': message.get('role') if message.get('role') else 'unknown',
                                                   'content': message.get('content') if message.get('content') else "no_content"} for
-                                                 message in messages], "responses": responses, "model_config": self.model}, task_name_for_system, "chat", label=label)
+                                                 message in messages], "responses": response, "model_config": self.model}, task_name_for_system, "chat", label=label)
 
-            return responses
+            return response
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} - name: {self.name} - model:{self.model} - invoke: {e}")

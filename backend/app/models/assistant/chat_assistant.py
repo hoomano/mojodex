@@ -52,14 +52,14 @@ class ChatAssistant(ABC):
             if self.requires_vision_llm:
                 return self.__call_vision_llm(conversation_list, temperature, max_tokens, user_id,
                                               session_id, user_task_execution_pk, task_name_for_system)
-            responses = self._mpt.chat(conversation_list, user_id,
+            response = self._mpt.chat(conversation_list, user_id,
                                          temperature=temperature,
                                          max_tokens=max_tokens,
                                          stream=True, stream_callback=self._token_callback,
                                          user_task_execution_pk=user_task_execution_pk,
                                          task_name_for_system=task_name_for_system)
 
-            return responses[0].strip() if responses else None
+            return response.strip() if response else None
         except Exception as e:
             raise Exception(f"_call_llm :: {e}")
 
@@ -73,14 +73,14 @@ class ChatAssistant(ABC):
                 VisionMessagesData(role=message["role"], text=message["content"], images_path=[]) for message in
                 conversation_list]
             messages_data = initial_system_message_data + conversation_messages_data
-            responses = ModelLoader().main_vision_llm.invoke(messages_data, user_id,
+            response = ModelLoader().main_vision_llm.invoke(messages_data, user_id,
                                                             temperature=temperature,
                                                             max_tokens=max_tokens,
                                                             label=self._mpt.label,
                                                             stream=True, stream_callback=self._token_callback,
                                                             user_task_execution_pk=user_task_execution_pk,
                                                             task_name_for_system=task_name_for_system)
-            return responses[0].strip() if responses else None
+            return response.strip() if response else None
         except Exception as e:
             raise Exception(f"__call_vision_llm:: {e}")
 

@@ -61,7 +61,7 @@ class TextEditActionManager:
                     token_text=stream_output_text),
                 user_task_execution_pk=self.user_task_execution_pk,
                 task_name_for_system=self.task_name_for_system
-            )[0]  # Because chat returns a list
+            )
 
             event_name = "draft_message"
             title, production = self.task_produced_text_manager.extract_produced_text_from_tagged_text(edited_text)

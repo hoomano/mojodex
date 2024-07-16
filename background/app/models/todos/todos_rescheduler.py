@@ -73,12 +73,11 @@ class TodosRescheduler:
                                     n_scheduled=n_scheduled
                                     )
 
-            results = todos_rescheduler.run(user_id=user_id,
+            result = todos_rescheduler.run(user_id=user_id,
                                             temperature=0, max_tokens=500, json_format=True,
                                             user_task_execution_pk=user_task_execution_pk,
                                             task_name_for_system=task_name_for_system)
-        
-            result = results[0]
+
             return result
         except Exception as e:
             raise Exception(f"_reschedule :: {e}")

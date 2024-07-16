@@ -8,6 +8,8 @@ from models.assistant.session_controller import SessionController
 from mojodex_core.stt.stt_service import STTService
 from datetime import datetime
 from mojodex_core.timezone_service import backend_date_to_user_date, device_date_to_backend_date
+from mojodex_core.user_storage_manager.user_audio_file_manager import UserAudioFileManager
+from pydub import AudioSegment
 
 class UserMessage(Resource):
     general_backend_error_message = "Oops, something weird has happened. We'll help you by email!"
@@ -190,14 +192,16 @@ class UserMessage(Resource):
                 extension = filename.split(".")[-1] if 'file' in request.files else None
 
                 # Prepare transcript
-                decoded_text, file_duration = STTService().extract_text_and_duration(file,
-                                                                                    extension,
-                                                                                    user_id,
-                                                                                    session_id,
-                                                                                    "user_message",
-                                                                                    db_message.message_pk,
-                                                                                    user_task_execution_pk=user_task_execution_pk,
-                                                                                    task_name_for_system=task_name_for_system)
+                if file is not None:
+                    audio_file_path = UserAudioFileManager().store_audio_file_from_vocal_chat(
+                        file, extension, user_id, session_id, "user_message", message_id)
+                else:
+                    audio_file_path = UserAudioFileManager().find_file_from_message_id(user_id, session_id, "user_message", message_id)
+
+                file_duration = AudioSegment.from_file(audio_file_path).duration_seconds
+                decoded_text = STTService().transcribe(audio_file_path, user_id, 
+                                                                      user_task_execution_pk=user_task_execution_pk, 
+                                                                      task_name_for_system=task_name_for_system)
 
                 # Update db_message.message with the transcript
                 db_message.message = {"text": decoded_text, "message_pk": db_message.message_pk,

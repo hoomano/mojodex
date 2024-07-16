@@ -99,23 +99,6 @@ class STTService:
         except Exception as e:
             raise Exception(f"_build_engine :: {e}")
 
-    def extract_text_and_duration(self, file, extension, user_id, session_id, message_type, message_id, user_task_execution_pk=None, task_name_for_system=None):
-        try:
-            if not self.is_stt_configured:
-                raise Exception("STT engine is not configured")
-            if file is not None:
-                audio_file_path = UserAudioFileManager().store_audio_file_from_vocal_chat(
-                    file, extension, user_id, session_id, message_type, message_id)
-            else:
-                audio_file_path = UserAudioFileManager().find_file_from_message_id(user_id, session_id, message_type, message_id)
-
-            transcription, file_duration = self.stt_engine.get_transcript_and_file_duraction(audio_file_path, user_id,
-                                                               user_task_execution_pk=user_task_execution_pk,
-                                                               task_name_for_system=task_name_for_system)
-
-            return transcription, file_duration
-        except Exception as e:
-            raise Exception(f"{self.__class__.__name__} :: extract_text_and_duration: {e}")
 
     def transcribe(self, filepath, user_id, user_task_execution_pk, task_name_for_system):
         try:

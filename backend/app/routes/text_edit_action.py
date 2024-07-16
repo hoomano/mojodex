@@ -13,13 +13,66 @@ from models.text_edit_action_manager import TextEditActionManager
 from sqlalchemy.sql.functions import coalesce
 from packaging import version
 from datetime import datetime
-class TextEditAction (Resource):
+
+class TextEditAction(Resource):
     
     base_prompt_files_path = "mojodex_core/prompts/text_edit_actions"
     error_message_text = "Error executing text edit action"
 
     def __init__(self):
-        TextEditAction.method_decorators = [authenticate()]
+        TextEditAction.method_decorators = [authenticate(methods=["POST"])]
+
+    def put(self):
+        try:
+            secret = request.headers['Authorization']
+            if secret != os.environ["BACKOFFICE_SECRET"]:
+                return {"error": "Authentication error : Wrong secret"}, 403
+        except KeyError:
+            log_error(f"Error creating new text_edit_action : Missing Authorization secret in headers")
+            return {"error": f"Missing Authorization secret in headers"}, 403
+        
+        if not request.is_json:
+            return {"error": "Request must be JSON"}, 400
+        
+        try:
+            timestamp = request.json["datetime"]
+            emoji = request.json["emoji"]
+            prompt_file_name = request.json["prompt_file_name"]
+            text_edit_action_displayed_data = request.json["displayed_data"]
+        except Exception as e:
+            log_error(f"Error creating new text_edit_action : {e}")
+            return {"error": f"Error creating new text_edit_action : {e}"}, 400
+        
+        try:
+            # Check prompt_file_name exists
+            text_edit_action_prompt = os.path.join(TextEditAction.base_prompt_files_path, prompt_file_name)
+            if not os.path.exists(text_edit_action_prompt):
+                return {"error": f"Prompt file not found : {prompt_file_name}"}, 400
+
+            text_edit_action = MdTextEditAction(
+                emoji=emoji,
+                prompt_file_name=prompt_file_name
+            )
+            db.session.add(text_edit_action)
+            db.session.flush()
+            db.session.refresh(text_edit_action)
+            text_edit_action_pk = text_edit_action.text_edit_action_pk
+
+            for text_edit_action_displayed_data in text_edit_action_displayed_data:
+                text_edit_action_displayed_data = MdTextEditActionDisplayedData(
+                    text_edit_action_fk=text_edit_action_pk,
+                    language_code=text_edit_action_displayed_data["language_code"],
+                    name=text_edit_action_displayed_data["name"],
+                    description=text_edit_action_displayed_data["description"]
+                )
+                db.session.add(text_edit_action_displayed_data)
+                db.session.flush()
+            
+            db.session.commit()
+            return {"text_edit_action_pk": text_edit_action_pk}, 200
+                
+        except Exception as e:
+            return {"error": f"Error creating new text_edit_action : {e}"}, 400
 
     # Executing text edit actions
     def post(self, user_id):

@@ -1,6 +1,7 @@
 
 
 
+from functools import cached_property
 from sqlalchemy import and_, extract, func, text
 from mojodex_core.entities.db_base_entities import MdTodo, MdTodoScheduling, MdUser, MdUserTask, MdUserTaskExecution
 from sqlalchemy.orm import object_session
@@ -11,7 +12,7 @@ from datetime import datetime, timedelta, timezone
 
 class User(MdUser):
 
-    @property
+    @cached_property
     def available_instruct_tasks(self):
         try:
             session = object_session(self)
@@ -23,7 +24,7 @@ class User(MdUser):
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} :: available_tasks :: {e}")
 
-    @property
+    @cached_property
     def local_datetime(self):
         try:
             timestamp = datetime.now(timezone.utc)
@@ -33,7 +34,7 @@ class User(MdUser):
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} :: local_datetime :: {e}")
 
-    @property
+    @cached_property
     def datetime_context(self):
         try:
             return MPT("mojodex_core/instructions/user_datetime_context.mpt", weekday=self.local_datetime.strftime("%A"),
@@ -42,7 +43,7 @@ class User(MdUser):
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} :: datetime_context :: {e}")
         
-    @property
+    @cached_property
     def twenty_first_todo_list_items(self):
         """
         Returns the list of 20 first todos for the user along with their due dates
@@ -77,7 +78,7 @@ class User(MdUser):
             raise Exception(f"{self.__class__.__name__} :: todo_list :: {e}")
         
 
-    @property
+    @cached_property
     def today_todo_list(self):
         """
         Returns the list of todos for the user that are scheduled for today
@@ -108,7 +109,7 @@ class User(MdUser):
         
 
     # User's todo items that have been rescheduled today
-    @property
+    @cached_property
     def today_rescheduled_todo(self):
         """
         Returns the todo items that have been rescheduled today

@@ -1,3 +1,4 @@
+from functools import cached_property
 from mojodex_core.entities.db_base_entities import MdWorkflowStep
 from mojodex_core.entities.user_task_execution import UserTaskExecution
 from mojodex_core.entities.user_workflow import UserWorkflow
@@ -8,7 +9,7 @@ from sqlalchemy import case
 
 class UserWorkflowExecution(UserTaskExecution):
 
-    @property
+    @cached_property
     def user_task(self) -> UserWorkflow:
         try:
             session = object_session(self)
@@ -16,7 +17,7 @@ class UserWorkflowExecution(UserTaskExecution):
         except Exception as e:
             raise Exception(f"{self.__class__.__name__}:: user_task :: {e}")
 
-    @property
+    @cached_property
     def last_step_execution(self):
         try:
             session = object_session(self)
@@ -27,7 +28,7 @@ class UserWorkflowExecution(UserTaskExecution):
         except Exception as e:
             raise Exception(f"last_step_execution :: {e}")
 
-    @property
+    @cached_property
     def past_valid_step_executions(self):
         try:
             session = object_session(self)
@@ -50,7 +51,7 @@ class UserWorkflowExecution(UserTaskExecution):
         except Exception as e:
             raise Exception(f"{self.__class__.__name__}:: past_valid_step_executions :: {e}")
 
-    @property
+    @cached_property
     def steps_execution_as_json(self):
         try:
             validated_steps_json = [step_execution.to_json() for step_execution in self.past_valid_step_executions]
@@ -137,7 +138,7 @@ class UserWorkflowExecution(UserTaskExecution):
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} :: get_valid_executions_of_a_step :: {e}")
 
-    @property
+    @cached_property
     def result(self):
         """
         For now, result of a workflow is the concatenation of results of all last step's validated executions' results

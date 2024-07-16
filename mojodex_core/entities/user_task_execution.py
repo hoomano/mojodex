@@ -1,3 +1,4 @@
+from functools import cached_property
 from sqlalchemy import func
 from mojodex_core.entities.user_task import UserTask
 from mojodex_core.entities.db_base_entities import MdProducedTextVersion, MdTodo, MdTodoScheduling, MdUser, MdUserTask, MdUserTaskExecution, MdProducedText
@@ -10,7 +11,7 @@ class UserTaskExecution(MdUserTaskExecution):
     """
 
 
-    @property
+    @cached_property
     def produced_text_done(self):
         try:
             session = object_session(self)
@@ -18,7 +19,7 @@ class UserTaskExecution(MdUserTaskExecution):
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} :: produced_text_done :: {e}")
 
-    @property
+    @cached_property
     def has_images_inputs(self):
         try:
             for input in self.json_input_values:
@@ -28,7 +29,7 @@ class UserTaskExecution(MdUserTaskExecution):
         except Exception as e:
             raise Exception(f"{self.__class__.__name__}:: has_images_inputs :: {e}")
 
-    @property
+    @cached_property
     def images_input_names(self):
         try:
             input_images = []
@@ -42,7 +43,7 @@ class UserTaskExecution(MdUserTaskExecution):
             raise Exception(f"{self.__class__.__name__}:: images_input_names :: {e}")
 
 
-    @property
+    @cached_property
     def user_task(self):
         """ contains the common informations of a UserTask, either from an Instruct or Workflow.
         """
@@ -52,21 +53,21 @@ class UserTaskExecution(MdUserTaskExecution):
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} :: user_task :: {e}")
 
-    @property
+    @cached_property
     def user(self):
         try:
             return self.user_task.user
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} :: user :: {e}")
 
-    @property
+    @cached_property
     def task(self):
         try:
             return self.user_task.task
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} :: task :: {e}")
 
-    @property
+    @cached_property
     def session(self):
         try:
             session = object_session(self)
@@ -74,7 +75,7 @@ class UserTaskExecution(MdUserTaskExecution):
         except Exception as e:
             raise Exception(f"{self.__class__} :: session :: {e}")
 
-    @property
+    @cached_property
     def last_produced_text_version(self):
         try:
             session = object_session(self)
@@ -85,7 +86,7 @@ class UserTaskExecution(MdUserTaskExecution):
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} :: produced_text :: {e}")
         
-    @property
+    @cached_property
     def n_produced_text_versions(self):
         try:
             session = object_session(self)
@@ -96,7 +97,7 @@ class UserTaskExecution(MdUserTaskExecution):
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} :: produced_text :: {e}")
         
-    @property
+    @cached_property
     def derives_from_a_previous_user_task_execution(self) -> bool:
         """On mobile app, some tasks can display "predefined_actions" at the end of the execution. 
         Those are other task the user can launch to chain task executions on a same subject.
@@ -105,7 +106,7 @@ class UserTaskExecution(MdUserTaskExecution):
         """
         return self.predefined_action_from_user_task_execution_fk is not None
 
-    @property
+    @cached_property
     def previous_related_user_task_executions(self) -> list:
         """On mobile app, some tasks can display "predefined_actions" at the end of the execution. 
         Those are other task the user can launch to chain task executions on a same subject.
@@ -126,7 +127,7 @@ class UserTaskExecution(MdUserTaskExecution):
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} :: previous_related_user_task_execution :: {e}")
             
-    @property
+    @cached_property
     def n_todos(self):
         """
         Returns the number of todos associated with this UserTaskExecution.
@@ -140,7 +141,7 @@ class UserTaskExecution(MdUserTaskExecution):
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} :: n_todos :: {e}")
         
-    @property
+    @cached_property
     def n_todos_not_read(self):
         try:
             session = object_session(self)
@@ -155,7 +156,7 @@ class UserTaskExecution(MdUserTaskExecution):
             raise Exception(f"{self.__class__.__name__} :: n_todos_not_read :: {e}")
         
 
-    @property
+    @cached_property
     def start_date_user_timezone(self):
         """
         Returns the start date of the UserTaskExecution in the user timezone.
@@ -169,7 +170,7 @@ class UserTaskExecution(MdUserTaskExecution):
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} :: start_date_user_timezone :: {e}")
         
-    @property
+    @cached_property
     def end_date_user_timezone(self):
         """
         Returns the end date of the UserTaskExecution in the user timezone.

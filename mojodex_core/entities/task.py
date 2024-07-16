@@ -1,3 +1,4 @@
+from functools import cached_property
 from mojodex_core.entities.db_base_entities import MdPlatform, MdPredefinedActionDisplayedData, MdTask, MdTaskDisplayedData, MdTaskPlatformAssociation, MdTaskPredefinedActionAssociation, MdTextEditAction, MdTextEditActionDisplayedData, MdTextEditActionTextTypeAssociation, MdTextType
 from sqlalchemy.orm import object_session
 from sqlalchemy import case, func, or_
@@ -124,7 +125,7 @@ class Task(MdTask):
             raise Exception(f"{self.__class__.__name__} :: get_text_edit_actions_in_language :: {e}")
         
 
-    @property
+    @cached_property
     def predefined_actions_association(self) -> list[TaskPredefinedActionAssociation]:
         """
         Returns the predefined actions associated with the task.
@@ -138,7 +139,7 @@ class Task(MdTask):
             raise Exception(f"{self.__class__.__name__} :: predefined_actions :: {e}")
 
 
-    @property
+    @cached_property
     def platforms(self) -> list[MdPlatform]:
         try:
             session = object_session(self)
@@ -150,7 +151,7 @@ class Task(MdTask):
             raise Exception(f"{self.__class__.__name__} :: platforms :: {e}")
 
 
-    @property
+    @cached_property
     def output_type(self):
         try:
             session = object_session(self)
@@ -159,7 +160,7 @@ class Task(MdTask):
             raise Exception(f"{self.__class__.__name__} :: output_type :: {e}")
         
 
-    @property
+    @cached_property
     def display_data(self) -> list[TaskDisplayedData]:
         try:
             session = object_session(self)

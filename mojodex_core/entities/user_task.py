@@ -1,3 +1,4 @@
+from functools import cached_property
 from mojodex_core.entities.db_base_entities import MdTask, MdTextEditAction, MdTextEditActionDisplayedData, MdTextEditActionTextTypeAssociation, MdTextType, MdUserTask
 from sqlalchemy.orm import object_session
 from mojodex_core.entities.user import User
@@ -7,7 +8,7 @@ from sqlalchemy.sql.functions import coalesce
 class UserTask(MdUserTask):
     """UserTask contains all the common informations of InstructUserTask or UserWorkflow."""
 
-    @property
+    @cached_property
     def user(self):
         try:
             session = object_session(self)
@@ -15,7 +16,7 @@ class UserTask(MdUserTask):
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} :: user :: {e}")
 
-    @property
+    @cached_property
     def task(self):
         try:
             session = object_session(self)
@@ -23,7 +24,7 @@ class UserTask(MdUserTask):
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} :: task :: {e}")
         
-    @property
+    @cached_property
     def json_input_in_user_language(self):
         try:
             return self.task.get_json_input_in_language(self.user.language_code)
@@ -31,21 +32,21 @@ class UserTask(MdUserTask):
             raise Exception(f"{self.__class__.__name__} :: json_input_in_user_language :: {e}")
         
 
-    @property
+    @cached_property
     def task_name_in_user_language(self):
         try:
             return self.task.get_name_in_language(self.user.language_code)
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} :: get_task_name_in_user_language :: {e}")
     
-    @property
+    @cached_property
     def predefined_actions(self):
         try:
             return self.task.get_predefined_actions_in_language(self.user.language_code)
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} :: predefined_actions :: {e}")
         
-    @property
+    @cached_property
     def text_edit_actions(self):
         try:
             return self.task.get_text_edit_actions_in_language(self.user.language_code)

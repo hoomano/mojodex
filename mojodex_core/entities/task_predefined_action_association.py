@@ -1,3 +1,4 @@
+from functools import cached_property
 from mojodex_core.entities.db_base_entities import MdTaskPredefinedActionAssociation
 from sqlalchemy.orm import object_session
 
@@ -5,7 +6,7 @@ from mojodex_core.entities.predefined_action_displayed_data import PredefinedAct
 
 class TaskPredefinedActionAssociation(MdTaskPredefinedActionAssociation):
 
-    @property
+    @cached_property
     def display_data(self) -> list[PredefinedActionDisplayedData]:
         try:
             session = object_session(self)

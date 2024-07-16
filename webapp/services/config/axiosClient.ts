@@ -20,6 +20,7 @@ axiosClient.interceptors.request.use(async (request) => {
  
 
   if (request.method === "get" || request.method === "delete") {
+    console.log("🟢", process.env.NEXT_PUBLIC_VERSION_NUMBER);
     request.params = {
       ...request.params,
       datetime: new Date().toISOString(),

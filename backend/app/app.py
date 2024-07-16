@@ -124,7 +124,7 @@ from mojodex_core.logging_handler import log_error
 
 @app.route("/")
 def index():
-    message = f"Welcome to Mojodex Backend Service."
+    message = f"Welcome to Mojodex Backend Service. Version {os.environ.get('VERSION_NUMBER', '0.0.0')}"
     return message
 
 def resume_session(session_id):

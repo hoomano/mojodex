@@ -68,7 +68,7 @@ services:
         - TERMS_URI= # optional
         - PRIVACY_URI= # optional
         - CHROME_EXTENSION_ID= # optional
-        - MOJODEX_WEBAPP_SECRET=webapp_secret # use defaut for local execution
+        - VERSION_NUMBER= # optional
     image: mojodex/webapp
     container_name: mojodex_webapp
     env_file:

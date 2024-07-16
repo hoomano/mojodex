@@ -36,7 +36,7 @@ HttpRouteManager(api)
 
 @app.route("/")
 def index():
-    message = "Welcome to Mojodex Background Service."
+    message = f"Welcome to Mojodex Background Service. Version {os.environ.get('VERSION_NUMBER', '0.0.0')}"
     return message
 
 

@@ -4,7 +4,7 @@ import AzureADProvider from "next-auth/providers/azure-ad";
 import CredentialsProvider from "next-auth/providers/credentials";
 import AppleProvider from "next-auth/providers/apple";
 import axios from "axios";
-import { appVersion, appPlatform } from "helpers/constants/index";
+import { appPlatform } from "helpers/constants/index";
 
 const createAuthPayload = (user, account, credentials) => {
   let payload = {
@@ -12,7 +12,7 @@ const createAuthPayload = (user, account, credentials) => {
     datetime: new Date().toISOString(),
     login_method: "email_password",
     password: "",
-    version: appVersion,
+    version: process.env.VERSION_NUMBER,
     platform: appPlatform
   };
 

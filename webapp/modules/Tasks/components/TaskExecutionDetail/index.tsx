@@ -242,7 +242,7 @@ const TaskExecutionDetail = () => {
     });
 
     const sessionId = currentTask?.session_id;
-
+    console.log("🔵", process.env.NEXT_PUBLIC_VERSION_NUMBER);
     socket.on(socketEvents.CONNECT, () => {
       socket.emit(socketEvents.START_SESSION, {
         session_id: sessionId,

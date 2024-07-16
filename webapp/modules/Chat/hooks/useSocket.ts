@@ -131,6 +131,7 @@ const useSocket = () => {
     });
     socket.on(socketEvents.CONNECT, () => {
       console.log("🟢 Socket connected");
+      console.log("🔴 ", process.env.NEXT_PUBLIC_VERSION_NUMBER);
       socket.emit(
         socketEvents.START_SESSION,
         { session_id: sessionId, version: appVersion },

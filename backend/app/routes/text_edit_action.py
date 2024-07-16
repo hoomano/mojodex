@@ -72,6 +72,7 @@ class TextEditAction(Resource):
             return {"text_edit_action_pk": text_edit_action_pk}, 200
                 
         except Exception as e:
+            db.session.rollback()
             return {"error": f"Error creating new text_edit_action : {e}"}, 400
 
     # Executing text edit actions

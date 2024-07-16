@@ -1,0 +1,423 @@
+{
+    "put": {
+        "type": "object",
+        "required": [
+            "datetime",
+            "task_type",
+            "platforms",
+            "name_for_system",
+            "definition_for_system",
+            "icon",
+            "task_displayed_data",
+            "output_type"
+        ],
+        "properties": {
+            "datetime": {
+                "type": "string",
+                "format": "date-time"
+            },
+            "task_type": {
+                "type": "string",
+                "enum": [
+                    "instruct",
+                    "workflow"
+                ]
+            },
+            "platforms": {
+                "type": "array",
+                "items": {
+                    "type": "string"
+                }
+            },
+            "name_for_system": {
+                "type": "string",
+                "pattern": "^[a-z0-9_]+$"
+            },
+            "definition_for_system": {
+                "type": "string"
+            },
+            "final_instruction": {
+                "type": "string"
+            },
+            "output_format_instruction_title": {
+                "type": "string"
+            },
+            "output_format_instruction_draft": {
+                "type": "string"
+            },
+            "infos_to_extract": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "required": [
+                        "info_name",
+                        "description"
+                    ],
+                    "properties": {
+                        "info_name": {
+                            "type": "string"
+                        },
+                        "description": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "icon": {
+                "type": "string"
+            },
+            "task_displayed_data": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "required": [
+                        "language_code",
+                        "name_for_user",
+                        "definition_for_user",
+                        "json_input"
+                    ],
+                    "properties": {
+                        "language_code": {
+                            "type": "string"
+                        },
+                        "name_for_user": {
+                            "type": "string"
+                        },
+                        "description_for_user": {
+                            "type": "string"
+                        },
+                        "json_input": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "required": [
+                                    "type",
+                                    "input_name",
+                                    "description_for_user",
+                                    "description_for_system"
+                                ],
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "enum": [
+                                            "text_area",
+                                            "image",
+                                            "drop_down_list",
+                                            "multiple_images",
+                                            "audio_file"
+                                        ]
+                                    },
+                                    "input_name": {
+                                        "type": "string"
+                                    },
+                                    "description_for_user": {
+                                        "type": "string"
+                                    },
+                                    "description_for_system": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "predefined_actions": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "required": [
+                        "task_pk",
+                        "displayed_data"
+                    ],
+                    "properties": {
+                        "task_pk": {
+                            "type": "integer"
+                        },
+                        "displayed_data": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "required": [
+                                    "language_code",
+                                    "data"
+                                ],
+                                "properties": {
+                                    "language_code": {
+                                        "type": "string"
+                                    },
+                                    "data": {
+                                        "type": "object",
+                                        "required": [
+                                            "name"
+                                        ],
+                                        "properties": {
+                                            "name": {
+                                                "type": "string"
+                                            },
+                                            "button_text": {
+                                                "type": "string"
+                                            },
+                                            "message_prefix": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "output_type": {
+                "type": "string"
+            },
+            "result_chat_enabled": {
+                "type": "boolean",
+                "default": true
+            },
+            "steps": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "required": [
+                        "name_for_system",
+                        "definition_for_system",
+                        "step_displayed_data"
+                    ],
+                    "properties": {
+                        "name_for_system": {
+                            "type": "string"
+                        },
+                        "definition_for_system": {
+                            "type": "string"
+                        },
+                        "step_displayed_data": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "required": [
+                                    "language_code",
+                                    "name_for_user",
+                                    "definition_for_user"
+                                ],
+                                "properties": {
+                                    "language_code": {
+                                        "type": "string"
+                                    },
+                                    "name_for_user": {
+                                        "type": "string"
+                                    },
+                                    "definition_for_user": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "allOf": [
+            {
+                "if": {
+                    "properties": {
+                        "task_type": {
+                            "const": "workflow"
+                        }
+                    }
+                },
+                "then": {
+                    "required": [
+                        "steps"
+                    ]
+                }
+            },
+            {
+                "if": {
+                    "properties": {
+                        "task_type": {
+                            "const": "instruct"
+                        }
+                    }
+                },
+                "then": {
+                    "required": [
+                        "final_instruction",
+                        "output_format_instruction_title",
+                        "output_format_instruction_draft",
+                        "infos_to_extract"
+                    ]
+                }
+            }
+        ]
+    },
+    "post": {
+        "type": "object",
+        "required": [
+            "datetime"
+        ],
+        "properties": {
+            "datetime": {
+                "type": "string",
+                "format": "date-time"
+            },
+            "task_pk": {
+                "type": "integer"
+            },
+            "platforms": {
+                "type": "array",
+                "items": {
+                    "type": "string"
+                }
+            },
+            "name_for_system": {
+                "type": "string",
+                "pattern": "^[a-z0-9_]+$"
+            },
+            "definition_for_system": {
+                "type": "string"
+            },
+            "final_instruction": {
+                "type": "string"
+            },
+            "output_format_instruction_title": {
+                "type": "string"
+            },
+            "output_format_instruction_draft": {
+                "type": "string"
+            },
+            "infos_to_extract": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "required": [
+                        "info_name",
+                        "description"
+                    ],
+                    "properties": {
+                        "info_name": {
+                            "type": "string"
+                        },
+                        "description": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "icon": {
+                "type": "string"
+            },
+            "task_displayed_data": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "required": [
+                        "language_code",
+                        "name_for_user",
+                        "definition_for_user",
+                        "json_input"
+                    ],
+                    "properties": {
+                        "language_code": {
+                            "type": "string"
+                        },
+                        "name_for_user": {
+                            "type": "string"
+                        },
+                        "description_for_user": {
+                            "type": "string"
+                        },
+                        "json_input": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "required": [
+                                    "type",
+                                    "input_name",
+                                    "description_for_user",
+                                    "description_for_system"
+                                ],
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "enum": [
+                                            "text_area",
+                                            "image",
+                                            "drop_down_list",
+                                            "multiple_images",
+                                            "audio_file"
+                                        ]
+                                    },
+                                    "input_name": {
+                                        "type": "string"
+                                    },
+                                    "description_for_user": {
+                                        "type": "string"
+                                    },
+                                    "description_for_system": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "predefined_actions": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "required": [
+                        "task_pk",
+                        "displayed_data"
+                    ],
+                    "properties": {
+                        "task_pk": {
+                            "type": "integer"
+                        },
+                        "displayed_data": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "required": [
+                                    "language_code",
+                                    "data"
+                                ],
+                                "properties": {
+                                    "language_code": {
+                                        "type": "string"
+                                    },
+                                    "data": {
+                                        "type": "object",
+                                        "required": [
+                                            "name"
+                                        ],
+                                        "properties": {
+                                            "name": {
+                                                "type": "string"
+                                            },
+                                            "button_text": {
+                                                "type": "string"
+                                            },
+                                            "message_prefix": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "output_type": {
+                "type": "string"
+            },
+            "result_chat_enabled": {
+                "type": "boolean",
+                "default": true
+            }
+        }
+    }
+}

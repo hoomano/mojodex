@@ -17,6 +17,15 @@ class Task(Resource):
 
     available_json_inputs_types = "text_area", "image", "drop_down_list", 'multiple_images', "audio_file"
 
+    def _validate_json_input(self, method_name, json_input):
+        try:
+            with open('routes/task.json') as f:
+                schema = json.load(f)[method_name]
+            # validate input data
+            jsonschema.validate(instance=json_input, schema=schema)
+        except Exception as e:
+            raise Exception(f"_validate_json_input :: {e}")
+
     # Route to create a new task
     # Route used only by Backoffice
     # Protected by a secret
@@ -33,18 +42,11 @@ class Task(Resource):
             return {"error": f"Missing Authorization secret in headers"}, 403
         
         try:
-            # open schema from routes/task.json and get json in key "put"
-            with open('routes/task.json') as f:
-                schema = json.load(f)["put"]
-            # validate input data
-            jsonschema.validate(instance=request.json, schema=schema)
-            print("Input data is valid.")
+            self._validate_json_input(self.put.__name__, request.json)
         except Exception as e:
-            log_error(f"Error creating new task : {e}")
             return {"error": f"Error creating new task : {e}"}, 500
 
         try:
-
             ### COMMON FOR BOTH TASK TYPES
             # ensure output_type is in md_text_type
             output_type = request.json["output_type"].strip().lower()
@@ -172,9 +174,8 @@ class Task(Resource):
                         db.session.flush()
 
 
-            #db.session.commit()
-            db.session.rollback()
-            return {"task_pk": "ok"}, 200
+            db.session.commit()
+            return {"task_pk": task.task_pk}, 200
         except Exception as e:
             log_error(f"Error creating task : {e}")
             db.session.rollback()
@@ -194,25 +195,21 @@ class Task(Resource):
             log_error(f"Error editing task : Missing Authorization secret in headers")
             return {"error": f"Missing Authorization secret in headers"}, 403
 
-        # data
         try:
-            timestamp = request.json["datetime"]
-            task_pk = request.json["task_pk"]
-        except KeyError as e:
-            return {"error": f"Missing field {e}"}, 400
-
+            self._validate_json_input(self.post.__name__, request.json)
+        except Exception as e:
+            return {"error": f"Error editing task : {e}"}, 500
+        
         # Logic
         try:
+            task_pk = request.json["task_pk"]
             task: TaskEntity = db.session.query(TaskEntity).filter(TaskEntity.task_pk == task_pk).first()
             if task is None:
                 return {"error": f"Task with pk {task_pk} not found"}, 404
-
+           
             # Recover all task - platform associations
             if "platforms" in request.json:
                 platforms = request.json["platforms"]
-                if not isinstance(platforms, list):
-                    return {"error": f"'platforms' must be a list"}, 400
-
                 # get pltform_pk of each platform based on platform name
                 platform_pks = []
                 for platform_name in platforms:
@@ -241,47 +238,18 @@ class Task(Resource):
                     )
                     db.session.add(task_platform_association)
                     db.session.flush()
-
+          
             if "task_displayed_data" in request.json:
                 task_displayed_data = request.json["task_displayed_data"]
-                if not isinstance(task_displayed_data, list):
-                    return {"error": f"task_displayed_data must be a list of dict specifying the corresponding language_code"}, 400
-                else:
-                    for translation in task_displayed_data:
-                        if not isinstance(translation, dict):
-                            return {
-                                "error": f"displayed_data must be a list of dict specifying the corresponding language_code"}, 400
-                        if "language_code" not in translation:
-                            return {"error": f"Missing language_code in displayed_data"}, 400
-                        language_code = translation["language_code"]
-                        # check translation["json_input"]
-                        json_input = translation["json_input"]
-                        # ensure json_input is a list
-                        if not isinstance(json_input, list):
-                            return {"error": f"json_input for language_code '{language_code}' must be a list of dict"}, 400
-
-                        # ensure each item in json_input contains at least "input_name", "type" "description_for_user", and "description_for_system"
-                        for item in json_input:
-                            if not isinstance(item, dict):
-                                return {"error": f"json_input for language_code '{language_code}' must be a list of dict"}, 400
-                            if "input_name" not in item:
-                                return {"error": f"json_input for language_code '{language_code}' must contain 'input_name'"}, 400
-                            if "type" not in item:
-                                return {"error": f"json_input for language_code '{language_code}' must contain 'type'"}, 400
-                            if item["type"] not in self.available_json_inputs_types:
-                                return {"error": f"json_input for language_code '{language_code}' must contain 'type' in {self.available_json_inputs_types}"}, 400
-                            if "description_for_user" not in item:
-                                return {"error": f"json_input for language_code '{language_code}' must contain 'description_for_user'"}, 400
-                            if "description_for_system" not in item:
-                                return {"error": f"json_input for language_code '{language_code}' must contain 'description_for_system'"}, 400
-
+                for translation in task_displayed_data:
+                        
                         try:
                             task_translation = db.session.query(MdTaskDisplayedData).filter(MdTaskDisplayedData.task_fk == task_pk, MdTaskDisplayedData.language_code == language_code).first()
 
                             if not task_translation:
                                 task_translation = MdTaskDisplayedData(
                                     task_fk=task.task_pk,
-                                    language_code=language_code,
+                                    language_code=translation["language_code"],
                                     name_for_user=translation["name_for_user"],
                                     definition_for_user=translation["definition_for_user"],
                                     json_input=translation["json_input"],
@@ -329,9 +297,6 @@ class Task(Resource):
                     for displayed_data in displayed_data_list:
                         language_code = displayed_data["language_code"]
                         data = displayed_data["data"]
-                        # ensure that displayed data has "name" key
-                        if "name" not in data: 
-                            return {"error": f"The predefined_action with task_pk : '{predefined_action_fk}' and language_code '{language_code}' must contain 'name'"}, 400
                         
                         # Try to find existing displayed_data
                         displayed_data_object = next((display_data for display_data in task_predefined_action_association.display_data if display_data.language_code == language_code), None)
@@ -345,17 +310,8 @@ class Task(Resource):
                         else:
                             displayed_data_object.displayed_data = data
                         db.session.flush()
-
             if "name_for_system" in request.json:
-                name_for_system = request.json["name_for_system"]
-                # ensure there is no space and no upper case in name_for system
-                if " " in name_for_system:
-                    return {
-                        "error": f"name_for_system must not contain spaces but underscores. Example : 'answer_to_prospect'"}, 400
-                if name_for_system != name_for_system.lower():
-                    return {
-                        "error": f"name_for_system must be in lower case and use underscores. Example : 'answer_to_prospect'"}, 400
-                task.name_for_system = name_for_system
+                task.name_for_system = request.json["name_for_system"]
             if "definition_for_system" in request.json:
                 task.definition_for_system = request.json["definition_for_system"]
             if "final_instruction" in request.json:

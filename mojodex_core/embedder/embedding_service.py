@@ -80,11 +80,11 @@ class EmbeddingService:
                 api_key = engine_conf["openai_api_key"]
                 engine = OpenAIEmbedding(model_name, api_key, provider_name)
             elif provider_name == "azure":
-                api_key = engine_conf["embedding_azure_openai_key"]
+                api_key = engine_conf["ada_embedding_azure_openai_key"]
                 api_type = provider_name
-                api_base = engine_conf["embedding_azure_openai_api_base"]
-                api_version = engine_conf["embedding_azure_openai_api_version"]
-                deployment_id = engine_conf["embedding_azure_openai_deployment_id"]
+                api_base = engine_conf["ada_embedding_azure_openai_api_base"]
+                api_version = engine_conf["ada_embedding_azure_openai_api_version"]
+                deployment_id = engine_conf["ada_embedding_azure_openai_deployment_id"]
                 engine = OpenAIEmbedding(model_name, api_key, api_type, deployment=deployment_id, api_base=api_base, api_version=api_version)
             else:
                 raise Exception(f"provider_name {provider_name} is not supported")

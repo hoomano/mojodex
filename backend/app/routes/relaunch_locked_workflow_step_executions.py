@@ -37,13 +37,13 @@ class RelaunchLockedWorkflowStepExecutions(Resource):
         try:
             utc = pytz.UTC
             current_time = datetime.now(utc)
-            two_hours_ago = current_time - timedelta(hours=2)
-            # find every user_workflow_step_execution that is locked => locked = no result and no error with creation_date > 2 hours
+            thirty_mins_ago = current_time - timedelta(minutes=30)
+            # find every user_workflow_step_execution that is locked => locked = no result and no error with creation_date > 30 minutes ago
            
             locked_steps = db.session.query(MdUserWorkflowStepExecution)\
                 .outerjoin(MdUserWorkflowStepExecutionResult, MdUserWorkflowStepExecution.user_workflow_step_execution_pk == MdUserWorkflowStepExecutionResult.user_workflow_step_execution_fk)\
                 .filter(MdUserWorkflowStepExecution.error_status.is_(None))\
-                .filter(MdUserWorkflowStepExecution.creation_date < two_hours_ago)\
+                .filter(MdUserWorkflowStepExecution.creation_date < thirty_mins_ago)\
                 .filter(MdUserWorkflowStepExecutionResult.user_workflow_step_execution_fk.is_(None))\
                 .join(MdUserTaskExecution, MdUserWorkflowStepExecution.user_task_execution_fk == MdUserTaskExecution.user_task_execution_pk)\
                 .filter(MdUserTaskExecution.deleted_by_user.is_(None))\

@@ -3,7 +3,7 @@
 
 from functools import cached_property
 from sqlalchemy import and_, extract, func, text
-from mojodex_core.entities.db_base_entities import MdTodo, MdTodoScheduling, MdUser, MdUserTask, MdUserTaskExecution
+from mojodex_core.entities.db_base_entities import MdTodo, MdTodoScheduling, MdUser, MdUserTask, MdUserTaskExecution, MdUserVocabulary
 from sqlalchemy.orm import object_session
 from mojodex_core.entities.instruct_task import InstructTask
 from mojodex_core.entities.todo import Todo
@@ -135,3 +135,24 @@ class User(MdUser):
             raise Exception(f"{self.__class__.__name__} :: today_rescheduled_todo :: {e}")
         
 
+
+    def get_vocabulary(self, max_items=50):
+        """
+        Returns the user's vocabulary
+        """
+        try:
+            session = object_session(self)
+            return session.query(MdUserVocabulary).filter(MdUserVocabulary.user_id == self.user_id) \
+                .order_by(MdUserVocabulary.creation_date.desc()).limit(max_items).all()
+        except Exception as e:
+            raise Exception(f"{self.__class__.__name__} :: vocabulary :: {e}")
+        
+    @cached_property
+    def fifty_first_vocabulary_items(self):
+        """
+        Returns the first 50 vocabulary items for the user
+        """
+        try:
+            return self.get_vocabulary(50)
+        except Exception as e:
+            raise Exception(f"{self.__class__.__name__} :: fifty_first_vocabulary :: {e}")

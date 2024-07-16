@@ -3,6 +3,7 @@ from openai import OpenAI, AzureOpenAI
 import tiktoken
 from mojodex_core.db import with_db_session
 from mojodex_core.entities.db_base_entities import MdUserVocabulary
+from mojodex_core.entities.user import User
 from mojodex_core.logging_handler import log_error
 from mojodex_core.stt.stt_engine import SttEngine
 from pydub import AudioSegment
@@ -29,11 +30,10 @@ class OpenAISTT(SttEngine):
     @with_db_session
     def __get_user_vocabulary(self, user_id, db_session):
         try:
-            user_vocabulary = db_session.query(MdUserVocabulary).filter(MdUserVocabulary.user_id == user_id).order_by(
-                MdUserVocabulary.creation_date.desc()).limit(50).all()
-            return ", ".join([v.word for v in user_vocabulary]) if user_vocabulary else ""
+            user: User = db_session.query(User).get(user_id)
+            return ", ".join([v.word for v in user.fifty_first_vocabulary_items]) if user.fifty_first_vocabulary_items else ""
         except Exception as e:
-            raise Exception(f"__get_user_vocabulary:  {e}")
+            raise Exception(f"__get_user_vocabulary: {e}")
         
     # calculate the number of tokens in a given string
     def _num_tokens_from_string(self, string):
@@ -51,7 +51,7 @@ class OpenAISTT(SttEngine):
             try:
                 vocab = self.__get_user_vocabulary(user_id)
             except Exception as e:
-                log_error(f"{self.__class__.__name__} : get_transcript_and_file_duraction : user_id {user_id} - {e} ", notify_admin=True)
+                log_error(f"{self.__class__.__name__} : transcribe : user_id {user_id} - {e} ", notify_admin=True)
                 vocab = ""
 
             # check size of vocab tokens

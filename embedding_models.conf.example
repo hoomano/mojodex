@@ -1,14 +1,14 @@
 # ### Embeddings
 # Each engine section is composed of [provider_name/model_name]
 # The provider_name is the name of the provider (e.g. azure, openai, etc.)
-# The model_name is the name of the model (e.g. text-embedding-ada-002, etc.)
+# The model_name is the name of the model (e.g. text-embedding-3-small, etc.)
 
 
-[openai/text-embedding-ada-002]
+[openai/text-embedding-3-small]
 OPENAI_API_KEY=<your api key>
 
-# [azure/text-embedding-ada-002]
-# ADA_EMBEDDING_AZURE_OPENAI_API_BASE=
-# ADA_EMBEDDING_AZURE_OPENAI_DEPLOYMENT_ID=
-# ADA_EMBEDDING_AZURE_OPENAI_API_VERSION=
-# ADA_EMBEDDING_AZURE_OPENAI_KEY=
+# [azure/text-embedding-3-small]
+# EMBEDDING_AZURE_OPENAI_API_BASE=
+# EMBEDDING_AZURE_OPENAI_DEPLOYMENT_ID=
+# EMBEDDING_AZURE_OPENAI_API_VERSION=
+# EMBEDDING_AZURE_OPENAI_KEY=

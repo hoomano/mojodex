@@ -93,33 +93,41 @@ class Task(MdTask):
         """
         try:
             session = object_session(self)
-            MdTextEditActionSpecifiedLang = aliased(MdTextEditActionDisplayedData)
-            MdTextEditActionEnglishLang = aliased(MdTextEditActionDisplayedData)
+            
+            text_edit_actions_data_en = (session.query(
+                MdTextEditActionDisplayedData.name.label("name"),
+                MdTextEditActionDisplayedData.description.label("description")
+            ).filter(MdTextEditActionDisplayedData.language_code == "en")
+            ).subquery()
 
-            text_edit_actions = (session.query(
-                    MdTextEditAction.text_edit_action_pk,
-                    func.coalesce(MdTextEditActionSpecifiedLang.name, MdTextEditActionEnglishLang.name).label("name"),
-                    func.coalesce(MdTextEditActionSpecifiedLang.description, MdTextEditActionEnglishLang.description).label("description"),
-                    MdTextEditAction.emoji,)
-                .outerjoin(
-                    MdTextEditActionSpecifiedLang,
-                    (MdTextEditAction.text_edit_action_pk == MdTextEditActionSpecifiedLang.text_edit_action_fk) &
-                    (MdTextEditActionSpecifiedLang.language_code == language_code))
-                .outerjoin(
-                    MdTextEditActionEnglishLang,
-                    (MdTextEditAction.text_edit_action_pk == MdTextEditActionEnglishLang.text_edit_action_fk) &
-                    (MdTextEditActionEnglishLang.language_code == "en"))
-                .join(
-                    MdTextEditActionTextTypeAssociation,
-                    MdTextEditActionTextTypeAssociation.text_edit_action_fk == MdTextEditAction.text_edit_action_pk,)
-                .join(
-                    MdTextType,
-                    MdTextType.text_type_pk == MdTextEditActionTextTypeAssociation.text_type_fk,)
-                .join(
-                    MdTask,
-                    MdTask.output_text_type_fk == MdTextType.text_type_pk,)
-                .filter(MdTask.task_pk == self.task_pk)
-                ).all()
+            text_edit_actions_data_lang = (session.query(
+                MdTextEditActionDisplayedData.name.label("name"),
+                MdTextEditActionDisplayedData.description.label("description")
+            ).filter(MdTextEditActionDisplayedData.language_code == language_code)
+            ).subquery()
+
+            text_edit_actions = session.query(
+                MdTextEditAction.text_edit_action_pk,
+                coalesce(text_edit_actions_data_lang.c.name, text_edit_actions_data_en.c.name).label("name"),
+                coalesce(text_edit_actions_data_lang.c.description, text_edit_actions_data_en.c.description).label("description"),
+                MdTextEditAction.emoji
+            ).outerjoin(
+                text_edit_actions_data_lang,
+                text_edit_actions_data_lang.c.text_edit_action_fk == MdTextEditAction.text_edit_action_pk
+            ).outerjoin(
+                text_edit_actions_data_en,
+                text_edit_actions_data_en.c.text_edit_action_fk == MdTextEditAction.text_edit_action_pk
+            ).join(
+                MdTextEditActionTextTypeAssociation,
+                MdTextEditActionTextTypeAssociation.text_edit_action_fk == MdTextEditAction.text_edit_action_pk
+            ).join(
+                MdTextType,
+                MdTextType.text_type_pk == MdTextEditActionTextTypeAssociation.text_type_fk
+            ).join(
+                MdTask,
+                MdTask.output_text_type_fk == MdTextType.text_type_pk
+            ).filter(MdTask.task_pk == self.task_pk).all()
+
             return [{"text_edit_action_pk": text_edit_action_pk, "name": name, "description": description, "emoji": emoji} for text_edit_action_pk, name, description, emoji in text_edit_actions]
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} :: get_text_edit_actions_in_language :: {e}")

@@ -119,9 +119,9 @@ class WebsiteParser:
         try:
             website_chunk_validation = MPT(
                 WebsiteParser.website_chunk_validation_mpt_filename, chunk_text=chunk_text)
-            responses = website_chunk_validation.run(
+            response = website_chunk_validation.run(
                 user_id=user_id, temperature=0, max_tokens=5)
-            return responses[0].lower().strip() == "yes"
+            return response.lower().strip() == "yes"
         except Exception as e:
             raise Exception(f"__validate_website_chunk: {e}")
     

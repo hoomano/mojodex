@@ -42,10 +42,10 @@ class VoiceGenerator:
         try:
             get_language_mpt = MPT(VoiceGenerator.get_language_mpt_filename, text=text)
 
-            responses = get_language_mpt.run(user_id=user_id, temperature=0, max_tokens=10,
+            response = get_language_mpt.run(user_id=user_id, temperature=0, max_tokens=10,
                                                              user_task_execution_pk=user_task_execution_pk,
                                                              task_name_for_system=task_name_for_system)
-            return responses[0].strip().lower()
+            return response.strip().lower()
         except Exception as e:
             raise Exception(f"_get_language: {e}")
 

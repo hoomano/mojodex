@@ -16,8 +16,8 @@ class StanzaWriterStep(WorkflowStep):
 
             write_poem_stanza_mpt = MPT(StanzaWriterStep.write_poem_stanza_filename, poem_topic=poem_topic, stanza_topic=stanza_topic,
                                         learned_instructions=learned_instructions, past_validated_steps_results=past_validated_steps_results)
-            responses = write_poem_stanza_mpt.run(user_id=user_id, temperature=0, max_tokens=1000, user_task_execution_pk=user_task_execution_pk, task_name_for_system=task_name_for_system)
-            stanza = responses[0].strip()
+            response = write_poem_stanza_mpt.run(user_id=user_id, temperature=0, max_tokens=1000, user_task_execution_pk=user_task_execution_pk, task_name_for_system=task_name_for_system)
+            stanza = response.strip()
             return [{'stanza': stanza}]
         
             # output keys: 'stanza'

@@ -20,12 +20,11 @@ class TaskExecutionTitleSummaryGenerator:
                                         user_task_inputs=user_task_execution.json_input_values,
                                         user_messages_conversation=user_task_execution.session.get_conversation_as_string())
 
-            responses = task_execution_summary.run(user_id=user_task_execution.user.user_id,
+            response = task_execution_summary.run(user_id=user_task_execution.user.user_id,
                                                 temperature=0, max_tokens=500,
                                                 user_task_execution_pk=user_task_execution.user_task_execution_pk,
                                                 task_name_for_system=user_task_execution.task.name_for_system,
                                                 )
-            response = responses[0]
             user_task_execution.title = response.split("<title>")[1].split("</title>")[0]
             user_task_execution.summary = response.split("<summary>")[1].split("</summary>")[0]
             db_session.commit()

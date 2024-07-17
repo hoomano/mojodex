@@ -168,8 +168,7 @@ class OpenAILLM(LLM):
                                          assistant_response=assistant_response + " " + response,
                                          n_additional_calls_if_finish_reason_is_length=n_additional_calls_if_finish_reason_is_length,
                                          n_calls=n_calls + 1, **kwargs)
-        # [] is a legacy from the previous version that could return several completions. Need complete refacto to remove.
-        return [assistant_response + " " + response]
+        return assistant_response + " " + response
 
     def invoke(self, messages: List[Any], user_id: str, temperature: float, max_tokens: int, label: str,
                stream: bool = False, stream_callback=None, user_task_execution_pk: int = None,
@@ -217,25 +216,25 @@ class OpenAILLM(LLM):
             n_tokens_prompt = self.num_tokens_from_text_messages(messages[:1])
             n_tokens_conversation = self.num_tokens_from_text_messages(messages[1:])
 
-            responses = self._call_completion_with_rate_limit_management(messages, user_id, temperature, max_tokens,
+            response = self._call_completion_with_rate_limit_management(messages, user_id, temperature, max_tokens,
                                                                          frequency_penalty, presence_penalty,
                                                                          stream, stream_callback,
                                                                          n_additional_calls_if_finish_reason_is_length,
                                                                          **kwargs)
 
-            if responses is None:
+            if response is None:
                 return None
 
             n_tokens_response = self.num_tokens_from_text_messages(
-                [{'role': 'assistant', 'content': responses[0]}])
+                [{'role': 'assistant', 'content': response[0]}])
 
             self.tokens_costs_manager.on_tokens_counted(user_id, n_tokens_prompt, n_tokens_conversation,
                                                         n_tokens_response,
                                                         self.name, label, user_task_execution_pk, task_name_for_system)
             self._write_in_dataset({"temperature": temperature, "max_tokens": max_tokens, "n_responses": 1,
                                     "frequency_penalty": frequency_penalty, "presence_penalty": presence_penalty,
-                                    "messages": messages, "responses": responses}, task_name_for_system, "chat",
+                                    "messages": messages, "responses": response}, task_name_for_system, "chat",
                                    label=label)
-            return responses
+            return response
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} : recursive_invoke: {e}")

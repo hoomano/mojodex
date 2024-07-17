@@ -288,13 +288,13 @@ class AssistantResponseGenerator(AssistantMessageGenerator, ABC):
        [...]
         conversation_list = self.context.state.get_conversation_as_list(self.context.session_id)
         messages = [{"role": "system", "content": prompt}] + conversation_list
-        responses = model_loader.main_llm.invoke(messages, self.context.user_id,
+        response = model_loader.main_llm.invoke(messages, self.context.user_id,
                                                     temperature=0,
                                                     max_tokens=4000,
                                                     label="CHAT",
                                                     stream=True, stream_callback=self._token_callback)
 
-        return responses[0].strip() if responses else None
+        return response.strip() if response else None
         [...]
 [...]
 ```

@@ -1,17 +1,8 @@
 import os
 import json
 import requests
-from getpass import getpass
 import socketio
-
-# Constants
-BASE_DIR = os.path.expanduser('~/.mojodex')
-CREDENTIALS_FILE = os.path.join(BASE_DIR, 'credentials')
-SERVER_URL = 'http://localhost:5001'
-
-CURRENT_STATE = ""
-
-CURRENT_STEP = None
+from constants import *
 
 # Initialize SocketIO client
 sio = socketio.Client()
@@ -84,38 +75,9 @@ def validate_step(step_result):
         print(e)
 
 
-def ensure_dir():
-    if not os.path.exists(BASE_DIR):
-        os.makedirs(BASE_DIR)
 
 
-def save_credentials(email, username, token):
-    ensure_dir()
-    with open(CREDENTIALS_FILE, 'w') as file:
-        file.write(f"{email}:{username}:{token}")
 
-
-def load_credentials():
-    try:
-        with open(CREDENTIALS_FILE, 'r') as file:
-            # Return email, username, token
-            return file.read().strip().split(':')
-    except FileNotFoundError:
-        return None, None, None
-
-
-def login():
-    username = input('Username: ')
-    password = getpass('Password: ')
-    response = requests.post(f'{SERVER_URL}/user', json={'email': username,
-                             'password': password, "login_method": "email_password", "datetime": "now"})
-    if response.status_code == 200:
-        data = response.json()
-        save_credentials(username, data['name'], data['token'])
-        return username, data['name'], data['token']
-    else:
-        print("Incorrect credentials. Please try again.")
-        return None, None, None
 
 
 def help_command():
@@ -131,7 +93,7 @@ def help_command():
 
 def workflow_list():
     try:
-        email, username, token = load_credentials()
+        
         if not token:
             print("Please login first.")
             return

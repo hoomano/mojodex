@@ -229,9 +229,7 @@ class UserTaskExecution(Resource):
 
 
                 if search_filter:
-                    result = result.filter(or_(produced_text_subquery.c.produced_text_title.ilike(f"%{search_filter}%"),
-                                            produced_text_subquery.c.produced_text_production.ilike(
-                                                f"%{search_filter}%")))
+                    result = result.filter(UserTaskExecutionEntity.title.ilike(f"%{search_filter}%"))
 
                 if search_user_tasks_filter_list:
                     result = result.filter(MdUserTask.user_task_pk.in_(search_user_tasks_filter_list))

@@ -15,7 +15,7 @@ class UserTaskExecution(MdUserTaskExecution):
     def produced_text_done(self):
         try:
             session = object_session(self)
-            return session.query(MdProducedText).filter(MdProducedText.user_task_execution_fk == self.user_task_execution_pk).count() >= 1
+            return session.query(func.count(1)).filter(MdProducedText.user_task_execution_fk == self.user_task_execution_pk).count() >= 1
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} :: produced_text_done :: {e}")
 
@@ -49,7 +49,7 @@ class UserTaskExecution(MdUserTaskExecution):
         """
         try:
             session = object_session(self)
-            return session.query(UserTask).filter(UserTask.user_task_pk == self.user_task_fk).first()
+            return session.query(UserTask).get(self.user_task_fk)
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} :: user_task :: {e}")
 
@@ -71,7 +71,7 @@ class UserTaskExecution(MdUserTaskExecution):
     def session(self):
         try:
             session = object_session(self)
-            return session.query(Session).filter(Session.session_id == self.session_id).first()
+            return session.query(Session).get(self.session_id)
         except Exception as e:
             raise Exception(f"{self.__class__} :: session :: {e}")
 
@@ -90,10 +90,10 @@ class UserTaskExecution(MdUserTaskExecution):
     def n_produced_text_versions(self):
         try:
             session = object_session(self)
-            return session.query(MdProducedTextVersion).\
+            return session.query(func.count(1)).\
                 join(MdProducedText, MdProducedTextVersion.produced_text_fk == MdProducedText.produced_text_pk).\
                 filter(MdProducedText.user_task_execution_fk == self.user_task_execution_pk).\
-                count()
+                scalar()
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} :: produced_text :: {e}")
         
@@ -119,8 +119,7 @@ class UserTaskExecution(MdUserTaskExecution):
             user_task_execution = self
             while user_task_execution and user_task_execution.derives_from_a_previous_user_task_execution:
                 user_task_execution = session.query(UserTaskExecution) \
-                    .filter(UserTaskExecution.user_task_execution_pk == user_task_execution.predefined_action_from_user_task_execution_fk) \
-                    .first()
+                    .get(user_task_execution.predefined_action_from_user_task_execution_fk)
                 if user_task_execution:
                     previous_related_user_task_execution.append(user_task_execution)
             return previous_related_user_task_execution
@@ -134,7 +133,7 @@ class UserTaskExecution(MdUserTaskExecution):
         """
         try:
             session = object_session(self)
-            return  session.query(func.count(MdTodo.todo_pk)).\
+            return  session.query(func.count(1)).\
                 filter(MdTodo.user_task_execution_fk == self.user_task_execution_pk).\
                 filter(MdTodo.deleted_by_user.is_(None)).\
                 scalar()
@@ -146,7 +145,7 @@ class UserTaskExecution(MdUserTaskExecution):
         try:
             session = object_session(self)
             # count the number of todos not read for a user_task_execution_pk
-            return (session.query(func.count(MdTodo.todo_pk))
+            return (session.query(func.count(1))
                     .filter(MdTodo.user_task_execution_fk == self.user_task_execution_pk)
                     .filter(MdTodo.deleted_by_user.is_(None))
                     .filter(MdTodo.read_by_user.is_(None))

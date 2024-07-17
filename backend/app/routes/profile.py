@@ -1,5 +1,6 @@
 import os
 
+from mojodex_core.authentication import authenticate_with_backoffice_secret
 from routes.product import Product
 from flask import request
 from flask_restful import Resource
@@ -15,18 +16,12 @@ class Profile(Resource):
 
 
     def __init__(self):
+        Profile.method_decorators = [authenticate_with_backoffice_secret(methods=["PUT", "POST"])]
         self.product_resource = Product()
     
     def put(self):
         if not request.is_json:
             return {"error": "Request must be JSON"}, 400
-
-        try:
-            secret = request.headers['Authorization']
-            if secret != os.environ["BACKOFFICE_SECRET"]:
-                return {"error": "Authentication error : Wrong secret"}, 403
-        except KeyError:
-            return {"error": f"Missing Authorization secret in headers"}, 403
 
         try:
             timestamp = request.json["datetime"]
@@ -46,13 +41,6 @@ class Profile(Resource):
     def post(self):
         if not request.is_json:
             return {"error": "Request must be JSON"}, 400
-
-        try:
-            secret = request.headers['Authorization']
-            if secret != os.environ["BACKOFFICE_SECRET"]:
-                return {"error": "Authentication error : Wrong secret"}, 403
-        except KeyError:
-            return {"error": f"Missing Authorization secret in headers"}, 403
 
         try:
             timestamp = request.json["datetime"]

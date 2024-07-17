@@ -3,6 +3,7 @@ import os
 from flask import request
 from flask_restful import Resource
 from app import db
+from mojodex_core.authentication import authenticate_with_backoffice_secret
 from mojodex_core.logging_handler import log_error
 from mojodex_core.entities.db_base_entities import MdTextType
 
@@ -15,6 +16,11 @@ from datetime import datetime
 class TaskJson(Resource):
 
     task_json_mpt_filename = "instructions/generate_task_json.mpt"
+
+
+    def __init__(self):
+        TaskJson.method_decorators = [authenticate_with_backoffice_secret(methods=["POST"])]
+
 
     def __get_text_types(self):
         try:
@@ -42,15 +48,6 @@ class TaskJson(Resource):
     def post(self):
         if not request.is_json:
             return {"error": "Request must be JSON"}, 400
-
-        try:
-            secret = request.headers['Authorization']
-            if secret != os.environ["BACKOFFICE_SECRET"]:
-                return {"error": "Authentication error : Wrong secret"}, 403
-        except KeyError:
-            log_error(
-                f"Error creating new task : Missing Authorization secret in headers")
-            return {"error": f"Missing Authorization secret in headers"}, 403
 
         try:
             timestamp = request.json["datetime"]

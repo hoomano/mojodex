@@ -4,6 +4,7 @@ import jsonschema
 from flask import request
 from flask_restful import Resource
 from app import db
+from mojodex_core.authentication import authenticate_with_backoffice_secret
 from mojodex_core.entities.instruct_task import InstructTask
 from mojodex_core.entities.task_predefined_action_association import TaskPredefinedActionAssociation
 from mojodex_core.entities.workflow import Workflow
@@ -14,6 +15,9 @@ from mojodex_core.workflows.steps_library import steps_class
 from mojodex_core.entities.task import Task as TaskEntity
 
 class Task(Resource):
+
+    def __init__(self):
+        Task.method_decorators = [authenticate_with_backoffice_secret(methods=["GET", "POST", 'PUT'])]
 
     available_json_inputs_types = "text_area", "image", "drop_down_list", 'multiple_images', "audio_file"
 
@@ -32,14 +36,6 @@ class Task(Resource):
     def put(self):
         if not request.is_json:
             return {"error": "Request must be JSON"}, 400
-
-        try:
-            secret = request.headers['Authorization']
-            if secret != os.environ["BACKOFFICE_SECRET"]:
-                return {"error": "Authentication error : Wrong secret"}, 403
-        except KeyError:
-            log_error(f"Error creating new task : Missing Authorization secret in headers")
-            return {"error": f"Missing Authorization secret in headers"}, 403
         
         try:
             self._validate_json_input(self.put.__name__, request.json)
@@ -186,14 +182,6 @@ class Task(Resource):
     def post(self):
         if not request.is_json:
             return {"error": "Request must be JSON"}, 400
-
-        try:
-            secret = request.headers['Authorization']
-            if secret != os.environ["BACKOFFICE_SECRET"]:
-                return {"error": "Authentication error : Wrong secret"}, 403
-        except KeyError:
-            log_error(f"Error editing task : Missing Authorization secret in headers")
-            return {"error": f"Missing Authorization secret in headers"}, 403
 
         try:
             self._validate_json_input(self.post.__name__, request.json)
@@ -348,14 +336,6 @@ class Task(Resource):
   
     # Route to get json of a task
     def get(self):
-        try:
-            secret = request.headers['Authorization']
-            if secret != os.environ["BACKOFFICE_SECRET"]:
-                return {"error": "Authentication error : Wrong secret"}, 403
-        except KeyError:
-            log_error(f"Error getting task jons : Missing Authorization secret in headers")
-            return {"error": f"Missing Authorization secret in headers"}, 403
-
         # data
         try:
             timestamp = request.args["datetime"]

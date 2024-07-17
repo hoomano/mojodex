@@ -2,8 +2,8 @@ import os
 import requests
 from flask import request
 from flask_restful import Resource
-from app import db, authenticate, server_socket, translator
-from mojodex_core.db import with_db_session
+from app import db, translator
+from mojodex_core.authentication import authenticate
 from mojodex_core.documents.website_parser import WebsiteParser
 from mojodex_core.entities.document import Document
 from mojodex_core.logging_handler import log_error

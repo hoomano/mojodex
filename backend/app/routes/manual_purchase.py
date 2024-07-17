@@ -3,12 +3,17 @@ import os
 from flask import request
 from flask_restful import Resource
 from app import db
+from mojodex_core.authentication import authenticate_with_backoffice_secret
 from mojodex_core.entities.db_base_entities import *
 from models.purchase_manager import PurchaseManager
 from datetime import datetime
 
 class ManualPurchase(Resource):
     active_status = "active"
+
+    def __init__(self):
+        ManualPurchase.method_decorators = [authenticate_with_backoffice_secret(methods=["PUT", "POST"])]
+
 
     def create_new_purchase(self, user_id, user_email, product_pk: int):
         try:
@@ -67,13 +72,6 @@ class ManualPurchase(Resource):
             return {"error": "Request must be JSON"}, 400
 
         try:
-            secret = request.headers['Authorization']
-            if secret != os.environ["BACKOFFICE_SECRET"]:
-                return {"error": "Authentication error : Wrong secret"}, 403
-        except KeyError:
-            return {"error": f"Missing Authorization secret in headers"}, 403
-
-        try:
             timestamp = request.json["datetime"]
             # user_id or user_email
             product_pk = request.json["product_pk"]
@@ -110,13 +108,6 @@ class ManualPurchase(Resource):
     def post(self):
         if not request.is_json:
             return {"error": "Request must be JSON"}, 400
-
-        try:
-            secret = request.headers['Authorization']
-            if secret != os.environ["BACKOFFICE_SECRET"]:
-                return {"error": "Authentication error : Wrong secret"}, 403
-        except KeyError:
-            return {"error": f"Missing Authorization secret in headers"}, 403
 
         try:
             timestamp = request.json["datetime"]

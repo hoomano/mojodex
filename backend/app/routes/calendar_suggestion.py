@@ -1,7 +1,8 @@
 import time
 from flask import request
 from flask_restful import Resource
-from app import authenticate, db, server_socket
+from app import db, server_socket
+from mojodex_core.authentication import authenticate
 from mojodex_core.db import with_db_session
 from mojodex_core.entities.user import User
 from mojodex_core.knowledge_manager import KnowledgeManager

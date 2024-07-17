@@ -1,7 +1,8 @@
 import os
 from flask import request
 from flask_restful import Resource
-from app import db, authenticate
+from app import db
+from mojodex_core.authentication import authenticate
 from mojodex_core.entities.instruct_user_task_execution import InstructTaskExecution
 from mojodex_core.entities.user_task import UserTask
 from mojodex_core.entities.user_workflow_execution import UserWorkflowExecution

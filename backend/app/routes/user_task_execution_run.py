@@ -4,7 +4,8 @@ import json
 from models.user_task_execution_inputs_manager import UserTaskExecutionInputsManager
 from flask import request
 from flask_restful import Resource
-from app import db, authenticate, server_socket
+from app import db, server_socket
+from mojodex_core.authentication import authenticate
 from models.workflows.workflow_process_controller import WorkflowProcessController
 from mojodex_core.logging_handler import log_error
 from mojodex_core.entities.db_base_entities import MdUserTaskExecution, MdTask, MdUserTask

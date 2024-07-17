@@ -3,7 +3,8 @@ import os
 
 from flask import request
 from flask_restful import Resource
-from app import db, authenticate
+from app import db
+from mojodex_core.authentication import authenticate
 from mojodex_core.logging_handler import log_error
 from flask import send_file
 from mojodex_core.user_storage_manager.user_images_file_manager import UserImagesFileManager

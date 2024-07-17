@@ -3,8 +3,8 @@ from mojodex_core.db import with_db_session
 from mojodex_core.tag_manager import TagManager
 from flask import request
 from flask_restful import Resource
-from app import authenticate, db, server_socket
-
+from app import db, server_socket
+from mojodex_core.authentication import authenticate, authenticate_with_scheduler_secret
 from mojodex_core.knowledge_manager import KnowledgeManager
 
 from mojodex_core.entities.message import Message
@@ -28,7 +28,7 @@ class HomeChat(Resource):
     message_body_start_tag, message_body_end_tag = "<message_body>", "</message_body>"
 
     def __init__(self):
-        HomeChat.method_decorators = [authenticate(methods=["GET", "POST"])]
+        HomeChat.method_decorators = [authenticate(methods=["GET", "POST"]), authenticate_with_scheduler_secret(methods=["PUT"])]
         self.session_creator = SessionCreator()
 
     @with_db_session
@@ -190,15 +190,6 @@ class HomeChat(Resource):
     # route to pre-shot first of week homechat
     def put(self):
         error_message = "Error preparing next week first home chat"
-
-        try:
-            secret = request.headers['Authorization']
-            if secret != os.environ["MOJODEX_SCHEDULER_SECRET"]:
-                log_error(f"{error_message} : Authentication error : Wrong secret", notify_admin=True)
-                return {"error": "Authentication error : Wrong secret"}, 403
-        except KeyError:
-            log_error(f"{error_message} : Missing Authorization secret in headers", notify_admin=True)
-            return {"error": f"Missing Authorization secret in headers"}, 403
 
         if not request.is_json:
             log_error(f"{error_message} : Request must be JSON")

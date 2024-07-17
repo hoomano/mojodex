@@ -1,7 +1,7 @@
 from functools import cached_property
 from sqlalchemy import func
 from mojodex_core.entities.user_task import UserTask
-from mojodex_core.entities.db_base_entities import MdProducedTextVersion, MdTodo, MdTodoScheduling, MdUser, MdUserTask, MdUserTaskExecution, MdProducedText
+from mojodex_core.entities.db_base_entities import MdProducedTextVersion, MdTodo, MdUserTaskExecution, MdProducedText
 from sqlalchemy.orm import object_session
 from mojodex_core.entities.session import Session
 from mojodex_core.timezone_service import backend_date_to_user_date
@@ -15,7 +15,7 @@ class UserTaskExecution(MdUserTaskExecution):
     def produced_text_done(self):
         try:
             session = object_session(self)
-            return session.query(func.count(1)).filter(MdProducedText.user_task_execution_fk == self.user_task_execution_pk).count() >= 1
+            return session.query(MdProducedText).filter(MdProducedText.user_task_execution_fk == self.user_task_execution_pk).count() >= 1
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} :: produced_text_done :: {e}")
 
@@ -90,10 +90,10 @@ class UserTaskExecution(MdUserTaskExecution):
     def n_produced_text_versions(self):
         try:
             session = object_session(self)
-            return session.query(func.count(1)).\
+            return session.query(MdProducedTextVersion).\
                 join(MdProducedText, MdProducedTextVersion.produced_text_fk == MdProducedText.produced_text_pk).\
                 filter(MdProducedText.user_task_execution_fk == self.user_task_execution_pk).\
-                scalar()
+                count()
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} :: produced_text :: {e}")
         
@@ -133,10 +133,10 @@ class UserTaskExecution(MdUserTaskExecution):
         """
         try:
             session = object_session(self)
-            return  session.query(func.count(1)).\
+            return  session.query(MdTodo).\
                 filter(MdTodo.user_task_execution_fk == self.user_task_execution_pk).\
                 filter(MdTodo.deleted_by_user.is_(None)).\
-                scalar()
+                count()
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} :: n_todos :: {e}")
         
@@ -145,12 +145,12 @@ class UserTaskExecution(MdUserTaskExecution):
         try:
             session = object_session(self)
             # count the number of todos not read for a user_task_execution_pk
-            return (session.query(func.count(1))
+            return (session.query(MdTodo)
                     .filter(MdTodo.user_task_execution_fk == self.user_task_execution_pk)
                     .filter(MdTodo.deleted_by_user.is_(None))
                     .filter(MdTodo.read_by_user.is_(None))
                     .filter(MdTodo.completed.is_(None))
-                    .scalar())
+                    .count())
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} :: n_todos_not_read :: {e}")
         

@@ -229,9 +229,7 @@ class UserTaskExecution(Resource):
 
 
                 if search_filter:
-                    result = result.filter(or_(produced_text_subquery.c.produced_text_title.ilike(f"%{search_filter}%"),
-                                            produced_text_subquery.c.produced_text_production.ilike(
-                                                f"%{search_filter}%")))
+                    result = result.filter(UserTaskExecutionEntity.title.ilike(f"%{search_filter}%"))
 
                 if search_user_tasks_filter_list:
                     result = result.filter(MdUserTask.user_task_pk.in_(search_user_tasks_filter_list))
@@ -286,12 +284,6 @@ class UserTaskExecution(Resource):
                 search_user_tasks_filter_list =  search_user_tasks_filter.split(";") if search_user_tasks_filter else None
                 rows = self._retrieve_list_of_user_task_executions(user_id, n_user_task_executions, offset, search_filter=search_filter, search_user_tasks_filter_list=search_user_tasks_filter_list)
                 
-                def get_workflow_specific_data(user_task_execution_pk, language_code):
-                    workflow_execution = db.session.query(UserWorkflowExecution).get(user_task_execution_pk)
-                    return {
-                        "steps": workflow_execution.task.get_json_steps_with_translation(language_code),
-                        "step_executions": workflow_execution.steps_execution_as_json
-                    }
                 
                 results_list = [{
                     "user_task_execution_pk": row["UserTaskExecution"].user_task_execution_pk,
@@ -315,8 +307,7 @@ class UserTaskExecution(Resource):
                     "produced_text_version_pk": row["produced_text_version_pk"],
                     "produced_text_version_index": row["produced_text_version_index"],
                     "text_edit_actions": row["UserTaskExecution"].user_task.text_edit_actions,
-                    "working_on_todos": row["UserTaskExecution"].todos_extracted is None,
-                    **(get_workflow_specific_data(row["UserTaskExecution"].user_task_execution_pk, row["language_code"]) if row["MdTask"].type == "workflow" else {})
+                    "working_on_todos": row["UserTaskExecution"].todos_extracted is None
                 } for row in rows]
 
                 return {"user_task_executions": results_list}, 200

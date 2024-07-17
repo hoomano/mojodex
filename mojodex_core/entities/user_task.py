@@ -12,7 +12,7 @@ class UserTask(MdUserTask):
     def user(self):
         try:
             session = object_session(self)
-            return session.query(User).filter(User.user_id == self.user_id).first()
+            return session.query(User).get(self.user_id)
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} :: user :: {e}")
 
@@ -20,7 +20,7 @@ class UserTask(MdUserTask):
     def task(self):
         try:
             session = object_session(self)
-            return session.query(Task).filter(Task.task_pk == self.task_fk).first()
+            return session.query(Task).get(self.task_fk)
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} :: task :: {e}")
         

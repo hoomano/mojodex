@@ -165,7 +165,7 @@ class Task(MdTask):
     def output_type(self):
         try:
             session = object_session(self)
-            return session.query(MdTextType).filter(MdTextType.text_type_pk == self.output_text_type_fk).first()
+            return session.query(MdTextType).get(self.output_text_type_fk)
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} :: output_type :: {e}")
         

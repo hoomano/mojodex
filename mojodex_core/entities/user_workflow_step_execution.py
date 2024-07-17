@@ -1,3 +1,4 @@
+from functools import cached_property
 from typing import List
 
 from mojodex_core.entities.db_base_entities import MdUserWorkflowStepExecution, MdUserWorkflowStepExecutionResult, \
@@ -12,7 +13,7 @@ from mojodex_core.workflows.steps_library import steps_class
 
 class UserWorkflowStepExecution(MdUserWorkflowStepExecution):
 
-    @property
+    @cached_property
     def workflow_step(self):
         try:
             session = object_session(self)
@@ -22,7 +23,7 @@ class UserWorkflowStepExecution(MdUserWorkflowStepExecution):
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} :: workflow_step :: {e}")
 
-    @property
+    @cached_property
     def user_task_execution(self):
         try:
             from mojodex_core.entities.user_workflow_execution import UserWorkflowExecution
@@ -31,23 +32,23 @@ class UserWorkflowStepExecution(MdUserWorkflowStepExecution):
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} :: user_task_execution :: {e}")
 
-    @property
+    @cached_property
     def creation_date_at_utc(self):
         return self.creation_date.astimezone(pytz.UTC)
 
-    @property
+    @cached_property
     def name_for_user(self):
         return self.workflow_step.get_name_in_language(self.user_task_execution.user.language_code)
 
-    @property
+    @cached_property
     def definition_for_user(self):
         return self.workflow_step.get_definition_in_language(self.user_task_execution.user.language_code)
 
-    @property
+    @cached_property
     def name_for_system(self):
         return self.workflow_step.name_for_system
 
-    @property
+    @cached_property
     def definition_for_system(self):
         return self.workflow_step.definition_for_system
 
@@ -85,7 +86,7 @@ class UserWorkflowStepExecution(MdUserWorkflowStepExecution):
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} :: learn_instruction :: {e}")
 
-    @property
+    @cached_property
     def user_workflow_step_execution_result(self):
         try:
             session = object_session(self)

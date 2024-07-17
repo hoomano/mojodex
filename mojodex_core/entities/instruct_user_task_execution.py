@@ -1,3 +1,4 @@
+from functools import cached_property
 from jinja2 import Template
 from sqlalchemy.orm import object_session
 from mojodex_core.entities.user_task_execution import UserTaskExecution
@@ -11,7 +12,7 @@ class InstructTaskExecution(UserTaskExecution):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-    @property
+    @cached_property
     def user_task(self) -> InstructUserTask:
         try:
             session = object_session(self)
@@ -19,7 +20,7 @@ class InstructTaskExecution(UserTaskExecution):
         except Exception as e:
             raise Exception(f"{self.__class__.__name__}:: user_task :: {e}")
 
-    @property
+    @cached_property
     def instructions(self):
         try:
             with open(self.task_specific_instructions_prompt, 'r') as f:

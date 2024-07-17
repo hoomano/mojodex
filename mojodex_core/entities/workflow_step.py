@@ -1,3 +1,4 @@
+from functools import cached_property
 from typing import List
 from mojodex_core.entities.db_base_entities import MdWorkflowStep, MdWorkflowStepDisplayedData
 from sqlalchemy.orm import object_session
@@ -53,7 +54,7 @@ class WorkflowStep(MdWorkflowStep):
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} :: _get_relative_step_by_rank :: {e}")
 
-    @property
+    @cached_property
     def dependency_step(self):
         """The dependency step of a workflow step is the step of its workflow which rank is the previous one."""
         try:
@@ -61,7 +62,7 @@ class WorkflowStep(MdWorkflowStep):
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} :: dependency_step :: {e}")
 
-    @property
+    @cached_property
     def next_step(self):
         """
         The next step of a workflow step is the step of its workflow which rank is the next one.
@@ -104,7 +105,7 @@ class WorkflowStep(MdWorkflowStep):
             raise Exception(f"{self.__class__.__name__} execute :: {e}")
 
     
-    @property
+    @cached_property
     def display_data(self) -> list[WorkflowStepDisplayedData]:
         try:
             session = object_session(self)

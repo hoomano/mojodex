@@ -1,3 +1,4 @@
+from functools import cached_property
 from mojodex_core.entities.user_task import UserTask
 from sqlalchemy.orm import object_session
 
@@ -6,7 +7,7 @@ from mojodex_core.entities.workflow import Workflow
 
 class UserWorkflow(UserTask):
 
-    @property
+    @cached_property
     def task(self):
         try:
             session = object_session(self)
@@ -14,7 +15,7 @@ class UserWorkflow(UserTask):
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} :: task :: {e}")
         
-    @property
+    @cached_property
     def steps_as_json(self):
         """
         Returns steps of the workflows as json in user's language

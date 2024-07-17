@@ -1,4 +1,5 @@
 
+from functools import cached_property
 from mojodex_core.embedder.embedding_service import EmbeddingService
 from mojodex_core.entities.db_base_entities import MdDocument
 from sqlalchemy.orm import object_session
@@ -14,7 +15,7 @@ class Document(MdDocument):
     MIN_CHUNK_LENGTH_TO_EMBED = 30  # Discard chunks shorter than this
     MAX_NUM_CHUNKS = 10000  # The maximum number of chunks to generate from a text
 
-    @property
+    @cached_property
     def chunks(self) -> list[DocumentChunk]:
         """
         Return the list of chunks of the document.
@@ -27,7 +28,7 @@ class Document(MdDocument):
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} :: chunks :: {e}")
         
-    @property
+    @cached_property
     def text(self):
         """
         Return the text of the document.

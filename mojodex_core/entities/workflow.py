@@ -1,4 +1,5 @@
 
+from functools import cached_property
 from mojodex_core.entities.db_base_entities import MdWorkflowStepDisplayedData, MdWorkflowStep
 from mojodex_core.entities.task import Task
 from sqlalchemy.orm import object_session
@@ -12,7 +13,7 @@ from mojodex_core.workflows.steps_library import steps_class
 class Workflow(Task):
 
 
-    @property
+    @cached_property
     def steps(self):
         try:
             session = object_session(self)

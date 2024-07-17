@@ -1,3 +1,4 @@
+from functools import cached_property
 from mojodex_core.entities.user_task import UserTask
 from mojodex_core.entities.instruct_task import InstructTask
 from sqlalchemy.orm import object_session
@@ -6,7 +7,7 @@ from sqlalchemy.orm import object_session
 
 class InstructUserTask(UserTask):
 
-    @property
+    @cached_property
     def task(self):
         try:
             session = object_session(self)

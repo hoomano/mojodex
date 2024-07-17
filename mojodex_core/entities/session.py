@@ -1,10 +1,11 @@
+from functools import cached_property
 from sqlalchemy.orm import object_session
 from mojodex_core.entities.message import Message
 from mojodex_core.entities.db_base_entities import MdSession
 
 class Session(MdSession):
 
-    @property
+    @cached_property
     def messages(self):
         try:
             session = object_session(self)
@@ -12,7 +13,7 @@ class Session(MdSession):
         except Exception as e:
             raise Exception("_db_messages: " + str(e))
 
-    @property
+    @cached_property
     def last_user_message(self):
         try:
             last_user_message = next((message for message in self.messages[::-1] if message.sender == Message.user_message_key), None)
@@ -20,7 +21,7 @@ class Session(MdSession):
         except Exception as e:
             raise Exception(f"_last_user_message :: {e}")
 
-    @property
+    @cached_property
     def conversation(self):
         try:
             user_key = "user"

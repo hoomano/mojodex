@@ -1,10 +1,11 @@
+from functools import cached_property
 from mojodex_core.entities.db_base_entities import MdTodo, MdTodoScheduling
 from sqlalchemy.orm import object_session
 from datetime import date
 
 class Todo(MdTodo):
     
-    @property
+    @cached_property
     def n_times_scheduled(self):
         """
         Returns the number of times the todo has been scheduled
@@ -15,7 +16,7 @@ class Todo(MdTodo):
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} :: n_times_scheduled :: {e}")
         
-    @property
+    @cached_property
     def scheduling(self) -> MdTodoScheduling:
         """
         Returns the last todo_scheduling for the todo
@@ -29,7 +30,7 @@ class Todo(MdTodo):
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} :: scheduled_date :: {e}")
         
-    @property
+    @cached_property
     def scheduled_date(self) -> date:
         """
         Returns the date the todo is scheduled for

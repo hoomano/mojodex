@@ -70,3 +70,51 @@ class TextType(Resource):
         except Exception as e:
             log_error(f"Error getting text_types : {e}")
             return {"error": f"Error getting text_types : {e}"}, 400
+
+    def post(self):
+       
+
+        try:
+            secret = request.headers['Authorization']
+            if secret != os.environ["BACKOFFICE_SECRET"]:
+                return {"error": "Authentication error : Wrong secret"}, 403
+        except KeyError:
+            log_error(f"Error associating text_type with text_edit_action : Missing Authorization secret in headers")
+            return {"error": f"Missing Authorization secret in headers"}, 403
+        
+        if not request.is_json:
+            return {"error": "Request must be JSON"}, 400
+
+        try:
+            timestamp = request.json["datetime"]
+            text_type_pk = request.json["text_type_pk"]
+            text_edit_action_pk = request.json["text_edit_action_pk"]
+        except KeyError as e:
+            return {"error": f"Missing field: {e}"}, 400
+        
+        try:
+            # check text type exists
+            text_type = db.session.query(MdTextType).filter(MdTextType.text_type_pk == text_type_pk).first()
+            if text_type is None:
+                return {"error": f"Text type {text_type_pk} does not exist"}, 400
+            
+            # check text edit action exists
+            text_edit_action = db.session.query(MdTextEditAction).filter(MdTextEditAction.text_edit_action_pk == text_edit_action_pk).first()
+            if text_edit_action is None:
+                return {"error": f"Text edit action {text_edit_action_pk} does not exist"}, 400
+            
+            # check association does not already exist
+            association = db.session.query(MdTextEditActionTextTypeAssociation).filter(MdTextEditActionTextTypeAssociation.text_type_fk == text_type_pk, MdTextEditActionTextTypeAssociation.text_edit_action_fk == text_edit_action_pk).first()
+            if association is not None:
+                return {"error": f"Association between text type {text_type_pk} and text edit action {text_edit_action_pk} already exists"}, 400
+            
+            # create association
+            association = MdTextEditActionTextTypeAssociation(text_type_fk=text_type_pk, text_edit_action_fk=text_edit_action_pk)
+            db.session.add(association)
+            db.session.commit()
+
+            return {"text_edit_action_text_type_association_pk": association.text_edit_action_text_type_association_pk}, 200
+        except Exception as e:
+            db.session.rollback()
+            log_error(f"Error associating text_type with text_edit_action: {e}")
+            return {"error": f"Error associating text_type with text_edit_action : {e}"}, 400

@@ -4363,6 +4363,78 @@ paths:
     post:
       tags:
         - Application
+      summary: Create text edit actions
+      parameters:
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - datetime
+                - emoji
+                - prompt_file_name
+                - displayed_data
+              properties:
+                datetime:
+                  type: string
+                  format: date-time
+                emoji:
+                  type: string
+                prompt_file_name:
+                  type: string
+                displayed_data:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                      - language_code
+                      - name
+                      - description
+                    properties:
+                      language_code:
+                        type: string
+                      name:
+                        type: string
+                      description:
+                        type: string
+      responses:
+        '200':
+          description: Text edit action created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  text_edit_action_pk:
+                    type: integer
+        '400':
+          description: Error creating text edit action
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '403':
+          description: Authentication error wrong or missing secret
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+    post:
+      tags:
+        - Application
       summary: Execute text edit actions
       parameters:
         - name: Authorization
@@ -4426,6 +4498,63 @@ paths:
                   error:
                     type: string
   /text_type:
+    post:
+      tags:
+        - Backoffice
+      summary: Associate a text_type to a text_edit_action
+      parameters:
+        - in: header
+          name: Authorization
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - datetime
+                - text_edit_action_pk
+                - text_type_pk
+              properties:
+                datetime:
+                  type: string
+                  format: date-time
+                text_edit_action_pk:
+                  type: integer
+                text_type_pk:
+                  type: integer
+      responses:
+        '200':
+          description: Text type and text edit action associated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  text_edit_action_text_type_association_pk:
+                    type: integer
+        '400':
+          description: Error in associating text type and text edit action or missing field
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '403':
+          description: Authentication error due to wrong or missing secret
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+    
     put:
       tags:
         - Backoffice

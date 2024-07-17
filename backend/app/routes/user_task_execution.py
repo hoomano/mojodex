@@ -151,6 +151,35 @@ class UserTaskExecution(Resource):
             return db.session.query(UserWorkflowExecution if user_task_execution.task.type == "workflow" else InstructTaskExecution).get(user_task_execution.user_task_execution_pk)
         except Exception as e:
             raise Exception(f"_retrieve_specific_user_task_execution: {e}")
+    
+    def _retrieve_list_of_partial_user_task_executions(self, user_id, n_user_task_executions, offset, search_filter=None, search_user_tasks_filter_list=None):
+        try:
+            result = db.session.query(  UserTaskExecutionEntity.user_task_execution_pk,
+                                        UserTaskExecutionEntity.title,
+                                        UserTaskExecutionEntity.summary,
+                                        UserTaskExecutionEntity.start_date,
+                                        MdTask.icon,
+                                        UserTaskExecutionEntity.produced_text_done,
+                                        ) \
+                    .join(MdUserTask, MdUserTask.user_task_pk == UserTaskExecutionEntity.user_task_fk) \
+                    .join(MdTask, MdTask.task_pk == MdUserTask.task_fk) \
+                    .filter(MdUserTask.user_id == user_id) \
+                    .filter(UserTaskExecutionEntity.start_date.isnot(None)) \
+                    .filter(UserTaskExecutionEntity.deleted_by_user.is_(None))
+
+            if search_filter:
+                result = result.filter(UserTaskExecutionEntity.title.ilike(f"%{search_filter}%"))
+
+            if search_user_tasks_filter_list:
+                result = result.filter(MdUserTask.user_task_pk.in_(search_user_tasks_filter_list))
+                
+            result = result.limit(n_user_task_executions) \
+                    .offset(offset) \
+                    .all()
+
+            return [row._asdict() for row in result]
+        except Exception as e:
+            raise Exception(f"_retrieve_list_of_user_task_executions: {e}")
 
     def _retrieve_list_of_user_task_executions(self, user_id, n_user_task_executions, offset, search_filter=None, search_user_tasks_filter_list=None):
         try:
@@ -263,6 +292,7 @@ class UserTaskExecution(Resource):
         """
         try:
             timestamp = request.args["datetime"]
+            platform = request.args["platform"] if "platform" in request.args else "mobile" # Default to load all user_task_executions content for front cache
         except KeyError as e:
             log_error(f"Error getting user_task_executions : Missing field {e}")
             return {"error": f"Missing field {e}"}, 400
@@ -282,7 +312,12 @@ class UserTaskExecution(Resource):
                 search_filter = request.args["search_filter"] if "search_filter" in request.args else None
                 search_user_tasks_filter = request.args["user_task_pks"] if "user_task_pks" in request.args else None
                 search_user_tasks_filter_list =  search_user_tasks_filter.split(";") if search_user_tasks_filter else None
-                rows = self._retrieve_list_of_user_task_executions(user_id, n_user_task_executions, offset, search_filter=search_filter, search_user_tasks_filter_list=search_user_tasks_filter_list)
+
+                if platform == "webapp":
+                    rows = self._retrieve_list_of_partial_user_task_executions(user_id, n_user_task_executions, offset, search_filter=search_filter, search_user_tasks_filter_list=search_user_tasks_filter_list)
+                else:
+
+                    rows = self._retrieve_list_of_user_task_executions(user_id, n_user_task_executions, offset, search_filter=search_filter, search_user_tasks_filter_list=search_user_tasks_filter_list)
                 
                 
                 results_list = [{

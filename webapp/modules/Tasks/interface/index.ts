@@ -99,6 +99,15 @@ export interface TaskDonePayload {
   user_task_execution_pk: number;
 }
 
+export interface UserTaskExecutionSummary {  
+  summary: string;
+  title: string;
+  user_task_execution_pk: number;
+  icon: string;
+  user_task_pk: number;
+  produced_text_done: boolean;
+}
+
 export interface UserTaskExecution {
   end_date: string;
   n_processes: number;

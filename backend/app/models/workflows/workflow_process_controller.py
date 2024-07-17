@@ -178,7 +178,7 @@ class WorkflowProcessController:
     def add_state_message(self):
         try:
             # add state message to conversation
-            with open("mojodex_core/prompts/workflows/state.txt") as f:
+            with open("models/workflows/state.jinja") as f:
                 template = Template(f.read())
                 current_step_in_validation = self.workflow_execution.last_step_execution if self.workflow_execution.last_step_execution.validated == None else None
                 state_message = template.render(

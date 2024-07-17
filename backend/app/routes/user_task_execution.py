@@ -257,7 +257,12 @@ class UserTaskExecution(Resource):
             raise Exception(f"_retrieve_list_of_user_task_executions: {e}")
 
     def get(self, user_id):
-
+        """
+        Used both to retrieve a single user_task_execution and a list of user_task_executions
+        In the case of getting a list of user_task_executions or a specific user_task_execution, it's used by both:
+        - the webapp to display the list of past user_task_executions
+        - the mobile app to display the list of past user_task_executions AND store each user_task_execution in the local memory to avoid reloading them each time
+        """
         try:
             timestamp = request.args["datetime"]
         except KeyError as e:

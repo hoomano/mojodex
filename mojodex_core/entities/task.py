@@ -95,12 +95,14 @@ class Task(MdTask):
             session = object_session(self)
             
             text_edit_actions_data_en = (session.query(
+                MdTextEditActionDisplayedData.text_edit_action_fk.label("text_edit_action_fk"),
                 MdTextEditActionDisplayedData.name.label("name"),
                 MdTextEditActionDisplayedData.description.label("description")
             ).filter(MdTextEditActionDisplayedData.language_code == "en")
             ).subquery()
 
             text_edit_actions_data_lang = (session.query(
+                MdTextEditActionDisplayedData.text_edit_action_fk.label("text_edit_action_fk"),
                 MdTextEditActionDisplayedData.name.label("name"),
                 MdTextEditActionDisplayedData.description.label("description")
             ).filter(MdTextEditActionDisplayedData.language_code == language_code)

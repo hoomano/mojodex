@@ -38,7 +38,7 @@ class TextEditAction(Resource):
             timestamp = request.json["datetime"]
             emoji = request.json["emoji"]
             prompt_file_name = request.json["prompt_file_name"]
-            text_edit_action_displayed_data = request.json["displayed_data"]
+            text_edit_action_displayed_data_list = request.json["displayed_data"]
         except Exception as e:
             log_error(f"Error creating new text_edit_action : {e}")
             return {"error": f"Error creating new text_edit_action : {e}"}, 400
@@ -58,7 +58,7 @@ class TextEditAction(Resource):
             db.session.refresh(text_edit_action)
             text_edit_action_pk = text_edit_action.text_edit_action_pk
 
-            for text_edit_action_displayed_data in text_edit_action_displayed_data:
+            for text_edit_action_displayed_data in text_edit_action_displayed_data_list:
                 text_edit_action_displayed_data = MdTextEditActionDisplayedData(
                     text_edit_action_fk=text_edit_action_pk,
                     language_code=text_edit_action_displayed_data["language_code"],

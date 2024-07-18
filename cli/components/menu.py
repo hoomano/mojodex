@@ -4,8 +4,8 @@ from textual.containers import ScrollableContainer
 
 
 class MenuItem(Button):
-    def __init__(self, name: str, widget: Widget, id: str=None, classes=None) -> None:
-        self.widget = widget
+    def __init__(self, name: str, action: callable, id: str=None, classes=None) -> None:
+        self.action = action
         super().__init__(name, id=id if id else name.lower().replace(" ", "_"), classes=classes)
         self.styles.width='100%'
 

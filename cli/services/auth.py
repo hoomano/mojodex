@@ -1,3 +1,4 @@
+from functools import wraps
 import requests
 from entities.user import User
 from constants import *
@@ -55,3 +56,14 @@ def _ensure_dir():
     except Exception as e:
         raise Exception(f"Failed to create directory: {e}")
 
+
+# Wrapper to ensure that the user is authenticated
+def ensure_authenticated(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        try:
+            user = login()
+            return func(*args, token=user.token, **kwargs)
+        except Exception as e:
+            raise Exception(f"ensure_authenticated :: {e}")
+    return wrapper

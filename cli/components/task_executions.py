@@ -1,3 +1,4 @@
+from services.user_services import load_task_execution_list, load_task_execution_result
 from components.task_result import TaskResultDisplay
 from entities.user_task_execution import UserTaskExecutionListElementDisplay
 from components.mojodex import Menu, MenuItem
@@ -6,23 +7,32 @@ from textual.widgets import Static
 from textual.app import ComposeResult
 from textual.containers import Vertical
 from entities.user import User
-from textual.widgets import Markdown
-from textual.containers import ScrollableContainer
 
 
+class TaskExecutionMenuItem(MenuItem):
+    def __init__(self, user_task_execution: UserTaskExecutionListElementDisplay, action: callable, classes=None) -> None:
+        self.user_task_execution_pk = user_task_execution.pk
+        super().__init__(str(user_task_execution), action, id=f"user_task_execution_button_{user_task_execution.pk}", classes=classes)
 
 class TaskExecutionsLayout(Widget):
-    def __init__(self, user: User, id: str) -> None:
+
+    def constructTaskResultDisplay(self, user_task_execution_pk):
+        self.notify(f"Constructing TaskResultDisplay for user_task_execution_pk: {user_task_execution_pk}")
+        return TaskResultDisplay(load_task_execution_result(user_task_execution_pk).concatenated_result, 
+                                          id=f"user_task_execution_result_{user_task_execution_pk}")
+
+    def __init__(self, id: str) -> None:
         
-        self.user_task_executions: list[UserTaskExecutionListElementDisplay] = user.load_task_execution_list()
+        self.user_task_executions: list[UserTaskExecutionListElementDisplay] = load_task_execution_list()
         self._initial_content = "task_list_execution_result"
         self.current_content =  self._initial_content
         self.menu = Menu(
         [
-            MenuItem(
-                str(user_task_execution), 
-                TaskResultDisplay(user.load_task_execution_result(user_task_execution.pk).concatenated_result, id=f"user_task_execution_result_{user_task_execution.pk}"), 
-                id=f"user_task_execution_button_{user_task_execution.pk}") 
+            TaskExecutionMenuItem(
+                user_task_execution,
+                lambda user_task_execution_pk: self.constructTaskResultDisplay(user_task_execution_pk),
+            )
+                
             for user_task_execution in self.user_task_executions
         ],
         id="task_list_execution_menu"
@@ -37,11 +47,12 @@ class TaskExecutionsLayout(Widget):
         yield Static("") # Prepare future chat column
 
 
-    def on_button_pressed(self, event: MenuItem.Pressed) -> None:
-        if isinstance(event.button, MenuItem):
-            widget = event.button.widget
-            if widget.id in [item.widget.id for item in self.menu.menu_items]:
+    def on_button_pressed(self, event: TaskExecutionMenuItem.Pressed) -> None:
+        if isinstance(event.button, TaskExecutionMenuItem):
+            menu_item = event.button
+            if menu_item.id in [item.id for item in self.menu.menu_items]:
                 body = self.query_one(f"#{self.current_content}", Widget)
                 body.remove()
+                widget = menu_item.action(menu_item.user_task_execution_pk)
                 self.current_content = widget.id
                 self.mount(widget)

@@ -41,10 +41,11 @@ class Mojodex(App):
 
     def on_button_pressed(self, event: MenuItem.Pressed) -> None:
         if isinstance(event.button, MenuItem):
-            widget = event.button.widget
-            if widget.id in [item.widget.id for item in self.menu.menu_items]:
+            menu_item = event.button
+            if menu_item.id in [item.id for item in self.menu.menu_items]:
                 body = self.query_one(f"#{self.current_page_id}", Widget)
                 body.remove()
+                widget = menu_item.action()
                 self.current_page_id = widget.id
                 self.mount(widget)
 

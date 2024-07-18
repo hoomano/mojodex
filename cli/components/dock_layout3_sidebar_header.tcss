@@ -12,3 +12,16 @@
     width: 60;
     height: 100%;
 }
+
+
+
+#grid-task {
+    height: 100%;
+    layout: grid;
+    grid-size: 4;
+    grid-columns: 1fr;
+    grid-rows: 1fr;
+    grid-gutter: 5;
+    background: black;
+    padding: 4;
+}

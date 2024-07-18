@@ -1,3 +1,4 @@
+from components.new_task import NewTaskLayout
 from components.task_executions import TaskExecutionsLayout
 from components.mojodex import Menu, Mojodex, MenuItem
 from services.auth import login
@@ -23,7 +24,7 @@ if __name__ == "__main__":
     user = login()
 
     main_menu = Menu([
-                MenuItem("New Task", Static("New Task", id="body_new_task")),
+                MenuItem("New Task", NewTaskLayout(user, id="body_new_task")),
                 MenuItem("List Tasks", TaskExecutionsLayout(user, id="body_task_executions")),
                 MenuItem("Logout", Static("Logout", id="body_logout"))
             ], id='main_menu')

@@ -29,7 +29,7 @@ class User:
                 data = response.json()
                 
                 return [UserTaskExecutionListElementDisplay(
-                    task['icon'], task['title'], task['summary'], task['start_date'], task['produced_text_pk'] is not None
+                    task['icon'], task['title'], task['summary'], task['start_date'], task['produced_text_pk'] is not None, task['user_task_execution_pk']
                 ) for task in data['user_task_executions']]
             else:
                 print(response.text)

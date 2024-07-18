@@ -2,12 +2,13 @@ from datetime import datetime, timezone
 
 class UserTaskExecutionListElementDisplay:
 
-    def __init__(self, icon, title, summary, start_date, produced_text_done):
+    def __init__(self, icon, title, summary, start_date, produced_text_done, pk):
         self.icon = icon
         self.title = title
         self.summary = summary
         self.start_date = start_date
         self.produced_text_done = produced_text_done
+        self.pk = pk
 
     # return a string representing the time since the task was started
     # e.g. "3h ago", "2d ago", "1w ago", "1m ago", "1y ago"

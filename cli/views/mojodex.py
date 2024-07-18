@@ -6,16 +6,16 @@ from textual.reactive import reactive
 from textual.keys import Keys
 
 class MenuItem(Button):
-    def __init__(self, name: str, action: callable):
+    def __init__(self, name: str, action: callable, id: str=None):
         self.action = action
-        super().__init__(name, id=name.lower().replace(" ", "_"))
+        super().__init__(name, id=id if id else name.lower().replace(" ", "_"))
 
 
 class Menu(Widget):
 
-    def __init__(self, menu_items: list[MenuItem]) -> None:
+    def __init__(self, menu_items: list[MenuItem], id: str) -> None:
         self.menu_items = menu_items
-        super().__init__(id="menu")
+        super().__init__(id=id)
 
 
     def compose(self):
@@ -30,6 +30,7 @@ class Mojodex(App):
 
     def __init__(self, menu) -> None:
         self.menu = menu
+        self.current_page_id = "body"
         super().__init__()
 
     def compose(self) -> ComposeResult:
@@ -56,9 +57,9 @@ class Mojodex(App):
     def on_button_pressed(self, event: MenuItem.Pressed) -> None:
         if isinstance(event.button, MenuItem):
             action = event.button.action
-            body = self.query_one("#body", Static)
-            content = action()
-            #body.remove()
-            #self.mount(new_body)
-            body.update(content)
+            body = self.query_one(f"#{self.current_page_id}", Widget)
+            body.remove()
+            current_page = action()
+            self.current_page_id = current_page.id
+            self.mount(current_page)
 

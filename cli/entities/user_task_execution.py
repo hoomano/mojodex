@@ -31,3 +31,14 @@ class UserTaskExecutionListElementDisplay:
 
     def __str__(self) -> str:
         return f"{self.icon} {self.title}\n\n{self.summary}\n\n{self.duration_ago} {'✅' if self.produced_text_done else ''}\n"
+    
+
+class UserTaskExecutionResult:
+
+    def __init__(self, title, result):
+        self.title = title
+        self.result = result
+
+    @property
+    def concatenated_result(self):
+        return f"{self.title}\n{self.result}"

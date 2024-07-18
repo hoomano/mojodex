@@ -1,5 +1,5 @@
-from entities.user_task_execution import UserTaskExecutionListElementDisplay
-from views.mojodex import Menu, Mojodex, MenuItem, ThreeColumnLayout
+from components.task_executions import TaskExecutionsLayout
+from components.mojodex import Menu, Mojodex, MenuItem
 from services.auth import login
 from textual.widgets import Static
 import logging
@@ -19,34 +19,13 @@ install()
 
 user = None
 
-
-
-def task_list_button():
-    user_task_executions: list[UserTaskExecutionListElementDisplay] = user.load_task_execution_list()
-    menu = Menu(
-        [
-            MenuItem(
-                str(user_task_execution), 
-                lambda: str(user_task_execution), 
-                id=f"user_task_execution_{user_task_execution.pk}") 
-            for user_task_execution in user_task_executions
-        ],
-        id="task_list_execution_menu"
-    )
-    
-    # Create static text elements for the other two columns
-    column2 = Static("Column 2 Content", id="column2")
-    column3 = Static("Column 3 Chat", id="column3")
-    
-    return ThreeColumnLayout(menu, column2, column3, id="body_task_list")
-
 if __name__ == "__main__":
     user = login()
 
     main_menu = Menu([
-                MenuItem("New Task", lambda: Static("New Task", id="body_new_task")),
-                MenuItem("List Tasks", task_list_button),
-                MenuItem("Logout", lambda: Static("Logout", id="body_logout"))
+                MenuItem("New Task", Static("New Task", id="body_new_task")),
+                MenuItem("List Tasks", TaskExecutionsLayout(user, id="body_task_executions")),
+                MenuItem("Logout", Static("Logout", id="body_logout"))
             ], id='main_menu')
 
     app = Mojodex(main_menu)

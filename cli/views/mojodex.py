@@ -1,17 +1,21 @@
 from textual.app import App, ComposeResult
 from textual.widget import Widget
 from textual.widgets import Header, Static, Button
-from textual.containers import Vertical
+from textual.containers import Vertical, Horizontal
 from textual.reactive import reactive
 from textual.keys import Keys
+from textual.containers import ScrollableContainer
+
 
 class MenuItem(Button):
-    def __init__(self, name: str, action: callable, id: str=None):
+    def __init__(self, name: str, action: callable, id: str=None, classes=None) -> None:
         self.action = action
-        super().__init__(name, id=id if id else name.lower().replace(" ", "_"))
+        self.get_content_width
+        super().__init__(name, id=id if id else name.lower().replace(" ", "_"), classes=classes)
+        self.styles.width='100%'
 
 
-class Menu(Widget):
+class Menu(ScrollableContainer):
 
     def __init__(self, menu_items: list[MenuItem], id: str) -> None:
         self.menu_items = menu_items
@@ -22,6 +26,19 @@ class Menu(Widget):
         for item in self.menu_items:
             yield item
 
+class ThreeColumnLayout(Widget):
+    def __init__(self, col1: Widget, col2: Widget, col3: Widget, id: str) -> None:
+        self.col1 = col1
+        self.col2 = col2
+        self.col3 = col3
+        super().__init__(id=id)
+
+    def compose(self) -> ComposeResult:
+        with Horizontal(id="three_column_layout"):
+            with Vertical(id="task_list_execution_sidebar"):
+                yield self.col1
+            yield self.col2
+            yield self.col3
 
 class Mojodex(App):
     CSS_PATH = "dock_layout3_sidebar_header.tcss"

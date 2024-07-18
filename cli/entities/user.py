@@ -23,7 +23,7 @@ class User:
             }
 
             # TODO: check platform: webapp
-            response = requests.request("GET", url, headers=headers, params={"datetime": datetime.now().isoformat(), "platform": "mobile", "version": "0.0.0", "offset": 0, "n_user_task_executions": 4})
+            response = requests.request("GET", url, headers=headers, params={"datetime": datetime.now().isoformat(), "platform": "mobile", "version": "0.0.0", "offset": 0, "n_user_task_executions": 20})
 
             if response.status_code == 200:
                 data = response.json()

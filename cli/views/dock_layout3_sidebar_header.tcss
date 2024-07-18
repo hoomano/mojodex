@@ -1,7 +1,14 @@
 #sidebar {
+    margin-top: 1;
     dock: left;
-    width: 15;
+    width: 16;
     height: 100%;
     color: #0f2b41;
     background: black;
+}
+
+#task_list_execution_sidebar {
+    dock: left;
+    width: 60;
+    height: 100%;
 }

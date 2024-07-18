@@ -1,8 +1,7 @@
 from entities.user_task_execution import UserTaskExecutionListElementDisplay
-from views.mojodex import Menu, Mojodex, MenuItem
+from views.mojodex import Menu, Mojodex, MenuItem, ThreeColumnLayout
 from services.auth import login
 from textual.widgets import Static
-
 import logging
 from rich.traceback import install
 from rich.logging import RichHandler
@@ -20,18 +19,26 @@ install()
 
 user = None
 
+
+
 def task_list_button():
     user_task_executions: list[UserTaskExecutionListElementDisplay] = user.load_task_execution_list()
-    return Menu(
-            [
-                MenuItem(
-                    str(user_task_execution), 
-                    lambda: str(user_task_execution), 
-                    id=f"user_task_execution_{user_task_execution.pk}") 
-                for user_task_execution in user_task_executions
-            ],
-            id="body_task_list"
-            )
+    menu = Menu(
+        [
+            MenuItem(
+                str(user_task_execution), 
+                lambda: str(user_task_execution), 
+                id=f"user_task_execution_{user_task_execution.pk}") 
+            for user_task_execution in user_task_executions
+        ],
+        id="task_list_execution_menu"
+    )
+    
+    # Create static text elements for the other two columns
+    column2 = Static("Column 2 Content", id="column2")
+    column3 = Static("Column 3 Chat", id="column3")
+    
+    return ThreeColumnLayout(menu, column2, column3, id="body_task_list")
 
 if __name__ == "__main__":
     user = login()

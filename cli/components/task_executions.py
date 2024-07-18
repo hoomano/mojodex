@@ -1,3 +1,4 @@
+from components.task_result import TaskResultDisplay
 from entities.user_task_execution import UserTaskExecutionListElementDisplay
 from components.mojodex import Menu, MenuItem
 from textual.widget import Widget
@@ -20,7 +21,7 @@ class TaskExecutionsLayout(Widget):
         [
             MenuItem(
                 str(user_task_execution), 
-                Markdown(user.load_task_execution_result(user_task_execution.pk).concatenated_result, id=f"user_task_execution_result_{user_task_execution.pk}"), 
+                TaskResultDisplay(user.load_task_execution_result(user_task_execution.pk).concatenated_result, id=f"user_task_execution_result_{user_task_execution.pk}"), 
                 id=f"user_task_execution_button_{user_task_execution.pk}") 
             for user_task_execution in self.user_task_executions
         ],
@@ -32,7 +33,7 @@ class TaskExecutionsLayout(Widget):
     def compose(self) -> ComposeResult:
         with Vertical(id="task_list_execution_sidebar"):
             yield self.menu
-        yield Markdown("#Task Result", id= self._initial_content)
+        yield TaskResultDisplay("#Task Result", id= self._initial_content)
         yield Static("") # Prepare future chat column
 
 
@@ -43,5 +44,4 @@ class TaskExecutionsLayout(Widget):
                 body = self.query_one(f"#{self.current_content}", Widget)
                 body.remove()
                 self.current_content = widget.id
-                widget.styles.padding = 4
                 self.mount(widget)

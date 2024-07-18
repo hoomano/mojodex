@@ -27,3 +27,6 @@ class UserTaskExecutionListElementDisplay:
         if duration.seconds > 60:
             return f"{duration.seconds // 60}m ago"
         return f"{duration.seconds}s ago"
+
+    def __str__(self) -> str:
+        return f"{self.icon} {self.title}\n\n{self.summary}\n\n{self.duration_ago} {'✅' if self.produced_text_done else ''}\n"

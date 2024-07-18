@@ -36,4 +36,7 @@ class User:
                 raise Exception("Incorrect credentials")
         except Exception as e:
             raise Exception(f"Failed to load task execution list: {e}")
+    
+    def task_execution_list_as_str(self) -> str:
+        return "\n".join([str(task) for task in self.load_task_execution_list()])
 

@@ -44,5 +44,5 @@ class RunTaskLayout(Widget):
                 self.notify(message="stop", title="Record")
                 if self.recording_thread and self.recording_thread.is_alive():
                     self.notify(message="stopping thread", title="Record")
-                    self.recorder.stop_recording()
+                    self.recorder.stop_recording(self.notify)
                     self.recording_thread.join()

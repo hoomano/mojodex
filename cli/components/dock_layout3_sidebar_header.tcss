@@ -1,3 +1,7 @@
+ Screen {
+    align: center middle;
+}
+
 #sidebar {
     margin-top: 1;
     dock: left;
@@ -24,4 +28,23 @@
     grid-gutter: 5;
     background: black;
     padding: 4;
+}
+
+
+#task_execution_panel {
+    height: 100%;
+    width: 100%;
+    text-align: center;
+    align: center middle;
+    content-align: center middle;
+}
+
+#task_execution_description {
+    text-align: center;
+    padding: 1;
+
+}
+
+#mic_button {
+    width: 100%;
 }

@@ -42,3 +42,10 @@ class UserTaskExecutionResult:
     @property
     def concatenated_result(self):
         return f"{self.title}\n{self.result}"
+    
+class NewUserTaskExecution:
+
+    def __init__(self, pk, json_input, session_id):
+        self.pk = pk
+        self.json_input = json_input
+        self.session_id = session_id

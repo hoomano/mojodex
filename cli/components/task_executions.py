@@ -17,7 +17,6 @@ class TaskExecutionMenuItem(MenuItem):
 class TaskExecutionsLayout(Widget):
 
     def constructTaskResultDisplay(self, user_task_execution_pk):
-        self.notify(f"Constructing TaskResultDisplay for user_task_execution_pk: {user_task_execution_pk}")
         return TaskResultDisplay(load_task_execution_result(user_task_execution_pk).concatenated_result, 
                                           id=f"user_task_execution_result_{user_task_execution_pk}")
 

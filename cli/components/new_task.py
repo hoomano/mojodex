@@ -40,7 +40,6 @@ class NewTaskLayout(Widget):
         if isinstance(event.button, NewTaskMenuItem):
             menu_item = event.button
             if menu_item.id in [item.id for item in self.menu.menu_items]:
-                self.notify(f"Clicked on #{menu_item.id}")
                 body = self.query_one(f"#{self.grid_task_id}", Widget)
                 body.remove()
                 widget = menu_item.action(menu_item.user_task_pk)

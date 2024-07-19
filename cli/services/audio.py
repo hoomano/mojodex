@@ -14,17 +14,13 @@ class AudioRecorder:
     def start_recording(self, send_message: callable):
 
         try:
-            send_message("Start Recording")
             self.is_recording = True
             self.frames = []
 
             def callback(indata, frames, time, status):
-                if status:
-                    send_message(status)
                 self.frames.append(indata.copy())
 
             with sd.InputStream(samplerate=self.rate, channels=self.channels, dtype=self.dtype, callback=callback):
-                send_message("Recording started...")
                 while self.is_recording:
                     sd.sleep(100)
         except Exception as e:
@@ -39,7 +35,6 @@ class AudioRecorder:
             self.is_recording = False
             audio_data = np.concatenate(self.frames, axis=0)
             write(self.filename, self.rate, audio_data)
-            send_message(f"Recording saved to {self.filename}.")
         except Exception as e:
             send_message(f"An error occured while stopping recording: {e}")
 

@@ -8,7 +8,7 @@ from textual.keys import Keys
 from components.menu import Menu, MenuItem
 
 class Mojodex(App):
-    CSS_PATH = "dock_layout3_sidebar_header.tcss"
+    CSS_PATH = "style.tcss"
 
     focused_index = reactive(0)
 

@@ -1,3 +1,5 @@
 rich
 textual
 sounddevice
+scipy
+socketIO-client

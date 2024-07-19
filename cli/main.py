@@ -1,3 +1,4 @@
+from services.messaging import Messaging
 from components.new_task import NewTaskLayout
 from components.task_executions import TaskExecutionsLayout
 from components.mojodex import Menu, Mojodex, MenuItem
@@ -30,6 +31,8 @@ if __name__ == "__main__":
             ], id='main_menu')
 
     app = Mojodex(main_menu)
+    Messaging().notify = app.notify
+    Messaging().start()
 
     app.run()
 

@@ -1,7 +1,3 @@
- Screen {
-    align: center middle;
-}
-
 #sidebar {
     margin-top: 1;
     dock: left;
@@ -44,12 +40,4 @@
     padding: 1;
     border: blue;
 
-}
-
-#mic_button {
-    width: 100%;
-}
-
-#message_history {
-    border: blue;
 }

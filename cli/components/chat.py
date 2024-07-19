@@ -9,7 +9,7 @@ from entities.session import Session
 from services.messaging import Messaging
 from services.audio import AudioRecorder
 from services.user_services import start_user_task_execution
-from entities.message import Message
+from entities.message import PartialMessage, Message
 
 
 class MicButton(Button):
@@ -30,26 +30,45 @@ class MicButton(Button):
         
     
 class MessageWidget(Static):
-    def __init__(self, message: Message) -> None:
+    def __init__(self, message: PartialMessage) -> None:
         self.message = message
         super().__init__(f"{self.message.icon}:  {self.message.message}")
         self.styles.border = ("round", "lightgrey") if self.message.author == "mojo" else ("round", "dodgerblue")
         self.styles.color = "lightgrey" if self.message.author == "mojo" else "dodgerblue"   
 
-
-
 class MessagesList(Static):
-    def __init__(self, messages: list[Message]) -> None:
+    def __init__(self, messages: list[PartialMessage], session_id: str) -> None:
         try:
             self.messages = messages
+            self.partial_message_placeholder : PartialMessage = None
+            self.session_id = session_id 
+            self.message_placeholder_widget = None
+            if self.messages[-1].author == "user":
+                self.partial_message_placeholder = PartialMessage("", "mojo")
+                self.message_placeholder_widget = MessageWidget(self.partial_message_placeholder)
+                Messaging().on_mojo_token_callback = self.on_mojo_token_callback
             super().__init__(classes="chat-messages-panel")
         except Exception as e:
             self.notify(message=f"Error: {e}", title="Error")
+
+    def on_mojo_token_callback(self, token_from_mojo):
+        try:
+            if token_from_mojo["session_id"] != self.session_id:
+                return
+            
+            if self.message_placeholder_widget:
+                self.partial_message_placeholder.message=token_from_mojo['text']
+                self.message_placeholder_widget.update(f"{self.partial_message_placeholder.icon}:  {self.partial_message_placeholder.message}")
+        except Exception as e:
+            self.notify(message=f"Error: {e}", title="Error")
+
 
     def compose(self) -> ComposeResult:
         try:
             for message in self.messages:
                 yield MessageWidget(message)
+            if self.message_placeholder_widget:
+                yield self.message_placeholder_widget
         except Exception as e:
             self.notify(message=f"Error: {e}", title="Error")
 
@@ -61,6 +80,7 @@ class Chat(Widget):
         self.recorder = AudioRecorder()
         self.recording_thread = None
         self.init_message = init_message
+        self.partial_message_placeholder : PartialMessage = None
 
         Messaging().connect_to_session(self.session.session_id)
         Messaging().on_mojo_message_callback = self.on_mojo_message_callback
@@ -72,7 +92,9 @@ class Chat(Widget):
 
         self.mic_button_widget = MicButton(id=self.mic_button_id)
        
-        self.messages_list_widget =  MessagesList(self.session.messages) if self.session.messages else Markdown(self.init_message, id="task_execution_description")
+        self.messages_list_widget =  MessagesList(self.session.messages, self.session.session_id) if self.session.messages else Markdown(self.init_message, id="task_execution_description")
+
+
 
     def on_mojo_message_callback(self, message_from_mojo):
         try:
@@ -82,7 +104,7 @@ class Chat(Widget):
             self.session.messages.append(message)
             self.messages_list_widget.remove()
             mounting_on = self.query_one(f"#chat-interface", Widget)
-            self.messages_list_widget = MessagesList(self.session.messages)
+            self.messages_list_widget = MessagesList(self.session.messages, self.session.session_id)
             self.app.call_from_thread(lambda: mounting_on.mount(self.messages_list_widget, before=0))
         except Exception as e:
             self.notify(message=f"Error: {e}", title="Error")
@@ -114,7 +136,7 @@ class Chat(Widget):
 
                     self.messages_list_widget.remove()
                     mounting_on = self.query_one(f"#chat-interface", Widget)
-                    self.messages_list_widget = MessagesList(self.session.messages)
+                    self.messages_list_widget = MessagesList(self.session.messages, self.session.session_id)
                     mounting_on.mount(self.messages_list_widget, before=0)
       
 

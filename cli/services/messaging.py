@@ -23,8 +23,10 @@ class Messaging:
             self.sio.on('disconnect', self.on_disconnect)
             self.sio.on('mojo_message', self.on_mojo_message)
             self.sio.on('draft_message', self.on_draft_message)
+            self.sio.on('mojo_token', self.on_mojo_token)
             self.on_mojo_message_callback : callable = lambda x: None
             self.on_draft_message_callback : callable = lambda x: None
+            self.on_mojo_token_callback : callable = lambda x: None
             self.__class__._initialized = True
 
 
@@ -35,6 +37,13 @@ class Messaging:
     def on_disconnect(self):
         # self.notify('Disconnected from the server.')
         pass
+
+    def on_mojo_token(self, data):
+        try:
+            self.on_mojo_token_callback(data)
+        except Exception as e:
+            self.notify(e)
+        
 
     def on_mojo_message(self, data):
         try:

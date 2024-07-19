@@ -58,5 +58,5 @@ class NewUserTaskExecution:
 
     @property
     def concatenated_result(self):
-        self.result.concatenated_result
+        return self.result.concatenated_result
     

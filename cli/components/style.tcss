@@ -47,8 +47,8 @@
     grid-columns: 1fr;
     grid-rows: 1fr;
     grid-gutter: 1;
-    background: $panel;
 }
+
 
 #chat-interface {
     background: $panel;

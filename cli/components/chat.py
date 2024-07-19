@@ -64,7 +64,6 @@ class Chat(Widget):
 
         Messaging().connect_to_session(self.session.session_id)
         Messaging().on_mojo_message_callback = self.on_mojo_message_callback
-        Messaging().on_draft_message_callback = self.on_mojo_message_callback
         
         super().__init__()
 

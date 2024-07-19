@@ -45,7 +45,6 @@ class Messaging:
 
     def on_draft_message(self, data):
         try:
-            self.notify(f"Draft Message: {data}")
             self.on_draft_message_callback(data)
             return {"session_id": data["session_id"], "produced_text_version_pk": data["produced_text_version_pk"]}
         except Exception as e:

@@ -18,20 +18,30 @@ class RunTaskLayout(Widget):
         self.task_result_panel= None
 
         Messaging().on_draft_message_callback = self.on_new_result
+        Messaging().on_draft_token_callback = self.on_result_token
 
     def on_new_result(self, message_from_mojo):
         try:
             if message_from_mojo["session_id"] != self.user_task_execution.session_id:
                 return
             self.user_task_execution.new_result(message_from_mojo['produced_text_title'], message_from_mojo['produced_text'])
-            produced_text_version_pk = message_from_mojo['produced_text_version_pk']
-            if self.task_result_panel:
-                self.task_result_panel.remove()
-            self.task_result_panel = TaskResultDisplay(self.user_task_execution.concatenated_result, id=f"user_task_execution_produced_text_version_{produced_text_version_pk}")
-            self.task_result_panel.styles.width = "60%"
-            self.chat.styles.width = "40%"
-            mounting_on = self.query_one(f"#horizontal-task-execution-panel", Widget)
-            self.app.call_from_thread(lambda: mounting_on.mount(self.task_result_panel, before=0))
+            self.app.call_from_thread(lambda: self.task_result_panel.update(self.user_task_execution.concatenated_result))
+        except Exception as e:
+            self.notify(message=f"Error: {e}", title="Error", severity="error", timeout=20)
+
+    def on_result_token(self, token_from_mojo):
+        try:
+            if token_from_mojo["session_id"] != self.user_task_execution.session_id:
+                return
+            new_text =f"{token_from_mojo['produced_text_title']}\n{token_from_mojo['produced_text']}"
+            if not self.task_result_panel:
+                self.task_result_panel = TaskResultDisplay(new_text)
+                self.task_result_panel.styles.width = "60%"
+                self.chat.styles.width = "40%"
+                mounting_on = self.query_one(f"#horizontal-task-execution-panel", Widget)
+                self.app.call_from_thread(lambda: mounting_on.mount(self.task_result_panel, before=0))
+            else:
+                self.app.call_from_thread(lambda: self.task_result_panel.update(new_text))
         except Exception as e:
             self.notify(message=f"Error: {e}", title="Error", severity="error", timeout=20)
 

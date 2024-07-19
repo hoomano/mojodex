@@ -19,10 +19,12 @@ class RunTaskLayout(Widget):
 
         Messaging().on_draft_message_callback = self.on_new_result
 
-    def on_new_result(self, data):
+    def on_new_result(self, message_from_mojo):
         try:
-            self.user_task_execution.new_result(data['produced_text_title'], data['produced_text'])
-            produced_text_version_pk = data['produced_text_version_pk']
+            if message_from_mojo["session_id"] != self.user_task_execution.session_id:
+                return
+            self.user_task_execution.new_result(message_from_mojo['produced_text_title'], message_from_mojo['produced_text'])
+            produced_text_version_pk = message_from_mojo['produced_text_version_pk']
             if self.task_result_panel:
                 self.task_result_panel.remove()
             self.task_result_panel = TaskResultDisplay(self.user_task_execution.concatenated_result, id=f"user_task_execution_produced_text_version_{produced_text_version_pk}")

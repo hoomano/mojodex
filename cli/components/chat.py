@@ -76,6 +76,8 @@ class Chat(Widget):
 
     def on_mojo_message_callback(self, message_from_mojo):
         try:
+            if message_from_mojo["session_id"] != self.session.session_id:
+                return
             message = Message(message_from_mojo["message_pk"], message_from_mojo['text'], "mojo")
             self.session.messages.append(message)
             self.messages_list_widget.remove()

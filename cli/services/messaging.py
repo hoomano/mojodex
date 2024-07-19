@@ -29,10 +29,12 @@ class Messaging:
 
 
     def on_connect(self):
-        self.notify('✅ Connected.')
+        # self.notify('✅ Connected.')
+        pass
 
     def on_disconnect(self):
-        self.notify('Disconnected from the server.')
+        # self.notify('Disconnected from the server.')
+        pass
 
     def on_mojo_message(self, data):
         try:
@@ -50,11 +52,11 @@ class Messaging:
             self.notify(e)
 
     def connect_to_session(self, session_id):
-        self.notify(f"📩 Connected to session {session_id}")
+        # self.notify(f"📩 Connected to session {session_id}")
         self.sio.emit("start_session", {"session_id": session_id, "version": "0.0.0"})
 
     def close_socket(self):
-        self.notify("🚦 Closing socket")
+        # self.notify("🚦 Closing socket")
         self.sio.disconnect()
 
     @ensure_authenticated

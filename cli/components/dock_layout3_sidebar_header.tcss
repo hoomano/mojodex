@@ -42,9 +42,14 @@
 #task_execution_description {
     text-align: center;
     padding: 1;
+    border: blue;
 
 }
 
 #mic_button {
     width: 100%;
+}
+
+#message_history {
+    border: blue;
 }

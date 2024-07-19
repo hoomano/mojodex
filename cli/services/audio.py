@@ -1,6 +1,5 @@
 import sounddevice as sd
 import numpy as np
-import threading
 from scipy.io.wavfile import write
 
 class AudioRecorder:

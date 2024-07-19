@@ -1,6 +1,7 @@
 import requests
 from entities.user_task import UserTaskListElementDisplay
 from entities.user_task_execution import NewUserTaskExecution, UserTaskExecutionListElementDisplay, UserTaskExecutionResult
+from entities.message import Message
 from constants import SERVER_URL
 from datetime import datetime
 from services.auth import ensure_authenticated
@@ -91,3 +92,32 @@ def create_user_task_execution(user_task_pk, token) -> NewUserTaskExecution:
             raise Exception(response.content)
     except Exception as e:
         raise Exception(f"Failed to create user task execution: {e}")
+    
+
+@ensure_authenticated
+def start_user_task_execution(session_id, message_id, token):
+    try:
+        url = f"{SERVER_URL}/user_message"
+
+        headers = {
+        'Authorization': token
+        }
+
+        # add output.wav to the request
+        response = requests.request("PUT", url, 
+                                    headers=headers,
+                                    files={"file": open("output.wav", "rb")},
+                                    data={
+                                        "datetime": datetime.now().isoformat(), 
+                                        "platform": "mobile", 
+                                        "version": "0.0.0", 
+                                        "session_id": session_id,
+                                        "message_id": message_id,
+                                        "message_date": datetime.now().isoformat()
+                                        })
+
+        if response.status_code != 200:
+            raise Exception(response.content)
+        return Message(response.json()["message_pk"], response.json()["text"], "user")
+    except Exception as e:
+        raise Exception(f"Failed to start user task execution: {e}")

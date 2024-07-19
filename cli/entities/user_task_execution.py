@@ -49,3 +49,4 @@ class NewUserTaskExecution:
         self.pk = pk
         self.json_input = json_input
         self.session_id = session_id
+        self.messages = []

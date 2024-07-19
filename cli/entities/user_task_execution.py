@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+from entities.message import Message
 
 class UserTaskExecutionListElementDisplay:
 
@@ -49,4 +50,13 @@ class NewUserTaskExecution:
         self.pk = pk
         self.json_input = json_input
         self.session_id = session_id
-        self.messages = []
+        self.result = None
+    
+
+    def new_result(self, title, result):
+        self.result = UserTaskExecutionResult(title, result)
+
+    @property
+    def concatenated_result(self):
+        self.result.concatenated_result
+    

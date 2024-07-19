@@ -1,124 +1,32 @@
-from datetime import datetime
 from textual.widget import Widget
-from textual.widgets import Static
-from textual.widgets import Button, Markdown
-from textual.containers import Vertical
-import threading
-from textual.app import ComposeResult
-
-from services.messaging import Messaging
-from services.audio import AudioRecorder
 from entities.user_task_execution import NewUserTaskExecution
-from services.user_services import create_user_task_execution, start_user_task_execution
-from entities.message import Message
+from services.user_services import create_user_task_execution
+from components.chat import Chat
 
-
-class MicButton(Button):
-    def __init__(self, id: str):
-        self.is_recording = False
-        super().__init__("🎤", id=id)
-    
-    def switch(self):
-        self.is_recording = not self.is_recording
-        if self.is_recording:
-            self.variant='error'
-            self.label='🔴'
-        else:
-            self.variant='success'
-            self.label = '🎤'
-        
-    
-class MessageWidget(Static):
-    def __init__(self, message: Message) -> None:
-        self.message = message
-        super().__init__(f"{self.message.icon}:  {self.message.message}")
-
-
-
-class InteractionHistory(Static):
-    def __init__(self, init_message, messages: list[Message]) -> None:
-        try:
-            self.init_message = init_message
-            self.messages = messages
-            super().__init__()
-        except Exception as e:
-            self.notify(message=f"Error: {e}", title="Error")
-
-    def compose(self) -> ComposeResult:
-        try:
-            if not self.messages:
-                yield Markdown(self.init_message, id="task_execution_description")
-            for message in self.messages:
-                yield MessageWidget(message)
-        except Exception as e:
-            self.notify(message=f"Error: {e}", title="Error")
 
 class RunTaskLayout(Widget):
 
-    def __init__(self, user_task_pk: int, id: str) -> None:
+    def __init__(self, user_task_pk: int) -> None:
         self.user_task_pk = user_task_pk
-        self.mic_button_id = 'mic_button'
-        self.recorder = AudioRecorder()
-        self.recording_thread = None
-
         self.user_task_execution : NewUserTaskExecution = create_user_task_execution(user_task_pk)
-        Messaging().connect_to_session(self.user_task_execution.session_id)
-        Messaging().on_mojo_message_callback = self.on_mojo_message_callback
-        Messaging().on_draft_message_callback = self.on_mojo_message_callback
-        
-        super().__init__(id=id)
-        self.styles.padding = 4
-
-        self.mic_button = MicButton(id=self.mic_button_id)
-        init_message =f"{self.user_task_execution.json_input[0]['description_for_user']} \n{self.user_task_execution.json_input[0]['placeholder']}"
-
-        self.interaction_history = InteractionHistory(init_message, self.user_task_execution.messages)
-
-    def on_mojo_message_callback(self, message_from_mojo):
-        try:
-            message = Message(message_from_mojo["message_pk"], message_from_mojo['text'], "mojo")
-            self.user_task_execution.messages.append(message)
-            self.interaction_history.remove()
-            mounting_on = self.query_one(f"#task_execution_panel", Widget)
-            self.interaction_history = InteractionHistory(f"{self.user_task_execution.json_input[0]['description_for_user']} \n{self.user_task_execution.json_input[0]['placeholder']}", 
-                                            self.user_task_execution.messages)
-            self.app.call_from_thread(lambda: mounting_on.mount(self.interaction_history))
-        except Exception as e:
-            self.notify(message=f"Error: {e}", title="Error")
+        super().__init__()
+        self.init_message =f"{self.user_task_execution.json_input[0]['description_for_user']} \n{self.user_task_execution.json_input[0]['placeholder']}"
+        self.chat = Chat(self.user_task_execution.session_id, self.init_message)
+        # self.task_result_tab = Static("")
+        # Messaging().on_draft_message_callback = on_new_result
+        # def on_new_result(data):
+        #   self.user_task_execution.new_result(data['produced_text_title'], data['produced_text_production'])
+        #   self.task_result_tab.remove()
+        #   self.task_result_tab = TaskResult(self.user_task_execution.concatenatedResult)
+        #   self.task_result_tab.styles.width= '60%'
+        #   self.app.call_from_thread(lambda: self.mount(self.task_result_tab, before=0))
 
     def compose(self):
         try:
-            with Vertical(id="task_execution_panel"):
-                yield self.interaction_history
-                yield self.mic_button        
+            #yield Static("") # future TaskResult()
+            yield self.chat
         except Exception as e:
             self.notify(message=f"Error: {e}", title="Error")
 
 
-    def on_button_pressed(self, event: Button.Pressed) -> None:
-        if event.button.id.startswith(self.mic_button_id) and isinstance(event.button, MicButton):
-            button = event.button
-            if not button.is_recording:
-                if self.recording_thread is None or not self.recording_thread.is_alive():
-                    self.recording_thread = threading.Thread(target=self.recorder.start_recording, args=(self.notify,))
-                    self.recording_thread.start()
-
-            else:
-                if self.recording_thread and self.recording_thread.is_alive():
-                    self.recorder.stop_recording(self.notify)
-                    self.recording_thread.join()                    
-                    # call route
-                    button.loading = True
-                    message : Message = start_user_task_execution(self.user_task_execution.session_id, datetime.now().isoformat())
-                    self.user_task_execution.messages.append(message)
-
-                    self.interaction_history.remove()
-                    mounting_on = self.query_one(f"#task_execution_panel", Widget)
-                    self.interaction_history = InteractionHistory(f"{self.user_task_execution.json_input[0]['description_for_user']} \n{self.user_task_execution.json_input[0]['placeholder']}", 
-                                     self.user_task_execution.messages)
-                    mounting_on.mount(self.interaction_history)
-                    button.loading = False
-
-            button.switch()
-                    
                     

@@ -4,6 +4,7 @@ from entities.user_task_execution import NewUserTaskExecution, UserTaskExecution
 from entities.message import Message
 from constants import SERVER_URL
 from datetime import datetime
+import time
 from services.auth import ensure_authenticated
 
 @ensure_authenticated
@@ -95,7 +96,7 @@ def create_user_task_execution(user_task_pk, token) -> NewUserTaskExecution:
     
 
 @ensure_authenticated
-def start_user_task_execution(session_id, message_id, token):
+def start_user_task_execution(session_id, message_id, token, max_retry = 3):
     try:
         url = f"{SERVER_URL}/user_message"
 
@@ -118,6 +119,11 @@ def start_user_task_execution(session_id, message_id, token):
 
         if response.status_code != 200:
             raise Exception(response.content)
+        if response.status_code == 503:
+            if max_retry == 0:
+                raise Exception("Failed to start user task execution: max retry reached")
+            time.sleep(3)
+            start_user_task_execution(session_id, message_id, token, max_retry=max_retry-1)
         return Message(response.json()["message_pk"], response.json()["text"], "user")
     except Exception as e:
         raise Exception(f"Failed to start user task execution: {e}")

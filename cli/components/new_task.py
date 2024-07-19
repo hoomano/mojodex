@@ -21,7 +21,7 @@ class NewTaskLayout(Widget):
         [
             NewTaskMenuItem(
                 user_task, 
-                lambda user_task_pk: RunTaskLayout(user_task_pk, id=f"user_task_clicked_{user_task_pk}")
+                lambda user_task_pk: RunTaskLayout(user_task_pk)
                 )
             for user_task in self.user_tasks
         ],

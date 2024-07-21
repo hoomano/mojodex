@@ -2,8 +2,10 @@ import sounddevice as sd
 import numpy as np
 from scipy.io.wavfile import write
 
+from constants import TMP_WAV_FILE
+
 class AudioRecorder:
-    def __init__(self, filename='output.wav', channels=1, rate=44100, dtype='int16'):
+    def __init__(self, filename=TMP_WAV_FILE, channels=1, rate=44100, dtype='int16'):
         self.filename = filename
         self.channels = channels
         self.rate = rate

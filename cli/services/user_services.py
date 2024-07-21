@@ -2,7 +2,7 @@ import requests
 from entities.user_task import UserTaskListElementDisplay
 from entities.user_task_execution import NewUserTaskExecution, UserTaskExecutionListElementDisplay, UserTaskExecutionResult
 from entities.message import Message
-from constants import SERVER_URL
+from constants import SERVER_URL, TMP_WAV_FILE
 from datetime import datetime
 import time
 from services.auth import ensure_authenticated
@@ -104,10 +104,9 @@ def start_user_task_execution(session_id, message_id, token, max_retry = 3):
         'Authorization': token
         }
 
-        # add output.wav to the request
         response = requests.request("PUT", url, 
                                     headers=headers,
-                                    files={"file": open("output.wav", "rb")},
+                                    files={"file": open(TMP_WAV_FILE, "rb")},
                                     data={
                                         "datetime": datetime.now().isoformat(), 
                                         "platform": "mobile", 

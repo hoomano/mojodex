@@ -3,7 +3,6 @@ from components.new_task import NewTaskLayout
 from components.task_executions import TaskExecutionsLayout
 from components.mojodex import Menu, Mojodex, MenuItem
 from services.auth import login
-from textual.widgets import Static
 from textual.app import App
 import logging
 from rich.traceback import install
@@ -34,8 +33,6 @@ if __name__ == "__main__":
     app = Mojodex(main_menu)
     Messaging().notify = app.notify
     Messaging().start()
-
-
 
     app.run()
 

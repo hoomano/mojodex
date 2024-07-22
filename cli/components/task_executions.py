@@ -1,3 +1,4 @@
+import threading
 from services.user_services import load_task_execution_list, load_task_execution_result
 from components.task_result import TaskResultDisplay
 from entities.user_task_execution import UserTaskExecutionListElementDisplay
@@ -6,8 +7,7 @@ from textual.widget import Widget
 from textual.widgets import Static
 from textual.app import ComposeResult
 from textual.containers import Vertical
-from entities.user import User
-
+from textual.keys import Keys
 
 class TaskExecutionMenuItem(MenuItem):
     def __init__(self, user_task_execution: UserTaskExecutionListElementDisplay, action: callable, classes=None) -> None:
@@ -42,7 +42,7 @@ class TaskExecutionsLayout(Widget):
     def compose(self) -> ComposeResult:
         with Vertical(id="task_list_execution_sidebar"):
             yield self.menu
-        yield TaskResultDisplay("#Task Result", id= self._initial_content)
+        yield TaskResultDisplay("# Task Result\n# 😁\n Select the task from your history or create the first one.", id= self._initial_content)
         yield Static("") # Prepare future chat column
 
 
@@ -50,8 +50,14 @@ class TaskExecutionsLayout(Widget):
         if isinstance(event.button, TaskExecutionMenuItem):
             menu_item = event.button
             if menu_item.id in [item.id for item in self.menu.menu_items]:
+                
                 body = self.query_one(f"#{self.current_content}", Widget)
                 body.remove()
-                widget = menu_item.action(menu_item.user_task_execution_pk)
-                self.current_content = widget.id
-                self.mount(widget)
+                
+                task_mounting_thread = threading.Thread(target=self._mount_task, args=(menu_item,))
+                task_mounting_thread.start()
+
+    def _mount_task(self, menu_item):
+        widget = menu_item.action(menu_item.user_task_execution_pk)
+        self.current_content = widget.id
+        self.app.call_from_thread(lambda: self.mount(widget))

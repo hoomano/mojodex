@@ -15,30 +15,40 @@ class Mojodex(App):
 
     def __init__(self, menu) -> None:
         self.menu : Menu = menu
-        self._initial_page = "body"
-        self.current_page_id =self._initial_page
         super().__init__()
+        self.initial_widget = self.menu.menu_items[1].action()
+        self.current_page_id = self.initial_widget.id
+        self.current_menu = self.menu
 
     def compose(self) -> ComposeResult:
         yield Header(id="header")
         with Vertical(id="sidebar"):
             yield self.menu
-        yield Static("CONTENT", id=self._initial_page)
+        yield self.initial_widget
 
     def on_mount(self) -> None:
-        self.focus_option(0)  # Initially focus the first button
+        self.focus_option(1)  # Initially focus the first button
 
     def focus_option(self, index: int) -> None:
-        buttons = self.query("#sidebar Button")
-        if 0 <= index < len(buttons):
-            buttons[index].focus()
+        if 0 <= index < len(self.current_menu.menu_items):
+            self.current_menu.menu_items[index].focus()
             self.focused_index = index
 
     def on_key(self, event) -> None:
         if event.key == Keys.Up:
-            self.focus_option((self.focused_index - 1) % 3)
+            self.focus_option((self.focused_index - 1) % len(self.current_menu.menu_items))
         elif event.key == Keys.Down:
-            self.focus_option((self.focused_index + 1) % 3)
+            self.focus_option((self.focused_index + 1) % len(self.current_menu.menu_items))
+        elif event.key == Keys.Right:
+            try:
+                self.current_menu = self.query_one(f"#{self.current_page_id}", Widget).menu if not None else self.menu
+            except Exception as e:
+                self.notify(f"Error")
+                self.current_menu = self.menu
+            self.focus_option(0)
+        elif event.key == Keys.Left:
+            self.current_menu = self.menu
+            self.focus_option(0)
 
     def on_button_pressed(self, event: MenuItem.Pressed) -> None:
         if isinstance(event.button, MenuItem):

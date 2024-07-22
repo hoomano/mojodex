@@ -18,25 +18,19 @@
 #grid-task {
     height: 100%;
     layout: grid;
-    grid-size: 4;
+    grid-size: 1;
     grid-columns: 1fr;
     grid-rows: 1fr;
-    grid-gutter: 5;
+    grid-gutter: 2;
     background: black;
-    padding: 4;
+    padding: 2;
 }
 
 
-#task_execution_panel {
-    height: 100%;
-    width: 100%;
-    text-align: center;
-    align: center middle;
-    content-align: center middle;
-}
 
 #task_execution_description {
     text-align: center;
+    width: 100%;
     padding: 1;
 }
 

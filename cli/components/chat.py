@@ -100,11 +100,14 @@ class Chat(Widget):
         self.mic_button_widget = MicButton(id=self.mic_button_id)
         self.mic_button_widget.styles.height=self.mic_button_height
         self.mic_button_widget.styles.margin = self.mic_button_margin
-       
+
         self.messages_list_widget =  MessagesList(self.session.messages, self.session.session_id) if self.session.messages else Markdown(self.init_message, id="task_execution_description")
         self.loading_indicator = LoadingIndicator()
         self.loading_indicator.styles.height=self.mic_button_height
         self.loading_indicator.styles.margin = self.mic_button_margin
+
+    def on_mount(self):
+        self.mic_button_widget.focus()
 
     def on_draft_message_callback(self, message_from_mojo):
         try:

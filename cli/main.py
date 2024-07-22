@@ -4,6 +4,7 @@ from components.task_executions import TaskExecutionsLayout
 from components.mojodex import Menu, Mojodex, MenuItem
 from services.auth import login
 from textual.widgets import Static
+from textual.app import App
 import logging
 from rich.traceback import install
 from rich.logging import RichHandler
@@ -23,16 +24,23 @@ user = None
 
 if __name__ == "__main__":
     user = login()
+    app : App = None
+
+    def quit(app):
+        Messaging().close_socket()
+        app.exit()
 
     main_menu = Menu([
                 MenuItem("✚ New Task", lambda: NewTaskLayout(id="body_new_task"), id="new_task"),
                 MenuItem("❖ Tasks", lambda: TaskExecutionsLayout(id="body_task_executions"), id="task_list"),
-                MenuItem("☛ Logout", lambda: Static("Logout", id="body_logout"), id="logout")
+                MenuItem("☛ Logout", lambda: quit(app), id="logout")
             ], id='main_menu')
 
     app = Mojodex(main_menu)
     Messaging().notify = app.notify
     Messaging().start()
+
+
 
     app.run()
 

@@ -13,11 +13,11 @@ class RunTaskLayout(Widget):
         self.user_task_execution : NewUserTaskExecution = create_user_task_execution(user_task_pk)
         super().__init__()
         self.init_message =f"{self.user_task_execution.json_input[0]['description_for_user']} \n{self.user_task_execution.json_input[0]['placeholder']}"
-        self.chat = Chat(self.user_task_execution.session_id, self.init_message)
+        self.chat = Chat(self.user_task_execution.session_id, self.init_message, self.on_new_result)
         self.chat.styles.width = "100%"
         self.task_result_panel= None
 
-        Messaging().on_draft_message_callback = self.on_new_result
+
         Messaging().on_draft_token_callback = self.on_result_token
 
     def on_new_result(self, message_from_mojo):

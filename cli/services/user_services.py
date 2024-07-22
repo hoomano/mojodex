@@ -118,7 +118,7 @@ def start_user_task_execution(session_id, message_id, token, max_retry = 3):
 
         if response.status_code != 200:
             raise Exception(response.content)
-        if response.status_code == 503:
+        if response.status_code == 503 or response.status_code == 429:
             if max_retry == 0:
                 raise Exception("Failed to start user task execution: max retry reached")
             time.sleep(3)

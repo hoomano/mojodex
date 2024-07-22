@@ -1,15 +1,17 @@
 from datetime import datetime
-from textual.widget import Widget
+from textual.widget import Widget, events
 from textual.widgets import Static
-from textual.widgets import Button, Markdown
-from textual.containers import Vertical, Container
-import threading
+from textual.widgets import Button, Markdown, LoadingIndicator
+from textual.containers import Vertical
 from textual.app import ComposeResult
+from textual import work
+import threading
 from entities.session import Session
 from services.messaging import Messaging
 from services.audio import AudioRecorder
 from services.user_services import start_user_task_execution
 from entities.message import PartialMessage, Message
+import time
 
 
 class MicButton(Button):
@@ -24,10 +26,13 @@ class MicButton(Button):
         if self.is_recording:
             self.variant='error'
             self.label='🔴'
+            self.active_effect_duration = 0
         else:
             self.variant='success'
             self.label = '🎤'
-        
+            self.active_effect_duration = 0.2
+
+
     
 class MessageWidget(Static):
     def __init__(self, message: PartialMessage) -> None:
@@ -74,16 +79,19 @@ class MessagesList(Static):
 
 class Chat(Widget):
 
-    def __init__(self, session_id: str, init_message:str) -> None:
+    def __init__(self, session_id: str, init_message:str, on_new_result: callable) -> None:
         self.session = Session(session_id)
         self.mic_button_id = 'mic_button'
+        self.mic_button_height = 6
         self.recorder = AudioRecorder()
         self.recording_thread = None
         self.init_message = init_message
         self.partial_message_placeholder : PartialMessage = None
 
+        self.on_new_result = on_new_result
         Messaging().connect_to_session(self.session.session_id)
         Messaging().on_mojo_message_callback = self.on_mojo_message_callback
+        Messaging().on_draft_message_callback = self.on_draft_message_callback
         
         super().__init__()
 
@@ -91,10 +99,21 @@ class Chat(Widget):
         self.styles.content_align = ("center", "bottom")
 
         self.mic_button_widget = MicButton(id=self.mic_button_id)
+        self.mic_button_widget.styles.height=self.mic_button_height
        
         self.messages_list_widget =  MessagesList(self.session.messages, self.session.session_id) if self.session.messages else Markdown(self.init_message, id="task_execution_description")
+        self.loading_indicator = LoadingIndicator()
+        self.loading_indicator.styles.height=self.mic_button_height
 
-
+    def on_draft_message_callback(self, message_from_mojo):
+        try:
+            self.on_new_result(message_from_mojo)
+            
+            self.loading_indicator.remove()
+            mounting_on = self.query_one(f"#chat-interface", Widget)
+            self.app.call_from_thread(lambda: mounting_on.mount(self.mic_button_widget))
+        except Exception as e:
+            self.notify(message=f"Error: {e}", title="Error")
 
     def on_mojo_message_callback(self, message_from_mojo):
         try:
@@ -106,6 +125,10 @@ class Chat(Widget):
             mounting_on = self.query_one(f"#chat-interface", Widget)
             self.messages_list_widget = MessagesList(self.session.messages, self.session.session_id)
             self.app.call_from_thread(lambda: mounting_on.mount(self.messages_list_widget, before=0))
+
+            self.loading_indicator.remove()
+            mounting_on = self.query_one(f"#chat-interface", Widget)
+            self.app.call_from_thread(lambda: mounting_on.mount(self.mic_button_widget))
         except Exception as e:
             self.notify(message=f"Error: {e}", title="Error")
 
@@ -116,8 +139,10 @@ class Chat(Widget):
                 yield self.mic_button_widget        
         except Exception as e:
             self.notify(message=f"Error: {e}", title="Error")
+    
 
 
+    
     def on_button_pressed(self, event: Button.Pressed) -> None:
         if event.button.id.startswith(self.mic_button_id) and isinstance(event.button, MicButton):
             button = event.button
@@ -128,18 +153,30 @@ class Chat(Widget):
 
             else:
                 if self.recording_thread and self.recording_thread.is_alive():
-                    self.recorder.stop_recording(self.notify)
-                    self.recording_thread.join()                    
-
-                    message : Message = start_user_task_execution(self.session.session_id, datetime.now().isoformat())
-                    self.session.messages.append(message)
-
-                    self.messages_list_widget.remove()
+                    self.mic_button_widget.remove()
                     mounting_on = self.query_one(f"#chat-interface", Widget)
-                    self.messages_list_widget = MessagesList(self.session.messages, self.session.session_id)
-                    mounting_on.mount(self.messages_list_widget, before=0)
-      
-
+                    mounting_on.mount(self.loading_indicator)
+                    thread = threading.Thread(target=self.process_recording)
+                    thread.start()
             button.switch()
+
+              
                     
+    def process_recording(self):
+                    
+        self.recorder.stop_recording(self.notify)
+        self.recording_thread.join()   
+
+        message : Message = start_user_task_execution(self.session.session_id, datetime.now().isoformat())
+        self.session.messages.append(message)
+
+        self.messages_list_widget.remove()
+        mounting_on = self.query_one(f"#chat-interface", Widget)
+        self.messages_list_widget = MessagesList(self.session.messages, self.session.session_id)
+        self.app.call_from_thread(lambda: mounting_on.mount(self.messages_list_widget, before=0))
+
+        
+       
+    
+    
                     

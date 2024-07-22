@@ -25,15 +25,10 @@ user = None
 if __name__ == "__main__":
     user = login()
     app : App = None
-
-    def quit(app):
-        Messaging().close_socket()
-        app.exit()
-
+    
     main_menu = Menu([
                 MenuItem("✚ New Task", lambda: NewTaskLayout(id="body_new_task"), id="new_task"),
-                MenuItem("❖ Tasks", lambda: TaskExecutionsLayout(id="body_task_executions"), id="task_list"),
-                MenuItem("☛ Logout", lambda: quit(app), id="logout")
+                MenuItem("❖ Tasks", lambda: TaskExecutionsLayout(id="body_task_executions"), id="task_list")
             ], id='main_menu')
 
     app = Mojodex(main_menu)

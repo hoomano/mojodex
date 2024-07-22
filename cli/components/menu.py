@@ -12,7 +12,7 @@ class MenuItem(Button):
 
 class Menu(ScrollableContainer):
 
-    def __init__(self, menu_items: list[MenuItem], id: str) -> None:
+    def __init__(self, menu_items: list[MenuItem], id: str= None) -> None:
         self.menu_items = menu_items
         super().__init__(id=id)
 

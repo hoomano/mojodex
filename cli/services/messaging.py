@@ -80,7 +80,7 @@ class Messaging:
     def connect_to_session(self, session_id):
         # self.notify(f"📩 Connected to session {session_id}")
         self.current_session_id = session_id
-        self.sio.emit("start_session", {"session_id": self.current_session_id, "version": "0.0.0"})
+        self.sio.emit("start_session", {"session_id": self.current_session_id, "version": APP_VERSION})
 
     def close_socket(self):
         # self.notify("🚦 Closing socket")

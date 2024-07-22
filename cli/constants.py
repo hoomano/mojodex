@@ -9,3 +9,7 @@ SERVER_URL = 'http://localhost:5001'
 CURRENT_STATE = ""
 
 CURRENT_STEP = None
+APP_VERSION="0.4.13"
+
+# Setting Platform="mobile" for now because "cli" does not exist yet on the server and functionnalities are closer to mobile than webapp
+PLATFORM='mobile' 

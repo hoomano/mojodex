@@ -2,7 +2,7 @@ import requests
 from entities.user_task import UserTaskListElementDisplay
 from entities.user_task_execution import NewUserTaskExecution, UserTaskExecutionListElementDisplay, UserTaskExecutionResult
 from entities.message import Message
-from constants import SERVER_URL, TMP_WAV_FILE
+from constants import APP_VERSION, PLATFORM, SERVER_URL, TMP_WAV_FILE
 from datetime import datetime
 import time
 from services.auth import ensure_authenticated
@@ -16,7 +16,7 @@ def load_task_execution_result(user_task_execution_pk, token) -> UserTaskExecuti
         'Authorization': token
         }
 
-        response = requests.request("GET", url, headers=headers, params={"datetime": datetime.now().isoformat(), "platform": "mobile", "version": "0.0.0", "user_task_execution_pk": user_task_execution_pk})
+        response = requests.request("GET", url, headers=headers, params={"datetime": datetime.now().isoformat(), "platform": PLATFORM, "version": APP_VERSION, "user_task_execution_pk": user_task_execution_pk})
 
         if response.status_code == 200:
             data = response.json()
@@ -39,7 +39,7 @@ def load_task_execution_list(token) -> list[UserTaskExecutionListElementDisplay]
         }
 
         # TODO: check platform: webapp
-        response = requests.request("GET", url, headers=headers, params={"datetime": datetime.now().isoformat(), "platform": "mobile", "version": "0.0.0", "offset": 0, "n_user_task_executions": 20})
+        response = requests.request("GET", url, headers=headers, params={"datetime": datetime.now().isoformat(), "platform": PLATFORM, "version": APP_VERSION, "offset": 0, "n_user_task_executions": 20})
 
         if response.status_code == 200:
             data = response.json()
@@ -61,7 +61,7 @@ def load_user_tasks_list(token) -> list[UserTaskListElementDisplay]:
         'Authorization': token
         }
 
-        response = requests.request("GET", url, headers=headers, params={"datetime": datetime.now().isoformat(), "platform": "mobile", "version": "0.0.0", "offset": 0, "n_user_tasks": 20})
+        response = requests.request("GET", url, headers=headers, params={"datetime": datetime.now().isoformat(), "platform": PLATFORM, "version": APP_VERSION})
 
         if response.status_code == 200:
             data = response.json()
@@ -85,7 +85,7 @@ def create_user_task_execution(user_task_pk, token) -> NewUserTaskExecution:
         'Authorization': token
         }
 
-        response = requests.request("PUT", url, headers=headers, json={"datetime": datetime.now().isoformat(), "platform": "mobile", "version": "0.0.0", "user_task_pk": user_task_pk})
+        response = requests.request("PUT", url, headers=headers, json={"datetime": datetime.now().isoformat(), "platform": PLATFORM, "version": APP_VERSION, "user_task_pk": user_task_pk})
 
         if response.status_code == 200:
             return NewUserTaskExecution(response.json()['user_task_execution_pk'], response.json()['json_input'], response.json()['session_id'])
@@ -109,8 +109,8 @@ def start_user_task_execution(session_id, message_id, token, max_retry = 3):
                                     files={"file": open(TMP_WAV_FILE, "rb")},
                                     data={
                                         "datetime": datetime.now().isoformat(), 
-                                        "platform": "mobile", 
-                                        "version": "0.0.0", 
+                                        "platform": PLATFORM, 
+                                        "version": APP_VERSION, 
                                         "session_id": session_id,
                                         "message_id": message_id,
                                         "message_date": datetime.now().isoformat()

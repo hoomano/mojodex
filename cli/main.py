@@ -25,9 +25,9 @@ if __name__ == "__main__":
     user = login()
 
     main_menu = Menu([
-                MenuItem("New Task", lambda: NewTaskLayout(id="body_new_task")),
-                MenuItem("List Tasks", lambda: TaskExecutionsLayout(id="body_task_executions")),
-                MenuItem("Logout", lambda: Static("Logout", id="body_logout"))
+                MenuItem("✚ New Task", lambda: NewTaskLayout(id="body_new_task"), id="new_task"),
+                MenuItem("📋 Tasks", lambda: TaskExecutionsLayout(id="body_task_executions"), id="task_list"),
+                MenuItem("☛ Logout", lambda: Static("Logout", id="body_logout"), id="logout")
             ], id='main_menu')
 
     app = Mojodex(main_menu)

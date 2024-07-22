@@ -63,7 +63,3 @@
     height: auto;
     align: center bottom;
 }
-
-#mic_button {
-    padding: 2;
-}

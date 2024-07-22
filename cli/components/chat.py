@@ -19,7 +19,7 @@ class MicButton(Button):
         self.is_recording = False
         super().__init__("🎤", id=id)
         self.styles.width='100%'
-        self.styles.margin = 1
+
     
     def switch(self):
         self.is_recording = not self.is_recording
@@ -82,7 +82,8 @@ class Chat(Widget):
     def __init__(self, session_id: str, init_message:str, on_new_result: callable) -> None:
         self.session = Session(session_id)
         self.mic_button_id = 'mic_button'
-        self.mic_button_height = 6
+        self.mic_button_height = 8
+        self.mic_button_margin = 1
         self.recorder = AudioRecorder()
         self.recording_thread = None
         self.init_message = init_message
@@ -100,15 +101,17 @@ class Chat(Widget):
 
         self.mic_button_widget = MicButton(id=self.mic_button_id)
         self.mic_button_widget.styles.height=self.mic_button_height
+        self.mic_button_widget.styles.margin = self.mic_button_margin
        
         self.messages_list_widget =  MessagesList(self.session.messages, self.session.session_id) if self.session.messages else Markdown(self.init_message, id="task_execution_description")
         self.loading_indicator = LoadingIndicator()
         self.loading_indicator.styles.height=self.mic_button_height
+        self.loading_indicator.styles.margin = self.mic_button_margin
 
     def on_draft_message_callback(self, message_from_mojo):
         try:
             self.on_new_result(message_from_mojo)
-            
+
             self.loading_indicator.remove()
             mounting_on = self.query_one(f"#chat-interface", Widget)
             self.app.call_from_thread(lambda: mounting_on.mount(self.mic_button_widget))

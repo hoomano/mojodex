@@ -22,8 +22,6 @@ class RunTaskLayout(Widget):
 
     def on_new_result(self, message_from_mojo):
         try:
-            if message_from_mojo["session_id"] != self.user_task_execution.session_id:
-                return
             self.user_task_execution.new_result(message_from_mojo['produced_text_title'], message_from_mojo['produced_text'])
             self.app.call_from_thread(lambda: self.task_result_panel.update(self.user_task_execution.concatenated_result))
         except Exception as e:
@@ -31,8 +29,6 @@ class RunTaskLayout(Widget):
 
     def on_result_token(self, token_from_mojo):
         try:
-            if token_from_mojo["session_id"] != self.user_task_execution.session_id:
-                return
             new_text =f"{token_from_mojo['produced_text_title']}\n{token_from_mojo['produced_text']}"
             if not self.task_result_panel:
                 self.task_result_panel = TaskResultDisplay(new_text)

@@ -58,9 +58,6 @@ class MessagesList(Static):
 
     def on_mojo_token_callback(self, token_from_mojo):
         try:
-            if token_from_mojo["session_id"] != self.session_id:
-                return
-            
             if self.message_placeholder_widget:
                 self.partial_message_placeholder.message=token_from_mojo['text']
                 self.message_placeholder_widget.update(f"{self.partial_message_placeholder.icon}:  {self.partial_message_placeholder.message}")
@@ -71,7 +68,8 @@ class MessagesList(Static):
     def compose(self) -> ComposeResult:
         try:
             for message in self.messages:
-                yield MessageWidget(message)
+                if not message.is_draft:
+                    yield MessageWidget(message)
             if self.message_placeholder_widget:
                 yield self.message_placeholder_widget
         except Exception as e:
@@ -111,19 +109,25 @@ class Chat(Widget):
     def on_draft_message_callback(self, message_from_mojo):
         try:
             self.on_new_result(message_from_mojo)
+            message = Message(message_from_mojo["message_pk"], message_from_mojo['text'], "mojo", is_draft=True)
+            self.session.messages.append(message)
 
-            self.loading_indicator.remove()
-            mounting_on = self.query_one(f"#chat-interface", Widget)
-            self.app.call_from_thread(lambda: mounting_on.mount(self.mic_button_widget))
+            self._update_chat_interface_on_message_receveived()
         except Exception as e:
             self.notify(message=f"Error: {e}", title="Error")
 
     def on_mojo_message_callback(self, message_from_mojo):
         try:
-            if message_from_mojo["session_id"] != self.session.session_id:
-                return
             message = Message(message_from_mojo["message_pk"], message_from_mojo['text'], "mojo")
             self.session.messages.append(message)
+
+            self._update_chat_interface_on_message_receveived()
+        except Exception as e:
+            self.notify(message=f"Error: {e}", title="Error")
+
+
+    def _update_chat_interface_on_message_receveived(self):
+        try:
             self.messages_list_widget.remove()
             mounting_on = self.query_one(f"#chat-interface", Widget)
             self.messages_list_widget = MessagesList(self.session.messages, self.session.session_id)
@@ -133,7 +137,7 @@ class Chat(Widget):
             mounting_on = self.query_one(f"#chat-interface", Widget)
             self.app.call_from_thread(lambda: mounting_on.mount(self.mic_button_widget))
         except Exception as e:
-            self.notify(message=f"Error: {e}", title="Error")
+            raise Exception(f"_update_chat_interface_on_message_receveived: {e}")
 
     def compose(self):
         try:

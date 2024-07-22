@@ -30,6 +30,8 @@ class Messaging:
             self.on_mojo_token_callback : callable = lambda x: None
             self.on_draft_token_callback : callable = lambda x: None
             self.__class__._initialized = True
+            # current_session_id represents a mojo chat session, which is different from the socketio session
+            self.current_session_id = None
 
 
     def on_connect(self):
@@ -42,6 +44,8 @@ class Messaging:
 
     def on_mojo_token(self, data):
         try:
+            if data["session_id"] != self.current_session_id:
+                return
             self.on_mojo_token_callback(data)
         except Exception as e:
             self.notify(e)
@@ -49,12 +53,16 @@ class Messaging:
 
     def on_draft_token(self, data):
         try:
+            if data["session_id"] != self.current_session_id:
+                return
             self.on_draft_token_callback(data)
         except Exception as e:
             self.notify(e)
         
     def on_mojo_message(self, data):
         try:
+            if data["session_id"] != self.current_session_id:
+                return
             self.on_mojo_message_callback(data)
             return {"session_id": data["session_id"], "message_pk": data["message_pk"]}
         except Exception as e:
@@ -62,6 +70,8 @@ class Messaging:
 
     def on_draft_message(self, data):
         try:
+            if data["session_id"] != self.current_session_id:
+                return
             self.on_draft_message_callback(data)
             return {"session_id": data["session_id"], "produced_text_version_pk": data["produced_text_version_pk"]}
         except Exception as e:
@@ -69,7 +79,8 @@ class Messaging:
 
     def connect_to_session(self, session_id):
         # self.notify(f"📩 Connected to session {session_id}")
-        self.sio.emit("start_session", {"session_id": session_id, "version": "0.0.0"})
+        self.current_session_id = session_id
+        self.sio.emit("start_session", {"session_id": self.current_session_id, "version": "0.0.0"})
 
     def close_socket(self):
         # self.notify("🚦 Closing socket")

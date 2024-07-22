@@ -28,7 +28,8 @@ class NewTaskLayout(Widget):
         id=self.grid_task_id
     )
         for menu_item in self.menu.menu_items:
-            menu_item.styles.height="100%"
+            menu_item.styles.height="8"
+            menu_item.styles.margin=1
         super().__init__(id=id)
 
     def compose(self) -> ComposeResult:

@@ -15,16 +15,6 @@
 
 
 
-#grid-task {
-    height: 100%;
-    layout: grid;
-    grid-size: 1;
-    grid-columns: 1fr;
-    grid-rows: 1fr;
-    grid-gutter: 2;
-    background: black;
-    padding: 2;
-}
 
 
 

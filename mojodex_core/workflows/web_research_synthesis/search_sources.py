@@ -1,92 +1,9 @@
-
-import json
 from typing import List
-
 from mojodex_core.entities.workflow_step import WorkflowStep
 from mojodex_core.llm_engine.mpt import MPT
-import requests
-import os
+from mojodex_core.tools.bing_search_engine import BingSearchEngine
+from mojodex_core.workflows.web_research_synthesis.webpage import WebPage
 
-from bs4 import BeautifulSoup
-from playwright.sync_api import sync_playwright
-class WebPage:
-
-    def __init__(self, url):
-        self.url = url
-        self._scrapped_text = None
-
-    @property
-    def scrapped_text(self):
-        return self._scrapped_text
-
-    
-    def scrap_to_get_text(self):
-        try:
-            with sync_playwright() as pw:
-                browser = pw.chromium.launch(headless=True)
-                context = browser.new_context()
-                page = context.new_page()
-                # go to url
-                page.goto(self.url)
-
-                try:
-                    # Wait for the network to be idle with a timeout
-                    # To ensure that the page is fully loaded
-                    page.wait_for_load_state('networkidle', timeout=20000)  # Wait up to 20 seconds
-                except TimeoutError:
-                    return None
-
-                # get HTML
-                html_content = page.content()
-            soup = BeautifulSoup(html_content, 'html.parser')
-            webpage_text = soup.text.strip()
-            if webpage_text.strip() == "":
-                return None
-            # remove multiple \n by only one
-            webpage_text = "\n".join(
-                [line for line in webpage_text.split("\n") if line.strip() != ""])
-            self._scrapped_text = webpage_text
-            return webpage_text
-        except Exception as e:
-            return None
-        
-class BingSearchEngine:
-    search_url = "https://api.bing.microsoft.com/v7.0/search" 
-
-    _instance = None
-    _initialized = False
-
-    def __new__(cls):
-        if cls._instance is None:
-            cls._instance = super(BingSearchEngine, cls).__new__(cls)
-            cls._instance._initialized = False
-        return cls._instance
-
-    def __init__(self):
-        if not self.__class__._initialized:
-            self.api_key = os.environ.get('BING_SEARCH_API_KEY')
-            if not self.api_key:
-                raise Exception("BING SEARCH API key not found")
-
-    def search(self, query: str, n_results:int = 10):
-        try:
-            headers = {"Ocp-Apim-Subscription-Key": self.api_key}
-            params = {"q": query, "textDecorations": True, "textFormat": "HTML", "count": n_results}
-            response = requests.get(self.search_url, headers=headers, params=params)
-            response.raise_for_status()
-            search_results = response.json()
-            return search_results
-        except Exception as e:
-            raise Exception(f"{self.__class__.__name__} :: search :: {e}")
-        
-    def get_search_webpages_urls(self, query: str, n_results:int = 10):
-        try:
-            search_results = self.search(query)
-            with open('/data/search_results.json', 'w') as f:
-                json.dump(search_results, f, indent=4)
-            return [result['url'] for result in search_results['webPages']['value']]
-        except Exception as e:
-            raise Exception(f"{self.__class__.__name__} :: get_search_webpages_urls :: {e}")
 
 class SearchSourcesStep(WorkflowStep):
 

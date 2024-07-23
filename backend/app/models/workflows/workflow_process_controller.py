@@ -68,7 +68,6 @@ class WorkflowProcessController:
                                                                            current_parameter)
                     return self._current_step
 
-
             # else, generate new step execution of next step
             next_step = last_validated_step_execution.workflow_step.next_step
             # Reached last rank order => there is no next step
@@ -199,7 +198,6 @@ class WorkflowProcessController:
         try:
             step_execution = self.db_session.query(UserWorkflowStepExecution).get(step_execution_pk)
             step_execution.validate()
-            self.workflow_execution.past_valid_step_executions.append(step_execution)
         except Exception as e:
             raise Exception(f"validate_step_execution :: {e}")
 

@@ -1,0 +1,22 @@
+#! open-mistral-nemo-2407
+#! gpt-4o
+#! gpt4-turbo/2023-03-15-preview
+#! gpt-4-turbo-preview
+#! mistral-large-latest
+
+Here is a query you've made on a Web Search Engine:
+
+QUERY
+---
+{{query}}
+---
+
+and here is the content of the first webpage that you've found:
+WEBPAGE TEXT
+---
+{{webpage_text}}
+---
+
+Write a note to synthesize the information you've found on the webpage about the query you've made.
+Make it complete and detailed. Include only information that are mentioned in the WEBPAGE TEXT.
+No talk, only note.

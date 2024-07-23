@@ -36,7 +36,7 @@ class ScheduledTask(ABC):
         pass
 ```
 
-As Mojodex's Scheduler does not have database access, Scheduled tasks jobs are Backend API calls. Performed at a regular interval, they are useful for checking the state of a user or a task and act accordingly.
+As Mojodex's Scheduler does not have database access, Scheduled tasks jobs are Backend or Background API calls. Performed at a regular interval, they are useful for checking the state of a user or a task and act accordingly.
 
 The Scheduled tasks are implemented in the `scheduler/app/main.py` file.
 

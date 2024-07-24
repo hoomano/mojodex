@@ -92,7 +92,6 @@ You should see the following tables:
                             List of relations
  Schema |                   Name                    | Type  |   Owner    
 --------+-------------------------------------------+-------+------------
- public | md_calendar_suggestion                    | table | <your_user>
  public | md_company                                | table | <your_user>
  public | md_device                                 | table | <your_user>
  public | md_document                               | table | <your_user>

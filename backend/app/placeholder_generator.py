@@ -12,9 +12,6 @@ class PlaceholderGenerator:
                       "of the great explorer of the truth, the master-builder of human happiness. No one rejects, dislikes, or avoids pleasure itself, " \
                       "because it is pleasure, but because those who do not know how to pursue pleasure rationally encounter consequences that are extremely painful. "
 
-    calendar_suggestion_placeholder = "This is a welcome message placeholder."
-    calendar_suggestion_title_placeholder = "Title placeholder"
-    calendar_suggestion_emoji_placeholder = "👋"
     waiting_message_placeholder = "Waiting..."
     done_message_placeholder = "Done!"
 

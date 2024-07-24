@@ -3,7 +3,6 @@ from routes.purchase import Purchase
 from routes.company import Company
 from routes.session import Session
 from routes.error import Error
-from routes.calendar_suggestion import CalendarSuggestion, CalendarSuggestionOldWelcomeMessage
 from routes.terms_and_conditions import TermsAndConditions
 from routes.onboarding import Onboarding
 from routes.voice import Voice
@@ -56,8 +55,6 @@ class HttpRouteManager:
         api.add_resource(User, '/user')
         api.add_resource(Company, '/company')
         api.add_resource(Error, '/error')
-        api.add_resource(CalendarSuggestion, '/calendar_suggestion')
-        api.add_resource(CalendarSuggestionOldWelcomeMessage, '/welcome_message')
         api.add_resource(TermsAndConditions, '/terms_and_conditions')
         api.add_resource(Onboarding, '/onboarding')
         api.add_resource(Voice, '/voice')

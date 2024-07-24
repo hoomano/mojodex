@@ -5,9 +5,7 @@ from flask import request
 from flask_restful import Resource
 from app import executor, db
 from models.events.todo_daily_emails_generator import TodoDailyEmailsGenerator
-from models.events.calendar_suggestion_notifications_generator import CalendarSuggestionNotificationsGenerator
-from mojodex_core.entities.db_base_entities import MdCalendarSuggestion, MdUser
-from datetime import datetime
+from mojodex_core.entities.db_base_entities import MdUser
 
 class EventsGeneration(Resource):
     def post(self):
@@ -36,22 +34,6 @@ class EventsGeneration(Resource):
                 user_ids = [result[0] for result in user_ids_query_result]
                 events_generator_class = TodoDailyEmailsGenerator
 
-            elif event_type == 'calendar_suggestion_notifications':
-                since_date = request.json['since_date']
-                since_date = datetime.fromisoformat(since_date)
-                until_date = request.json['until_date']
-                until_date = datetime.fromisoformat(until_date)
-                results = db.session.query(MdCalendarSuggestion.user_id) \
-                    .filter(MdCalendarSuggestion.reminder_date.isnot(None)) \
-                    .filter(MdCalendarSuggestion.reminder == True) \
-                    .filter(MdCalendarSuggestion.reminder_date.between(since_date, until_date)) \
-                    .order_by(MdCalendarSuggestion.calendar_suggestion_pk) \
-                    .offset(offset) \
-                    .limit(n_events) \
-                    .all()
-                user_ids = [result[0] for result in results]
-                events_generator_class = CalendarSuggestionNotificationsGenerator
-                kwargs = {"since_date": since_date, "until_date": until_date}
             else:
                 raise Exception(f"Unknown event type {event_type}")
             

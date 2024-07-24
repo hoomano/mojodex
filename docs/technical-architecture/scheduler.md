@@ -47,7 +47,6 @@ PurchasesExpirationChecker(3600) # check ended free_plan every 1 hour
 ExtractTodos(600) # extract todos every 10 minutes
 RescheduleTodos(3600) # reschedule todos every 1 hour
 if push_notifications:
-    CalendarSuggestionNotificationSender(600) # send calendar suggestion notifications every 10 minutes
     SendDailyNotifications(3600) # send daily notifications every 1 hour (filtered by timezone)
 if emails:
     #SendDailyEmails(3600) # send daily emails every 1 hour (filtered by timezone)

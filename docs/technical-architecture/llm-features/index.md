@@ -17,9 +17,6 @@ As of 2024-03-05, the following features are supported by the providers:
 | Feature | GPT-4 Turbo | mistral-large | mistral-medium | mistral-tiny |
 | --- | --- | --- | --- | --- |
 | ANSWER_USER | ✅ | ✅ | ~ | ❌ |
-| CALENDAR_SUGGESTION_GENERATOR | ✅ | ✅ | *TBD*| *TBD* |
-| CALENDAR_SUGGESTION_NOTIFICATION | ✅ | ✅ | *TBD*| *TBD* |
-| CALENDAR_SUGGESTION_WAITING_TEXT | ✅ | ✅ | *TBD*| *TBD* |
 | CHIT_CHAT | ✅ | ✅ | *TBD*| *TBD* |
 | CORRECT_COMPANY_INFO_FROM_FEEDBACK | ✅ | ✅ | *TBD*| *TBD* |
 | DAILY_EMAIL_GENERATOR | ✅ | ✅ | *TBD*| *TBD* |

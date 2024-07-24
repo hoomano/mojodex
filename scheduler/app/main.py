@@ -8,7 +8,6 @@ from scheduled_tasks.extract_todos import ExtractTodos
 from scheduled_tasks.reschedule_todos import RescheduleTodos
 from scheduled_tasks.send_todo_daily_emails import SendTodoDailyEmails
 from scheduled_tasks.purchase_expiration_checker import PurchasesExpirationChecker
-from scheduled_tasks.send_calendar_suggestion_notifications import CalendarSuggestionNotificationSender
 from scheduled_tasks.first_home_chat_of_week import FirstHomeChatOfWeek
 from scheduled_tasks.relaunch_locked_steps import RelaunchLockedSteps
 from datetime import datetime
@@ -64,8 +63,6 @@ def _check_push_notifications_are_configured():
 PurchasesExpirationChecker(3600) # check ended free_plan every 1 hour
 ExtractTodos(600) # extract todos every 10 minutes
 RescheduleTodos(3600) # reschedule todos every 1 hour
-if _check_push_notifications_are_configured():
-    CalendarSuggestionNotificationSender(600) # send calendar suggestion notifications every 10 minutes
 if _check_emails_are_configured():
     SendTodoDailyEmails(3600) # send todo daily emails every 1 hour (filtered by timezone)
     CheckDisengagedFreeTrialUsers(86400)  # check disengaged free trial users every day

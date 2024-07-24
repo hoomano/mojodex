@@ -25,7 +25,6 @@ paths:
                   type: string
                   enum:
                     - todo_daily_emails
-                    - calendar_suggestion_notifications
                 n_events:
                   type: integer
                 offset:

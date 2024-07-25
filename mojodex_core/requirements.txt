@@ -37,3 +37,5 @@ google-api-python-client==2.101.0
 
 # Authentication
 flask_restful==0.3.10
+
+playwright==1.44.0

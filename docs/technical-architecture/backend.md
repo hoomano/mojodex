@@ -42,22 +42,9 @@ db = SQLAlchemy(app)
 [...]
 ```
 
-The database models generated with SQLAcodegen can be found in `mojodex_core/entities.py`. Those are used by the Backend to interact with the database though sqlalchemy.
+The database models generated with SQLAcodegen can be found in `mojodex_core/entities/db_base_entities.py`. Those are used by the Backend to interact with the database though sqlalchemy.
 
-> Important Note: Flask-Sqlalchemy manages sessions and closes sessions on its own when a request is done. It is not necessary to manage sessions manually. However, when accessing the database in a thread that is not the main one, it is necessary to close the session manually to avoid any locks on the database.
-> For example, it is the case in `backend/app/models/tasks/task_manager.py` where the `TaskManager.start_task_from_form()` method is called in a parallel thread from `backend/app/routes/user_task_execution_run.py` and closes access to the database at the end of the method:
-> ```python
-> [...]
-> from mojodex_core import *
-> [...]
-> def start_task_from_form(self, app_version, use_message_placeholder=False, use_draft_placeholder=False, tag_proper_nouns=False):
->        try:
->            [...]
->            db.session.close()
->        except Exception as e:
->            db.session.close()
-> [...]
-
+> Important Note: Flask-Sqlalchemy manages sessions and closes sessions on its own when a request is done. It is not necessary to manage sessions manually. However, when accessing the database in a thread that is not the main one, it does not close sessions automatically, creating locks in the database. Therefore, when requiring to access the database out of a request context, use `@with_db_session` defined in `mojodex_core/db.py` to access, open and close a session specifically where it is needed.
 
 ### Real-Time Interaction Management
 Using SocketIO through `flask_socketio`, the Backend enables interactive sessions between the assistant and the user, ensuring instant feedback and dynamic conversation flow.
@@ -71,15 +58,7 @@ server_socket = SocketIO(app, ping_timeout=40, ping_interval=15, logger=False, e
 [...]
 ```
 
-#### Reception of User Messages
-- For the web application, user messages in chat are received through socketio `user_message` event.
-```python
-@server_socket.on('user_message')
-def handle_message(data):
-    emit("user_message_reception", {"success": "User message has been received", "session_id": data.get("session_id")})
-    socketio_event_callback('user_message', data)
-```
-> Note that for mobile application, we moved from receiving user messages through socketio to a REST API endpoint for robustness. We will probably do the same for web application in the future.
+> Note that the socketio server is now only used to emit messages. Reception of user messages are done through the REST API for reliability.
 
 #### Emission of Assistant Messages
 To separate messages from one user to another, we use Socketio's "room" principle along with Mojodex's Session management. 
@@ -91,14 +70,15 @@ The user can resume a Session at any moment, for example when re-opening a task 
 **The Session's unique session_id is used to identify Socketio's room for the user and the assistant to exchange messages.** In the emission code, this corresponds to the `to` parameter of the `server_socket.emit()` method.
 
 - Assistant partial messages, containing tokens as streamed by the LLM, are sent as soon as received through socketio dedicated events (`mojo_token` and `draft_token`). This allow to stream the assistant's response in real-time to the user so that the user can see the assistant's response being built.
-`backend/app/models/session.py`
+`backend/app/models/assistant/session_controller.py`
 ```python
 [...]
-def _mojo_token_callback(self, partial_text):
-    try:
-        server_socket.emit('mojo_token', {"text": partial_text, 'session_id': self.id}, to=self.id)
-    except Exception as e:
-        raise Exception(f"_mojo_token_callback :: {e}")
+@token_stream_callback('mojo_token')
+    def _mojo_message_stream_callback(self, partial_text):
+        try:
+            return {"text": partial_text, 'session_id': self.session.session_id}
+        except Exception as e:
+            raise Exception(f"_mojo_message_stream_callback :: {e}")
 [...]
 ```
 

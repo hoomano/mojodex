@@ -2,10 +2,15 @@ import os
 from flask import request
 from flask_restful import Resource
 from app import db
+from mojodex_core.authentication import authenticate_with_backoffice_secret
 from mojodex_core.logging_handler import log_error
 from mojodex_core.entities.db_base_entities import *
 
 class TextType(Resource):
+
+
+    def __init__(self):
+        TextType.method_decorators = [authenticate_with_backoffice_secret(methods=["PUT", "POST", "GET"])]
 
     # Route to create a new text_type
     # Route used only by Backoffice
@@ -13,14 +18,6 @@ class TextType(Resource):
     def put(self):
         if not request.is_json:
             return {"error": "Request must be JSON"}, 400
-
-        try:
-            secret = request.headers['Authorization']
-            if secret != os.environ["BACKOFFICE_SECRET"]:
-                return {"error": "Authentication error : Wrong secret"}, 403
-        except KeyError:
-            log_error(f"Error creating new text_type : Missing Authorization secret in headers")
-            return {"error": f"Missing Authorization secret in headers"}, 403
 
         try:
             timestamp = request.json["timestamp"]
@@ -48,13 +45,6 @@ class TextType(Resource):
 
     # get list of existing text types
     def get(self):
-        try:
-            secret = request.headers['Authorization']
-            if secret != os.environ["BACKOFFICE_SECRET"]:
-                return {"error": "Authentication error : Wrong secret"}, 403
-        except KeyError:
-            log_error(f"Error creating new text_type : Missing Authorization secret in headers")
-            return {"error": f"Missing Authorization secret in headers"}, 403
 
         try:
             timestamp = request.args["datetime"]
@@ -72,15 +62,6 @@ class TextType(Resource):
             return {"error": f"Error getting text_types : {e}"}, 400
 
     def post(self):
-       
-
-        try:
-            secret = request.headers['Authorization']
-            if secret != os.environ["BACKOFFICE_SECRET"]:
-                return {"error": "Authentication error : Wrong secret"}, 403
-        except KeyError:
-            log_error(f"Error associating text_type with text_edit_action : Missing Authorization secret in headers")
-            return {"error": f"Missing Authorization secret in headers"}, 403
         
         if not request.is_json:
             return {"error": "Request must be JSON"}, 400

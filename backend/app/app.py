@@ -1,13 +1,10 @@
 from gevent import monkey
-
-
 monkey.patch_all()
 
 import hashlib
 import random
 import string
 from packaging import version
-
 from flask import Flask
 from flask_socketio import SocketIO, join_room, ConnectionRefusedError, emit
 from flask_restful import Api
@@ -36,7 +33,6 @@ server_socket = SocketIO(app, ping_timeout=40, ping_interval=15, logger=False, e
                          cors_allowed_origins="*", )
 
 from flask_restful import request
-from functools import wraps
 import jwt
 
 from datetime import datetime
@@ -60,43 +56,6 @@ from timing_logger import TimingLogger
 timing_logger = TimingLogger("/data/timing_logs.log")
 
 
-def authenticate_function(token):
-    try:
-        payload = jwt.decode(token, os.environ["JWT_SECRET"], algorithms=os.environ["ENCODING_ALGORITHM"])
-        user_id = payload["sub"].split(os.environ['TOKEN_SECRET_SPLITTER'])[0]
-        return True, user_id
-    except KeyError:
-        return {"error": "Authorization key required"}, 403
-    except jwt.ExpiredSignatureError:
-        return {"error": "Token expired."}, 403
-    except jwt.InvalidTokenError:
-        return {"error": "Invalid token."}, 403
-
-
-def authenticate(methods=["PUT", "POST", "DELETE", "GET"]):
-    methods = [name.lower() for name in methods]
-
-    def authenticate_wrapper(func):
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-
-            if func.__name__ not in methods:
-                return func(*args, **kwargs)
-            try:
-                token = request.headers['Authorization']
-                auth = authenticate_function(token)
-                if auth[0] is not True:
-                    return auth
-                else:
-                    kwargs["user_id"] = auth[1]
-            except Exception as e:
-                return {"error": f"Authentication error : {e}"}, 403
-
-            return func(*args, **kwargs)
-
-        return wrapper
-
-    return authenticate_wrapper
 
 
 def generate_session_id(user_id):

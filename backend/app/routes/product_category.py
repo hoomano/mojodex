@@ -2,14 +2,15 @@ import os
 
 from flask import request
 from flask_restful import Resource
-from app import db, authenticate
+from app import db
+from mojodex_core.authentication import authenticate, authenticate_with_backoffice_secret
 from mojodex_core.entities.db_base_entities import MdProductCategory, MdProduct, MdProductCategoryDisplayedData, MdUser
 from sqlalchemy import func
 
 class ProductCategory(Resource):
 
     def __init__(self):
-        ProductCategory.method_decorators = [authenticate(methods=["GET"])]
+        ProductCategory.method_decorators = [authenticate(methods=["GET"]), authenticate_with_backoffice_secret(methods=["PUT", "POST"])]
 
     
     def create_product_category(self, product_category_label: str, displayed_data: list, emoji: str, implicit_goal: str, visible: bool):
@@ -69,13 +70,6 @@ class ProductCategory(Resource):
     def put(self):
         if not request.is_json:
             return {"error": "Request must be JSON"}, 400
-
-        try:
-            secret = request.headers['Authorization']
-            if secret != os.environ["BACKOFFICE_SECRET"]:
-                return {"error": "Authentication error : Wrong secret"}, 403
-        except KeyError:
-            return {"error": f"Missing Authorization secret in headers"}, 403
 
         try:
             timestamp = request.json["datetime"]
@@ -178,13 +172,6 @@ class ProductCategory(Resource):
     def post(self):
         if not request.is_json:
             return {"error": "Request must be JSON"}, 400
-
-        try:
-            secret = request.headers['Authorization']
-            if secret != os.environ["BACKOFFICE_SECRET"]:
-                return {"error": "Authentication error : Wrong secret"}, 403
-        except KeyError:
-            return {"error": f"Missing Authorization secret in headers"}, 403
 
         try:
             timestamp = request.json["datetime"]

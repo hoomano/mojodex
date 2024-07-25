@@ -6,27 +6,22 @@ from flask import request
 from flask_restful import Resource
 
 from models.workflows.workflow_process_controller import WorkflowProcessController
+from mojodex_core.authentication import authenticate_with_scheduler_secret
 from mojodex_core.logging_handler import log_error
 from mojodex_core.entities.db_base_entities import MdUserTaskExecution, MdUserWorkflowStepExecution, MdUserWorkflowStepExecutionResult
 from app import db, server_socket
 from datetime import datetime, timedelta
 class RelaunchLockedWorkflowStepExecutions(Resource):
 
+
+    def __init__(self):
+        RelaunchLockedWorkflowStepExecutions.method_decorators = [authenticate_with_scheduler_secret(methods=["POST"])]
+
     def post(self):
         error_message = "Error relaunching locked workflow step executions"
         if not request.is_json:
             log_error(f"{error_message} : Request must be JSON")
             return {"error": "Request must be JSON"}, 400
-
-        try:
-            secret = request.headers['Authorization']
-            if secret != os.environ["MOJODEX_SCHEDULER_SECRET"]:
-                log_error(f"{error_message} : Authentication error : Wrong secret", notify_admin=True)
-                return {"error": "Authentication error : Wrong secret"}, 403
-        except KeyError:
-            log_error(f"{error_message} : Missing Authorization secret in headers", notify_admin=True)
-            return {"error": f"Missing Authorization secret in headers"}, 403
-        
 
         try:
             timestamp = request.json['datetime']

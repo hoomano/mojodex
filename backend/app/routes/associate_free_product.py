@@ -5,7 +5,8 @@ from bs4 import BeautifulSoup
 from jinja2 import Template
 from flask import request
 from flask_restful import Resource
-from app import authenticate, db
+from app import db
+from mojodex_core.authentication import authenticate
 from mojodex_core.logging_handler import log_error
 from mojodex_core.entities.db_base_entities import MdPurchase, MdProduct, MdProductCategory, MdUser, MdEvent
 from models.purchase_manager import PurchaseManager

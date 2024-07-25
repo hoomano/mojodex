@@ -3,8 +3,8 @@ import os
 from jinja2 import Template
 from flask import request
 from flask_restful import Resource
-from app import db, authenticate, server_socket
-
+from app import db, server_socket
+from mojodex_core.authentication import authenticate, authenticate_with_backoffice_secret
 from mojodex_core.produced_text_managers.task_produced_text_manager import TaskProducedTextManager
 from mojodex_core.logging_handler import log_error
 from mojodex_core.entities.db_base_entities import *
@@ -20,16 +20,9 @@ class TextEditAction(Resource):
     error_message_text = "Error executing text edit action"
 
     def __init__(self):
-        TextEditAction.method_decorators = [authenticate(methods=["POST"])]
+        TextEditAction.method_decorators = [authenticate(methods=["POST"]), authenticate_with_backoffice_secret(methods=["PUT"])]
 
     def put(self):
-        try:
-            secret = request.headers['Authorization']
-            if secret != os.environ["BACKOFFICE_SECRET"]:
-                return {"error": "Authentication error : Wrong secret"}, 403
-        except KeyError:
-            log_error(f"Error creating new text_edit_action : Missing Authorization secret in headers")
-            return {"error": f"Missing Authorization secret in headers"}, 403
         
         if not request.is_json:
             return {"error": "Request must be JSON"}, 400

@@ -3,7 +3,8 @@ import pytz
 from flask import request
 from flask_restful import Resource
 from datetime import datetime, time
-from app import db, authenticate
+from app import db
+from mojodex_core.authentication import authenticate
 from mojodex_core.logging_handler import log_error
 from mojodex_core.entities.db_base_entities import MdProducedTextVersion, MdProducedText
 import requests

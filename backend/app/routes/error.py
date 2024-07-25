@@ -1,6 +1,6 @@
 from flask import request
 from flask_restful import Resource
-from app import authenticate
+from mojodex_core.authentication import authenticate
 from mojodex_core.logging_handler import log_error
 
 

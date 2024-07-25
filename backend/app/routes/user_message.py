@@ -1,6 +1,7 @@
 from flask import request
 from flask_restful import Resource
-from app import db, authenticate, server_socket
+from app import db, server_socket
+from mojodex_core.authentication import authenticate
 from mojodex_core.entities.message import Message
 from mojodex_core.logging_handler import log_error
 from mojodex_core.entities.db_base_entities import *

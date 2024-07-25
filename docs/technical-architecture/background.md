@@ -125,8 +125,7 @@ Anyway, the process of updating a document requires embedding the new version, w
 - Cortex: `background/app/models/events/event_generator.py` (abstract class, implementation depends on parameters of request)
 
 This process is called any time the Backend wants to send a notification to the user whether it is a mail, push notification... The Background is responsible for notification content generation and event sending.
-For now, 2 types of events are generated:
-- calendar_suggestions: will be removed soon
+For now, 1 type of events are generated:
 - todo_daily_emails: An email to remind the user of his To-Do items for the day. Launched from the Scheduler every day at 8am, the Backend selects the user that opted-in this option and triggers the Background to generate the email content.
 
 

@@ -7,5 +7,3 @@ As an AI agent, Mojodex uses cognitive functions powered by LLMs.
 - [OpenAI GPT-4o](./openai.md)
 - [Azure Open AI Services](./azure.md)
 - [Mistral mistral-medium & mistral-large](./mistral.md)
-
-

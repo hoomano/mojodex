@@ -151,7 +151,6 @@ class MdTask(Base):
     md_task_predefined_action_association_: Mapped[List['MdTaskPredefinedActionAssociation']] = relationship('MdTaskPredefinedActionAssociation', foreign_keys='[MdTaskPredefinedActionAssociation.task_fk]', back_populates='md_task_')
     md_user_task: Mapped[List['MdUserTask']] = relationship('MdUserTask', back_populates='md_task')
     md_workflow_step: Mapped[List['MdWorkflowStep']] = relationship('MdWorkflowStep', back_populates='md_task')
-    md_calendar_suggestion: Mapped[List['MdCalendarSuggestion']] = relationship('MdCalendarSuggestion', back_populates='md_task')
 
 
 class MdTextEditActionDisplayedData(Base):
@@ -225,7 +224,6 @@ class MdUser(Base):
     md_user_task: Mapped[List['MdUserTask']] = relationship('MdUserTask', back_populates='user')
     md_user_vocabulary: Mapped[List['MdUserVocabulary']] = relationship('MdUserVocabulary', back_populates='user')
     md_home_chat: Mapped[List['MdHomeChat']] = relationship('MdHomeChat', back_populates='user')
-    md_calendar_suggestion: Mapped[List['MdCalendarSuggestion']] = relationship('MdCalendarSuggestion', back_populates='user')
     md_produced_text: Mapped[List['MdProducedText']] = relationship('MdProducedText', back_populates='user')
 
 
@@ -458,7 +456,7 @@ class MdWorkflowStep(Base):
     rank: Mapped[int] = mapped_column(Integer)
     user_validation_required: Mapped[bool] = mapped_column(Boolean, server_default=text('true'))
     review_chat_enabled: Mapped[bool] = mapped_column(Boolean, server_default=text('false'))
-    definition_for_system: Mapped[Optional[str]] = mapped_column(String)
+    definition_for_system: Mapped[Optional[str]] = mapped_column(String(255))
 
     md_task: Mapped['MdTask'] = relationship('MdTask', back_populates='md_workflow_step')
     md_workflow_step_displayed_data: Mapped[List['MdWorkflowStepDisplayedData']] = relationship('MdWorkflowStepDisplayedData', back_populates='md_workflow_step')
@@ -579,7 +577,6 @@ class MdUserTaskExecution(Base):
     md_purchase: Mapped['MdPurchase'] = relationship('MdPurchase', back_populates='md_user_task_execution')
     session: Mapped['MdSession'] = relationship('MdSession', back_populates='md_user_task_execution')
     md_user_task: Mapped['MdUserTask'] = relationship('MdUserTask', back_populates='md_user_task_execution')
-    md_calendar_suggestion: Mapped[List['MdCalendarSuggestion']] = relationship('MdCalendarSuggestion', back_populates='md_user_task_execution')
     md_produced_text: Mapped[List['MdProducedText']] = relationship('MdProducedText', back_populates='md_user_task_execution')
     md_todo: Mapped[List['MdTodo']] = relationship('MdTodo', back_populates='md_user_task_execution')
     md_user_workflow_step_execution: Mapped[List['MdUserWorkflowStepExecution']] = relationship('MdUserWorkflowStepExecution', back_populates='md_user_task_execution')
@@ -599,37 +596,6 @@ class MdWorkflowStepDisplayedData(Base):
     definition_for_user: Mapped[str] = mapped_column(Text)
 
     md_workflow_step: Mapped['MdWorkflowStep'] = relationship('MdWorkflowStep', back_populates='md_workflow_step_displayed_data')
-
-
-class MdCalendarSuggestion(Base):
-    __tablename__ = 'md_calendar_suggestion'
-    __table_args__ = (
-        ForeignKeyConstraint(['proposed_task_fk'], ['md_task.task_pk'], name='md_welcome_message_md_task_fkey'),
-        ForeignKeyConstraint(['triggered_user_task_execution_pk'], ['md_user_task_execution.user_task_execution_pk'], name='md_welcome_message_triggered_user_task_execution_pk_fkey'),
-        ForeignKeyConstraint(['user_id'], ['md_user.user_id'], name='welcome_message_user_id_fkey'),
-        PrimaryKeyConstraint('calendar_suggestion_pk', name='md_welcome_message_pkey')
-    )
-
-    calendar_suggestion_pk: Mapped[int] = mapped_column(Integer, Sequence('welcome_message_pk_seq'), primary_key=True)
-    user_id: Mapped[str] = mapped_column(String(255))
-    reminder: Mapped[bool] = mapped_column(Boolean, server_default=text('false'))
-    creation_date: Mapped[datetime.datetime] = mapped_column(DateTime, server_default=text('now()'))
-    suggestion_text: Mapped[Optional[str]] = mapped_column(Text)
-    user_reaction_date: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime)
-    triggered_user_task_execution_pk: Mapped[Optional[int]] = mapped_column(Integer)
-    proposed_task_fk: Mapped[Optional[int]] = mapped_column(Integer)
-    text_generated_date: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(True))
-    waiting_message: Mapped[Optional[str]] = mapped_column(String(255))
-    suggestion_title: Mapped[Optional[str]] = mapped_column(String(255))
-    suggestion_emoji: Mapped[Optional[str]] = mapped_column(String(255))
-    event_id: Mapped[Optional[str]] = mapped_column(String(255))
-    reminder_date: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(True))
-    waiting_message_sent: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(True))
-    ready_message: Mapped[Optional[str]] = mapped_column(String(255))
-
-    md_task: Mapped['MdTask'] = relationship('MdTask', back_populates='md_calendar_suggestion')
-    md_user_task_execution: Mapped['MdUserTaskExecution'] = relationship('MdUserTaskExecution', back_populates='md_calendar_suggestion')
-    user: Mapped['MdUser'] = relationship('MdUser', back_populates='md_calendar_suggestion')
 
 
 class MdProducedText(Base):

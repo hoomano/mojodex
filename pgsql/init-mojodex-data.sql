@@ -30,76 +30,10 @@ INSERT INTO public.md_product_category VALUES (1, 'demo', '🪄', 'Explore Mojod
 
 
 --
--- Data for Name: md_product; Type: TABLE DATA; Schema: public; Owner: assistant_db_user
---
-
-INSERT INTO public.md_product VALUES (1, NULL, 'active', 1, true, 999, NULL, NULL, 'professional_digital_assistant');
-
-
---
 -- Data for Name: md_user; Type: TABLE DATA; Schema: public; Owner: assistant_db_user
 --
 
 INSERT INTO public.md_user VALUES ('14f919cf95a70935c6c70f4a89ef5fec', 'Demo User', 'demo@example.com', '2024-02-06 14:15:38.418448+00', '2024-02-06 14:15:38.418448+00', 'en', NULL, 'pbkdf2:sha256:260000$CydC2ZJwOWCDpLpF$c15c17d325a88b0f87480b611203115c9a3d2293c65c0b32e0e5e977b663089e', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Explore Mojodex''s capabilities to enhance productivity and uncover innovative solutions for various tasks', -60, '2024-02-06 14:15:38.418448+00', 1, true);
-
-
---
--- Data for Name: md_purchase; Type: TABLE DATA; Schema: public; Owner: assistant_db_user
---
-
-INSERT INTO public.md_purchase VALUES (3, '14f919cf95a70935c6c70f4a89ef5fec', 1, NULL, '2024-02-06 16:04:52.902031+00', NULL, NULL, NULL, NULL, true, NULL, NULL);
-
-
---
--- Data for Name: md_session; Type: TABLE DATA; Schema: public; Owner: assistant_db_user
---
-
-
-
---
--- Data for Name: md_text_type; Type: TABLE DATA; Schema: public; Owner: assistant_db_user
---
-
-INSERT INTO public.md_text_type VALUES (1, 'meeting_minutes');
-INSERT INTO public.md_text_type VALUES (2, 'email');
-INSERT INTO public.md_text_type VALUES (3, 'document');
-INSERT INTO public.md_text_type VALUES (4, 'poem');
-
-
---
--- Data for Name: md_task; Type: TABLE DATA; Schema: public; Owner: assistant_db_user
---
-
-INSERT INTO public.md_task VALUES (1, 'instruct', 'prepare_meeting_minutes', 'The user needs assistance to prepare a meeting minutes', 'Write a meeting minutes in the form of bullet points', '📝', 1, 'SHORT CONTEXT - DATE OF THE DAY', 'CONTENT OF THE MEETING MINUTES', false, '[{"info_name": "key_topics", "description": "Key topics discussed in the meeting"}, {"info_name": "participants", "description": "Participants of the meeting"}, {"info_name": "date_of_meeting", "description": "Date of the meeting"}, {"info_name": "followup_actions", "description": "Followup actions if any"}]', true);
-INSERT INTO public.md_task VALUES (2, 'instruct', 'follow-up_email', 'The user needs assistance to prepare a follow-up email', 'Write a follow-up email', '💌', 2, 'EMAIL SUBJECT', 'CONTENT OF THE EMAIL', false, '[{"info_name": "meeting_notes", "description": "The notes taken by the user about the meeting"}, {"info_name": "call_to_action", "description": "The follow-up that the user expects from the meeting and wants to share if any"}]', true);
-INSERT INTO public.md_task VALUES (3, 'instruct', 'structure_ideas_into_doc', 'The user needs assistance to turn ideas into a structured written doc', 'Write a structured document based on the provided ideas.', '💡', 3, 'IDEA SUMMARY IN 3-5 WORDS - DATE OF THE DAY', 'CONTENT OF THE STRUCTURED DOCUMENT', false, '[]', true);
-INSERT INTO public.md_task VALUES (4, 'instruct', 'prepare_linkedin_post', 'The user wants to prepare a LinkedIn post', 'Write a post for LinkedIn', '📰', 3, 'CONTEXT OF THE POST', 'CONTENT OF THE LINKEDIN POST', false, '[{"info_name": "post_context", "description": "Context that makes the user want to communicate on LinkedIn"}]', true);
-INSERT INTO public.md_task VALUES (5, 'instruct', 'create_one_minute_pitch', 'The user needs assistance to create a 1-minute pitch for presenting their company and product', 'Write a 1-minute pitch to briefly present the company and product; finish with a question to engage conversation.', '🎤', 3, '1 MINUTE PITCH - COMPANY NAME', 'PITCH CONTENT', false, '[{"info_name": "problem_solved", "description": "The problem the company and product are solving"}, {"info_name": "solution", "description": "How the company and product solve the problem"}, {"info_name": "unique_selling_points", "description": "What makes the company and product different from other solutions"}, {"info_name": "target_market", "description": "The target market represented by an ideal customer description"}]', true);
-INSERT INTO public.md_task VALUES (6, 'instruct', 'general_assistance', 'The user needs help with a question they may ask', 'Provide a helpful and accurate answer to the user''s question', '💡', 3, 'QUESTION ASKED BY USER', 'HELPFUL RESPONSE WITH REQUESTED INFORMATION', false, '[]', true);
-
-
---
--- Data for Name: md_user_task; Type: TABLE DATA; Schema: public; Owner: assistant_db_user
---
-
-INSERT INTO public.md_user_task VALUES (1, '14f919cf95a70935c6c70f4a89ef5fec', 1, true);
-INSERT INTO public.md_user_task VALUES (2, '14f919cf95a70935c6c70f4a89ef5fec', 2, true);
-INSERT INTO public.md_user_task VALUES (3, '14f919cf95a70935c6c70f4a89ef5fec', 3, true);
-INSERT INTO public.md_user_task VALUES (4, '14f919cf95a70935c6c70f4a89ef5fec', 4, true);
-INSERT INTO public.md_user_task VALUES (5, '14f919cf95a70935c6c70f4a89ef5fec', 5, true);
-INSERT INTO public.md_user_task VALUES (6, '14f919cf95a70935c6c70f4a89ef5fec', 6, true);
-
-
---
--- Data for Name: md_user_task_execution; Type: TABLE DATA; Schema: public; Owner: assistant_db_user
---
-
-
-
---
--- Data for Name: md_calendar_suggestion; Type: TABLE DATA; Schema: public; Owner: assistant_db_user
---
-
 
 
 --
@@ -116,6 +50,12 @@ INSERT INTO public.md_user_task VALUES (6, '14f919cf95a70935c6c70f4a89ef5fec', 6
 
 --
 -- Data for Name: md_document_chunk; Type: TABLE DATA; Schema: public; Owner: assistant_db_user
+--
+
+
+
+--
+-- Data for Name: md_session; Type: TABLE DATA; Schema: public; Owner: assistant_db_user
 --
 
 
@@ -153,6 +93,28 @@ INSERT INTO public.md_platform VALUES (2, 'webapp');
 
 
 --
+-- Data for Name: md_text_type; Type: TABLE DATA; Schema: public; Owner: assistant_db_user
+--
+
+INSERT INTO public.md_text_type VALUES (1, 'meeting_minutes');
+INSERT INTO public.md_text_type VALUES (2, 'email');
+INSERT INTO public.md_text_type VALUES (3, 'document');
+INSERT INTO public.md_text_type VALUES (4, 'poem');
+
+
+--
+-- Data for Name: md_task; Type: TABLE DATA; Schema: public; Owner: assistant_db_user
+--
+
+INSERT INTO public.md_task VALUES (1, 'instruct', 'prepare_meeting_minutes', 'The user needs assistance to prepare a meeting minutes', 'Write a meeting minutes in the form of bullet points', '📝', 1, 'SHORT CONTEXT - DATE OF THE DAY', 'CONTENT OF THE MEETING MINUTES', false, '[{"info_name": "key_topics", "description": "Key topics discussed in the meeting"}, {"info_name": "participants", "description": "Participants of the meeting"}, {"info_name": "date_of_meeting", "description": "Date of the meeting"}, {"info_name": "followup_actions", "description": "Followup actions if any"}]', true);
+INSERT INTO public.md_task VALUES (2, 'instruct', 'follow-up_email', 'The user needs assistance to prepare a follow-up email', 'Write a follow-up email', '💌', 2, 'EMAIL SUBJECT', 'CONTENT OF THE EMAIL', false, '[{"info_name": "meeting_notes", "description": "The notes taken by the user about the meeting"}, {"info_name": "call_to_action", "description": "The follow-up that the user expects from the meeting and wants to share if any"}]', true);
+INSERT INTO public.md_task VALUES (3, 'instruct', 'structure_ideas_into_doc', 'The user needs assistance to turn ideas into a structured written doc', 'Write a structured document based on the provided ideas.', '💡', 3, 'IDEA SUMMARY IN 3-5 WORDS - DATE OF THE DAY', 'CONTENT OF THE STRUCTURED DOCUMENT', false, '[]', true);
+INSERT INTO public.md_task VALUES (4, 'instruct', 'prepare_linkedin_post', 'The user wants to prepare a LinkedIn post', 'Write a post for LinkedIn', '📰', 3, 'CONTEXT OF THE POST', 'CONTENT OF THE LINKEDIN POST', false, '[{"info_name": "post_context", "description": "Context that makes the user want to communicate on LinkedIn"}]', true);
+INSERT INTO public.md_task VALUES (5, 'instruct', 'create_one_minute_pitch', 'The user needs assistance to create a 1-minute pitch for presenting their company and product', 'Write a 1-minute pitch to briefly present the company and product; finish with a question to engage conversation.', '🎤', 3, '1 MINUTE PITCH - COMPANY NAME', 'PITCH CONTENT', false, '[{"info_name": "problem_solved", "description": "The problem the company and product are solving"}, {"info_name": "solution", "description": "How the company and product solve the problem"}, {"info_name": "unique_selling_points", "description": "What makes the company and product different from other solutions"}, {"info_name": "target_market", "description": "The target market represented by an ideal customer description"}]', true);
+INSERT INTO public.md_task VALUES (6, 'instruct', 'general_assistance', 'The user needs help with a question they may ask', 'Provide a helpful and accurate answer to the user''s question', '💡', 3, 'QUESTION ASKED BY USER', 'HELPFUL RESPONSE WITH REQUESTED INFORMATION', false, '[]', true);
+
+
+--
 -- Data for Name: md_task_predefined_action_association; Type: TABLE DATA; Schema: public; Owner: assistant_db_user
 --
 
@@ -160,6 +122,38 @@ INSERT INTO public.md_platform VALUES (2, 'webapp');
 
 --
 -- Data for Name: md_predefined_action_displayed_data; Type: TABLE DATA; Schema: public; Owner: assistant_db_user
+--
+
+
+
+--
+-- Data for Name: md_product; Type: TABLE DATA; Schema: public; Owner: assistant_db_user
+--
+
+INSERT INTO public.md_product VALUES (1, NULL, 'active', 1, true, 999, NULL, NULL, 'professional_digital_assistant');
+
+
+--
+-- Data for Name: md_purchase; Type: TABLE DATA; Schema: public; Owner: assistant_db_user
+--
+
+INSERT INTO public.md_purchase VALUES (3, '14f919cf95a70935c6c70f4a89ef5fec', 1, NULL, '2024-02-06 16:04:52.902031+00', NULL, NULL, NULL, NULL, true, NULL, NULL);
+
+
+--
+-- Data for Name: md_user_task; Type: TABLE DATA; Schema: public; Owner: assistant_db_user
+--
+
+INSERT INTO public.md_user_task VALUES (1, '14f919cf95a70935c6c70f4a89ef5fec', 1, true);
+INSERT INTO public.md_user_task VALUES (2, '14f919cf95a70935c6c70f4a89ef5fec', 2, true);
+INSERT INTO public.md_user_task VALUES (3, '14f919cf95a70935c6c70f4a89ef5fec', 3, true);
+INSERT INTO public.md_user_task VALUES (4, '14f919cf95a70935c6c70f4a89ef5fec', 4, true);
+INSERT INTO public.md_user_task VALUES (5, '14f919cf95a70935c6c70f4a89ef5fec', 5, true);
+INSERT INTO public.md_user_task VALUES (6, '14f919cf95a70935c6c70f4a89ef5fec', 6, true);
+
+
+--
+-- Data for Name: md_user_task_execution; Type: TABLE DATA; Schema: public; Owner: assistant_db_user
 --
 
 
@@ -545,13 +539,6 @@ SELECT pg_catalog.setval('public.md_workflow_step_displayed_data_seq', 1, false)
 --
 
 SELECT pg_catalog.setval('public.md_workflow_step_seq', 1, false);
-
-
---
--- Name: welcome_message_pk_seq; Type: SEQUENCE SET; Schema: public; Owner: assistant_db_user
---
-
-SELECT pg_catalog.setval('public.welcome_message_pk_seq', 1, false);
 
 
 --

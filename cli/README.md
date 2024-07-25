@@ -1,7 +1,8 @@
 # Mojodex CLI
 
+CLI is still in very early phase and work in progress
 
-## Usage
+## (FUTURE – NOT READY) Usage
 
 ```shell
 (venv) user@system cli % mojodex run --task-name meeting_minutes

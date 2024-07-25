@@ -1,0 +1,49 @@
+#sidebar {
+    margin-top: 1;
+    dock: left;
+    width: 16;
+    height: 100%;
+    color: #0f2b41;
+    background: black;
+}
+
+#task_list_execution_sidebar {
+    dock: left;
+    width: 60;
+    height: 100%;
+}
+
+
+
+
+
+
+#task_execution_description {
+    text-align: center;
+    width: 100%;
+    padding: 1;
+}
+
+
+#task-execution-panel {
+    layout: grid;
+    grid-size: 2;
+    grid-columns: 1fr;
+    grid-rows: 1fr;
+    grid-gutter: 1;
+}
+
+
+#chat-interface {
+    background: $panel;
+    width:100%;
+    height:100%;
+    align: center bottom;
+}
+
+#chat-messages-panel {
+    margin-bottom: 1;
+    padding: 1;
+    height: auto;
+    align: center bottom;
+}

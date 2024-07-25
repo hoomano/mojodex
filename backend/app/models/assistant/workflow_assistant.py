@@ -71,7 +71,6 @@ class WorkflowAssistant(ChatAssistant):
                        user_datetime_context=self.workflow_execution.user.datetime_context,
                        username=self.workflow_execution.user.name,
                        user_company_knowledge=self.workflow_execution.user.company_description,
-                       infos_to_extract=self.workflow_execution.task.infos_to_extract,
                        workflow=self.workflow_execution.task,
                        title_start_tag=TaskProducedTextManager.title_tag_manager.start_tag,
                        title_end_tag=TaskProducedTextManager.title_tag_manager.end_tag,

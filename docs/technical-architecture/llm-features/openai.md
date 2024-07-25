@@ -10,5 +10,5 @@ You can specify the provider to use as a backup in case the main provider reache
 
 ## Coverage
 
-GPT4-Turbo has been used to develop the entire Mojodex platform. The coverage is complete.
+GPT4-o has been used to develop the entire Mojodex platform. The coverage is complete.
 

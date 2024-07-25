@@ -14,5 +14,5 @@ GPT4_AZURE_OPENAI_KEY=<your-key>
 
 ## Coverage
 
-GPT4-Turbo has been used to develop the entire Mojodex platform. The coverage is complete.
+GPT4-o and GPT4-Turbo has been used to develop the entire Mojodex platform. The coverage is complete.
 

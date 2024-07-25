@@ -86,7 +86,7 @@ class UserWorkflowStepExecution(MdUserWorkflowStepExecution):
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} :: learn_instruction :: {e}")
 
-    @cached_property
+    @property
     def user_workflow_step_execution_result(self):
         try:
             session = object_session(self)

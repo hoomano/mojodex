@@ -10,8 +10,6 @@ class WriteSynthesisNoteStep(WorkflowStep):
     def _synthesize(self, sources_notes: List[str], search_topic:str, user_id: str, user_task_execution_pk: int, task_name_for_system: str):
         try:
             synthesis_mpt = MPT(self.synthesize_mpt_filename, notes=sources_notes, search_topic=search_topic)
-            with open('/data/synthesis_prompt.txt', 'w') as f:
-                f.write(synthesis_mpt.prompt)
             synthesis_note = synthesis_mpt.run(user_id=user_id, temperature=0, max_tokens=4000,
                                                user_task_execution_pk=user_task_execution_pk,
                                                task_name_for_system=task_name_for_system)

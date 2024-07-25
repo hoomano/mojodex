@@ -34,8 +34,6 @@ class SearchSourcesStep(WorkflowStep):
         try:
             create_note_mpt = MPT(self.create_note_from_webpage_mpt_filename,
                                   query=query, webpage_text=webpage_text)
-            with open('/data/create_note_prompt.txt', 'w') as f:
-                f.write(create_note_mpt.prompt)
             note = create_note_mpt.run(user_id=user_id, temperature=0, max_tokens=4000,
                                                 user_task_execution_pk=user_task_execution_pk,
                                                 task_name_for_system=task_name_for_system)
@@ -48,8 +46,6 @@ class SearchSourcesStep(WorkflowStep):
             # MPT call
             another_search_mpt = MPT(self.ask_for_another_search_mpt_filename,
                                      research_subject=research_subject, sources=sources)
-            with open('/data/another_query_prompt.txt', 'w') as f:
-                f.write(another_search_mpt.prompt)
             query = another_search_mpt.run(user_id=user_id, temperature=0, max_tokens=4000,
                                              user_task_execution_pk=user_task_execution_pk,
                                              task_name_for_system=task_name_for_system)

@@ -240,9 +240,10 @@ class Task(Resource):
                     db.session.flush()
           
             if "task_displayed_data" in request.json:
+
                 task_displayed_data = request.json["task_displayed_data"]
                 for translation in task_displayed_data:
-                        
+                        language_code=translation["language_code"]
                         try:
                             task_translation = db.session.query(MdTaskDisplayedData).filter(MdTaskDisplayedData.task_fk == task_pk, MdTaskDisplayedData.language_code == language_code).first()
 
@@ -259,12 +260,14 @@ class Task(Resource):
                                 db.session.flush()
 
                             else:
+                                
                                 task_translation.language_code = translation["language_code"]
                                 task_translation.name_for_user = translation["name_for_user"]
                                 task_translation.definition_for_user = translation["definition_for_user"]
                                 
                                 task_translation.json_input = translation["json_input"]
                                 flag_modified(task_translation, "json_input")
+                            
 
                         except KeyError as e:
                             return {"error": f"Missing field {e} for language_code '{language_code}'"}, 400

@@ -63,6 +63,13 @@ def _check_push_notifications_are_configured():
 PurchasesExpirationChecker(3600) # check ended free_plan every 1 hour
 ExtractTodos(600) # extract todos every 10 minutes
 RescheduleTodos(3600) # reschedule todos every 1 hour
+
+
+## TO USE PUSH NOTIFICATIONS use this snippet as example
+# if _check_push_notifications_are_configured():
+#     pass
+
+
 if _check_emails_are_configured():
     SendTodoDailyEmails(3600) # send todo daily emails every 1 hour (filtered by timezone)
     CheckDisengagedFreeTrialUsers(86400)  # check disengaged free trial users every day

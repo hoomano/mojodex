@@ -21,7 +21,6 @@ class WorkflowProcessController:
             self.db_session = Session(MojodexCoreDB().engine)
             self.workflow_execution: UserWorkflowExecution = self.db_session.query(UserWorkflowExecution).get(
                 workflow_execution_pk)
-            self._current_step = None
         except Exception as e:
             raise Exception(f"{self.logger_prefix} :: __init__ :: {e}")
 
@@ -41,9 +40,8 @@ class WorkflowProcessController:
     def _get_next_step_execution_to_run(self):
         try:
             if not self.workflow_execution.past_valid_step_executions:  # no step validated yet
-                self._current_step = self._generate_new_step_execution(self.workflow_execution.task.steps[0],
+                return self._generate_new_step_execution(self.workflow_execution.task.steps[0],
                                                                        self.get_formatted_initial_parameters())  # of first step
-                return self._current_step
 
             last_validated_step_execution = self.workflow_execution.past_valid_step_executions[-1]
 
@@ -64,10 +62,8 @@ class WorkflowProcessController:
                 # have all parameters been executed and validated?
                 if current_step_executions_count < len(db_dependency_step_execution_result.result):
                     current_parameter = db_dependency_step_execution_result.result[current_step_executions_count]
-                    self._current_step = self._generate_new_step_execution(last_validated_step_execution.workflow_step,
+                    return self._generate_new_step_execution(last_validated_step_execution.workflow_step,
                                                                            current_parameter)
-                    return self._current_step
-
 
             # else, generate new step execution of next step
             next_step = last_validated_step_execution.workflow_step.next_step
@@ -75,8 +71,8 @@ class WorkflowProcessController:
             if next_step is None:
                 return None  # end of workflow
             # else
-            self._current_step = self._generate_new_step_execution(next_step, last_validated_step_execution.result[0])
-            return self._current_step
+            return self._generate_new_step_execution(next_step, last_validated_step_execution.result[0])
+           
         except Exception as e:
             raise Exception(f"_get_next_step_execution_to_run :: {e}")
 
@@ -105,7 +101,7 @@ class WorkflowProcessController:
 
             self._execute_step(next_step_execution_to_run)
 
-            self._send_ended_step_event()
+            self._send_ended_step_event(next_step_execution_to_run)
             if not next_step_execution_to_run.workflow_step.user_validation_required and next_step_execution_to_run.error_status is None:
                 # add previous step to past_accepted_steps_executions
                 self.workflow_execution.past_valid_step_executions.append(next_step_execution_to_run)
@@ -166,9 +162,9 @@ class WorkflowProcessController:
         except Exception as e:
             raise Exception(f"_generate_produced_text :: {e}")
 
-    def _send_ended_step_event(self):
+    def _send_ended_step_event(self, workflow_step_execution: UserWorkflowStepExecution):
         try:
-            step_execution_json = self._current_step.to_json()
+            step_execution_json = workflow_step_execution.to_json()
             step_execution_json["session_id"] = self.workflow_execution.session_id
             server_socket.emit('workflow_step_execution_ended', step_execution_json,
                                to=self.workflow_execution.session_id)
@@ -199,7 +195,6 @@ class WorkflowProcessController:
         try:
             step_execution = self.db_session.query(UserWorkflowStepExecution).get(step_execution_pk)
             step_execution.validate()
-            self.workflow_execution.past_valid_step_executions.append(step_execution)
         except Exception as e:
             raise Exception(f"validate_step_execution :: {e}")
 

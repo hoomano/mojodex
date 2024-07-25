@@ -327,7 +327,7 @@
                         "name_for_user": {
                             "type": "string"
                         },
-                        "description_for_user": {
+                        "definition_for_user": {
                             "type": "string"
                         },
                         "json_input": {

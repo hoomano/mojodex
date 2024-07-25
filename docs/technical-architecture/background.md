@@ -1,14 +1,14 @@
 # MOJODEX Background
 
-The background backend is responsible for processing data in the background.
+The background is responsible for processing data in the background.
 It is useful for long-running process that would otherwise block the main backend.
 It is also useful for processing batch data (like sending emails or notifs to a group of users).
 
 
 ## Structure
-The background is a Flask application which routes can only be called by Mojodex's backend.
+The background is a Flask application which routes can only be called by Mojodex's backend or by the Scheduler.
 
-> The background must be deployed in the same network as the backend so that the backend can call its routes but its routes must not be accessible from the outside.
+> The background must be deployed in the same network as the backend and scheduler so that the backend can call its routes but its routes must not be accessible from the outside.
 
 `background/app/app.py`
 ```python
@@ -27,11 +27,9 @@ HttpRouteManager(api)
 The API routes are all defined in `background/app/http_routes.py` in the `HttpRouteManager` class, pointing to related Flask Resources in `background/app/routes/`.
 
 ## Usage
-When Mojodex's Backend calls Mojodex's Background to manage a process, it sends a request using REST API. Then, the route uses the app `ThreadPoolExecutor executor` to launch the required process in a parallel thread and return a 200 status code to the Backend to indicate that the process has been launched.
+When Mojodex's Backend or Scheduler calls Mojodex's Background to manage a process, it sends a request using REST API. Then, the route uses the app `ThreadPoolExecutor executor` to launch the required process in a parallel thread and return a 200 status code to indicate that the process has been launched.
 
 Access to the database within parallel threads is done by decorating methods requiring this access with decorator `@with_db_session`. This decorator opens a new Session accessing the database, executes the decorated method and closes the session. This ensures no database session will remain open after the method is executed.
-
-Finally, if any data needs to be inserted or updated in the database, this is done by calling a Backend API route from the Cortex. This way, we ensure responsability segregation and every data written in the database is done by the Backend.
 
 Here is an example of a parallel process to extract To-Do items from a task:
 
@@ -63,14 +61,18 @@ class TodosCreator:
         # This method processes the raw data provided by _collect_data to extract To-Do items
         [...]
 
-    def _save_to_db(self, description, due_date):
-        # This method calls the Backend API to save the To-Do item in the database
-        # This way, the Background is not responsible for writing in the database
-        [...]
-        uri = f"{os.environ['MOJODEX_BACKEND_URI']}/{TodosCreator.todos_url}"
-        [...]
-        internal_request = requests.put(uri, json=pload, headers=headers)
-        [...]
+    @with_db_session
+    def _save_to_db(self, description, due_date, db_session):
+         # create new todo
+            new_todo = MdTodo(
+                creation_date=datetime.now(),
+                description=description,
+                user_task_execution_fk=self.user_task_execution_pk
+            )
+            db_session.add(new_todo)
+            [...]
+            db_session.commit()
+            [...]
 ```
 
 This process is launched when calling route `background/app/routes/extract_todos.py` from the Backend:
@@ -122,12 +124,10 @@ Anyway, the process of updating a document requires embedding the new version, w
 - Resource: `background/app/routes/event_generation.py`
 - Cortex: `background/app/models/events/event_generator.py` (abstract class, implementation depends on parameters of request)
 
-This process is called any time the Backend wants to send a notification to the user whether it is a mail, push notification... The Background is only responsible for notification content generation.
-For now, 2 types of events are generated:
-- calendar_suggestions: will be removed soon
+This process is called any time the Backend wants to send a notification to the user whether it is a mail, push notification... The Background is responsible for notification content generation and event sending.
+For now, 1 type of events are generated:
 - todo_daily_emails: An email to remind the user of his To-Do items for the day. Launched from the Scheduler every day at 8am, the Backend selects the user that opted-in this option and triggers the Background to generate the email content.
 
-Once the content of the notification is generated, it is sent back to the Backend which is responsible to handle it by logging it in DB and sending it with the correct service to the user.
 
 ## System 1/System 2 Abstraction
 

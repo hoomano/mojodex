@@ -20,6 +20,9 @@ ENV GIT_SSL_NO_VERIFY=true
 COPY backend/requirements.txt ./
 RUN pip install -r requirements.txt
 
+# Playwright dependencies
+RUN apt-get install -y libnss3 libnspr4 libatk1.0-0 libatk-bridge2.0-0 libcups2 libatspi2.0-0 libxcomposite1 libgbm1
+
 # Install Mojodex core
 COPY ./mojodex_core /app/mojodex_core
 COPY ./models.conf /app/mojodex_core/llm_engine/providers
@@ -38,6 +41,7 @@ WORKDIR /app
 # For more info, please refer to https://aka.ms/vscode-docker-python-configure-containers
 RUN adduser -u 5678 --disabled-password --gecos "" appuser && chown -R appuser /app
 USER appuser
+RUN playwright install
 
 # During debugging, this entry point will be overridden. For more information, please refer to https://aka.ms/vscode-docker-python-debug
 #CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "1", "--worker-class", "eventlet", "app:app"]

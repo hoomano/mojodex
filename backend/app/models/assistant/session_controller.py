@@ -152,9 +152,6 @@ class SessionController:
         app_version = version.parse(message["version"]) if "version" in message else version.parse("0.0.0")
         self.platform = message["platform"] if "platform" in message else "webapp"
 
-        if "message_pk" not in message:
-            self._new_message(message, Message.user_message_key, "user_message")
-
         user_task_execution = None
         # if "user_task_execution_pk" in message and message["user_task_execution_pk"] is not None, let's update task title and summary
         if "user_task_execution_pk" in message and message["user_task_execution_pk"] is not None:

@@ -128,46 +128,6 @@ CREATE SEQUENCE public.home_chat_pk_seq
 
 
 --
--- Name: welcome_message_pk_seq; Type: SEQUENCE; Schema: public; Owner: -
---
-
-CREATE SEQUENCE public.welcome_message_pk_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-SET default_tablespace = '';
-
-SET default_table_access_method = heap;
-
---
--- Name: md_calendar_suggestion; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE public.md_calendar_suggestion (
-    calendar_suggestion_pk integer DEFAULT nextval('public.welcome_message_pk_seq'::regclass) NOT NULL,
-    user_id character varying(255) NOT NULL,
-    suggestion_text text,
-    reminder boolean DEFAULT false NOT NULL,
-    creation_date timestamp without time zone DEFAULT now() NOT NULL,
-    user_reaction_date timestamp without time zone,
-    triggered_user_task_execution_pk integer,
-    proposed_task_fk integer,
-    text_generated_date timestamp with time zone,
-    waiting_message character varying(255),
-    suggestion_title character varying(255),
-    suggestion_emoji character varying(255),
-    event_id character varying(255),
-    reminder_date timestamp with time zone,
-    waiting_message_sent timestamp with time zone,
-    ready_message character varying(255)
-);
-
-
---
 -- Name: md_company_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -178,6 +138,10 @@ CREATE SEQUENCE public.md_company_seq
     NO MAXVALUE
     CACHE 1;
 
+
+SET default_tablespace = '';
+
+SET default_table_access_method = heap;
 
 --
 -- Name: md_company; Type: TABLE; Schema: public; Owner: -
@@ -1299,14 +1263,6 @@ ALTER TABLE ONLY public.md_user_workflow_step_execution
 
 
 --
--- Name: md_calendar_suggestion md_welcome_message_pkey; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.md_calendar_suggestion
-    ADD CONSTRAINT md_welcome_message_pkey PRIMARY KEY (calendar_suggestion_pk);
-
-
---
 -- Name: md_workflow_step_displayed_data md_workflow_step_displayed_data_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1659,22 +1615,6 @@ ALTER TABLE ONLY public.md_user_workflow_step_execution
 
 
 --
--- Name: md_calendar_suggestion md_welcome_message_md_task_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.md_calendar_suggestion
-    ADD CONSTRAINT md_welcome_message_md_task_fkey FOREIGN KEY (proposed_task_fk) REFERENCES public.md_task(task_pk);
-
-
---
--- Name: md_calendar_suggestion md_welcome_message_triggered_user_task_execution_pk_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.md_calendar_suggestion
-    ADD CONSTRAINT md_welcome_message_triggered_user_task_execution_pk_fkey FOREIGN KEY (triggered_user_task_execution_pk) REFERENCES public.md_user_task_execution(user_task_execution_pk);
-
-
---
 -- Name: md_workflow_step_displayed_data md_workflow_step_displayed_data_workflow_step_fk_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1816,14 +1756,6 @@ ALTER TABLE ONLY public.md_user_vocabulary
 
 ALTER TABLE ONLY public.md_user_workflow_step_execution_result
     ADD CONSTRAINT user_workflow_step_execution_fkey FOREIGN KEY (user_workflow_step_execution_fk) REFERENCES public.md_user_workflow_step_execution(user_workflow_step_execution_pk);
-
-
---
--- Name: md_calendar_suggestion welcome_message_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.md_calendar_suggestion
-    ADD CONSTRAINT welcome_message_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.md_user(user_id);
 
 
 --

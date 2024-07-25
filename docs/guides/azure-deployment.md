@@ -23,10 +23,7 @@ A container instance will be created to run the scheduler.
 
 ### Storage Account (File Share)
 A storage account will be used as volume for the backend and background services.
-It will store data as:
-- translation files
-- logs
-- users dataset
+It will store users data.
 
 ### PostgreSQL flexible server
 A PostgreSQL flexible server will be used for Mojodex database.
@@ -47,7 +44,7 @@ az account set --subscription <subscription_id>
 To deploy on Azure for the first time, we've made a script for you. Here is the process:
 
 1. Check environment variables defined in `deployment/azure_env_variables` files. Set your secrets.
-2. Copy file models.conf.example to models.conf and set your own models providers credentials.
+2. Set your own models providers credentials in models confs files.
 3. In the script `deployment/azure_deployment_script.sh`, check that every names and sku fit your needs.
 4. Launch the script from deployment folder
 ```bash

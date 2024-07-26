@@ -27,7 +27,6 @@ from routes.timezone import Timezone
 from routes.product import Product
 from routes.product_task_association import ProductTaskAssociation
 from routes.manual_purchase import ManualPurchase
-from routes.inapp_apple_purchase import InAppApplePurchase
 from routes.todos import Todos
 from routes.vocabulary import Vocabulary
 from routes.product_category import ProductCategory
@@ -79,7 +78,6 @@ class HttpRouteManager:
         api.add_resource(Product, "/product")
         api.add_resource(ProductTaskAssociation, "/product_task_association")
         api.add_resource(ManualPurchase, "/manual_purchase")
-        api.add_resource(InAppApplePurchase, "/in_app_apple_purchase")
         api.add_resource(Todos, "/todos")
         api.add_resource(Vocabulary, "/vocabulary")
         api.add_resource(ProductCategory, "/product_category")

@@ -74,7 +74,7 @@ curl --location --request PUT 'http://localhost:5001/task' \
             "language_code":"<2-LETTERS LANGUAGE-CODE>",
             "name_for_user": <WORKFLOW_NAME_FOR_USER>",
             "definition_for_user": <WORKFLOW_DEFINITION_FOR_USER>",
-            "json_inputs": [
+            "json_input": [
                 {"input_name": "<INPUT_NAME>", 
                 "description_for_user": "<DESCRIPTION_FOR_USER>",
                     "description_for_system": "<DESCRIPTION_FOR_SYSTEM>",

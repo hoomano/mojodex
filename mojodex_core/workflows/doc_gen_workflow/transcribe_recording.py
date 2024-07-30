@@ -17,8 +17,7 @@ class TranscribeRecordingStep(WorkflowStep):
             3. Dividing the transcription into chapters
             4. Returning the chapters as a list of strings including the timestamp of the beginning of each chapter in seconds from the start.
             """
-            # From the meeting audio recording filename, get the full path to the audio recording file
-            # initial_parameters contains this {'video_recording': 'meeting-audio-recording.m4a'}, coming from the initial input form
+            
             recording_filepath = UserVideoFileManager().get_video_file_from_form_storage_path(initial_parameters['video_recording'], user_id, session_id)
 
             # Transcribe the audio from STT

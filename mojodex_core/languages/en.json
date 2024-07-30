@@ -125,6 +125,7 @@
 			"restartError": "Error restarting workflow. Please retry or contact support.",
 			"imageUploadButton": "Upload image",
 			"audioUploadButton": "Upload audio file",
+			"videoUploadButton": "Upload video file",
 			"missingFieldLabel": "Missing field"
 		},
 		"chatTab": {

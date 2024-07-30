@@ -50,7 +50,8 @@ export enum TaskJsonInputType {
   IMAGE = "image",
   MULTIPLE_IMAGES = "multiple_images",
   DROP_DOWN_LIST = "drop_down_list",
-  AUDIO_FILE = "audio_file"
+  AUDIO_FILE = "audio_file",
+  VIDEO = "video"
 }
 
 export interface TaskJsonInput {

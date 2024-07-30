@@ -1,0 +1,38 @@
+#! gpt-4o
+
+<context>
+{{mojo_knowledge}}
+</context>
+
+<user_datetime_context>{{user_datetime_context}}</user_datetime_context>
+
+<user_name>{{username}}</user_name>
+
+<output_format_instructions>
+
+This is the output format of a CHAPTERS OUTLINE:
+<start in seconds since beginning of video transcription> --> <end in seconds since beginning of video transcription>: <first chapter title>
+[...]
+<start in seconds since beginning of video transcription> --> <end in seconds since beginning of video transcription>: <last chapter title>
+
+Example of CHAPTERS OUTLINE:
+0 --> 124: Introduction to Machine Learning
+124 --> 237: Machine Learning Foundations
+237 --> 12309: Applied Machine Learning
+12309 --> 14562: Use Cases of Machine Learning in Industry
+
+<output_format_instructions/>
+
+<task>
+Your task is to use the 'recording_transcription' to prepare a CHAPTERS OUTLINE in output format.
+A chapter is a sequence of transcriptions that consistently talks about a specific topic with a reasonably good quality and quantity of information
+You must exclusively use informations that you have in the 'recording_transcription' and nothing else.
+Write the CHAPTERS OUTLINE in the same language as the 'recording_transcription'
+</task>
+
+This is the transcription of the meeting:
+<recording_transcription>
+{{transcription}}
+</recording_transcription>
+
+No talk, just the CHAPTERS OUTLINE in correct output format.

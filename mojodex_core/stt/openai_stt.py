@@ -1,3 +1,4 @@
+from datetime import timedelta
 from mojodex_core.costs_manager.whisper_costs_manager import WhisperCostsManager
 from openai import OpenAI, AzureOpenAI
 import tiktoken
@@ -6,6 +7,8 @@ from mojodex_core.entities.db_base_entities import MdUserVocabulary
 from mojodex_core.entities.user import User
 from mojodex_core.logging_handler import log_error
 from mojodex_core.stt.stt_engine import SttEngine
+from mojodex_core.stt.transcription import TranscriptionWithTimeStamps
+
 from pydub import AudioSegment
 
 from mojodex_core.user_storage_manager.user_audio_file_manager import UserAudioFileManager
@@ -46,7 +49,19 @@ class OpenAISTT(SttEngine):
         except Exception as e:
             raise Exception(f"_num_tokens_from_string:  {e}")
 
-    def transcribe(self, audio_file_path, user_id, user_task_execution_pk=None, task_name_for_system=None):
+    def transcribe(self, audio_file_path, user_id, user_task_execution_pk=None, task_name_for_system=None) -> str:
+        try:
+            return self.__transcribe(audio_file_path, user_id, user_task_execution_pk, task_name_for_system, with_timestamps=False)
+        except Exception as e:
+            raise Exception(f"{self.__class__.__name__} :: transcribe:  {e}")
+        
+    def transcribe_with_timestamp(self, filepath, user_id, user_task_execution_pk, task_name_for_system) -> list[TranscriptionWithTimeStamps]:
+        try:
+            return self.__transcribe(filepath, user_id, user_task_execution_pk, task_name_for_system, with_timestamps=True)
+        except Exception as e:
+            raise Exception(f"{self.__class__.__name__}: transcribe_with_timestamp: {e}")
+
+    def __transcribe(self, audio_file_path, user_id, user_task_execution_pk=None, task_name_for_system=None, with_timestamps=False):
         try:
             try:
                 vocab = self.__get_user_vocabulary(user_id)
@@ -66,11 +81,12 @@ class OpenAISTT(SttEngine):
             file_format = audio_file_path.split('.')[-1]
             file_name = audio_file_path.split('/')[-1].split('.')[0]
             audio_file_dir = os.path.dirname(audio_file_path)
+            transcriptions = []
+            text_transcription = ""
 
             if audio.duration_seconds > ten_minutes_in_seconds:
                 # split the file into 10 minutes chunks
                 chunks = audio[::ten_minutes_in_seconds * 1000]
-                transcriptions = []
                 count = 0
                 for chunk in chunks:
                     chunk_name = file_name + f"_chunk_{count}." + file_format
@@ -79,25 +95,36 @@ class OpenAISTT(SttEngine):
                     transcription = self.client.audio.transcriptions.create(
                         model=self.model,
                         file=chunk_file,
-                        prompt=vocab
+                        prompt=vocab,
+                        response_format="verbose_json" if with_timestamps else "text"
                     )
-                    transcriptions.append(transcription.text)
+                    if with_timestamps:
+                        for t in transcription.segments:
+                            transcriptions.append(TranscriptionWithTimeStamps(t['text'], timedelta(seconds=t['start'] + count * ten_minutes_in_seconds), timedelta(seconds=t['end'] + count * ten_minutes_in_seconds)))
+                    else:
+                        text_transcription += " " + transcription.text
                     count += 1
-                transcription = " ".join(transcriptions)
 
             else:
                 with open(audio_file_path, "rb") as audio_file:
                     transcription = self.client.audio.transcriptions.create(
                         model=self.model,
                         file=audio_file,
-                        prompt=vocab
-                    ).text
+                        prompt=vocab,
+                        response_format="verbose_json" if with_timestamps else "text"
+                    )
+                if with_timestamps:
+                    for t in transcription.segments:
+                        transcriptions.append(TranscriptionWithTimeStamps(t["text"], timedelta(seconds=t["start"]), timedelta(seconds=t["end"])))
+                else:
+                    text_transcription += " " + transcription.text
                 
 
             whisper_costs_manager.on_seconds_counted(user_id=user_id, n_seconds=audio.duration_seconds,
                                                     user_task_execution_pk=user_task_execution_pk,
                                                     task_name_for_system=task_name_for_system, mode=self.model)
-            return transcription
+            return text_transcription if not with_timestamps else transcriptions
         except Exception as e:
-            raise Exception(f"{self.__class__.__name__} :: transcribe:  {e}")
+            raise Exception(f"{self.__class__.__name__} :: __transcribe:  {e}")
+
 

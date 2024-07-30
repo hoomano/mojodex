@@ -1,5 +1,6 @@
 from mojodex_core.user_storage_manager.user_audio_file_manager import UserAudioFileManager
 from mojodex_core.user_storage_manager.user_images_file_manager import UserImagesFileManager
+from mojodex_core.user_storage_manager.user_video_file_manager import UserVideoFileManager
 
 
 class UserTaskExecutionInputsManager:
@@ -9,6 +10,7 @@ class UserTaskExecutionInputsManager:
     image_type = "image"
     multiple_images_type = "multiple_images"
     audio_file = "audio_file"
+    video_file = "video"
 
     def construct_inputs_from_request(self, user_task_execution_json_input_values, inputs, files, user_id, session_id):
         try:
@@ -54,6 +56,10 @@ class UserTaskExecutionInputsManager:
                         if input["input_name"] == file_input:
                             filename = input["value"]
                             UserAudioFileManager().store_audio_file_from_form(files[file_input], filename, user_id, session_id)
+                    if input["type"] == self.video_file:
+                        if input["input_name"] == file_input:
+                            filename = input["value"]
+                            UserVideoFileManager().store_video_file(files[file_input], filename, user_id, session_id)
 
             return user_task_execution_json_input_values
         except Exception as e:

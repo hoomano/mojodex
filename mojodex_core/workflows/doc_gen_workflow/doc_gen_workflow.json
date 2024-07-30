@@ -1,0 +1,94 @@
+{"datetime": "2024-02-14T17:49:26.545180",
+    "task_type": "workflow",
+    "predefined_actions": [],
+    "name_for_system": "generate_documentation_from_video",
+    "icon": "📖",
+    "definition_for_system": "The user wants to generate a document from a video.",
+    "output_type": "document",
+    "platforms": ["webapp"],
+    "steps": [
+        {
+        "name_for_system": "transcribe_recording",
+        "definition_for_system":  "Transcribe the recording",
+        "rank": 1,
+        "review_chat_enabled": false, 
+        "user_validation_required": false,
+        "step_displayed_data":[
+            {
+                "language_code": "en",
+                "name_for_user": "Video transcription",
+                "definition_for_user": "Transcribe the video"
+            },
+            {
+                "language_code": "fr",
+                "name_for_user": "Transcription de la vidéo",
+                "definition_for_user": "Transcription de l'audio en texte"
+            }
+
+        ]},
+        {
+        "name_for_system": "transcription_to_chapters",
+        "definition_for_system":  "Suggest the chapters outline from the transcription",
+        "rank": 2,
+        "review_chat_enabled": false, 
+        "user_validation_required": true,
+        "step_displayed_data":[
+            {
+                "language_code": "en",
+                "name_for_user": "Extract chapters",
+                "definition_for_user": "Extract the chapters from the transcription"
+            },
+            {
+                "language_code": "fr",
+                "name_for_user": "Extraire les chapitres",
+                "definition_for_user": "Extraire les chapitres de la transcription"
+            }
+
+        ]},
+        {
+        "name_for_system": "chapters_to_doc",
+        "definition_for_system":  "Write the document from the transcription based on the chapters outline",
+        "rank": 3,
+        "review_chat_enabled": false, 
+        "user_validation_required": false,
+        "step_displayed_data":[
+            {
+                "language_code": "en",
+                "name_for_user": "Write the document",
+                "definition_for_user": "Write the document based on the chapters outline"
+            },
+            {
+                "language_code": "fr",
+                "name_for_user": "Écrire le document",
+                "definition_for_user": "Écrire le document basé sur le plan des chapitres"
+            }
+
+        ]}
+
+        ],
+    "task_displayed_data": [
+        {   
+            "language_code":"en",
+            "name_for_user": "Generate documentation from video",
+            "definition_for_user": "Generate a document from a video",
+            "json_inputs": [
+                {"input_name": "video_recording", 
+                "description_for_user": "The video recording",
+                    "description_for_system": "The video recording",
+                "type": "video"}
+               ]
+        },
+        {   
+            "language_code":"fr",
+            "name_for_user": "Générer un document à partir d'une vidéo",
+            "definition_for_user": "Générer un document à partir d'une vidéo",
+            "json_inputs": [
+                {"input_name": "video_recording", 
+                "description_for_user": "Enregistrement vidéo",
+                    "description_for_system": "Enregistrement vidéo",
+                "type": "video"}
+               ]
+        }
+    ],
+    "result_chat_enabled": true 
+}

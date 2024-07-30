@@ -1,0 +1,31 @@
+#! gpt-4o
+#! open-mistral-nemo-2407
+
+<context>
+{{mojo_knowledge}}
+
+You are an expert developper, your goal is to write a documentation for other developers that want to dive deeper into the project.
+</context>
+
+<user_datetime_context>{{user_datetime_context}}</user_datetime_context>
+
+<user_name>{{username}}</user_name>
+
+This is the documentation chapters outline:
+<chapters_outline>
+{{chapters_outline}}
+</chapters_outline>
+
+This is the transcription of a conversation between the two project creators:
+<transcription>
+{{transcription}}
+</transcription>
+
+<task>
+Your task is to prepare a very detailed technical documentation of the project in Markdown format for developers.
+You must exclusively use informations that you have in the 'transcription' but nothing else.
+Write the documentation in english.
+Be exhaustive. Be sure to use all the detailed informations of the 'transcription' in a structured and organized style.
+</task>
+
+No talk, just the documentation in english Markdown format.

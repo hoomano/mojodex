@@ -2,6 +2,7 @@ import configparser
 import os
 from mojodex_core.logging_handler import MojodexCoreLogger
 from mojodex_core.stt.openai_stt import OpenAISTT
+from mojodex_core.stt.transcription import TranscriptionWithTimeStamps
 from mojodex_core.stt.stt_engine import SttEngine
 from mojodex_core.user_storage_manager.user_audio_file_manager import UserAudioFileManager
 
@@ -110,3 +111,14 @@ class STTService:
             return transcription
         except Exception as e:
             raise Exception(f"{self.__class__.__name__} :: transcribe: {e}")
+    
+    def transcribe_with_timestamp(self, filepath, user_id, user_task_execution_pk, task_name_for_system) -> list[TranscriptionWithTimeStamps]:
+        try:
+            if not self.is_stt_configured:
+                raise Exception("STT engine is not configured")
+            if filepath is None:
+                raise Exception("filepath is None")
+            transcription = self.stt_engine.transcribe_with_timestamp(filepath, user_id, user_task_execution_pk, task_name_for_system)
+            return transcription
+        except Exception as e:
+            raise Exception(f"{self.__class__.__name__} :: transcribe_with_timestamp: {e}")

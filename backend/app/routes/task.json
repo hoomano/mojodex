@@ -105,7 +105,8 @@
                                             "image",
                                             "drop_down_list",
                                             "multiple_images",
-                                            "audio_file"
+                                            "audio_file",
+                                            "video"
                                         ]
                                     },
                                     "input_name": {
@@ -348,7 +349,8 @@
                                             "image",
                                             "drop_down_list",
                                             "multiple_images",
-                                            "audio_file"
+                                            "audio_file",
+                                            "video"
                                         ]
                                     },
                                     "input_name": {

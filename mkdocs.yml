@@ -66,11 +66,11 @@ nav:
   - Why Mojodex?: motivations.md
   - Docs:
     - Getting Started: getting-started.md
-    - Design Principles:
+    - Technical Architecture: technical-architecture/general-doc/index.md
+    - Design Principles: 
       - Task-oriented design: 
         - What's a task: design-principles/tasks/whats_a_task.md
         - Execute a task: design-principles/tasks/execute_task.md
-        - Background tasks: design-principles/tasks/background_task.md
       - Organized by products:
         - What's a product: design-principles/products/whats_a_product.md
         - How it works: design-principles/products/how_it_works.md
@@ -82,7 +82,7 @@ nav:
       - Workflows:
         - What's a workflow: design-principles/workflows/whats_a_workflow.md
         - How it works: design-principles/workflows/execute_workflow.md
-    - Technical Architecture:
+    - Advanced Technical Architecture:
       - Overview: technical-architecture/overview.md
       - Backend: technical-architecture/backend.md
       - Database: technical-architecture/database.md
@@ -95,19 +95,16 @@ nav:
         - Azure OpenAI Services: technical-architecture/llm-features/azure.md
         - Mistral AI: technical-architecture/llm-features/mistral.md
         - Mojodex Prompt Template: technical-architecture/llm-features/mpt.md
-      - Tools:
-        - Google Search: technical-architecture/existing_tools/google_search.md
-        - Internal Memory: technical-architecture/existing_tools/internal_memory.md
       - Integration:
         - Hubspot: technical-architecture/integration/hubspot.md
   - Build your own Digital Assistants:
     - Getting Started: guides/index.md
+    - Create a new user: guides/users/new_user.md
     - Configure a new product: guides/products/new_product.md
-    - Configure a new profile: guides/products/new_profile.md
-    - Configure a new task: guides/tasks/new_task.md
-    - New Task example: guides/tasks/example.md
-    - Add a new tool: guides/tools/new_tool.md
-    - Configure a new workflow: guides/workflows/new_workflow.md
+    - Configure a new profile: guides/profiles/new_profile.md
+    - Configure a new Instruct task: guides/tasks/new_task.md
+    - New Instruct Task example: guides/tasks/example.md
+    - Configure a new Workflow task: guides/workflows/new_workflow.md
     - Tutorial - Sales Assistant Example: guides/sales_assistant_example/index.md
     - Sales Assistant Team Guide: guides/sales_assistant_example/sales_assistant_scope_template.md
 

@@ -117,7 +117,7 @@ The `WorkflowExecution` is the epicenter of workflow execution. The function `ru
 - Run current step
 - Ask for user validation once the step is executed
 
-![start_user_workflow_execution_from_form](../../images/workflow_execution/start_user_workflow_execution_from_form.png)
+![start_user_workflow_execution_from_form](../../images/task_execution/start_user_task_execution_from_form.png)
 
 > The Workflow Execution detailled flow is described in part 3.
 

@@ -76,6 +76,4 @@ Later, a user can:
 
 > Important note: A user can't have 2 active subscriptions at the same time. If a user is affected with a new subscription, the previous one is automatically cancelled.
 
-2 payment services have been implemented for now:
-- [Stripe](https://stripe.com)
-- [Apple in-app purchase](https://developer.apple.com/in-app-purchase/)
+Payment service implemented: [Stripe](https://stripe.com)

@@ -124,7 +124,7 @@
       "saveEditionButton": "Sauvegarder et redémarrer",
       "restartError": "Erreur lors du redémarrage du flux de travail. Veuillez réessayer ou contacter le support.",
       "imageUploadButton": "Télécharger une image",
-      "audioUploadButton": "Télécharger un fichier audio",
+      "videoUploadButton": "Télécharger une vidéo",
       "missingFieldLabel": "Champ manquant"
     },
     "chatTab": {

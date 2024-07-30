@@ -5,6 +5,7 @@ import ImageArea from "./ImageArea";
 import Textarea from "./TextArea";
 import MultipleImagesArea from "./MultipleImagesArea";
 import AudioFile from "./AudioFile";
+import VideoFile from "./VideoFile";
 
 interface InputsFormProps {
     jsonInputs: TaskJsonInput[];
@@ -44,6 +45,14 @@ const InputsForm = ({ jsonInputs, setInputArray, sessionId }: InputsFormProps) =
                             jsonInput={input}
                             setInputArray={setInputArray}
                         />
+                    );
+                case TaskJsonInputType.VIDEO:
+                        return (
+                            <VideoFile
+                                key={input.input_name}
+                                jsonInput={input}
+                                setInputArray={setInputArray}
+                            />
                     );
                 case TaskJsonInputType.DROP_DOWN_LIST:
                     return (

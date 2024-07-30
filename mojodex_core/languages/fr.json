@@ -125,6 +125,7 @@
             "restartError": "Erreur lors du redémarrage du flux de travail. Veuillez réessayer ou contacter le support.",
             "imageUploadButton": "Télécharger une image",
             "audioUploadButton": "Télécharger un fichier audio",
+            "videoUploadButton": "Télécharger un fichier video",
             "missingFieldLabel": "Champ manquant"
         },
         "chatTab": {

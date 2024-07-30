@@ -3618,6 +3618,12 @@ paths:
                         type: string
                       definition_for_system:
                         type: string
+                      review_chat_enabled:
+                        type: boolean
+                        default: false
+                      user_validation_required:
+                        type: boolean
+                        default: true
                       step_displayed_data:
                         type: array
                         items:

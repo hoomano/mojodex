@@ -214,6 +214,14 @@
                                     }
                                 }
                             }
+                        },
+                        "review_chat_enabled":{
+                            "type": "boolean",
+                            "default": false
+                        },
+                        "user_validation_required":{
+                            "type": "boolean",
+                            "default": true
                         }
                     }
                 }

@@ -153,7 +153,8 @@ class Task(Resource):
                         definition_for_system=step["definition_for_system"],
                         task_fk=task.task_pk,
                         rank=step_index + 1,
-                        review_chat_enabled=step.get("review_chat_enabled", False)
+                        review_chat_enabled=step.get("review_chat_enabled", False),
+                        user_validation_required=step.get("user_validation_required", True),
                     )
                     db.session.add(db_step)
                     db.session.flush()

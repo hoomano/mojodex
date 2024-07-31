@@ -14,15 +14,15 @@ It is designed to be task-oriented, configurable, and personalizable. Mojodex is
 
 ## What's in it?
 
-| Link to the repo | Description | Live Demo Version |
-| --- | --- | --- |
-| [Plaform Core (this repo)](https://github.com/hoomano/mojodex) | [Open-source NextJS](/webapp), [Python backend](backend), [PostgreSQL database](/pgsql) and more, including the [webapp](/webapp/) convenient for laptop usage. | [https://mojodex.hoomano.com](https://mojodex.hoomano.com) |
-| [Mobile app](https://github.com/hoomano/mojodex_mobile) | Open-source Flutter app that allows users to interact with the digital assistant on the go - mainly voice interaction. | [![App Store](/webapp/public/images/app_store.svg)](https://apps.apple.com/fr/app/mojodex/id6446367743) [![Google Play](/webapp/public/images/google_play.svg)](https://play.google.com/store/apps/details?id=com.hoomano.mojodex_mobile) |
-| Chrome extension (soon) | Open-source Chrome extension project to access the digital assistant directly from the browser.  | [![Chrome Web Store](/docs/images/chrome_web_store.png)](https://chromewebstore.google.com/detail/mojodex/jagemmajllamdahinjidkopehkffbkho)
+| Link to the repo                                               | Description                                                                                                                                                     | Live Demo Version                                                                                                                                                                                                                         |
+| -------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [Plaform Core (this repo)](https://github.com/hoomano/mojodex) | [Open-source NextJS](/webapp), [Python backend](backend), [PostgreSQL database](/pgsql) and more, including the [webapp](/webapp/) convenient for laptop usage and the [CLI](/cli) (yes a CLI 💻). | [https://mojodex.hoomano.com](https://mojodex.hoomano.com)                                                                                                                                                                                |
+| [Mobile app](https://github.com/hoomano/mojodex_mobile)        | Open-source Flutter app that allows users to interact with the digital assistant on the go - mainly voice interaction.                                          | [![App Store](/webapp/public/images/app_store.svg)](https://apps.apple.com/fr/app/mojodex/id6446367743) [![Google Play](/webapp/public/images/google_play.svg)](https://play.google.com/store/apps/details?id=com.hoomano.mojodex_mobile) |
+| Chrome extension (soon)                                        | Open-source Chrome extension project to access the digital assistant directly from the browser.                                                                 | [![Chrome Web Store](/docs/images/chrome_web_store.png)](https://chromewebstore.google.com/detail/mojodex/jagemmajllamdahinjidkopehkffbkho)                                                                                               |
 
 __Here we go!__
 
-## Quick Start
+## Quick Start: 3-steps installation of the Mojodex platform
 
 See the installation video guide here: https://youtu.be/86_S_cXhhTA
 
@@ -74,16 +74,33 @@ For a complete experience, you can also build and use the open-source Mojodex mo
 
 ## Key Features
 
-- **Task-Oriented** : Mojodex is designed to assist users by completing specific tasks, making it easier for the assistant to understand and fulfill user needs.
+- **Task-Oriented** : Mojodex is designed to assist final users by completing specific tasks, making it easier for the assistant to understand and fulfill user needs.
 
-- **Configurable** : Tailored to various professional uses, allowing for role-specific task configurations (sales, recruitment, personal assistance, etc.).
+- **Configurable** : Easy to tailor to any professional uses, allowing for role-specific task configurations (sales, recruitment, personal assistance, etc.).
 
-- **Personalizable** : Builds a memory of user interactions and goals to improve task execution.
+- **Personalizable** : Built-in memory of user interactions and goals to improve task execution.
 
-- **Proactive** : Independently manages tasks, freeing users to focus on other activities through a chat-independent architecture.
+- **Proactive** : Independently organizing todos from tasks, freeing users to focus on other activities through a multi-platform architecture.
 
-- **Multiple User Interfaces** : Includes a web application in this repository, an open-source mobile application, and a Chrome extension.
+- **Multiple User Interfaces** : Includes a web application in this repository, an open-source mobile application, and a CLI (yes, a CLI).
 
-- **API-Centric Back-End** : Enables easy integration with other tools through a well-defined API exposure.
+- **API-Centric Back-End** : Enables easy customization and integration with other tools through a well-defined API exposure.
 
-- **Using OpenAI's GPT-4 Turbo** : Accessible directly via OpenAI or through Azure's functionalities.
+- **Multi-LLM** : Take the most of any model. Designed to be working with state of the art models, and customizability to adjust to any LLM
+
+## Documentation
+
+Access the complete documentation online: https://hoomano.github.io/mojodex
+
+or Run the documentation locally
+
+```
+mkdocs serve
+```
+
+Browse the doc from your browser
+
+## Contribution
+
+How do you want the project to move forward? 
+Open an issue an let us know.

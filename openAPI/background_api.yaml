@@ -1,0 +1,253 @@
+openapi: 3.0.0
+info:
+  title: Mojodex API Background
+  version: 1.0.0
+paths:
+  /events_generation:
+    post:
+      summary: Generate various types of events
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - datetime
+                - event_type
+                - n_events
+                - offset
+              properties:
+                datetime:
+                  type: string
+                  format: date-time
+                event_type:
+                  type: string
+                  enum:
+                    - todo_daily_emails
+                n_events:
+                  type: integer
+                offset:
+                  type: integer
+      responses:
+        '200':
+          description: Event generation process started successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: string
+        '400':
+          description: Invalid inputs provided
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '404':
+          description: Error generating events
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+  /extract_todos:
+    post:
+      summary: Start the process to extract todos from a user task execution
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - datetime
+              properties:
+                datetime:
+                  type: string
+                  format: date-time
+      responses:
+        '200':
+          description: Process to extract todos started successfully, list of concerned user_task_execution_pks
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user_task_execution_pks:
+                    type: array
+                    items:
+                      type: integer
+        '400':
+          description: Invalid inputs provided
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '404':
+          description: Error in extract todos route
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+  /create_document_from_website:
+    post:
+      summary: Parse a website and create a document
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - datetime
+                - website_url
+                - user_id
+              properties:
+                datetime:
+                  type: string
+                  format: date-time
+                company_pk:
+                  type: integer
+                website_url:
+                  type: string
+                  format: uri
+                user_id:
+                  type: string
+      responses:
+        '200':
+          description: Website parsing initiated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: string
+        '400':
+          description: Invalid input provided
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '404':
+          description: Error occurred during website parsing
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+  /reschedule_todo:
+    post:
+      summary: Reschedule a todo item
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - datetime
+              properties:
+                datetime:
+                  type: string
+                  format: date-time
+      responses:
+        '200':
+          description: Process to reschedule todos started successfully, list of concerned todo_pks
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  todo_pls:
+                    type: array
+                    items:
+                      type: integer
+        '400':
+          description: Invalid inputs provided
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '404':
+          description: Error in reschedule todos route
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+  /update_document:
+    post:
+      summary: Update a document
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - datetime
+                - document_pk
+                - edition
+                - user_id
+              properties:
+                datetime:
+                  type: string
+                  format: date-time
+                document_pk:
+                  type: integer
+                edition:
+                  type: string
+                user_id:
+                  type: string
+      responses:
+        '200':
+          description: Document updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: string
+        '400':
+          description: Invalid input provided
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '404':
+          description: Document not found for this user or error updating document
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string

@@ -1,0 +1,6130 @@
+openapi: 3.0.0
+info:
+  title: Mojodex API Backend
+  version: 1.0.0
+tags:
+  - name: Application
+    description: Routes called from the application
+  - name: Background
+    description: Routes called from the background
+  - name: Scheduler
+    description: Routes called from the scheduler
+  - name: Backoffice
+    description: Routes called from the backoffice
+  - name: Purchase updater
+    description: Routes called from the purchase updater
+  - name: External service
+    description: Routes called from an external service
+
+paths:
+  /associate_free_product:
+    put:
+      tags:
+        - Application
+      summary: Associate a free product with the user
+      parameters:
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - datetime
+                - product_category_pk
+              properties:
+                datetime:
+                  type: string
+                  format: date-time
+                product_category_pk:
+                  type: integer
+      responses:
+        '200':
+          description: Free product associated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  purchase_status:
+                    type: string
+                  current_product:
+                    type: string
+        '400':
+          description: Error in associating free product
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '403':
+          description: Authentication error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+  /check_expired_purchases:
+    post:
+      tags:
+        - Scheduler
+      summary: Check for expired purchases and deactivate them
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - datetime
+              properties:
+                datetime:
+                  type: string
+                  format: date-time
+      parameters:
+        - in: header
+          name: Authorization
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: n_purchases
+          required: false
+          schema:
+            type: integer
+            default: 50
+            minimum: 1
+      responses:
+        '200':
+          description: Expired purchases checked and deactivated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  purchase_pks:
+                    type: array
+                    items:
+                      type: integer
+        '400':
+          description: Invalid request or missing datetime in body
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '403':
+          description: Authentication error due to missing or wrong secret
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+  /check_disengaged_free_trial_users:
+    post:
+      tags:
+        - Scheduler
+      summary: Check engagement of users with active free and limited products
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - datetime
+              properties:
+                datetime:
+                  type: string
+                  format: date-time
+                n_disengaged_users:
+                  type: integer
+                  default: 50
+                offset:
+                  type: integer
+                  default: 0
+      responses:
+        '200':
+          description: List of disengaged user IDs retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user_ids:
+                    type: array
+                    items:
+                      type: string
+        '400':
+          description: Bad request, missing or invalid parameters
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '403':
+          description: Authentication error, missing or wrong secret
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '500':
+          description: Internal server error occurred while processing the request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+  /company:
+    put:
+      tags:
+        - Application
+      summary: Create or update a company based on the provided website URL
+      parameters:
+        - in: header
+          name: Authorization
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - datetime
+                - website_url
+              properties:
+                datetime:
+                  type: string
+                  format: date-time
+                website_url:
+                  type: string
+                  format: uri
+      responses:
+        '200':
+          description: Company created or updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  company_pk:
+                    type: integer
+                  company_emoji:
+                    type: string
+                  company_name:
+                    type: string
+                  company_description:
+                    type: string
+        '400':
+          description: Invalid URL provided
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '403':
+          description: Authentication error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+    post:
+      tags:
+        - Application
+      summary: Update company information based on user feedback
+      parameters:
+        - in: header
+          name: Authorization
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - datetime
+              properties:
+                datetime:
+                  type: string
+                  format: date-time
+                feedback:
+                  type: string
+                correct:
+                  type: boolean
+      responses:
+        '200':
+          description: Company information updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  company_pk:
+                    type: integer
+                  company_emoji:
+                    type: string
+                  company_name:
+                    type: string
+                  company_description:
+                    type: string
+        '400':
+          description: Error in updating company information
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '403':
+          description: Authentication error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+  /device:
+    put:
+      tags:
+        - Application
+      summary: Create a new device for a user
+      parameters:
+        - in: header
+          name: Authorization
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - datetime
+                - fcm_token
+              properties:
+                datetime:
+                  type: string
+                  format: date-time
+                fcm_token:
+                  type: string
+      responses:
+        '200':
+          description: Device created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  device_pk:
+                    type: integer
+        '400':
+          description: Error in device creation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '403':
+          description: Authentication error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+  /error:
+    put:
+      tags:
+        - Application
+      summary: Log an error event for a given user
+      parameters:
+        - in: header
+          name: Authorization
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - datetime
+                - error
+              properties:
+                datetime:
+                  type: string
+                  format: date-time
+                  description: The timestamp when the error occurred
+                error:
+                  type: string
+                  description: A description of the error
+                notify_admin:
+                  type: boolean
+                  default: false
+                  description: Whether to notify the admin about the error
+                session_id:
+                  type: string
+                  description: Optional session ID associated with the error event
+      responses:
+        '200':
+          description: Error event logged successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: string
+                    description: A success message indicating the error was logged
+        '400':
+          description: Bad request, such as missing JSON body or required fields
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: An error message indicating the reason for the bad request
+        '403':
+          description: Authentication error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+  /goal:
+    put:
+      tags:
+        - Application
+      summary: Update the goal for a user
+      parameters:
+        - in: header
+          name: Authorization
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - datetime
+                - goal
+              properties:
+                datetime:
+                  type: string
+                  format: date-time
+                goal:
+                  type: string
+      responses:
+        '200':
+          description: Goal updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: string
+        '400':
+          description: Error in updating goal
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '403':
+          description: Authentication error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+  /home_chat:
+    get:
+      tags:
+        - Application
+      summary: Get initial chat message for a user
+      parameters:
+        - in: header
+          name: Authorization
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Initial chat message retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  home_chat_pk:
+                    type: integer
+                  session_id:
+                    type: string
+                  message_pk:
+                    type: integer
+                  message:
+                    type: object
+                    properties:
+                      text:
+                        type: string
+                      type:
+                        type: string
+                      sender:
+                        type: string
+        '400':
+          description: Missing field in request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '500':
+          description: Server error occurred
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '403':
+          description: Authentication error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+    post:
+      tags:
+        - Application
+      summary: Create next home chat for a user
+      parameters:
+        - in: header
+          name: Authorization
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - datetime
+              properties:
+                datetime:
+                  type: string
+                  format: date-time
+      responses:
+        '200':
+          description: Home chat created successfully
+        '400':
+          description: Missing field in request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '500':
+          description: Server error occurred
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '403':
+          description: Authentication error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+    put:
+      tags:
+        - Scheduler
+      summary: Prepare next week's first home chat
+      parameters:
+        - in: header
+          name: Authorization
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - datetime
+                - n_users
+                - offset
+              properties:
+                datetime:
+                  type: string
+                  format: date-time
+                n_users:
+                  type: integer
+                offset:
+                  type: integer
+      responses:
+        '200':
+          description: Next week's first home chat prepared successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user_ids:
+                    type: array
+                    items:
+                      type: string
+        '400':
+          description: Missing field in request or request must be JSON
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '403':
+          description: Authentication error wrong or missing secret
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '500':
+          description: Server error occurred
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+  /image:
+    get:
+      tags:
+        - Application
+      summary: Retrieve image previously uploaded by the user
+      parameters:
+        - in: header
+          name: Authorization
+          required: true
+          schema:
+            type: string
+        - name: datetime
+          in: query
+          required: true
+          description: Timestamp of the request
+          schema:
+            type: string
+            format: date-time
+        - name: filename
+          in: query
+          required: true
+          description: Name of the image file to retrieve
+          schema:
+            type: string
+        - name: session_id
+          in: query
+          required: true
+          description: Id of the session during which the image was uploaded
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successfully retrieved image
+          content:
+            image/*:
+              schema:
+                type: string
+                format: binary
+        '400':
+          description: Bad request due to missing or invalid parameters
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '403':
+          description: Authentication error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string 
+  /is_email_service_configured:
+    get:
+      tags:
+        - Scheduler
+        - Application
+      summary: Check if the email service is configured
+      parameters:
+        - in: header
+          name: Authorization
+          required: true
+          schema:
+            type: string
+        - name: datetime
+          in: query
+          required: true
+          description: Timestamp of the request
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: Whether the email service is configured
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  is_configured:
+                    type: boolean
+        '400':
+          description: Bad request due to missing or invalid parameters
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '403':
+          description: Authentication error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string  
+  /is_push_notif_service_configured:
+    get:
+      tags:
+        - Scheduler
+        - Application
+      summary: Check if the push notification service is configured
+      parameters:
+        - in: header
+          name: Authorization
+          required: true
+          schema:
+            type: string
+        - name: datetime
+          in: query
+          required: true
+          description: Timestamp of the request
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: Whether the push notification service is configured
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  is_configured:
+                    type: boolean
+        '400':
+          description: Bad request due to missing or invalid parameters
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '403':
+          description: Authentication error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+  /language:
+    post:
+      tags:
+        - Application
+      summary: Set the language of the user
+      parameters:
+        - in: header
+          name: Authorization
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - datetime
+                - language_code
+              properties:
+                datetime:
+                  type: string
+                  format: date-time
+                language_code:
+                  type: string
+      responses:
+        '200':
+          description: Language updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: string
+        '400':
+          description: Error updating language
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '403':
+          description: Authentication error wrong or missing secret
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+    get:
+      tags:
+        - Application
+      summary: Get the system language of the user
+      parameters:
+        - in: query
+          name: datetime
+          required: true
+          schema:
+            type: string
+            format: date-time
+        - in: query
+          name: language_code
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: System language retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  available_languages:
+                    type: array
+                    items:
+                      type: string
+                  language_json_file:
+                    type: object
+        '400':
+          description: Error getting language
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+  /manual_purchase:
+    put:
+      tags:
+        - Backoffice
+      summary: Create manually a new purchase for a user
+      parameters:
+        - in: header
+          name: Authorization
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - datetime
+                - product_pk
+              properties:
+                datetime:
+                  type: string
+                  format: date-time
+                user_id:
+                  type: string
+                user_email:
+                  type: string
+                product_pk:
+                  type: integer
+                custom_purchase_id:
+                  type: string
+      responses:
+        '200':
+          description: Purchase created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  purchase_pk:
+                    type: integer
+        '400':
+          description: Bad request, missing fields
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '403':
+          description: Authentication error, wrong or missing secret
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '500':
+          description: Internal server error while creating purchase
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+    post:
+      tags:
+        - Backoffice
+      summary: Deactivate manually a purchase for a user
+      parameters:
+        - in: header
+          name: Authorization
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - datetime
+                - purchase_pk
+              properties:
+                datetime:
+                  type: string
+                  format: date-time
+                purchase_pk:
+                  type: integer
+      responses:
+        '200':
+          description: Purchase deactivated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+        '400':
+          description: Bad request, missing fields
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '403':
+          description: Authentication error, wrong or missing secret
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '500':
+          description: Internal server error while deactivating purchase
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+  /message:
+    get:
+      tags:
+        - Application
+      summary: Retrieve messages for a user session
+      parameters:
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: datetime
+          in: query
+          required: true
+          description: Timestamp for the message retrieval
+          schema:
+            type: string
+            format: date-time
+        - name: session_id
+          in: query
+          required: true
+          description: The ID of the session to retrieve messages from
+          schema:
+            type: string
+        - name: offset_direction
+          in: query
+          required: false
+          description: The direction for message offset, older or newer
+          schema:
+            type: string
+            enum:
+              - older
+              - newer
+        - name: n_messages
+          in: query
+          required: false
+          description: The number of messages to retrieve
+          schema:
+            type: integer
+        - name: offset
+          in: query
+          required: false
+          description: The offset for message retrieval
+          schema:
+            type: integer
+        - in: query
+          name: user_task_execution_pk
+          schema:
+            type: string
+          description: The primary key of the user task execution
+      responses:
+        '200':
+          description: Messages retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  messages:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        message_pk:
+                          type: string
+                        sender:
+                          type: string
+                        message:
+                          type: object
+                          additionalProperties: true
+                        audio:
+                          type: boolean
+                        in_error_state:
+                          type: boolean
+        '400':
+          description: Bad request, missing required fields
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '404':
+          description: Session not found for this user
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '403':
+          description: Authentication error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+  /onboarding:
+    put:
+      tags:
+        - Application
+      summary: Set the onboarding presented date for a user
+      parameters:
+        - in: header
+          name: Authorization
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - datetime
+              properties:
+                datetime:
+                  type: string
+                  format: date-time
+      responses:
+        '200':
+          description: Onboarding presented date set successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user_id:
+                    type: string
+        '400':
+          description: Error setting onboarding presented date
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '403':
+          description: Authentication error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+    get:
+      tags:
+        - Application
+      summary: Get the onboarding presented status for a user
+      parameters:
+        - name: datetime
+          in: query
+          required: true
+          description: The current date and time
+          schema:
+            type: string
+            format: date-time
+        - in: header
+          name: Authorization
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Onboarding presented status retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  onboarding_presented:
+                    type: boolean
+        '400':
+          description: Error asking for onboarding presented status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '403':
+          description: Authentication error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+  /password:
+    put:
+      tags:
+        - Application
+      summary: Send a link to reset the password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - datetime
+                - email
+              properties:
+                datetime:
+                  type: string
+                  format: date-time
+                email:
+                  type: string
+                  format: email
+      responses:
+        '200':
+          description: Email sent successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Error due to invalid request format
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '404':
+          description: Email not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '409':
+          description: Error sending reset password email
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+    post:
+      tags:
+        - Application
+      summary: Reset the password using the token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - Authorization
+                - datetime
+                - new_password
+              properties:
+                Authorization:
+                  type: string
+                datetime:
+                  type: string
+                  format: date-time
+                new_password:
+                  type: string
+      responses:
+        '200':
+          description: Password updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Error due to invalid request format
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '403':
+          description: Error due to invalid or expired token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '409':
+          description: Error resetting password
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+  /produced_text:
+    get:
+      tags:
+        - Application
+      summary: Retrieve produced texts for a user
+      parameters:
+        - in: header
+          name: Authorization
+          required: true
+          schema:
+            type: string
+        - name: datetime
+          in: query
+          required: true
+          description: Timestamp of the request
+          schema:
+            type: string
+            format: date-time
+        - name: produced_text_pk
+          in: query
+          required: false
+          description: Primary key of the produced text to retrieve
+          schema:
+            type: integer
+        - name: n_produced_texts
+          in: query
+          required: false
+          description: Number of produced texts to retrieve
+          schema:
+            type: integer
+        - name: offset
+          in: query
+          required: false
+          description: Offset for pagination
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successfully retrieved produced texts
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  produced_texts:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ProducedText'
+        '400':
+          description: Bad request due to missing or invalid parameters
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '404':
+          description: Error occurred while retrieving produced texts
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '403':
+          description: Authentication error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+    post:
+      tags:
+        - Application
+      summary: Save a new produced text or update an existing one
+      parameters:
+        - in: header
+          name: Authorization
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - datetime
+                - production
+              properties:
+                datetime:
+                  type: string
+                  format: date-time
+                user_task_execution_pk:
+                  type: integer
+                session_id:
+                  type: string
+                produced_text_pk:
+                  type: integer
+                production:
+                  type: string
+                title:
+                  type: string
+      responses:
+        '200':
+          description: Successfully saved produced text
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  produced_text_pk:
+                    type: integer
+                  produced_text_version_pk:
+                    type: integer
+        '400':
+          description: Bad request due to missing or invalid parameters
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '404':
+          description: Error occurred while saving produced text
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '403':
+          description: Authentication error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+    delete:
+      tags:
+        - Application
+      summary: Delete a produced text
+      parameters:
+        - in: header
+          name: Authorization
+          required: true
+          schema:
+            type: string
+        - name: datetime
+          in: query
+          required: true
+          description: Timestamp of the request
+          schema:
+            type: string
+            format: date-time
+        - name: produced_text_pk
+          in: query
+          required: true
+          description: Primary key of the produced text to delete
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successfully deleted produced text
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  produced_text_pk:
+                    type: integer
+        '400':
+          description: Bad request due to missing or invalid parameters
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '404':
+          description: Error occurred while deleting produced text
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '403':
+          description: Authentication error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+  /product_category:
+    put:
+      tags:
+        - Backoffice
+      summary: Create a new product category
+      parameters:
+        - in: header
+          name: Authorization
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - datetime
+                - label
+                - displayed_data
+                - emoji
+                - implicit_goal
+                - visible
+              properties:
+                datetime:
+                  type: string
+                  format: date-time
+                label:
+                  type: string
+                displayed_data:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                      - language_code
+                      - name_for_user
+                      - description_for_user
+                    properties:
+                      language_code:
+                        type: string
+                      name_for_user:
+                        type: string
+                      description_for_user:
+                        type: string
+                emoji:
+                  type: string
+                implicit_goal:
+                  type: string
+                visible:
+                  type: boolean
+      responses:
+        '200':
+          description: Product category created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  product_category_pk:
+                    type: integer
+        '400':
+          description: Bad request with missing fields or invalid data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '403':
+          description: Authentication error due to wrong secret
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '500':
+          description: Internal server error while creating product category
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+    post:
+      tags:
+        - Backoffice
+      summary: Update an existing product category
+      parameters:
+        - in: header
+          name: Authorization
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - datetime
+                - product_category_pk
+              properties:
+                datetime:
+                  type: string
+                  format: date-time
+                product_category_pk:
+                  type: integer
+                visible:
+                  type: boolean
+                label:
+                  type: string
+                emoji:
+                  type: string
+                displayed_data:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      language_code:
+                        type: string
+                      name_for_user:
+                        type: string
+                      description_for_user:
+                        type: string
+      responses:
+        '200':
+          description: Product category updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  product_category_pk:
+                    type: integer
+        '400':
+          description: Bad request with missing fields or invalid data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '403':
+          description: Authentication error due to wrong secret
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '500':
+          description: Internal server error while updating product category
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+    get:
+      tags:
+        - Application
+      summary: Get all visible product categories for a user
+      parameters:
+        - in: header
+          name: Authorization
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: datetime
+          required: true
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: List of visible product categories
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  product_categories:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        product_category_pk:
+                          type: integer
+                        emoji:
+                          type: string
+                        name:
+                          type: string
+                        description:
+                          type: string
+        '400':
+          description: Bad request with missing fields
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '500':
+          description: Internal server error while getting product categories
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '403':
+          description: Authentication error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+  /product_task_association:
+    put:
+      tags:
+        - Backoffice
+      summary: Create a new product_task_association
+      parameters:
+        - in: header
+          name: Authorization
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - datetime
+                - product_pk
+                - task_pk
+              properties:
+                datetime:
+                  type: string
+                  format: date-time
+                product_pk:
+                  type: integer
+                task_pk:
+                  type: integer
+      responses:
+        '200':
+          description: Product task association created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  product_task_association_pk:
+                    type: integer
+        '400':
+          description: Bad request with missing fields or association already exists
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '403':
+          description: Authentication error due to wrong or missing secret
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '500':
+          description: Internal server error while creating product_task_association
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+  /product:
+    put:
+      tags:
+        - Backoffice
+      summary: Create a new product
+      parameters:
+        - in: header
+          name: Authorization
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - datetime
+                - product_label
+                - displayed_data
+                - product_category_pk
+                - product_stripe_id
+                - product_apple_id
+                - is_free
+                - n_days_validity
+                - n_tasks_limit
+              properties:
+                datetime:
+                  type: string
+                  format: date-time
+                product_label:
+                  type: string
+                displayed_data:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                      - language_code
+                      - name
+                    properties:
+                      language_code:
+                        type: string
+                      name:
+                        type: string
+                product_category_pk:
+                  type: integer
+                product_stripe_id:
+                  type: string
+                product_apple_id:
+                  type: string
+                is_free:
+                  type: boolean
+                n_days_validity:
+                  type: integer
+                n_tasks_limit:
+                  type: integer
+      responses:
+        '200':
+          description: Product created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  product_pk:
+                    type: integer
+        '400':
+          description: Bad request with missing fields or invalid data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '403':
+          description: Authentication error due to wrong or missing secret
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '500':
+          description: Internal server error while creating product
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+    post:
+      tags:
+        - Backoffice
+      summary: Edit an existing product
+      parameters:
+        - in: header
+          name: Authorization
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - datetime
+                - product_pk
+              properties:
+                datetime:
+                  type: string
+                  format: date-time
+                product_pk:
+                  type: integer
+                label:
+                  type: string
+                product_category_fk:
+                  type: integer
+                displayed_data:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                      - language_code
+                      - name
+                    properties:
+                      language_code:
+                        type: string
+                      name:
+                        type: string
+                product_stripe_id:
+                  type: string
+                product_apple_id:
+                  type: string
+                is_free:
+                  type: boolean
+                n_days_validity:
+                  type: integer
+                n_tasks_limit:
+                  type: integer
+      responses:
+        '200':
+          description: Product updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  product_pk:
+                    type: integer
+        '400':
+          description: Bad request with missing fields or invalid data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '403':
+          description: Authentication error due to wrong or missing secret
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '500':
+          description: Internal server error while updating product
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+  /profile_category:
+    put:
+      tags:
+        - Backoffice
+      summary: Create a new profile category
+      parameters:
+        - in: header
+          name: Authorization
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - datetime
+                - label
+                - displayed_data
+                - emoji
+                - implicit_goal
+                - visible
+              properties:
+                datetime:
+                  type: string
+                  format: date-time
+                label:
+                  type: string
+                displayed_data:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                      - language_code
+                      - name_for_user
+                      - description_for_user
+                    properties:
+                      language_code:
+                        type: string
+                      name_for_user:
+                        type: string
+                      description_for_user:
+                        type: string
+                emoji:
+                  type: string
+                implicit_goal:
+                  type: string
+                visible:
+                  type: boolean
+      responses:
+        '200':
+          description: Profile category created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  profile_category_pk:
+                    type: integer
+        '400':
+          description: Bad request, missing or invalid fields
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '403':
+          description: Authentication error, wrong or missing secret
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '500':
+          description: Internal server error while creating profile category
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+    post:
+      tags:
+        - Backoffice
+      summary: Update an existing profile category
+      parameters:
+          - in: header
+            name: Authorization
+            required: true
+            schema:
+              type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - datetime
+                - profile_category_pk
+              properties:
+                datetime:
+                  type: string
+                  format: date-time
+                profile_category_pk:
+                  type: integer
+                label:
+                  type: string
+                displayed_data:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      language_code:
+                        type: string
+                      name_for_user:
+                        type: string
+                      description_for_user:
+                        type: string
+                emoji:
+                  type: string
+                implicit_goal:
+                  type: string
+                visible:
+                  type: boolean
+      responses:
+        '200':
+          description: Profile category updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  profile_category_pk:
+                    type: integer
+        '400':
+          description: Bad request, missing or invalid fields
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '403':
+          description: Authentication error, wrong or missing secret
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '500':
+          description: Internal server error while updating profile category
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+  /profile_task_association:
+    put:
+      tags:
+        - Backoffice
+      summary: Associate a profile with a task
+      parameters:
+          - in: header
+            name: Authorization
+            required: true
+            schema:
+              type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - datetime
+                - profile_pk
+                - task_pk
+              properties:
+                datetime:
+                  type: string
+                  format: date-time
+                profile_pk:
+                  type: integer
+                task_pk:
+                  type: integer
+      responses:
+        '200':
+          description: Profile task association created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  profile_task_association_pk:
+                    type: integer
+        '400':
+          description: Error due to missing field or invalid request format
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '403':
+          description: Authentication error due to wrong or missing secret
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+  /profile:
+    put:
+      tags:
+        - Backoffice
+      summary: Create a new profile
+      parameters:
+          - in: header
+            name: Authorization
+            required: true
+            schema:
+              type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - datetime
+                - profile_label
+                - displayed_data
+                - profile_category_pk
+              properties:
+                datetime:
+                  type: string
+                  format: date-time
+                profile_label:
+                  type: string
+                displayed_data:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                      - language_code
+                      - name
+                    properties:
+                      language_code:
+                        type: string
+                      name:
+                        type: string
+                profile_category_pk:
+                  type: integer
+      responses:
+        '200':
+          description: Profile created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  profile_pk:
+                    type: integer
+        '400':
+          description: Bad request, missing or invalid fields
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '403':
+          description: Authentication error, wrong or missing secret
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '500':
+          description: Internal server error while creating profile
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+    post:
+      tags:
+        - Backoffice
+      summary: Update an existing profile
+      parameters:
+          - in: header
+            name: Authorization
+            required: true
+            schema:
+              type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - datetime
+                - profile_pk
+              properties:
+                datetime:
+                  type: string
+                  format: date-time
+                profile_pk:
+                  type: integer
+                profile_label:
+                  type: string
+                displayed_data:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                      - language_code
+                      - name
+                    properties:
+                      language_code:
+                        type: string
+                      name:
+                        type: string
+                profile_category_pk:
+                  type: integer
+      responses:
+        '200':
+          description: Profile updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  profile_pk:
+                    type: integer
+        '400':
+          description: Bad request, missing or invalid fields
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '403':
+          description: Authentication error, wrong or missing secret
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '500':
+          description: Internal server error while updating profile
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+  /purchase:
+    put:
+      tags:
+        - Application
+      summary: Create an inactive purchase when a Stripe session is opened
+      parameters:
+        - in: header
+          name: Authorization
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - datetime
+                - stripe_session_id
+              properties:
+                datetime:
+                  type: string
+                  format: date-time
+                stripe_session_id:
+                  type: string
+                version:
+                  type: string
+                product_stripe_id:
+                  type: string
+      responses:
+        '200':
+          description: Purchase added successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  purchase_pk:
+                    type: integer
+        '400':
+          description: Error adding purchase
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '403':
+          description: Authentication error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+    post:
+      tags:
+        - External service
+      summary: Stripe webhook to activate a purchase when payment is completed
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties: { }
+      responses:
+        '200':
+          description: Purchase activated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  purchase_pk:
+                    type: integer
+        '400':
+          description: Purchase session ID does not exist in the database
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '409':
+          description: Error in Stripe webhook validating purchase
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '500':
+          description: Unhandled event type
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+    get:
+      tags:
+        - Application
+      summary: Get user's active purchases and purchasable products
+      parameters:
+        - in: header
+          name: Authorization
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: datetime
+          required: true
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: Successfully retrieved purchases and products
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  purchase_status:
+                    type: string
+                  current_product:
+                    type: string
+                  free_plan_remaining_days:
+                    type: integer
+                  purchasable_products:
+                    type: array
+                    items:
+                      type: object
+                      #properties:
+                      # Define the properties of purchasable products here
+                  current_purchases:
+                    type: array
+                    items:
+                      type: object
+                      #properties:
+                      # Define the properties of current purchases here
+                  last_expired_purchase:
+                    type: object
+                    #properties:
+                    # Define the properties of the last expired purchase here
+        '400':
+          description: Error getting purchases
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '403':
+          description: Authentication error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+  /relaunch_locked_workflow_step_executions:
+    post:
+      tags:
+        - Scheduler
+      summary: Mark locked step execution of a workflow as 'error' and relaunch a new execution for this step
+      parameters:
+        - in: header
+          name: Authorization
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - datetime
+              properties:
+                datetime:
+                  type: string
+                  format: date-time
+      responses:
+        '200':
+          description: Successfully relaunched locked step executions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user_workflow_step_executions_pk:
+                    type: array
+                    items:
+                      type: integer
+        '400':
+          description: Error missing parameters
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '403':
+          description: Authentication error wrong or missing secret
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '500':
+          description: Error relaunching locked step executions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+  /resource:
+    put:
+      tags:
+        - Application
+      summary: Create a MojoResource for a user
+      parameters:
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - datetime
+                - website_url
+              properties:
+                datetime:
+                  type: string
+                  format: date-time
+                website_url:
+                  type: string
+      responses:
+        '200':
+          description: MojoResource created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: string
+        '400':
+          description: Error creating MojoResource or website already exists
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '403':
+          description: Authentication error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+    post:
+      tags:
+        - Application
+      summary: Update a MojoResource for a user
+      parameters:
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - datetime
+                - document_pk
+              properties:
+                datetime:
+                  type: string
+                  format: date-time
+                document_pk:
+                  type: string
+                edition:
+                  type: string
+      responses:
+        '200':
+          description: MojoResource updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  document_pk:
+                    type: string
+        '400':
+          description: Error updating MojoResource or document not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '404':
+          description: Document not found for this user
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '403':
+          description: Authentication error wrong or missing secret
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+    get:
+      tags:
+        - Application
+      summary: Retrieve MojoResources for a user
+      parameters:
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: datetime
+          in: query
+          required: true
+          description: The current date and time
+          schema:
+            type: string
+            format: date-time
+        - name: learned_by_mojo
+          in: query
+          required: true
+          description: Filter for documents learned by Mojo
+          schema:
+            type: string
+        - name: n_resources
+          in: query
+          description: The number of resources to retrieve
+          schema:
+            type: integer
+        - name: offset
+          in: query
+          description: The offset for pagination
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: List of MojoResources retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  documents:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        document_pk:
+                          type: string
+                        document_type:
+                          type: string
+                        name:
+                          type: string
+                        author:
+                          type: string
+                        creation_date:
+                          type: string
+                          format: date-time
+                        last_update_date:
+                          type: string
+                          format: date-time
+                        text:
+                          type: string
+        '400':
+          description: Error retrieving documents or missing field
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '403':
+          description: Authentication error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+    delete:
+      tags:
+        - Application
+      summary: Delete a MojoResource for a user
+      parameters:
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: datetime
+          in: query
+          required: true
+          description: The current date and time
+          schema:
+            type: string
+            format: date-time
+        - name: document_pk
+          in: query
+          required: true
+          description: The primary key of the document to delete
+          schema:
+            type: string
+      responses:
+        '200':
+          description: MojoResource deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  document_pk:
+                    type: string
+        '400':
+          description: Error deleting document or missing field
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '404':
+          description: Document not found for this user
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '403':
+          description: Authentication error wrong or missing secret
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+  /restart_user_workflow_execution:
+    post:
+      tags:
+        - Application
+      summary: Change initial parameters of a workflow execution and restart it
+      parameters:
+        - in: header
+          name: Authorization
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - datetime
+                - user_task_execution_pk
+                - inputs
+              properties:
+                datetime:
+                  type: string
+                  format: date-time
+                user_task_execution_pk:
+                  type: integer
+                inputs:
+                  type: object                  
+      responses:
+        '200':
+          description: Successfully restarted workflow execution
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Error missing parameters
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '403':
+          description: Authentication error wrong or missing secret
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '500':
+          description: Error relaunching locked step executions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+  /role:
+    put:
+      tags:
+        - Backoffice
+      summary: Create a new role for a user
+      parameters:
+          - in: header
+            name: Authorization
+            required: true
+            schema:
+              type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - datetime
+                - profile_pk
+              properties:
+                datetime:
+                  type: string
+                  format: date-time
+                profile_pk:
+                  type: string
+                user_id:
+                  type: string
+                user_email:
+                  type: string
+      responses:
+        '200':
+          description: Role created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  role_pk:
+                    type: string
+        '400':
+          description: Bad request, missing or invalid fields
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '403':
+          description: Authentication error, wrong or missing secret
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '500':
+          description: Internal server error while creating role
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+    post:
+      tags:
+        - Backoffice
+      summary: Deactivate an existing role
+      parameters:
+          - in: header
+            name: Authorization
+            required: true
+            schema:
+              type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - datetime
+                - role_pk
+              properties:
+                datetime:
+                  type: string
+                  format: date-time
+                role_pk:
+                  type: string
+      responses:
+        '200':
+          description: Role deactivated successfully
+        '400':
+          description: Bad request, missing or invalid fields
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '403':
+          description: Authentication error, wrong or missing secret
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '500':
+          description: Internal server error while deactivating role
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+  /session:
+    put:
+      tags:
+        - Application
+      summary: Create a new session
+      parameters:
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - datetime
+                - platform
+              properties:
+                datetime:
+                  type: string
+                  format: date-time
+                platform:
+                  type: string
+      responses:
+        '200':
+          description: Session created successfully
+        '400':
+          description: Error creating session
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '403':
+          description: Authentication error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+    get:
+      tags:
+        - Application
+      summary: Get list of sessions
+      parameters:
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: datetime
+          in: query
+          required: true
+          description: The current date and time
+          schema:
+            type: string
+            format: date-time
+        - name: n_sessions
+          in: query
+          description: The number of sessions to retrieve
+          schema:
+            type: integer
+        - name: offset
+          in: query
+          description: The offset for pagination
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: List of sessions retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  sessions:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        title:
+                          type: string
+                        session_id:
+                          type: string
+        '400':
+          description: Error getting sessions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '403':
+          description: Authentication error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+    delete:
+      tags:
+        - Application
+      summary: Delete a session
+      parameters:
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: datetime
+          in: query
+          required: true
+          description: The current date and time
+          schema:
+            type: string
+            format: date-time
+        - name: session_id
+          in: query
+          required: true
+          description: The ID of the session to delete
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Session deleted successfully
+        '404':
+          description: Session not found for this user
+        '500':
+          description: Error deleting session
+        '403':
+          description: Authentication error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+  /subscription_end:
+    post:
+      tags:
+        - External service
+      summary: Stripe webhook endpoint for handling the end of a subscription
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+             # properties:
+              # The properties are not explicitly defined in the provided code,
+              # but we can assume that the request will be a JSON payload sent by Stripe.
+      responses:
+        '200':
+          description: Purchase ended successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  purchase_pk:
+                    type: integer
+        '400':
+          description: Request must be JSON or purchase with subscription_stripe_id does not exist in mojodex db
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '409':
+          description: Error in stripe webhook ending purchase
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '500':
+          description: Unhandled event type
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string 
+  /task_json:
+    post:
+      tags:
+        - Backoffice
+      summary: Generate json configuration file of a task from requirements description
+      parameters:
+        - in: header
+          name: Authorization
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - datetime
+                - task_requirements
+              properties:
+                datetime:
+                  type: string
+                  format: date-time
+                task_requirements:
+                  type: string
+      responses:
+        '200':
+          description: Task JSON created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  datetime:
+                    type: string
+                    format: date-time
+                  platforms:
+                    type: array
+                    items:
+                      type: string
+                  predefined_actions:
+                    type: array
+                    items:
+                      type: object
+                  task_displayed_data:
+                    type: array
+                    items:
+                      type: object
+                  name_for_system:
+                    type: string
+                  definition_for_system:
+                    type: string
+                  final_instruction:
+                    type: string
+                  output_format_instruction_title:
+                    type: string
+                  output_format_instruction_draft:
+                    type: string
+                  output_type:
+                    type: string
+                  icon:
+                    type: string
+                  infos_to_extract:
+                    type: array
+                    items:
+                      type: object
+        '400':
+          description: Bad request, missing fields or not a JSON request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '403':
+          description: Authentication error, wrong or missing secret
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '500':
+          description: Internal server error when creating new task
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+  /task:
+    put:
+      tags:
+        - Backoffice
+      summary: Create a new task
+      parameters:
+        - in: header
+          name: Authorization
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - datetime
+                - task_type
+                - platforms
+                - name_for_system
+                - definition_for_system
+                - icon
+                - task_displayed_data
+                - output_type
+              properties:
+                datetime:
+                  type: string
+                  format: date-time
+                task_type:
+                  type: string
+                  enum:
+                    - instruct
+                    - workflow
+                platforms:
+                  type: array
+                  items:
+                    type: string
+                name_for_system:
+                  type: string
+                definition_for_system:
+                  type: string
+                final_instruction:
+                  type: string
+                output_format_instruction_title:
+                  type: string
+                output_format_instruction_draft:
+                  type: string
+                infos_to_extract:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                      - info_name
+                      - description
+                    properties:
+                      info_name:
+                        type: string
+                      description:
+                        type: string
+                icon:
+                  type: string
+                task_displayed_data:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                      - language_code
+                      - name_for_user
+                      - definition_for_user
+                      - json_input
+                    properties:
+                      language_code:
+                        type: string
+                      name_for_user:
+                        type: string
+                      definition_for_user:
+                        type: string
+                      json_input:
+                        type: array
+                        items:
+                          type: object
+                          required:
+                            - type
+                            - input_name
+                            - description_for_user
+                            - description_for_system
+                          properties:
+                            type:
+                              type: string
+                              enum:
+                                - text_area
+                                - image
+                                - drop_down_list
+                                - multiple_images
+                                - audio_file
+                            input_name:
+                              type: string
+                            description_for_user:
+                              type: string
+                            description_for_system:
+                             type: string
+                predefined_actions:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                      - task_pk
+                      - displayed_data
+                    properties:
+                      task_pk:
+                        type: integer
+                      displayed_data:
+                        type: array
+                        items:
+                          type: object
+                          required:
+                            - language_code
+                            - data
+                          properties:
+                            language_code:
+                              type: string
+                            data:
+                              type: object
+                              required:
+                                - name
+                              properties:
+                                name:
+                                  type: string
+                                button_text:
+                                  type: string
+                                message_prefix:
+                                  type: string
+                output_type:
+                  type: string
+                result_chat_enabled:
+                  type: boolean
+                  default: true
+                steps:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                      - name_for_system
+                      - definition_for_system
+                      - step_displayed_data
+                    properties:
+                      name_for_system:
+                        type: string
+                      definition_for_system:
+                        type: string
+                      review_chat_enabled:
+                        type: boolean
+                        default: false
+                      user_validation_required:
+                        type: boolean
+                        default: true
+                      step_displayed_data:
+                        type: array
+                        items:
+                          type: object
+                          required:
+                            - language_code
+                            - name_for_user
+                            - definition_for_user
+                          properties:
+                            language_code:
+                              type: string
+                            name_for_user:
+                              type: string
+                            definition_for_user:
+                              type: string
+
+      responses:
+        '200':
+          description: Task created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  task_pk:
+                    type: integer
+        '400':
+          description: Bad request with missing or invalid fields
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '403':
+          description: Authentication error due to wrong secret
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '500':
+          description: Internal server error while creating task
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+    post:
+      tags:
+        - Backoffice
+      summary: Edit any field of a task
+      parameters:
+        - in: header
+          name: Authorization
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - datetime
+                - task_pk
+              properties:
+                datetime:
+                  type: string
+                  format: date-time
+                task_pk:
+                  type: integer
+                platforms:
+                  type: array
+                  items:
+                    type: string
+                task_displayed_data:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                      - language_code
+                      - name_for_user
+                      - definition_for_user
+                      - json_input
+                    properties:
+                      language_code:
+                        type: string
+                      name_for_user:
+                        type: string
+                      definition_for_user:
+                        type: string
+                      json_input:
+                        type: array
+                        items:
+                          type: object
+                          required:
+                            - type
+                            - input_name
+                            - description_for_user
+                            - description_for_system
+                          properties:
+                            type:
+                              type: string
+                              enum:
+                                - text_area
+                                - image
+                                - drop_down_list
+                                - multiple_images
+                                - audio_file
+                            input_name:
+                              type: string
+                            description_for_user:
+                              type: string
+                            description_for_system:
+                              type: string
+                predefined_actions:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                      - task_pk
+                      - displayed_data
+                    properties:
+                      task_pk:
+                        type: integer
+                      displayed_data:
+                        type: array
+                        items:
+                          type: object
+                          required:
+                            - language_code
+                            - data
+                          properties:
+                            language_code:
+                              type: string
+                            data:
+                              type: object
+                              required:
+                                - name
+                              properties:
+                                name:
+                                  type: string
+                                button_text:
+                                  type: string
+                                message_prefix:
+                                  type: string
+                name_for_system:
+                  type: string
+                definition_for_system:
+                  type: string
+                final_instruction:
+                  type: string
+                output_format_instruction_title:
+                  type: string
+                output_format_instruction_draft:
+                  type: string
+                infos_to_extract:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                      - info_name
+                      - description
+                    properties:
+                      info_name:
+                        type: string
+                      description:
+                        type: string
+                icon:
+                  type: string
+                output_type:
+                  type: string
+                result_chat_enabled:
+                  type: boolean
+      responses:
+        '200':
+          description: Task edited successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  task_pk:
+                    type: integer
+        '400':
+          description: Bad request with missing or invalid fields
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '403':
+          description: Authentication error due to wrong secret
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '404':
+          description: Task not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '500':
+          description: Internal server error while editing task
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+    get:
+      tags:
+        - Backoffice
+      summary: Get JSON of a task
+      parameters:
+        - in: header
+          name: Authorization
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: datetime
+          required: true
+          schema:
+            type: string
+            format: date-time
+        - in: query
+          name: task_pk
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Task JSON retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  type:
+                    type: string
+                  platforms:
+                    type: array
+                    items:
+                      type: string
+                  predefined_actions:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        task_pk:
+                          type: integer
+                        displayed_data:
+                          type: array
+                          items:
+                            type: object
+                            required:
+                              - language_code
+                              - data
+                            properties:
+                              language_code:
+                                type: string
+                              data:
+                                type: object
+                                required:
+                                  - name
+                                properties:
+                                  name:
+                                    type: string
+                                  button_text:
+                                    type: string
+                                  message_prefix:
+                                    type: string
+                  task_displayed_data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        language_code:
+                          type: string
+                        name_for_user:
+                          type: string
+                        description_for_user:
+                          type: string
+                        json_input:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              type:
+                                type: string
+                                enum:
+                                  - text_area
+                                  - image
+                                  - drop_down_list
+                                  - multiple_images
+                                  - audio_file
+                              input_name:
+                                type: string
+                              description_for_user:
+                                type: string
+                              description_for_system:
+                                type: string
+                  name_for_system:
+                    type: string
+                  definition_for_system:
+                    type: string
+                  final_instruction:
+                    type: string
+                  output_format_instruction_title:
+                    type: string
+                  output_format_instruction_draft:
+                    type: string
+                  output_type:
+                    type: string
+                  icon:
+                    type: string
+                  infos_to_extract:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        info_name:
+                          type: string
+                        description:
+                          type: string
+                  result_chat_enabled:
+                    type: boolean
+                  steps:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        step_pk:
+                          type: integer
+                        name_for_system:
+                          type: string
+                        definition_for_system:
+                          type: string
+                        rank:
+                          type: integer
+                        review_chat_enabled:
+                          type: boolean
+                        step_displayed_data:
+                          type: object
+                          properties:
+                            language_code:
+                              type: string
+                            name_for_user:
+                              type: string
+                            definition_for_user:
+                              type: string
+                      
+        '400':
+          description: Bad request with missing fields
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '403':
+          description: Authentication error due to wrong secret
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '404':
+          description: Task not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '500':
+          description: Internal server error while getting task JSON
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+  /terms_and_conditions:
+    put:
+      tags:
+        - Application
+      summary: Record the user's agreement to the terms and conditions
+      parameters:
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - datetime
+              properties:
+                datetime:
+                  type: string
+                  format: date-time
+      responses:
+        '200':
+          description: Terms and conditions agreement added successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+        '400':
+          description: Error adding terms and conditions agreement
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '403':
+          description: Authentication error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+  /text_edit_action:
+    post:
+      tags:
+        - Application
+      summary: Create text edit actions
+      parameters:
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - datetime
+                - emoji
+                - prompt_file_name
+                - displayed_data
+              properties:
+                datetime:
+                  type: string
+                  format: date-time
+                emoji:
+                  type: string
+                prompt_file_name:
+                  type: string
+                displayed_data:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                      - language_code
+                      - name
+                      - description
+                    properties:
+                      language_code:
+                        type: string
+                      name:
+                        type: string
+                      description:
+                        type: string
+      responses:
+        '200':
+          description: Text edit action created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  text_edit_action_pk:
+                    type: integer
+        '400':
+          description: Error creating text edit action
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '403':
+          description: Authentication error wrong or missing secret
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+    post:
+      tags:
+        - Application
+      summary: Execute text edit actions
+      parameters:
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - datetime
+                - platform
+                - produced_text_version_pk
+                - text_edit_action_pk
+              properties:
+                datetime:
+                  type: string
+                  format: date-time
+                platform:
+                  type: string
+                produced_text_version_pk:
+                  type: integer
+                text_edit_action_pk:
+                  type: integer
+                message_pk:
+                  type: integer
+                version:
+                  type: string
+      responses:
+        '200':
+          description: Text edit action executed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: string
+                  message_pk:
+                    type: integer
+        '400':
+          description: Error executing text edit action
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '403':
+          description: Authentication error wrong or missing secret
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+  /text_type:
+    post:
+      tags:
+        - Backoffice
+      summary: Associate a text_type to a text_edit_action
+      parameters:
+        - in: header
+          name: Authorization
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - datetime
+                - text_edit_action_pk
+                - text_type_pk
+              properties:
+                datetime:
+                  type: string
+                  format: date-time
+                text_edit_action_pk:
+                  type: integer
+                text_type_pk:
+                  type: integer
+      responses:
+        '200':
+          description: Text type and text edit action associated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  text_edit_action_text_type_association_pk:
+                    type: integer
+        '400':
+          description: Error in associating text type and text edit action or missing field
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '403':
+          description: Authentication error due to wrong or missing secret
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+    
+    put:
+      tags:
+        - Backoffice
+      summary: Create a new text type
+      parameters:
+        - in: header
+          name: Authorization
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - timestamp
+                - text_type_name
+              properties:
+                timestamp:
+                  type: string
+                  format: date-time
+                text_type_name:
+                  type: string
+      responses:
+        '200':
+          description: Text type created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  text_type_pk:
+                    type: integer
+        '400':
+          description: Error in creating text type or missing field
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '403':
+          description: Authentication error due to wrong or missing secret
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+    get:
+      tags:
+        - Backoffice
+      summary: Get a list of existing text types
+      parameters:
+        - in: header
+          name: Authorization
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: datetime
+          required: true
+          schema:
+            type: string
+            format: date-time
+        - in: query
+          name: n_text_types
+          schema:
+            type: integer
+            default: 50
+        - in: query
+          name: offset
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: List of text types retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  text_types:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        text_type_pk:
+                          type: integer
+                        name:
+                          type: string
+        '400':
+          description: Error in retrieving text types or missing field
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '403':
+          description: Authentication error due to wrong or missing secret
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+  /timezone:
+    post:
+      tags:
+        - Application
+      summary: Update the user's timezone offset
+      parameters:
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - datetime
+                - timezone_offset
+              properties:
+                datetime:
+                  type: string
+                  format: date-time
+                timezone_offset:
+                  type: integer
+                  format: int32
+                  description: The timezone offset in minutes from UTC
+      responses:
+        '200':
+          description: Timezone updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: string
+        '400':
+          description: Error in updating timezone
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '403':
+          description: Authentication error wrong or missing secret
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+  /todos:
+    post:
+      tags:
+        - Application
+      summary: Mark a todo as read or done
+      parameters:
+        - in: header
+          name: Authorization
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - datetime
+              properties:
+                datetime:
+                  type: string
+                  format: date-time
+                mark_as_read:
+                  type: boolean
+                mark_as_done:
+                  type: boolean
+                todo_pk:
+                  type: integer
+                user_task_execution_fk:
+                  type: integer
+      responses:
+        '200':
+          description: Todo marked as read or done successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  todo_pk:
+                    type: integer
+                  user_task_execution_pk:
+                    type: integer
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '404':
+          description: Todo not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '403':
+          description: Authentication error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+    delete:
+      tags:
+        - Application
+      summary: Delete a todo
+      parameters:
+        - in: header
+          name: Authorization
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: datetime
+          required: true
+          schema:
+            type: string
+            format: date-time
+          description: The current date and time
+        - in: query
+          name: todo_pk
+          required: true
+          schema:
+            type: integer
+          description: The primary key of the todo to delete
+      responses:
+        '200':
+          description: Todo deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  todo_pk:
+                    type: integer
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '404':
+          description: Todo not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '403':
+          description: Authentication error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+    get:
+      tags:
+        - Application
+      summary: Get todos for a user
+      parameters:
+        - in: header
+          name: Authorization
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: datetime
+          required: true
+          schema:
+            type: string
+            format: date-time
+          description: The current date and time
+        - in: query
+          name: n_todos
+          schema:
+            type: integer
+          description: The number of todos to return
+        - in: query
+          name: offset
+          schema:
+            type: integer
+          description: The offset for pagination
+        - in: query
+          name: user_task_execution_fk
+          schema:
+            type: integer
+          description: The foreign key of the user task execution
+      responses:
+        '200':
+          description: Todos retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  todos:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        todo_pk:
+                          type: integer
+                        user_task_execution_fk:
+                          type: integer
+                        description:
+                          type: string
+                        scheduled_date:
+                          type: string
+                          format: date-time
+                        completed:
+                          type: string
+                          format: date-time
+                        creation_date:
+                          type: string
+                          format: date-time
+                        read_by_user:
+                          type: string
+                          format: date-time
+                  user_has_never_done_todo:
+                    type: boolean
+                  n_todos_not_read:
+                    type: integer
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '403':
+          description: Authentication error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+  /user_message:
+    put:
+      tags:
+        - Application
+      summary: Receive and process a user message
+      parameters:
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                session_id:
+                  type: string
+                message_id:
+                  type: string
+                message_pk:
+                  type: string
+                message_date:
+                  type: string
+                  format: date-time
+                platform:
+                  type: string
+                use_message_placeholder:
+                  type: boolean
+                use_draft_placeholder:
+                  type: boolean
+                origin:
+                  type: string
+                  enum:
+                    - home_chat
+                    - task
+                text:
+                  type: string
+                file:
+                  type: string
+                  format: binary
+              required:
+                - session_id
+                - message_id
+                - message_date
+                - version
+                - origin
+      responses:
+        '200':
+          description: User message processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  text:
+                    type: string
+                  message_pk:
+                    type: string
+                  audio_duration:
+                    type: number
+                  message_id:
+                    type: string
+                  user_task_execution_pk:
+                    type: string
+                    nullable: true
+        '400':
+          description: Error in processing user message
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '403':
+          description: Authentication error wrong or missing secret
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+  /user_task_execution_produced_text:
+    get:
+      tags:
+        - Application
+      summary: Retrieve a certain produced text version of a given user task execution from its index
+      parameters:
+        - in: header
+          name: Authorization
+          required: true
+          schema:
+            type: string
+        - name: datetime
+          in: query
+          required: true
+          description: Timestamp of the request
+          schema:
+            type: string
+            format: date-time
+        - name: produced_text_version_index
+          in: query
+          required: false
+          description: Index of the produced text version to retrieve
+          schema:
+            type: integer
+        - name: user_task_execution_pk
+          in: query
+          required: false
+          description: Primary key of the user task execution
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successfully retrieved produced text
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  produced_text_version_pk:
+                    type: integer
+                  produced_text_version_index:
+                    type: integer
+                  produced_text_pk:
+                    type: integer
+                  produced_text_title:
+                    type: string
+                  produced_text_production:
+                    type: string
+        '400':
+          description: Bad request due to missing or invalid parameters
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '404':
+          description: Error occurred while retrieving produced texts
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '403':
+          description: Authentication error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string 
+  /user_task_execution_run:
+    post:
+      tags:
+        - Application
+      summary: Start a task_execution from a Form (webapp)
+      parameters:
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - datetime
+                - user_task_execution_pk
+                - inputs
+              properties:
+                datetime:
+                  type: string
+                  format: date-time
+                user_task_execution_pk:
+                  type: integer
+                platform:
+                  type: string
+                  default: "webapp"
+                version:
+                  type: string
+                inputs:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                      - input_name
+                      - input_value
+                    properties:
+                      input_name:
+                        type: string
+                      input_value:
+                        type: string
+                use_message_placeholder:
+                  type: boolean
+                use_draft_placeholder:
+                  type: boolean
+      responses:
+        '200':
+          description: Task execution started successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: string
+        '400':
+          description: Bad request, missing fields or incorrect data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '403':
+          description: Authentication error wrong or missing secret
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+  /user_task_execution_title:
+    post:
+      tags:
+        - Application
+      summary: Update the title of a user task execution
+      parameters:
+        - in: header
+          name: Authorization
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - datetime
+                - title
+                - user_task_execution_pk
+              properties:
+                datetime:
+                  type: string
+                  format: date-time
+                title:
+                  type: string
+                user_task_execution_pk:
+                  type: integer
+      responses:
+        '200':
+          description: User task execution summary updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+        '400':
+          description: Bad request, missing or invalid fields
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '403':
+          description: Authentication error, wrong or missing secret
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+  /user_task_execution:
+    put:
+      tags:
+        - Application
+      summary: Create a new user task execution
+      parameters:
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - datetime
+                - user_task_pk
+              properties:
+                datetime:
+                  type: string
+                  format: date-time
+                user_task_pk:
+                  type: integer
+                platform:
+                  type: string
+                  default: "webapp"
+      responses:
+        '200':
+          description: User task execution created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user_task_execution_pk:
+                    type: integer
+                  json_input:
+                        type: array
+                        items:
+                          type: object
+                          required:
+                            - type
+                            - input_name
+                            - description_for_user
+                            - description_for_system
+                          properties:
+                            type:
+                              type: string
+                              enum:
+                                - text_area
+                                - image
+                                - drop_down_list
+                                - multiple_images
+                                - audio_file
+                            input_name:
+                              type: string
+                            description_for_user:
+                              type: string
+                            description_for_system:
+                              type: string
+                            value:
+                              type: string
+                
+                  actions:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          task_pk:
+                            type: integer
+                          predifined_action_fk:
+                            type: integer
+                          displayed_data:
+                            type: object
+                            properties:
+                              name:
+                                type: string
+                              button_text:
+                                type: string
+                              message_prefix:
+                                type: string
+                  text_edit_actions:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        text_edit_action_pk:
+                          type: integer
+                        name:
+                          type: string
+                        description:
+                          type: string
+                        emoji:
+                          type: string
+                        
+                  session_id:
+                    type: string
+        '400':
+          description: Bad request, missing or invalid fields
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '402':
+          description: No purchase available to create a new task
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '403':
+          description: Authentication error wrong or missing secret
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+    post:
+      tags:
+        - Purchase updater
+      summary: End a user task execution
+      parameters:
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - datetime
+                - user_task_execution_pk
+              properties:
+                datetime:
+                  type: string
+                  format: date-time
+                user_task_execution_pk:
+                  type: integer
+      responses:
+        '200':
+          description: User task execution ended successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user_task_execution_pk:
+                    type: integer
+        '400':
+          description: Bad request, missing or invalid fields
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '403':
+          description: Forbidden, authentication error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+    get:
+      tags:
+        - Application
+      summary: Retrieve user task executions or a specific user task execution
+      parameters:
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: datetime
+          in: query
+          required: true
+          description: The current datetime
+          schema:
+            type: string
+            format: date-time
+        - name: user_task_execution_pk
+          in: query
+          required: false
+          description: The primary key of the user task execution to retrieve
+          schema:
+            type: integer
+        - name: n_user_task_executions
+          in: query
+          required: false
+          description: The number of user task executions to retrieve
+          schema:
+            type: integer
+        - name: offset
+          in: query
+          required: false
+          description: The offset for pagination
+          schema:
+            type: integer
+        - name: search_filter
+          in: query
+          required: false
+          description: A search filter to apply to the task executions
+          schema:
+            type: string
+        - name: user_task_pks
+          in: query
+          required: false
+          description: A list of user task primary keys to filter by
+          schema:
+            type: string
+      responses:
+        '200':
+          description: User task executions retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user_task_executions:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        user_task_execution_pk:
+                          type: integer
+                        start_date:
+                          type: string
+                          format: date-time
+                        end_date:
+                          type: string
+                          format: date-time
+                        deleted_by_user:
+                          type: boolean
+                        title:
+                          type: string
+                        summary:
+                          type: string
+                        session_id:
+                          type: string
+                        json_inputs_values:
+                          type: array
+                          items:
+                            type: object
+                        icon:
+                          type: string
+                        task_name:
+                          type: string
+                        task_type:
+                          type: string
+                        result_chat_enabled:
+                          type: boolean
+                        actions:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              task_pk:
+                                type: integer
+                              predifined_action_fk:
+                                type: integer
+                              displayed_data:
+                                type: object
+                                properties:
+                                  name:
+                                    type: string
+                                  button_text:
+                                    type: string
+                                  message_prefix:
+                                    type: string
+                        user_task_pk:
+                          type: integer
+                        n_todos:
+                          type: integer
+                        n_not_read_todos:
+                          type: integer
+                        produced_text_pk:
+                          type: integer
+                        produced_text_title:
+                          type: string
+                        produced_text_production:
+                          type: string
+                        produced_text_version_pk:
+                          type: integer
+                        produced_text_version_index:
+                          type: integer
+                        text_edit_actions:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              text_edit_action_pk:
+                                type: integer
+                              name:
+                                type: string
+                              description:
+                                type: string
+                              emoji:
+                                type: string
+                        working_on_todos:
+                          type: boolean
+                        step_executions:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              user_workflow_step_execution_pk:
+                                type: integer
+                              workflow_step_pk:
+                                type: integer
+                              step_name_for_user:
+                                type: string
+                              step_definition_for_user:
+                                type: string
+                              creation_date:
+                                type: string
+                                format: date-time
+                              user_validation_required:
+                                type: boolean
+                              validated:
+                                type: boolean
+                              parameter:
+                                type: object
+                              result:
+                                type: array
+                                items:
+                                  type: object
+                              error_status:
+                                type: object
+                              review_chat_enabled:
+                                type: boolean
+                        steps:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              workflow_step_pk:
+                                type: integer
+                              step_name_for_user:
+                                type: string
+                              step_definition_for_user:
+                                type: string
+
+        '400':
+          description: Bad request, missing or invalid fields
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '403':
+          description: Authentication error wrong or missing secret
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+    delete:
+      tags:
+        - Application
+      summary: Delete a user task execution
+      parameters:
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: datetime
+          in: query
+          required: true
+          description: The current datetime
+          schema:
+            type: string
+            format: date-time
+        - name: user_task_execution_pk
+          in: query
+          required: true
+          description: The primary key of the user task execution to delete
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: User task execution deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user_task_execution_pk:
+                    type: integer
+        '400':
+          description: Bad request, missing or invalid fields
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '404':
+          description: User task execution not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '403':
+          description: Authentication error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+  /user_task:
+    get:
+      tags:
+        - Application
+      summary: Retrieve tasks associated with a user
+      parameters:
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: datetime
+          in: query
+          required: true
+          description: Timestamp of the request
+          schema:
+            type: string
+            format: date-time
+        - name: platform
+          in: query
+          required: false
+          description: The platform from which the request is made (default is 'webapp')
+          schema:
+            type: string
+            default: webapp
+        - name: version
+          in: query
+          required: false
+          description: The version of the app making the request (default is '0.0.0')
+          schema:
+            type: string
+            default: "0.0.0"
+        - name: user_task_pk
+          in: query
+          required: false
+          description: Primary key of a specific user task to retrieve
+          schema:
+            type: integer
+        - name: n_user_tasks
+          in: query
+          required: false
+          description: Number of user tasks to retrieve (default and maximum is 50)
+          schema:
+            type: integer
+            default: 50
+        - name: offset
+          in: query
+          required: false
+          description: Offset for pagination of user tasks
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: A list of user tasks
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user_tasks:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        user_task_pk:
+                          type: integer
+                        task_pk:
+                          type: integer
+                        task_name:
+                          type: string
+                        task_description:
+                          type: string
+                        task_icon:
+                          type: string
+                        task_type:
+                          type: string
+                        steps:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              workflow_step_pk:
+                                type: integer
+                              step_name_for_user:
+                                type: string
+                              step_definition_for_user:
+                                type: string
+                        enabled:
+                          type: boolean
+        '400':
+          description: Error due to missing field or invalid user_task_pk
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '404':
+          description: Error due to invalid platform or other internal errors
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '403':
+          description: Authentication error wrong or missing secret
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+  /user_workflow_step_execution_result:
+    put:
+      tags:
+        - Application
+      summary: Create a new user workflow execution step result
+      parameters:
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - datetime
+                - user_workflow_step_execution_pk
+                - result
+              properties:
+                datetime:
+                  type: string
+                  format: date-time
+                user_workflow_step_execution_pk:
+                  type: integer
+                result:
+                  type: string
+      responses:
+        '200':
+          description: User workflow step execution result created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  new_result:
+                    type: string
+        '400':
+          description: Bad request, missing or invalid fields
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '403':
+          description: Authentication error wrong or missing secret
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+  /user_workflow_step_execution:
+    put:
+      tags:
+        - Application
+      summary: Create a new user workflow execution step
+      parameters:
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - datetime
+                - user_workflow_step_execution_pk
+              properties:
+                datetime:
+                  type: string
+                  format: date-time
+                user_workflow_step_execution_pk:
+                  type: integer
+      responses:
+        '200':
+          description: User workflow step execution created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Bad request, missing or invalid fields
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '403':
+          description: Authentication error wrong or missing secret
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+    post:
+      tags:
+        - Application
+      summary: Create a new user workflow execution step
+      parameters:
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - datetime
+                - user_workflow_step_execution_pk
+                - validated
+              properties:
+                datetime:
+                  type: string
+                  format: date-time
+                user_workflow_step_execution_pk:
+                  type: integer
+                validated:
+                  type: boolean
+      responses:
+        '200':
+          description: User workflow step execution validated or invalidated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Bad request, missing or invalid fields
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '403':
+          description: Authentication error wrong or missing secret
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string    
+  /user:
+    post:
+      tags:
+        - Application
+      summary: Log in an existing user or register a new user with third-party tokens
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - datetime
+                - email
+                - login_method
+              properties:
+                datetime:
+                  type: string
+                  format: date-time
+                email:
+                  type: string
+                  format: email
+                login_method:
+                  type: string
+                  enum:
+                    - email_password
+                    - microsoft
+                    - google
+                    - apple
+                version:
+                  type: string
+                password:
+                  type: string
+                microsoft_token:
+                  type: string
+                google_token:
+                  type: string
+                apple_token:
+                  type: string
+      responses:
+        '200':
+          description: User logged in or registered successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                  language_code:
+                    type: string
+                  name:
+                    type: string
+                  terms_and_conditions_agreed:
+                    type: boolean
+                  company_fk:
+                    type: integer
+        '400':
+          description: Error in user login or registration
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+    put:
+      tags:
+        - Application
+      summary: Register a new user with email and password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - datetime
+                - email
+                - name
+                - password
+              properties:
+                datetime:
+                  type: string
+                  format: date-time
+                email:
+                  type: string
+                  format: email
+                name:
+                  type: string
+                password:
+                  type: string
+                version:
+                  type: string
+      responses:
+        '200':
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                  language_code:
+                    type: string
+                  name:
+                    type: string
+                  terms_and_conditions_agreed:
+                    type: boolean
+                  company_fk:
+                    type: integer
+        '400':
+          description: Error in user registration
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+  /vocabulary:
+    post:
+      tags:
+        - Application
+      summary: Spot special vocabulary in a message
+      parameters:
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - datetime
+                - message_pk
+              properties:
+                datetime:
+                  type: string
+                  format: date-time
+                message_pk:
+                  type: string
+      responses:
+        '200':
+          description: Special vocabulary spotted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tagged_text:
+                    type: string
+        '400':
+          description: Bad request, missing fields or request must be JSON
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '404':
+          description: Message not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '403':
+          description: Authentication error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+    put:
+      tags:
+        - Application
+      summary: Add new vocabulary for a user
+      parameters:
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - datetime
+                - session_id
+                - initial_spelling
+                - corrected_spelling
+              properties:
+                datetime:
+                  type: string
+                  format: date-time
+                session_id:
+                  type: string
+                initial_spelling:
+                  type: string
+                corrected_spelling:
+                  type: string
+      responses:
+        '200':
+          description: New vocabulary added successfully
+          content:
+            application/json:
+              schema:
+                type: object
+        '400':
+          description: Bad request, missing fields or request must be JSON
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '404':
+          description: No message found for this session and this user
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '403':
+          description: Authentication error wrong or missing secret
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+  /voice:
+    get:
+      tags:
+        - Application
+      summary: Retrieve a voice message or welcome text audio for a user
+      parameters:
+        - in: header
+          name: Authorization
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: datetime
+          required: true
+          schema:
+            type: string
+            format: date-time
+          description: Timestamp of the request
+        - in: query
+          name: message_pk
+          required: false
+          schema:
+            type: string
+          description: Primary key of the message
+        - in: query
+          name: filename
+          required: false
+          schema:
+            type: string
+          description: Filename of the welcome text audio
+      responses:
+        '200':
+          description: Voice message audio retrieved successfully
+          content:
+            audio/*:
+              schema:
+                type: string
+                format: binary
+          headers:
+            Accept-Ranges:
+              schema:
+                type: string
+        '400':
+          description: Error in retrieving voice message audio
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '403':
+          description: Authentication error wrong or missing secret
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+ 
+ 
+
+components:
+  schemas:
+    ProducedText:
+      type: object
+      properties:
+        produced_text_pk:
+          type: integer
+        user_task_execution_fk:
+          type: integer
+        production:
+          type: string
+        title:
+          type: string
+        creation_date:
+          type: string
+          format: date-time
+        text_type:
+          type: string
+    PurchasableProduct:
+      type: object
+      properties:
+        product_pk:
+          type: integer
+        name:
+          type: string
+        product_stripe_id:
+          type: string
+        product_apple_id:
+          type: string
+        n_days_validity:
+          type: integer
+        n_tasks_limit:
+          type: integer
+        stripe_price:
+          type: integer
+        tasks:
+          type: array
+          items:
+            type: string
+    CurrentPurchase:
+      type: object
+      properties:
+        product_name:
+          type: string
+        remaining_days:
+          type: integer
+        n_validity_days:
+          type: integer
+        n_tasks_limit:
+          type: integer
+        n_tasks_consumed:
+          type: integer
+        tasks:
+          type: array
+          items:
+            type: string
+        is_free_product:
+          type: boolean

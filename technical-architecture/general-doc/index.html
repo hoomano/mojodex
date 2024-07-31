@@ -1,0 +1,5488 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://hoomano.github.io/mojodex/technical-architecture/general-doc/">
+      
+      
+        <link rel="prev" href="../../getting-started/">
+      
+      
+        <link rel="next" href="../../design-principles/tasks/whats_a_task/">
+      
+      
+      <link rel="icon" href="../../images/mojodex_logo_4040.png">
+      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.30">
+    
+    
+      
+        <title>Technical Architecture - Mojodex - Open Source Enterprise Digital Assistant Platform</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.3cba04c6.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Hanken+Grotesk:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Hanken Grotesk";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#mojodex-technical-documentation" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Mojodex - Open Source Enterprise Digital Assistant Platform" class="md-header__button md-logo" aria-label="Mojodex - Open Source Enterprise Digital Assistant Platform" data-md-component="logo">
+      
+  <img src="../../images/mojodex_logo_4040.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Mojodex - Open Source Enterprise Digital Assistant Platform
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Technical Architecture
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69Z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12c0-2.42-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69Z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var media,input,key,value,palette=__md_get("__palette");if(palette&&palette.color){"(prefers-color-scheme)"===palette.color.media&&(media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']"),palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent"));for([key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../motivations/" class="md-tabs__link">
+        
+  
+    
+  
+  Why Mojodex?
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../../getting-started/" class="md-tabs__link">
+          
+  
+  Docs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../guides/" class="md-tabs__link">
+          
+  
+  Build your own Digital Assistants
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Mojodex - Open Source Enterprise Digital Assistant Platform" class="md-nav__button md-logo" aria-label="Mojodex - Open Source Enterprise Digital Assistant Platform" data-md-component="logo">
+      
+  <img src="../../images/mojodex_logo_4040.png" alt="logo">
+
+    </a>
+    Mojodex - Open Source Enterprise Digital Assistant Platform
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Home
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../motivations/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Why Mojodex?
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Docs
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            Docs
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Getting Started
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Technical Architecture
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    Technical Architecture
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-mojodex-technical-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. Mojodex technical architecture
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. Mojodex technical architecture">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#main-components" class="md-nav__link">
+    <span class="md-ellipsis">
+      Main components
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#communication-flows" class="md-nav__link">
+    <span class="md-ellipsis">
+      Communication flows
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-backend-component" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. Backend component
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Backend component">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#routes-and-session-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      Routes and session management
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#real-time-interactions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Real-time interactions
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#message-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      Message management
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-background-component" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. Background component
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Background component">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#features" class="md-nav__link">
+    <span class="md-ellipsis">
+      Features
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#database-access" class="md-nav__link">
+    <span class="md-ellipsis">
+      Database access
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#thread-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      Thread management
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-postgresql-database-and-pgvector" class="md-nav__link">
+    <span class="md-ellipsis">
+      4. PostgreSQL database and PGVector
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. PostgreSQL database and PGVector">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#choice-of-postgresql" class="md-nav__link">
+    <span class="md-ellipsis">
+      Choice of PostgreSQL
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#database-schema" class="md-nav__link">
+    <span class="md-ellipsis">
+      Database schema
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#representing-entities" class="md-nav__link">
+    <span class="md-ellipsis">
+      Representing entities
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#using-json" class="md-nav__link">
+    <span class="md-ellipsis">
+      Using JSON
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-scheduler" class="md-nav__link">
+    <span class="md-ellipsis">
+      5. Scheduler
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Scheduler">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#how-the-scheduler-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      How the scheduler works
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-webapp" class="md-nav__link">
+    <span class="md-ellipsis">
+      6. Webapp
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. Webapp">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#user-authentication" class="md-nav__link">
+    <span class="md-ellipsis">
+      User authentication
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-deployment-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      7. Deployment management
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. Deployment management">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#71-local-deployment" class="md-nav__link">
+    <span class="md-ellipsis">
+      7.1 Local deployment
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7.1 Local deployment">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#local-deployment-procedure" class="md-nav__link">
+    <span class="md-ellipsis">
+      Local deployment procedure
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#72-deployment-on-azure" class="md-nav__link">
+    <span class="md-ellipsis">
+      7.2 Deployment on Azure
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7.2 Deployment on Azure">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#deployment-procedure-on-azure" class="md-nav__link">
+    <span class="md-ellipsis">
+      Deployment procedure on Azure
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-data-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      8. Data management
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8. Data management">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#data-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      Data types
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#data-details" class="md-nav__link">
+    <span class="md-ellipsis">
+      Data details
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Data details">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#database" class="md-nav__link">
+    <span class="md-ellipsis">
+      Database
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#user-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      User files
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datasets" class="md-nav__link">
+    <span class="md-ellipsis">
+      Datasets
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cost-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      Cost files
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-differences-between-instruct-tasks-and-workflows" class="md-nav__link">
+    <span class="md-ellipsis">
+      9. Differences Between Instruct Tasks and Workflows
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-task-creation" class="md-nav__link">
+    <span class="md-ellipsis">
+      10. Task Creation
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="10. Task Creation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#instruct-tasks" class="md-nav__link">
+    <span class="md-ellipsis">
+      Instruct Tasks
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#workflow-tasks" class="md-nav__link">
+    <span class="md-ellipsis">
+      Workflow Tasks
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-task-execution-instruct" class="md-nav__link">
+    <span class="md-ellipsis">
+      11. Task Execution (instruct)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="11. Task Execution (instruct)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#111-user-interaction" class="md-nav__link">
+    <span class="md-ellipsis">
+      11.1 User Interaction
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#112-technical-description" class="md-nav__link">
+    <span class="md-ellipsis">
+      11.2 Technical Description
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="11.2 Technical Description">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#step-1-task-initialization" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 1: Task Initialization
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-2-form-submission-web-app-only" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 2: Form Submission (Web App Only)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-3-message-handling-mobile-app" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 3: Message Handling (Mobile App)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#data-storage" class="md-nav__link">
+    <span class="md-ellipsis">
+      Data Storage
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12-task-execution-workflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      12. Task Execution (workflow)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="12. Task Execution (workflow)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1211-user-interaction" class="md-nav__link">
+    <span class="md-ellipsis">
+      121.1 User Interaction
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#122-technical-description" class="md-nav__link">
+    <span class="md-ellipsis">
+      12.2 Technical Description
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="12.2 Technical Description">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#step-1-task-initialization_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 1: Task Initialization
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-2-form-submission" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 2: Form Submission
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-3-step-execution" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 3: Step Execution
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#data-storage_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Data Storage
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#workflow-specifics" class="md-nav__link">
+    <span class="md-ellipsis">
+      Workflow Specifics
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#123-workflow-execution-method-run" class="md-nav__link">
+    <span class="md-ellipsis">
+      12.3 Workflow Execution: Method run()
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="12.3 Workflow Execution: Method run()">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#detailed-execution-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      Detailed Execution Flow
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#124-determining-the-next-step" class="md-nav__link">
+    <span class="md-ellipsis">
+      12.4 Determining the Next Step
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="12.4 Determining the Next Step">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#step-determination-logic" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step Determination Logic
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-poem-workflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      Example: Poem Workflow
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#125-chat-and-step-validation" class="md-nav__link">
+    <span class="md-ellipsis">
+      12.5 Chat and Step Validation
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="12.5 Chat and Step Validation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#chat-on-step-validation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Chat on Step Validation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#chat-on-workflow-result" class="md-nav__link">
+    <span class="md-ellipsis">
+      Chat on Workflow Result
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#13-sessioncontroller-chat-functionality" class="md-nav__link">
+    <span class="md-ellipsis">
+      13. SessionController Chat Functionality
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="13. SessionController Chat Functionality">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#chat-on-instruct-tasks-and-workflows" class="md-nav__link">
+    <span class="md-ellipsis">
+      Chat on Instruct Tasks and Workflows
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Chat on Instruct Tasks and Workflows">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#instruct-tasks_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Instruct Tasks
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#workflows" class="md-nav__link">
+    <span class="md-ellipsis">
+      Workflows
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#entry-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      Entry Points
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#user_input_processor-decorator" class="md-nav__link">
+    <span class="md-ellipsis">
+      @user_input_processor Decorator
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#differences-between-those-methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      Differences between those methods
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#14-chat-assistant-functionality" class="md-nav__link">
+    <span class="md-ellipsis">
+      14. Chat Assistant Functionality
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="14. Chat Assistant Functionality">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#chatassistant-classes" class="md-nav__link">
+    <span class="md-ellipsis">
+      ChatAssistant Classes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#common-methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      Common Methods
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#abstract-methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      Abstract Methods
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#141-homechatassistant" class="md-nav__link">
+    <span class="md-ellipsis">
+      14.1 HomeChatAssistant
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#142-instruct-task-assistant" class="md-nav__link">
+    <span class="md-ellipsis">
+      14.2 Instruct Task Assistant
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#143-workflow-assistant" class="md-nav__link">
+    <span class="md-ellipsis">
+      14.3 Workflow Assistant
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#15-home-chat-functionality" class="md-nav__link">
+    <span class="md-ellipsis">
+      15. Home Chat Functionality
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="15. Home Chat Functionality">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      Overview
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#session-initialization" class="md-nav__link">
+    <span class="md-ellipsis">
+      Session Initialization
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#task-execution" class="md-nav__link">
+    <span class="md-ellipsis">
+      Task Execution
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#maintaining-task-execution-consistency" class="md-nav__link">
+    <span class="md-ellipsis">
+      Maintaining Task Execution Consistency
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#token-callback-_token_callback-function" class="md-nav__link">
+    <span class="md-ellipsis">
+      Token Callback _token_callback Function
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#task-decision-process" class="md-nav__link">
+    <span class="md-ellipsis">
+      Task Decision Process
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#implementation-details" class="md-nav__link">
+    <span class="md-ellipsis">
+      Implementation Details
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#16-proper-nouns-resolution-with-mojodex" class="md-nav__link">
+    <span class="md-ellipsis">
+      16. Proper Nouns Resolution with Mojodex
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="16. Proper Nouns Resolution with Mojodex">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#overview_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Overview
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tagging-proper-nouns" class="md-nav__link">
+    <span class="md-ellipsis">
+      Tagging Proper Nouns
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vocabulary-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      Vocabulary Management
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#whisper-integration" class="md-nav__link">
+    <span class="md-ellipsis">
+      Whisper Integration
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#future-improvements" class="md-nav__link">
+    <span class="md-ellipsis">
+      Future Improvements
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#17-placeholders-functionality" class="md-nav__link">
+    <span class="md-ellipsis">
+      17. Placeholders Functionality
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="17. Placeholders Functionality">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#overview_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Overview
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#usage-in-instructtaskassistant" class="md-nav__link">
+    <span class="md-ellipsis">
+      Usage in InstructTaskAssistant
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#usage-and-limitations-in-workflowassistant" class="md-nav__link">
+    <span class="md-ellipsis">
+      Usage and Limitations in WorkflowAssistant
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#usage-and-limitations-in-homechatassistant" class="md-nav__link">
+    <span class="md-ellipsis">
+      Usage and Limitations in HomeChatAssistant
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#future-considerations" class="md-nav__link">
+    <span class="md-ellipsis">
+      Future Considerations
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#18-document-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      18. Document Management
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="18. Document Management">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#overview_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Overview
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#web-app-integration" class="md-nav__link">
+    <span class="md-ellipsis">
+      Web App Integration
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#document-processing" class="md-nav__link">
+    <span class="md-ellipsis">
+      Document Processing
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#chunking-strategy" class="md-nav__link">
+    <span class="md-ellipsis">
+      Chunking Strategy
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#embedding-and-storage" class="md-nav__link">
+    <span class="md-ellipsis">
+      Embedding and Storage
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#document-retrieval" class="md-nav__link">
+    <span class="md-ellipsis">
+      Document Retrieval
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#19-mojodex-advanced-features-predefined-actions" class="md-nav__link">
+    <span class="md-ellipsis">
+      19. Mojodex Advanced Features: Predefined Actions
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="19. Mojodex Advanced Features: Predefined Actions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#overview_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      Overview
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#implementation-details_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Implementation Details
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#developer-instructions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Developer Instructions
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#common-use-case" class="md-nav__link">
+    <span class="md-ellipsis">
+      Common Use Case
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#20-mojodex-advanced-features-text-edit-actions" class="md-nav__link">
+    <span class="md-ellipsis">
+      20. Mojodex Advanced Features: Text-Edit Actions
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="20. Mojodex Advanced Features: Text-Edit Actions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#overview_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      Overview
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#implementation-details_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Implementation Details
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#developer-instructions_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Developer Instructions
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#common-use-case_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Common Use Case
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#21-mojodex-advanced-features-todo-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      21. Mojodex Advanced Features: Todo Management
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="21. Mojodex Advanced Features: Todo Management">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#overview_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      Overview
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#implementation-details_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Implementation Details
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#features_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Features
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#common-use-case_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Common Use Case
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#22-administration-and-configuration-of-the-platform" class="md-nav__link">
+    <span class="md-ellipsis">
+      22. Administration and Configuration of the platform
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="22. Administration and Configuration of the platform">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#221-user-creation" class="md-nav__link">
+    <span class="md-ellipsis">
+      22.1 User Creation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#222-product-and-profile-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      22.2 Product and Profile Management
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#223-purchase-and-role-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      22.3 Purchase and Role Management
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#224-purchase-and-subscription-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      22.4 Purchase and Subscription Management
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#225-database-entities-relationship" class="md-nav__link">
+    <span class="md-ellipsis">
+      22.5 Database Entities Relationship
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#226-procedure-to-create-a-new-product" class="md-nav__link">
+    <span class="md-ellipsis">
+      22.6 Procedure to create a new Product
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#23-overview-of-mojodex-db-tables" class="md-nav__link">
+    <span class="md-ellipsis">
+      23. Overview of Mojodex DB Tables
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="23. Overview of Mojodex DB Tables">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#231-users" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.1 Users
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="23.1 Users">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#user-table" class="md-nav__link">
+    <span class="md-ellipsis">
+      User Table
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#product-and-category-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      Product and Category Configuration
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#purchase-and-payment-systems" class="md-nav__link">
+    <span class="md-ellipsis">
+      Purchase and Payment Systems
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#232-documents" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.2 Documents
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="23.2 Documents">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#display-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      Display Data
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#user-documents" class="md-nav__link">
+    <span class="md-ellipsis">
+      User Documents
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vocabulary" class="md-nav__link">
+    <span class="md-ellipsis">
+      Vocabulary
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#events-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      Events Management
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#devices-and-notifications-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      Devices and Notifications Management
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#233-tasks-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.3 Tasks Configuration
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="23.3 Tasks Configuration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#task" class="md-nav__link">
+    <span class="md-ellipsis">
+      Task
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#product-tasks" class="md-nav__link">
+    <span class="md-ellipsis">
+      Product Tasks
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#workflow-and-steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      Workflow and Steps
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#actions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Actions
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#234-tasks-executions" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.4 Tasks Executions
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="23.4 Tasks Executions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#task-execution-and-sessions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Task Execution and Sessions
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#inputs-and-messages" class="md-nav__link">
+    <span class="md-ellipsis">
+      Inputs and Messages
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#task-results-and-produced-text-versions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Task Results and Produced Text Versions
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#todos" class="md-nav__link">
+    <span class="md-ellipsis">
+      ToDos
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#home-chat-interactions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Home Chat Interactions
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+      
+      
+        
+          
+          
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_3" id="__nav_3_3_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Design Principles
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_3">
+            <span class="md-nav__icon md-icon"></span>
+            Design Principles
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_3_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_3_1" id="__nav_3_3_1_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Task-oriented design
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_3_3_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_3_1">
+            <span class="md-nav__icon md-icon"></span>
+            Task-oriented design
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design-principles/tasks/whats_a_task/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    What's a task
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design-principles/tasks/execute_task/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Execute a task
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_3_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_3_2" id="__nav_3_3_2_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Organized by products
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_3_3_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_3_2">
+            <span class="md-nav__icon md-icon"></span>
+            Organized by products
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design-principles/products/whats_a_product/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    What's a product
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design-principles/products/how_it_works/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    How it works
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_3_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_3_3" id="__nav_3_3_3_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Organized by profiles
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_3_3_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_3_3">
+            <span class="md-nav__icon md-icon"></span>
+            Organized by profiles
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design-principles/profiles/whats_a_profile/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    What's a profile
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_3_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_3_4" id="__nav_3_3_4_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Proactive To-do
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_3_3_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_3_4">
+            <span class="md-nav__icon md-icon"></span>
+            Proactive To-do
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design-principles/to-do_list/whats_a_todo/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    What's a to-do
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design-principles/to-do_list/how_todo_works/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    How it works
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_3_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_3_5" id="__nav_3_3_5_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Workflows
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_3_3_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_3_5">
+            <span class="md-nav__icon md-icon"></span>
+            Workflows
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design-principles/workflows/whats_a_workflow/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    What's a workflow
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design-principles/workflows/execute_workflow/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    How it works
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+      
+      
+        
+          
+          
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_4" id="__nav_3_4_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Advanced Technical Architecture
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_4">
+            <span class="md-nav__icon md-icon"></span>
+            Advanced Technical Architecture
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../overview/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Overview
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../backend/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Backend
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../database/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Database
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../webapp/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Webapp
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../background/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Background
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../scheduler/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Scheduler
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_4_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_4_7" id="__nav_3_4_7_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    LLM Features
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_3_4_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_4_7">
+            <span class="md-nav__icon md-icon"></span>
+            LLM Features
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../llm-features/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Overview
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../llm-features/openai/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    OpenAI
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../llm-features/azure/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Azure OpenAI Services
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../llm-features/mistral/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Mistral AI
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../llm-features/mpt/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Mojodex Prompt Template
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_4_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_4_8" id="__nav_3_4_8_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Integration
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_3_4_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_4_8">
+            <span class="md-nav__icon md-icon"></span>
+            Integration
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../integration/hubspot/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Hubspot
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Build your own Digital Assistants
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            Build your own Digital Assistants
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Getting Started
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/users/new_user/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Create a new user
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/products/new_product/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Configure a new product
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/profiles/new_profile/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Configure a new profile
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/tasks/new_task/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Configure a new Instruct task
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/tasks/example/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    New Instruct Task example
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/workflows/new_workflow/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Configure a new Workflow task
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/sales_assistant_example/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Tutorial - Sales Assistant Example
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/sales_assistant_example/sales_assistant_scope_template/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Sales Assistant Team Guide
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-mojodex-technical-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. Mojodex technical architecture
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. Mojodex technical architecture">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#main-components" class="md-nav__link">
+    <span class="md-ellipsis">
+      Main components
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#communication-flows" class="md-nav__link">
+    <span class="md-ellipsis">
+      Communication flows
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-backend-component" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. Backend component
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Backend component">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#routes-and-session-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      Routes and session management
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#real-time-interactions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Real-time interactions
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#message-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      Message management
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-background-component" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. Background component
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Background component">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#features" class="md-nav__link">
+    <span class="md-ellipsis">
+      Features
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#database-access" class="md-nav__link">
+    <span class="md-ellipsis">
+      Database access
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#thread-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      Thread management
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-postgresql-database-and-pgvector" class="md-nav__link">
+    <span class="md-ellipsis">
+      4. PostgreSQL database and PGVector
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. PostgreSQL database and PGVector">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#choice-of-postgresql" class="md-nav__link">
+    <span class="md-ellipsis">
+      Choice of PostgreSQL
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#database-schema" class="md-nav__link">
+    <span class="md-ellipsis">
+      Database schema
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#representing-entities" class="md-nav__link">
+    <span class="md-ellipsis">
+      Representing entities
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#using-json" class="md-nav__link">
+    <span class="md-ellipsis">
+      Using JSON
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-scheduler" class="md-nav__link">
+    <span class="md-ellipsis">
+      5. Scheduler
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Scheduler">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#how-the-scheduler-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      How the scheduler works
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-webapp" class="md-nav__link">
+    <span class="md-ellipsis">
+      6. Webapp
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. Webapp">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#user-authentication" class="md-nav__link">
+    <span class="md-ellipsis">
+      User authentication
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-deployment-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      7. Deployment management
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. Deployment management">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#71-local-deployment" class="md-nav__link">
+    <span class="md-ellipsis">
+      7.1 Local deployment
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7.1 Local deployment">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#local-deployment-procedure" class="md-nav__link">
+    <span class="md-ellipsis">
+      Local deployment procedure
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#72-deployment-on-azure" class="md-nav__link">
+    <span class="md-ellipsis">
+      7.2 Deployment on Azure
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7.2 Deployment on Azure">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#deployment-procedure-on-azure" class="md-nav__link">
+    <span class="md-ellipsis">
+      Deployment procedure on Azure
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-data-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      8. Data management
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8. Data management">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#data-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      Data types
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#data-details" class="md-nav__link">
+    <span class="md-ellipsis">
+      Data details
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Data details">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#database" class="md-nav__link">
+    <span class="md-ellipsis">
+      Database
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#user-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      User files
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datasets" class="md-nav__link">
+    <span class="md-ellipsis">
+      Datasets
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cost-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      Cost files
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-differences-between-instruct-tasks-and-workflows" class="md-nav__link">
+    <span class="md-ellipsis">
+      9. Differences Between Instruct Tasks and Workflows
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-task-creation" class="md-nav__link">
+    <span class="md-ellipsis">
+      10. Task Creation
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="10. Task Creation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#instruct-tasks" class="md-nav__link">
+    <span class="md-ellipsis">
+      Instruct Tasks
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#workflow-tasks" class="md-nav__link">
+    <span class="md-ellipsis">
+      Workflow Tasks
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-task-execution-instruct" class="md-nav__link">
+    <span class="md-ellipsis">
+      11. Task Execution (instruct)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="11. Task Execution (instruct)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#111-user-interaction" class="md-nav__link">
+    <span class="md-ellipsis">
+      11.1 User Interaction
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#112-technical-description" class="md-nav__link">
+    <span class="md-ellipsis">
+      11.2 Technical Description
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="11.2 Technical Description">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#step-1-task-initialization" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 1: Task Initialization
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-2-form-submission-web-app-only" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 2: Form Submission (Web App Only)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-3-message-handling-mobile-app" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 3: Message Handling (Mobile App)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#data-storage" class="md-nav__link">
+    <span class="md-ellipsis">
+      Data Storage
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12-task-execution-workflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      12. Task Execution (workflow)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="12. Task Execution (workflow)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1211-user-interaction" class="md-nav__link">
+    <span class="md-ellipsis">
+      121.1 User Interaction
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#122-technical-description" class="md-nav__link">
+    <span class="md-ellipsis">
+      12.2 Technical Description
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="12.2 Technical Description">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#step-1-task-initialization_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 1: Task Initialization
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-2-form-submission" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 2: Form Submission
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-3-step-execution" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 3: Step Execution
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#data-storage_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Data Storage
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#workflow-specifics" class="md-nav__link">
+    <span class="md-ellipsis">
+      Workflow Specifics
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#123-workflow-execution-method-run" class="md-nav__link">
+    <span class="md-ellipsis">
+      12.3 Workflow Execution: Method run()
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="12.3 Workflow Execution: Method run()">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#detailed-execution-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      Detailed Execution Flow
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#124-determining-the-next-step" class="md-nav__link">
+    <span class="md-ellipsis">
+      12.4 Determining the Next Step
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="12.4 Determining the Next Step">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#step-determination-logic" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step Determination Logic
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-poem-workflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      Example: Poem Workflow
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#125-chat-and-step-validation" class="md-nav__link">
+    <span class="md-ellipsis">
+      12.5 Chat and Step Validation
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="12.5 Chat and Step Validation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#chat-on-step-validation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Chat on Step Validation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#chat-on-workflow-result" class="md-nav__link">
+    <span class="md-ellipsis">
+      Chat on Workflow Result
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#13-sessioncontroller-chat-functionality" class="md-nav__link">
+    <span class="md-ellipsis">
+      13. SessionController Chat Functionality
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="13. SessionController Chat Functionality">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#chat-on-instruct-tasks-and-workflows" class="md-nav__link">
+    <span class="md-ellipsis">
+      Chat on Instruct Tasks and Workflows
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Chat on Instruct Tasks and Workflows">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#instruct-tasks_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Instruct Tasks
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#workflows" class="md-nav__link">
+    <span class="md-ellipsis">
+      Workflows
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#entry-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      Entry Points
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#user_input_processor-decorator" class="md-nav__link">
+    <span class="md-ellipsis">
+      @user_input_processor Decorator
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#differences-between-those-methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      Differences between those methods
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#14-chat-assistant-functionality" class="md-nav__link">
+    <span class="md-ellipsis">
+      14. Chat Assistant Functionality
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="14. Chat Assistant Functionality">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#chatassistant-classes" class="md-nav__link">
+    <span class="md-ellipsis">
+      ChatAssistant Classes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#common-methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      Common Methods
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#abstract-methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      Abstract Methods
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#141-homechatassistant" class="md-nav__link">
+    <span class="md-ellipsis">
+      14.1 HomeChatAssistant
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#142-instruct-task-assistant" class="md-nav__link">
+    <span class="md-ellipsis">
+      14.2 Instruct Task Assistant
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#143-workflow-assistant" class="md-nav__link">
+    <span class="md-ellipsis">
+      14.3 Workflow Assistant
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#15-home-chat-functionality" class="md-nav__link">
+    <span class="md-ellipsis">
+      15. Home Chat Functionality
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="15. Home Chat Functionality">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      Overview
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#session-initialization" class="md-nav__link">
+    <span class="md-ellipsis">
+      Session Initialization
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#task-execution" class="md-nav__link">
+    <span class="md-ellipsis">
+      Task Execution
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#maintaining-task-execution-consistency" class="md-nav__link">
+    <span class="md-ellipsis">
+      Maintaining Task Execution Consistency
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#token-callback-_token_callback-function" class="md-nav__link">
+    <span class="md-ellipsis">
+      Token Callback _token_callback Function
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#task-decision-process" class="md-nav__link">
+    <span class="md-ellipsis">
+      Task Decision Process
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#implementation-details" class="md-nav__link">
+    <span class="md-ellipsis">
+      Implementation Details
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#16-proper-nouns-resolution-with-mojodex" class="md-nav__link">
+    <span class="md-ellipsis">
+      16. Proper Nouns Resolution with Mojodex
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="16. Proper Nouns Resolution with Mojodex">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#overview_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Overview
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tagging-proper-nouns" class="md-nav__link">
+    <span class="md-ellipsis">
+      Tagging Proper Nouns
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vocabulary-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      Vocabulary Management
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#whisper-integration" class="md-nav__link">
+    <span class="md-ellipsis">
+      Whisper Integration
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#future-improvements" class="md-nav__link">
+    <span class="md-ellipsis">
+      Future Improvements
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#17-placeholders-functionality" class="md-nav__link">
+    <span class="md-ellipsis">
+      17. Placeholders Functionality
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="17. Placeholders Functionality">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#overview_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Overview
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#usage-in-instructtaskassistant" class="md-nav__link">
+    <span class="md-ellipsis">
+      Usage in InstructTaskAssistant
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#usage-and-limitations-in-workflowassistant" class="md-nav__link">
+    <span class="md-ellipsis">
+      Usage and Limitations in WorkflowAssistant
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#usage-and-limitations-in-homechatassistant" class="md-nav__link">
+    <span class="md-ellipsis">
+      Usage and Limitations in HomeChatAssistant
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#future-considerations" class="md-nav__link">
+    <span class="md-ellipsis">
+      Future Considerations
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#18-document-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      18. Document Management
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="18. Document Management">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#overview_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Overview
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#web-app-integration" class="md-nav__link">
+    <span class="md-ellipsis">
+      Web App Integration
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#document-processing" class="md-nav__link">
+    <span class="md-ellipsis">
+      Document Processing
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#chunking-strategy" class="md-nav__link">
+    <span class="md-ellipsis">
+      Chunking Strategy
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#embedding-and-storage" class="md-nav__link">
+    <span class="md-ellipsis">
+      Embedding and Storage
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#document-retrieval" class="md-nav__link">
+    <span class="md-ellipsis">
+      Document Retrieval
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#19-mojodex-advanced-features-predefined-actions" class="md-nav__link">
+    <span class="md-ellipsis">
+      19. Mojodex Advanced Features: Predefined Actions
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="19. Mojodex Advanced Features: Predefined Actions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#overview_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      Overview
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#implementation-details_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Implementation Details
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#developer-instructions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Developer Instructions
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#common-use-case" class="md-nav__link">
+    <span class="md-ellipsis">
+      Common Use Case
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#20-mojodex-advanced-features-text-edit-actions" class="md-nav__link">
+    <span class="md-ellipsis">
+      20. Mojodex Advanced Features: Text-Edit Actions
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="20. Mojodex Advanced Features: Text-Edit Actions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#overview_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      Overview
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#implementation-details_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Implementation Details
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#developer-instructions_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Developer Instructions
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#common-use-case_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Common Use Case
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#21-mojodex-advanced-features-todo-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      21. Mojodex Advanced Features: Todo Management
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="21. Mojodex Advanced Features: Todo Management">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#overview_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      Overview
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#implementation-details_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Implementation Details
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#features_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Features
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#common-use-case_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Common Use Case
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#22-administration-and-configuration-of-the-platform" class="md-nav__link">
+    <span class="md-ellipsis">
+      22. Administration and Configuration of the platform
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="22. Administration and Configuration of the platform">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#221-user-creation" class="md-nav__link">
+    <span class="md-ellipsis">
+      22.1 User Creation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#222-product-and-profile-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      22.2 Product and Profile Management
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#223-purchase-and-role-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      22.3 Purchase and Role Management
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#224-purchase-and-subscription-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      22.4 Purchase and Subscription Management
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#225-database-entities-relationship" class="md-nav__link">
+    <span class="md-ellipsis">
+      22.5 Database Entities Relationship
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#226-procedure-to-create-a-new-product" class="md-nav__link">
+    <span class="md-ellipsis">
+      22.6 Procedure to create a new Product
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#23-overview-of-mojodex-db-tables" class="md-nav__link">
+    <span class="md-ellipsis">
+      23. Overview of Mojodex DB Tables
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="23. Overview of Mojodex DB Tables">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#231-users" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.1 Users
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="23.1 Users">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#user-table" class="md-nav__link">
+    <span class="md-ellipsis">
+      User Table
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#product-and-category-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      Product and Category Configuration
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#purchase-and-payment-systems" class="md-nav__link">
+    <span class="md-ellipsis">
+      Purchase and Payment Systems
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#232-documents" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.2 Documents
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="23.2 Documents">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#display-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      Display Data
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#user-documents" class="md-nav__link">
+    <span class="md-ellipsis">
+      User Documents
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vocabulary" class="md-nav__link">
+    <span class="md-ellipsis">
+      Vocabulary
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#events-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      Events Management
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#devices-and-notifications-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      Devices and Notifications Management
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#233-tasks-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.3 Tasks Configuration
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="23.3 Tasks Configuration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#task" class="md-nav__link">
+    <span class="md-ellipsis">
+      Task
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#product-tasks" class="md-nav__link">
+    <span class="md-ellipsis">
+      Product Tasks
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#workflow-and-steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      Workflow and Steps
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#actions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Actions
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#234-tasks-executions" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.4 Tasks Executions
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="23.4 Tasks Executions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#task-execution-and-sessions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Task Execution and Sessions
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#inputs-and-messages" class="md-nav__link">
+    <span class="md-ellipsis">
+      Inputs and Messages
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#task-results-and-produced-text-versions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Task Results and Produced Text Versions
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#todos" class="md-nav__link">
+    <span class="md-ellipsis">
+      ToDos
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#home-chat-interactions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Home Chat Interactions
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+<h1 id="mojodex-technical-documentation">Mojodex Technical Documentation</h1>
+<blockquote>
+<p>What's this doc for? 
+<strong>High level understanding of the architecture of Mojodex and the relationship between its components.</strong>
+<em>More detailed documentation is available in each components directory.</em></p>
+</blockquote>
+<p>Mojodex is an open source tool, a platform for creating digital assistants. Designed around tasks, Mojodex enables developers and IT teams to create customised digital assistants for their staff in a simple way. The platform can be deployed in the cloud and works with both backend and frontend tools. Administrators can configure tasks for users, and there are several types of tasks and interfaces for using them. Mojodex allows companies to take ownership of the development of their AI tools.</p>
+<h2 id="1-mojodex-technical-architecture">1. Mojodex technical architecture</h2>
+<h3 id="main-components">Main components</h3>
+<p><img alt="../../images/architecture_overview.png" src="../../images/architecture_overview.png" /></p>
+<ul>
+<li><strong>Mobile application</strong>: Developed in Flutter, it accesses the Python backend directly.</li>
+<li><strong>Web application</strong> : Developed in React, it accesses the Python backend via a Next.js proxy.</li>
+<li><strong>CLI</strong>: Command-line tool for developers.</li>
+<li><strong>Backend</strong> : Manages real-time interactions and REST APIs.</li>
+<li><strong>Background</strong>: Manages long and proactive tasks.</li>
+<li><strong>Scheduler</strong>: triggers tasks at given times.</li>
+<li><strong>PostgreSQL database with PGVector</strong>: Stores data and embeddings.</li>
+</ul>
+<h3 id="communication-flows">Communication flows</h3>
+<ul>
+<li><strong>REST routes</strong>: Used for HTTP communications, shown in red.</li>
+<li><strong>Socket.io streams</strong>: Used for real-time communications, shown in green.</li>
+</ul>
+<h2 id="2-backend-component">2. Backend component</h2>
+<p>The backend is a Python application implemented with Flask to manage REST APIs and business logic. It uses SQLAlchemy to access the database and Flask-SocketIO for real-time interactions.</p>
+<h3 id="routes-and-session-management">Routes and session management</h3>
+<p>Routes are defined in a <code>HTTPRouteManager</code> class. The backend uses a <code>db</code> object provided by Flask-SQLAlchemy for interactions with the database. A <code>@with_db_session</code> decorator is used to handle database sessions outside of route calls, to avoid database locks. Models are defined in <code>mojodex_core/entities/db_base_entities.py</code></p>
+<h3 id="real-time-interactions">Real-time interactions</h3>
+<p>The backend uses Flask-SocketIO to manage real-time interactions, in particular for chat between the user and the assistant. Messages are sent via Socket.io rooms, separated by session ID. Authentication of Socket.io flows is managed in the same way as Flask authentication, using tokens.</p>
+<h3 id="message-management">Message management</h3>
+<p>Messages between the backend and the frontend are managed via Socket.io. Important messages, such as Mojo messages and draft messages, use acknowledgement mechanisms to ensure that they are received by the client.</p>
+<h2 id="3-background-component">3. Background component</h2>
+<p>The background is designed to manage long and proactive processes. It uses Flask to expose HTTP routes and a thread pool executor to launch processes in parallel. Processes are logged at admin level, and the background handles errors autonomously.</p>
+<h4 id="features">Features</h4>
+<p>Features implemented in the background include:
+- Extracting and rescheduling to-dos.
+- Creating and updating documents from a website.
+- Event generation for push notifications and emails.</p>
+<h4 id="database-access">Database access</h4>
+<p>The background has access to the database via SQLAlchemy and also uses the <code>@with_db_session</code> decorator to manage database sessions outside of route calls.</p>
+<h3 id="thread-management">Thread management</h3>
+<p>The background runs processes in separate threads to avoid blocking the main Flask server. Process results are logged, and the background handles errors autonomously.</p>
+<h2 id="4-postgresql-database-and-pgvector">4. PostgreSQL database and PGVector</h2>
+<h3 id="choice-of-postgresql">Choice of PostgreSQL</h3>
+<p>PostgreSQL was chosen for its flexibility and its ability to manage vector columns via the PGVector extension. Tests were carried out with other vector databases, but PostgreSQL proved sufficient for the needs of Mojodex.</p>
+<h3 id="database-schema">Database schema</h3>
+<p>The database schema is available on DB Diagram. Table names are prefixed with <code>md_</code> for Mojodex. A <code>create-mojodex-data.sql</code> script creates the database schema, and an <code>init-mojodex-data.sql</code> script initializes the data.</p>
+<blockquote>
+<p>See section #23 for a high level overview of the database structure and organisation</p>
+<p>Also see detailed database documentation here: <a href="https://dbdiagram.io/d/MojodexDatabase-659d0645ac844320ae85b440">https://dbdiagram.io/d/MojodexDatabase-659d0645ac844320ae85b440</a></p>
+</blockquote>
+<h3 id="representing-entities">Representing entities</h3>
+<p>Database entities are represented in Python classes generated by SQLacodegen. These classes can be overloaded to add specific attributes.</p>
+<h3 id="using-json">Using JSON</h3>
+<p>Some columns in the database use the JSON type to retain flexibility on certain fields, such as the <code>message</code> field in the <code>md_message</code> table.</p>
+<h2 id="5-scheduler">5. Scheduler</h2>
+<p>The Mojodex scheduler is designed to trigger actions at specific intervals. Currently, there is no implementation for triggering actions at a specific time of day. Actions are triggered according to the interval and the user's timezone.</p>
+<h3 id="how-the-scheduler-works">How the scheduler works</h3>
+<p>The scheduler uses the Python <code>schedule</code> module to execute tasks at a specific frequency. These tasks are implemented in the scheduler main, which usually runs in a simple Python container. The scheduler can call either the backend for administrative tasks (such as updating users whose purchases have expired), or the background for proactive actions (such as sending notifications or retrieving tasks).</p>
+<h2 id="6-webapp">6. Webapp</h2>
+<p>The web app gives users access to the Mojodex API. The front-end is developed in React and the proxy in Node.js. REST Flows pass through the proxy, while Socket.IO flows pass directly between the web app and the Python backend.</p>
+<h3 id="user-authentication">User authentication</h3>
+<p>Users can be authenticated via login/password or via providers (Google, Apple...). The authentication request arrives on the Next server (Node.js), is rerouted to the Python backend for verification, and the authentication token is sent back to the client on the front end for future calls.</p>
+<h2 id="7-deployment-management">7. Deployment management</h2>
+<h3 id="71-local-deployment">7.1 Local deployment</h3>
+<p>To deploy Mojodex locally, there are 2 Docker Composes: a classic one and one for development (<code>docker-compose-dev.yml</code>). Each Docker Compose contains six Docker containers corresponding to different project directories, each with its own Dockerfile.</p>
+<ul>
+<li>mojodex-db</li>
+<li>mojodex-backend</li>
+<li>mojodex-background</li>
+<li>mojodex-scheduler</li>
+<li>mojodex-webapp</li>
+<li>(optionnal) mojodex-ollama</li>
+</ul>
+<h4 id="local-deployment-procedure">Local deployment procedure</h4>
+<ol>
+<li>Clone the repo.</li>
+<li>Copy and modify the <code>.env</code> file from <code>.env.example</code>.</li>
+<li>Copy and modify the <code>.conf.example</code> files (models.conf, stt-models.conf, embeddings-models.conf).</li>
+<li>Start the services with <code>docker-compose up -d --build</code>.</li>
+<li>Access the web app on <code>localhost:3000</code> with the default user (email: demo@example.com, password: demo).</li>
+</ol>
+<h3 id="72-deployment-on-azure">7.2 Deployment on Azure</h3>
+<p>Mojodex can be deployed on Azure using services such as Container Registry, App Services, Container Instances, Storage Account, and a Postgres database server in flexible mode.</p>
+<h4 id="deployment-procedure-on-azure">Deployment procedure on Azure</h4>
+<ol>
+<li>Install Azure CLI and log in to Azure.</li>
+<li>Update the template configuration files (.conf).</li>
+<li>Use the <code>azure_deployment_script.sh</code> script to deploy services.</li>
+<li>Restart the Azure services after deployment.</li>
+<li>Access the web app via the URL provided by Azure.</li>
+</ol>
+<blockquote>
+<p>Caution: Note that this script is intended to be used more as a ‘memory aid’ than as a script to be run all at once without supervision.</p>
+</blockquote>
+<div class="admonition note">
+<p>💡 For Azure users, you can find advanced deployment informations in the following resources:</p>
+<ul>
+<li><a href="../../guides/azure-deployment/">Deployment Guide with Azure</a></li>
+</ul>
+</div>
+<h2 id="8-data-management">8. Data management</h2>
+<h3 id="data-types">Data types</h3>
+<ol>
+<li><strong>Database</strong>: Contains all the business data required to run Mojodex.</li>
+<li><strong>User files</strong>: Stored in the <code>/data</code> directory and organised by session.</li>
+<li><strong>Datasets</strong>: Files created to use the data generated by Mojodex, in particular LLM calls.</li>
+<li><strong>Cost files</strong> : Consumption logs to analyse the costs and usage of the various services.</li>
+</ol>
+<h3 id="data-details">Data details</h3>
+<h4 id="database">Database</h4>
+<ul>
+<li>Stored locally in a Docker volume.</li>
+<li>In Azure mode, managed by the Azure Postgres server.</li>
+</ul>
+<h4 id="user-files">User files</h4>
+<ul>
+<li>Stored in <code>/data/users/{user_id}/{session_id}</code>.</li>
+<li>Contain audio files, audio messages from the user, and uploaded images and videos.</li>
+</ul>
+<h4 id="datasets">Datasets</h4>
+<ul>
+<li>Stored in <code>/data/prompt_datasets/{type}/{label}/{task_name}/{id}</code>.</li>
+<li>Contain LLM call parameters and generated responses.</li>
+</ul>
+<h4 id="cost-files">Cost files</h4>
+<ul>
+<li>Stored as CSV files.</li>
+<li>Contain information on consumption by user, task and service.</li>
+</ul>
+<h2 id="9-differences-between-instruct-tasks-and-workflows">9. Differences Between Instruct Tasks and Workflows</h2>
+<p><img alt="alt text" src="image-2.png" /></p>
+<h2 id="10-task-creation">10. Task Creation</h2>
+<h3 id="instruct-tasks">Instruct Tasks</h3>
+<p>Instruct tasks are the simpler type of tasks in Mojodex. Here is the process to create an Instruct task:</p>
+<ol>
+<li><strong>Identify Tasks</strong>: Identify the tasks that need to be created based on the job profiles within the company.</li>
+<li><strong>Post-Task JSON Route</strong>: Use the <code>POST /task_json</code> route to generate a preliminary JSON definition of the task.<ul>
+<li>This route takes the task definition as a parameter and returns a JSON template.</li>
+<li>Ensure to review and adapt the JSON to fit your specific needs.</li>
+</ul>
+</li>
+<li><strong>JSON Schema</strong>: The JSON format and the route are detailed in the OpenAPI documentation.</li>
+<li><strong>Put-Task Route</strong>: Once the JSON is ready, send it via the <code>PUT /task</code> route to create the task in the database.</li>
+<li><strong>SQL Script Alternative</strong>: Alternatively, you can write an SQL script to create tasks directly in the database, which can be useful for multi-environment deployments.</li>
+</ol>
+<h3 id="workflow-tasks">Workflow Tasks</h3>
+<p>Workflow tasks involve a more complex process:</p>
+<ol>
+<li><strong>Create Workflow Directory</strong>: In the <code>mojodex_core</code> module, under the <code>workflows</code> directory, create a new directory named after the workflow.</li>
+<li><strong>Create Step Files</strong>: For each step in the workflow, create a Python file named after the step.<ul>
+<li>Each file should contain a class that extends <code>WorkflowStep</code> and overrides the <code>_execute</code> method.</li>
+<li>Ensure the input format of each step matches the output format of the previous step.</li>
+</ul>
+</li>
+<li><strong>Step Library</strong>: Add each step to the <code>steps_library</code> file in the <code>mojodex_core/workflows</code> module, mapping step names to their corresponding classes.</li>
+<li><strong>Workflow JSON</strong>: Create a JSON definition for the workflow task, similar to Instruct tasks but including the steps with their names, descriptions, and order.</li>
+<li><strong>Put-Task Route</strong>: Send the workflow JSON via the <code>PUT /task</code> route.</li>
+</ol>
+<blockquote>
+<p>Creating a task does not make it available to users. It must be associated with a product through the <code>md_product_task_association</code> table.
+For more information on how to associate users to tasks, see section #2</p>
+</blockquote>
+<h2 id="11-task-execution-instruct">11. Task Execution (<code>instruct</code>)</h2>
+<h3 id="111-user-interaction">11.1 User Interaction</h3>
+<p>When a user wants to execute a task, the following steps occur:</p>
+<ol>
+<li><strong>Task Selection</strong>: The user clicks on "New Task" and sees a list of available tasks.</li>
+<li><strong>Task Initiation</strong>:<ul>
+<li><strong>Web App</strong>: A form appears with fields that the user must fill out to start the task. These fields are mandatory.</li>
+<li><strong>Mobile App</strong>: The user sends an initial message, typically an audio message, containing all necessary inputs for the task.</li>
+</ul>
+</li>
+<li><strong>Task Execution</strong>:<ul>
+<li><strong>Web App</strong>: If all fields are filled correctly, the task starts immediately.</li>
+<li><strong>Mobile App</strong>: The assistant may ask follow-up questions to gather any missing information before starting the task.</li>
+</ul>
+</li>
+</ol>
+<h3 id="112-technical-description">11.2 Technical Description</h3>
+<p><img alt="docs/images/task_execution/complete_user_task_execution_flow.png" src="../../images/task_execution/complete_user_task_execution_flow.png" /></p>
+<h4 id="step-1-task-initialization">Step 1: Task Initialization</h4>
+<ul>
+<li><strong>Route</strong>: <code>PUT /user_task_execution</code></li>
+<li><strong>Action</strong>: Creates an instance of <code>UserTaskExecution</code> with a <code>JsonInput</code> field initialized with null values.</li>
+<li><strong>Details</strong>:<ul>
+<li>A user is associated with multiple <code>UserTasks</code>.</li>
+<li>When a user starts a task, a new <code>UserTaskExecution</code> object is created.</li>
+<li>This route is called before any user inputs are provided.</li>
+</ul>
+</li>
+</ul>
+<h4 id="step-2-form-submission-web-app-only">Step 2: Form Submission (Web App Only)</h4>
+<ul>
+<li><strong>Route</strong>: <code>POST /user_task_execution_run</code></li>
+<li><strong>Action</strong>: Sets the start date of the <code>UserTaskExecution</code> and begins generating a response from the assistant.</li>
+<li><strong>Details</strong>:<ul>
+<li>The <code>SessionController</code> handles chat exchanges and processes form inputs to generate the assistant's response.</li>
+</ul>
+</li>
+</ul>
+<h4 id="step-3-message-handling-mobile-app">Step 3: Message Handling (Mobile App)</h4>
+<ul>
+<li><strong>Route</strong>: <code>PUT /user_message</code></li>
+<li><strong>Action</strong>: Sends a user message and ensures the associated <code>UserTaskExecution</code> is started.</li>
+<li><strong>Details</strong>:<ul>
+<li>The route verifies if the <code>UserTaskExecution</code> is started; if not, it starts it.</li>
+<li>Manages speech-to-text conversion and handles potential timeouts or crashes.</li>
+<li>Uses a frontend-managed message ID to re-query the route in case of crash that would let the route to answer without providing <code>message_pk</code>.</li>
+</ul>
+</li>
+</ul>
+<h4 id="data-storage">Data Storage</h4>
+<ul>
+<li><strong>Initial User Inputs</strong>: Stored in the <code>UserTaskExecution</code> table under <code>JsonInputValues</code>.</li>
+<li><strong>Messages</strong>: Stored in the <code>md_message</code> table in a JSON field.</li>
+<li><strong>Produced Text Versions</strong>: Stored in the <code>md_produced_text_version</code> table, containing titles and bodies of each version.</li>
+</ul>
+<h2 id="12-task-execution-workflow">12. Task Execution (<code>workflow</code>)</h2>
+<h3 id="1211-user-interaction">121.1 User Interaction</h3>
+<ol>
+<li><strong>Task Selection</strong>: The user clicks on "New Task" and sees a list of available tasks.</li>
+<li><strong>Task Initiation</strong>: The user selects a workflow task and fills out the form.</li>
+<li><strong>Workflow Execution</strong>:<ul>
+<li>The user is presented with a process tab detailing each step of the workflow.</li>
+<li>Steps can start and complete, with the user receiving updates via Socket.io events.</li>
+<li>Some steps may require user validation before proceeding to the next step.</li>
+<li>The user can interact with the assistant through buttons like <code>restart</code>, <code>edit</code>, and <code>review</code>.</li>
+</ul>
+</li>
+</ol>
+<h3 id="122-technical-description">12.2 Technical Description</h3>
+<p><img alt="../../images/workflow_execution/complete_user_workflow_execution_flow.png" src="../../images/workflow_execution/complete_user_workflow_execution_flow.png" /></p>
+<h4 id="step-1-task-initialization_1">Step 1: Task Initialization</h4>
+<ul>
+<li><strong>Route</strong>: <code>PUT /user_task_execution</code></li>
+<li><strong>Action</strong>: Creates an instance of <code>UserTaskExecution</code> with a <code>json_input</code> field initialized with null values.</li>
+<li><strong>Details</strong>:<ul>
+<li>Similar to <code>instruct</code> tasks, a new <code>UserTaskExecution</code> object is created when a user starts a task.</li>
+</ul>
+</li>
+</ul>
+<h4 id="step-2-form-submission">Step 2: Form Submission</h4>
+<ul>
+<li><strong>Route</strong>: <code>POST /user_task_execution_run</code></li>
+<li><strong>Action</strong>: Sets the start date of the <code>UserTaskExecution</code> and begins generating a response from the assistant.</li>
+<li><strong>Details</strong>:<ul>
+<li>The <code>SessionController</code> handles chat exchanges and processes form inputs to generate the assistant's response.</li>
+</ul>
+</li>
+</ul>
+<h4 id="step-3-step-execution">Step 3: Step Execution</h4>
+<ul>
+<li><strong>Socket.io Events</strong>: Used to update the web app when a step starts or completes.</li>
+<li><strong>User Validation</strong>: Some steps require user validation, defined by a database field associated with the workflow step.</li>
+<li><strong>Buttons</strong>:<ul>
+<li><code>restart</code>: Available only on the first step to modify initial inputs and relaunch the workflow.</li>
+<li><code>edit</code>: Allows the user to modify the step result directly before validating it.</li>
+<li><code>review</code>: Opens a chat for the user to send instructions to the assistant to re-execute the step.</li>
+</ul>
+</li>
+</ul>
+<h4 id="data-storage_1">Data Storage</h4>
+<ul>
+<li><strong>Initial User Inputs</strong>: Stored in the <code>UserTaskExecution</code> table under <code>json_input_values</code>.</li>
+<li><strong>Messages</strong>: Stored in the <code>md_message</code> table in a JSON field.</li>
+<li><strong>Produced Text Versions</strong>: Stored in the <code>md_produced_text_version</code> table, containing titles and bodies of each version.</li>
+<li><strong>File Storage</strong>: Images and audio files are stored using the <code>UserFileStorageManager</code> in the volume data, identified by session and user.</li>
+</ul>
+<h4 id="workflow-specifics">Workflow Specifics</h4>
+<ul>
+<li><strong>Step Validation</strong>: Each step can be validated by the user before moving to the next step.</li>
+<li><strong>Final Produced Text</strong>: Generated from the last step or concatenation of the last steps, with optional chat enabled based on a database field.</li>
+</ul>
+<h3 id="123-workflow-execution-method-run">12.3 Workflow Execution: Method <code>run()</code></h3>
+<p>When a user initiates a workflow, the following sequence of events occurs:</p>
+<ol>
+<li>
+<p><strong>Task Initialization</strong>:</p>
+<ul>
+<li>The user clicks on the task they want to execute.</li>
+<li>The <code>PUT /user_task_execution</code> route is called to instantiate a new <code>UserTaskExecution</code>.</li>
+</ul>
+</li>
+<li>
+<p><strong>Form Submission</strong>:</p>
+<ul>
+<li>After filling out the form and clicking "Go", the <code>PUT /user_task_execution_run</code> route is called.</li>
+<li>This starts the workflow execution in a parallel thread.</li>
+</ul>
+</li>
+<li>
+<p><strong>Workflow Execution</strong>:</p>
+<ul>
+<li>In the parallel thread, the <code>WorkflowProcessController</code> method <code>run</code> is invoked.</li>
+<li>The <code>run</code> method determines the step to execute and executes it.</li>
+</ul>
+</li>
+<li>
+<p><strong>Step Execution</strong>:</p>
+<ul>
+<li>If the step does not require user validation, the <code>run</code> method is called again to calculate and execute the next step.</li>
+<li>If user validation is required, information is sent via <code>Socket.io</code> to the front end, indicating that user validation is needed.</li>
+</ul>
+</li>
+<li>
+<p><strong>User Interaction</strong>:</p>
+<ul>
+<li>If the user is online, they receive a live notification.</li>
+<li>If the user is offline, they can see the pending validation the next time they log in.</li>
+</ul>
+</li>
+<li>
+<p><strong>Step Validation</strong>:</p>
+<ul>
+<li>The user can either validate the step or edit the result.</li>
+<li>Validation calls the <code>POST /user_workflow_step_execution</code> route, marking the step as valid and re-invoking the <code>run</code> method.</li>
+<li>Editing calls the <code>PUT /user_workflow_step_execution_result</code> route, updating the step result and re-invoking the <code>run</code> method.</li>
+</ul>
+</li>
+</ol>
+<h4 id="detailed-execution-flow">Detailed Execution Flow</h4>
+<p><img alt="alt text" src="image.png" /></p>
+<ul>
+<li>The <code>run</code> method identifies the current step, executes it, and produces a result.</li>
+<li>If the workflow execution has no title, it generates the title and summary in a parallel process.</li>
+<li>The method retrieves the step to execute. If the step is <code>null</code>, the workflow is complete, and the final result is generated.</li>
+<li>If the step is not <code>null</code>, it executes the step, generates a result, and sends an event indicating the step completion.</li>
+<li>Depending on whether user validation is required, the <code>run</code> method is called again or waits for user input.</li>
+</ul>
+<h3 id="124-determining-the-next-step">12.4 Determining the Next Step</h3>
+<h4 id="step-determination-logic">Step Determination Logic</h4>
+<p><img alt="alt text" src="image-1.png" /></p>
+<ol>
+<li>
+<p><strong>Initial Step</strong>:</p>
+<ul>
+<li>If no step has been executed, the first step is executed.</li>
+</ul>
+</li>
+<li>
+<p><strong>Subsequent Steps</strong>:</p>
+<ul>
+<li>If one step has been executed, the next step is determined based on its rank.</li>
+<li>If multiple steps have been executed, the number of items in the result list of the previous step is checked.</li>
+<li>The next step is executed for each item in the result list until all items are processed.</li>
+</ul>
+</li>
+</ol>
+<h4 id="example-poem-workflow">Example: Poem Workflow</h4>
+<ul>
+<li><strong>Step 1</strong>: User inputs the poem subject and number of stanzas.</li>
+<li><strong>Step 2</strong>: Generates subjects for each stanza.</li>
+<li><strong>Step 3</strong>: Writes each stanza based on the generated subjects.</li>
+<li>The <code>run</code> method iterates through these steps, ensuring each step is executed the required number of times based on the results of the previous step.</li>
+</ul>
+<h3 id="125-chat-and-step-validation">12.5 Chat and Step Validation</h3>
+<h4 id="chat-on-step-validation">Chat on Step Validation</h4>
+<ul>
+<li>If a step result is unsatisfactory, the user can initiate a chat by clicking "Review".</li>
+<li>The <code>user_workflow_step_execution</code> route is called with <code>validated=false</code>.</li>
+<li>A "snapshot" of the workflow (= parameter and result of each past steps) is taken and stored in a system message.</li>
+<li>The user interacts with the assistant to provide instructions for improving the step result.</li>
+<li>The step is re-executed with the new instructions.</li>
+</ul>
+<h4 id="chat-on-workflow-result">Chat on Workflow Result</h4>
+<ul>
+<li>At the end of the workflow, a snapshot of the entire workflow is taken and stored in a system message.</li>
+<li>If the user requests modifications to the final result, the assistant uses the context from the system message to make the necessary changes.</li>
+</ul>
+<h2 id="13-sessioncontroller-chat-functionality">13. SessionController Chat Functionality</h2>
+<h3 id="chat-on-instruct-tasks-and-workflows">Chat on Instruct Tasks and Workflows</h3>
+<h4 id="instruct-tasks_1">Instruct Tasks</h4>
+<ul>
+<li><strong>Chat on Result</strong>: Users can send instructions about the final result of an instruct task.</li>
+</ul>
+<h4 id="workflows">Workflows</h4>
+<ul>
+<li><strong>Chat on Steps</strong>: Users can send instructions about individual steps if enabled.</li>
+<li><strong>Chat on Result</strong>: Users can send instructions about the final result of the workflow.</li>
+<li><strong>API Call Considerations</strong>: API calls cannot be repeated once the result is generated, enabling chat on workflow result could misguide users of hallucinated further API calls that would never happen.</li>
+</ul>
+<h3 id="entry-points">Entry Points</h3>
+<p>The <code>SessionController</code> has two main entry points for handling chat interactions:</p>
+<ol>
+<li><strong>process_form_input()</strong>: Called when the user clicks on "Go" on the WebApp in a parallel process by the route <code>POST /user_task_execution_run</code>.</li>
+<li><strong>process_chat_message()</strong>: Called when a message is received from the user via the <code>PUT /user_message</code> route.</li>
+</ol>
+<h3 id="user_input_processor-decorator"><code>@user_input_processor</code> Decorator</h3>
+<p><img alt="alt text" src="image-3.png" /></p>
+<p>Both entry points are decorated with the <code>@user_input_processor</code> decorator. This decorator ensures that the functions will call a <code>ChatAssistant</code>, return a <code>response_message</code>, and handle adding the response to the database and streaming it.</p>
+<h3 id="differences-between-those-methods">Differences between those methods</h3>
+<ul>
+<li><strong>process_form_input()</strong>: This method is specific to instruct tasks and cannot be called outside the context of an instruct task.</li>
+<li><strong>process_chat_message()</strong>: This method can be called in various contexts, including outside of a task, such as in the Home Chat context, or in workflow execution context. It includes additional checks to determine the context and handle it accordingly.</li>
+</ul>
+<h2 id="14-chat-assistant-functionality">14. Chat Assistant Functionality</h2>
+<h4 id="chatassistant-classes">ChatAssistant Classes</h4>
+<p>The <code>ChatAssistant</code> is an abstract class responsible for generating assistant responses. It has three implementations:</p>
+<ol>
+<li><strong>HomeChatAssistant</strong></li>
+<li><strong>InstructTaskAssistant</strong></li>
+<li><strong>WorkflowAssistant</strong></li>
+</ol>
+<h4 id="common-methods">Common Methods</h4>
+<p>The <code>ChatAssistant</code> class defines several common methods:</p>
+<ul>
+<li><strong>_call_llm()</strong>: Makes a call to the language model.</li>
+<li><strong>_handle_llm_output()</strong>: Handles the output from the language model, including extracting the language and tags.</li>
+</ul>
+<h4 id="abstract-methods">Abstract Methods</h4>
+<p>Each <code>ChatAssistant</code> implementation must override the following abstract methods:</p>
+<ul>
+<li><strong>generate_message()</strong>: Generates the message specific to the assistant.</li>
+<li><strong>mpt()</strong>: A property that returns the MPT (Mojodex Prompt Template) specific to the assistant.</li>
+<li><strong>_manage_response_tag()</strong>: Manages the response tags specific to the assistant.</li>
+<li><strong>_token_callback()</strong>: Handles the callback for tokens, which can vary between assistants.</li>
+</ul>
+<h3 id="141-homechatassistant">14.1 HomeChatAssistant</h3>
+<p><img alt="alt text" src="image-6.png" /></p>
+<h3 id="142-instruct-task-assistant">14.2 Instruct Task Assistant</h3>
+<p><img alt="alt text" src="image-4.png" /></p>
+<h3 id="143-workflow-assistant">14.3 Workflow Assistant</h3>
+<p><img alt="alt text" src="image-5.png" /></p>
+<h2 id="15-home-chat-functionality">15. Home Chat Functionality</h2>
+<h3 id="overview">Overview</h3>
+<p>The Home Chat Assistant is a feature implemented in the mobile app but is currently not in active use. It is present in the main branch of the mobile app but has not been fully tested and lacks a defined use case.</p>
+<h3 id="session-initialization">Session Initialization</h3>
+<p>When a user navigates to the Home Chat page, a session is initiated, allowing the user to exchange messages with the assistant without selecting or starting any specific user task.</p>
+<h3 id="task-execution">Task Execution</h3>
+<ul>
+<li>The assistant can start an instruct task at any moment based on the user's natural conversation.</li>
+<li>For example, if a user mentions wanting to post on LinkedIn, the assistant can initiate the task to write a LinkedIn post.</li>
+</ul>
+<h3 id="maintaining-task-execution-consistency">Maintaining Task Execution Consistency</h3>
+<ul>
+<li>The goal is to maintain consistency between tasks started by user clicks and those initiated by the assistant.</li>
+<li>This is managed by detecting during the assistant's response streaming (in the <code>_token_callback</code> function) whether a task has been started.</li>
+</ul>
+<h3 id="token-callback-_token_callback-function">Token Callback  <code>_token_callback</code> Function</h3>
+<ul>
+<li>The partially generated text is analyzed to check for <code>&lt;task_pk&gt;</code> and <code>&lt;/task_pk&gt;</code> tags on the fly.</li>
+<li>If these tags are detected, the value between them is extracted to determine the task context.</li>
+<li>If a <code>task_pk</code> is present, it indicates a task context; otherwise, it does not.</li>
+</ul>
+<h3 id="task-decision-process">Task Decision Process</h3>
+<ul>
+<li>If the assistant decides to start a task, it begins its response with <code>&lt;task_pk&gt;</code>, the task number, and <code>&lt;/task_pk&gt;</code>. i.e. <code>&lt;task_pk&gt;12&lt;/task_pk&gt;</code></li>
+<li>The assistant has access to the list of tasks available to the user, including their PKs.</li>
+<li>The function checks if the tags are detected and processes accordingly:</li>
+<li>If <code>task_pk</code> is <code>null</code> and no task is running, the assistant continues with a general message.</li>
+<li>If <code>task_pk</code> is <code>null</code> but a task was running, it indicates the task has ended, and the running task is set to <code>false</code>.</li>
+<li>If a <code>task_pk</code> is detected and no task is running, it signals the start of a new task, and the function returns, stopping further token processing.</li>
+</ul>
+<p><img alt="alt text" src="image-7.png" /></p>
+<h3 id="implementation-details">Implementation Details</h3>
+<ul>
+<li>The assistant's context changes when a task is running, affecting the prompt's templating.</li>
+<li>This way, by stopping the answer generation and adapting the prompt when a task starts, the prompt used to start a task by the assistant will be consistent with the one used when a user clicks to start a task. This ensures that both ways of initializing a task are using the same execution conditions.</li>
+<li>The assistant can switch tasks based on user instructions, maintaining flexibility in task management.</li>
+</ul>
+<h2 id="16-proper-nouns-resolution-with-mojodex">16. Proper Nouns Resolution with Mojodex</h2>
+<h3 id="overview_1">Overview</h3>
+<p>Proper noun resolution is crucial for improving user experience, especially in audio chats where correcting names repeatedly can be frustrating.</p>
+<h3 id="tagging-proper-nouns">Tagging Proper Nouns</h3>
+<ul>
+<li>Proper nouns are tagged in both assistant messages and user messages.</li>
+<li>For assistant messages, tagging proper nouns instruction is added directly in the prompt for mobile app users.</li>
+<li>For user messages, after transcription, the <code>POST /vocabulary</code> route is called to tag proper nouns.</li>
+</ul>
+<h3 id="vocabulary-management">Vocabulary Management</h3>
+<ul>
+<li>When a user corrects a proper noun, the <code>PUT /vocabulary</code> route updates the spelling in all current session messages, task titles and summaries, produced_text last version.</li>
+<li>The corrected word is added to the user's vocabulary table if it doesn't already exist.</li>
+</ul>
+<h3 id="whisper-integration">Whisper Integration</h3>
+<ul>
+<li>Whisper, the speech-to-text model, is used to transcribe audio messages.</li>
+<li>Due to Whisper API limitation, only the most recent 20 words from the user's vocabulary are passed to Whisper as prompt to improve transcription accuracy.</li>
+</ul>
+<h3 id="future-improvements">Future Improvements</h3>
+<ul>
+<li>The system may need to handle a large number of proper nouns over time, requiring an algorithm to manage context-specific information.</li>
+<li>The approach may change if a different speech-to-text model is used in the future, or Whisper API changes.</li>
+</ul>
+<h2 id="17-placeholders-functionality">17. Placeholders Functionality</h2>
+<h3 id="overview_2">Overview</h3>
+<p>Placeholders were introduced to help developers avoid excessive token consumption during development, especially when testing UI elements.</p>
+<blockquote>
+<p>Note: the recent raise of strong small language models that can run locally may lead to avoid using this feature, as it dramatically changes the overall behavior of the platform.</p>
+</blockquote>
+<h3 id="usage-in-instructtaskassistant">Usage in InstructTaskAssistant</h3>
+<ul>
+<li>Placeholders are used to simulate responses without calling the LLM.</li>
+<li>In the <code>PUT /user_message</code> route, setting <code>use_message_placeholder</code> to <code>true</code> returns a "Hello World" response.</li>
+<li>Setting <code>use_draft_placeholder</code> to <code>true</code> returns a fake produced_text (draft message).</li>
+</ul>
+<h3 id="usage-and-limitations-in-workflowassistant">Usage and Limitations in WorkflowAssistant</h3>
+<ul>
+<li>WorkflowTasks can generate various message types, making the current placeholder system less effective.</li>
+<li>Currently, placeholders can simulate <code>&lt;ask_for_clarification&gt;</code> and produced_text (draft message) but not other types like <code>&lt;user_instruction&gt;</code>.</li>
+</ul>
+<h3 id="usage-and-limitations-in-homechatassistant">Usage and Limitations in HomeChatAssistant</h3>
+<ul>
+<li>For the Home Chat Assistant, setting <code>use_message_placeholder</code> to <code>true</code> returns a "Hello World" message.</li>
+<li>Other types of messages can't be simulated using placeholders.</li>
+</ul>
+<h3 id="future-considerations">Future Considerations</h3>
+<ul>
+<li>The need for placeholders may decrease with the availability of powerful open-source LLMs for local development.</li>
+<li>For WorkflowTasks, creating specific test data might be more practical than implementing a complex placeholder mechanism.</li>
+</ul>
+<h2 id="18-document-management">18. Document Management</h2>
+<h3 id="overview_3">Overview</h3>
+<p>The document management system in Mojodex was designed with future functionalities in mind, particularly for Retrieval-Augmented Generation (RAG), although RAG is not currently implemented. The system is equipped to handle documents and is integrated into the Mojodex web application.</p>
+<h3 id="web-app-integration">Web App Integration</h3>
+<p>In the Mojodex web application, there is a "Resources" tab where users can add documents they wish to save. These documents can later be utilized in various Mojodex functionalities. Currently, users can only add web pages as documents. During the onboarding process, users have the option to add their company's website, which is then transformed into a user document.</p>
+<blockquote>
+<p>When dealing with tasks that require file inputs, the files are stored in the session for task execution and are not added to the document storage. The primary purpose of storing documents is to allow the assistant to dynamically use them to add contextual information during task execution or in a chat.</p>
+</blockquote>
+<h3 id="document-processing">Document Processing</h3>
+<p>To transform a website into a document, the user provides a URL. The system then fetches all links related to the provided URL, up to a maximum of 100 links. Each of these URLs is scraped for its HTML content, which is then treated as a text document. The system only processes links directly related to the initial URL and does not follow links within those links.</p>
+<h3 id="chunking-strategy">Chunking Strategy</h3>
+<p>The document service in Mojodex Core, a singleton service, handles the addition of new documents through the <code>add_new_document()</code> method. This method naively chunks the document text based on token count, punctuation, and new lines. The chunking strategy is simple and may not be optimal for all use cases. The current method does not overlap chunks, meaning each character belongs to only one chunk.</p>
+<h3 id="embedding-and-storage">Embedding and Storage</h3>
+<p>Once the text is split into chunks, each chunk is embedded and stored in the <code>md_document_chunk</code> table in the database. Each chunk is stored with its text, its order within the document, and its vector. The order is used to concatenate and recreate the document in the correct sequence for the user.</p>
+<h3 id="document-retrieval">Document Retrieval</h3>
+<p>Although not currently used, the document service includes a method to retrieve documents based on vector distance calculations. This method takes a query, embeds it to form a vector, and uses the pgVector <code>cosine_distance()</code> method to find the nearest neighbors to the query. These nearest neighbors can then be used for various functionalities.</p>
+<h2 id="19-mojodex-advanced-features-predefined-actions">19. Mojodex Advanced Features: Predefined Actions</h2>
+<h3 id="overview_4">Overview</h3>
+<p>Predefined Actions in Mojodex allow for chaining Task Executions. This feature is currently available only on the mobile app. It enables the execution of a subsequent task using the result of the previous task, maintaining the same context.</p>
+<p><img alt="alt text" src="image-8.png" /></p>
+<h3 id="implementation-details_1">Implementation Details</h3>
+<ul>
+<li><strong>Task Association</strong>: Tasks that can be chained are defined at the task level. There is an association table called <code>md_task_predefined_action_association</code> that links two tasks.</li>
+<li><strong>User Task Execution</strong>: When a user clicks on a predefined action, it triggers the creation and execution of a new User Task Execution. The user message for this new task is prefixed with a message defined in the Predefined Action, followed by the result of the previous User Task.</li>
+<li><strong>Tracking Chain</strong>: Each User Task Execution that is launched from another task can be traced back using the attribute <code>predefined_action_from_user_task_execution_fk</code>, which indicates the originating task.</li>
+</ul>
+<p><img alt="docs/technical-architecture/general-doc/md_task_predefined_action_association.png" src="../../images/md_task_predefined_action_association.png" /></p>
+<h3 id="developer-instructions">Developer Instructions</h3>
+<ol>
+<li><strong>Creating a Predefined Action</strong>:</li>
+<li>First, create the subsequent task.</li>
+<li>Then, establish the association between the tasks. This can be done during the creation or editing of a task.</li>
+<li>Example: After a meeting summary, a follow-up email can be automatically triggered.</li>
+</ol>
+<h3 id="common-use-case">Common Use Case</h3>
+<ul>
+<li><strong>Meeting Minutes Predefined action</strong>: After a meeting, it is common to send a follow-up email. This feature allows for the automatic chaining of these tasks.</li>
+</ul>
+<h2 id="20-mojodex-advanced-features-text-edit-actions">20. Mojodex Advanced Features: Text-Edit Actions</h2>
+<h3 id="overview_5">Overview</h3>
+<p>Text-Edit Actions are shortcuts for editing the output of a task without sending a chat message. This feature is also currently available only on the mobile app and helps users discover the editing capabilities of Mojodex.</p>
+<p><img alt="alt text" src="image-9.png" /></p>
+<h3 id="implementation-details_2">Implementation Details</h3>
+<ul>
+<li><strong>Text-Type Association</strong>: Text-Edit Actions are defined at the text-type level. Each task output is associated with a text-type (e.g., document, email).</li>
+<li><strong>User Interaction</strong>: When a user clicks on a Text-Edit Action, it generates a user message in the chat, which is then processed by calling the <code>text_edit_action</code> route instead of the classic <code>user_message</code> route.</li>
+<li><strong>Prompt Storage</strong>: The prompt for each Text-Edit Action is stored in a file, and the path to this file is stored in the database. The file itself is typically a <code>.txt</code> file and is stored in <code>mojodex_core</code>.</li>
+</ul>
+<p><img alt="docs/images/md_text_edit_action_text_type_association.png" src="../../images/md_text_edit_action_text_type_association.png" /></p>
+<h3 id="developer-instructions_1">Developer Instructions</h3>
+<ol>
+<li><strong>Defining Text-Edit Actions</strong>:</li>
+<li>Associate the Text-Edit Actions with a text-type.</li>
+<li>Ensure that the prompt files are correctly stored and referenced in the database.</li>
+</ol>
+<h3 id="common-use-case_1">Common Use Case</h3>
+<ul>
+<li><strong>Email Editing</strong>: Users can quickly make an email less formal or shorter by using predefined Text-Edit Actions.</li>
+</ul>
+<h2 id="21-mojodex-advanced-features-todo-management">21. Mojodex Advanced Features: Todo Management</h2>
+<h3 id="overview_6">Overview</h3>
+<p>Todo Management in Mojodex involves the extraction and scheduling of ToDo items based on user task executions. This process runs in the background and helps users keep track of their tasks.</p>
+<h3 id="implementation-details_3">Implementation Details</h3>
+<ul>
+<li><strong>Todo Extraction</strong>:</li>
+<li>Every 10 minutes, a scheduler triggers the extraction of todos from user task executions whose latest <code>md_produced_text_version</code> is between 10 and 20 minutes old.</li>
+<li>The assistant extracts actionable items mentioned by the user and adds them to the todo list, scheduling them for future dates.</li>
+<li><strong>Todo List Access</strong>:</li>
+<li>Users can view their todo list in the todo tab of the mobile or web app, or directly from a user task execution.</li>
+<li><strong>Todo Execution</strong>:</li>
+<li>Todos can be marked as done or deleted by the user.</li>
+<li>Replanning of todos is done by the assistant every hour for todos that are overdue.</li>
+</ul>
+<p><img alt="docs/images/md_todo.png" src="../../images/md_todo.png" /></p>
+<h3 id="features_1">Features</h3>
+<ol>
+<li><strong>Background Extraction</strong>:</li>
+<li>The scheduler is set to run every 10 minutes to extract todos.</li>
+<li>The assistant is prompted to extract and reformulate todos from user task executions - only ToDo items explicitely mentioned as so by user.</li>
+<li><strong>Todo Replanning</strong>:</li>
+<li>The scheduler runs every hour to replan overdue todos.</li>
+<li>The assistant replans these todos and updates the database accordingly.</li>
+<li><strong>Email Notifications</strong>:</li>
+<li>Users with the attribute <code>todo_email_reception</code> set at true receive a daily email between 8 AM and 9 AM (weekdays only) with their todos for the day and any replanifications.</li>
+<li>The email service can be configured using SMTP or AWS.</li>
+</ol>
+<h3 id="common-use-case_2">Common Use Case</h3>
+<ul>
+<li><strong>Meeting Follow-up Actions</strong>: Extracting follow-up actions from meeting summaries and adding them to the todo list.</li>
+</ul>
+<h2 id="22-administration-and-configuration-of-the-platform">22. Administration and Configuration of the platform</h2>
+<p>The goal of this section is to describe how to prepare and configure the Mojodex platform with <em>users</em>, <em>tasks</em> and <em>how tasks are made usable by users</em></p>
+<h3 id="221-user-creation">22.1 User Creation</h3>
+<p>There are two methods to create a new user:</p>
+<ol>
+<li>
+<p><strong>User Self-Registration</strong>:</p>
+<ul>
+<li>The user visits the web or mobile app and clicks on <code>Sign Up</code>.</li>
+<li>They fill out a form with their name, email, and password.</li>
+<li>After signing up, they go through an onboarding process:<ol>
+<li>Accept Terms and Conditions.</li>
+<li>Choose a profile category, which determines the tasks they can access.</li>
+<li>Optionally, enter their company's website for additional context.</li>
+</ol>
+</li>
+<li>The user's account is created and associated with a free trial product of the chosen category. 
+  <code>Note: a free trial is particular product that is limited wether in terms of days of use or number of tasks to run AND it's free, i.e. product.is_free = true</code></li>
+</ul>
+</li>
+<li>
+<p><strong>Admin-Created User</strong>:</p>
+<ul>
+<li>An admin calls the <code>PUT /user</code> route with the <code>skip_user_validation=true</code> parameter. Terms and conditions are "validated" by default, onboarding is skipped.</li>
+<li>The user receives an email to change their default password.</li>
+<li>The admin must assign a role or purchase to the user to grant access to tasks.</li>
+</ul>
+</li>
+</ol>
+<h3 id="222-product-and-profile-management">22.2 Product and Profile Management</h3>
+<p>Products and profiles in Mojodex are used to group tasks and manage user access:</p>
+<ol>
+<li>
+<p><strong>Product</strong>:</p>
+<ul>
+<li>A product is a collection of tasks associated with a specific user profile.</li>
+<li>Products are grouped into categories (e.g., recruiters, engineers).</li>
+<li>Each product can have different task lists tailored to specific job (e.g., managers, interns).</li>
+</ul>
+</li>
+<li>
+<p><strong>Profile</strong>:
+<code>Products</code> and <code>Profiles</code> are represented with the same DB object: <code>md_product</code>.
+<code>Profile</code> is a specialized representation of the <code>product</code> concept, better adapted to “admin all set config” where user has no control over the tasks they can access. A profile is:</p>
+</li>
+<li>free</li>
+<li>has no limit</li>
+<li>
+<p>has no Stripe ID</p>
+</li>
+<li>
+<p><strong>Subscription</strong>:
+<code>Products</code> and <code>Subscription</code> are represented with the same DB object: <code>md_product</code>.
+A <code>Subscription</code> is a particular type of product that has no limit in terms of number of tasks run and duration.</p>
+</li>
+</ol>
+<h3 id="223-purchase-and-role-management">22.3 Purchase and Role Management</h3>
+<p>Purchases and roles link users to products and profiles:</p>
+<ol>
+<li>
+<p><strong>Purchase</strong>:</p>
+<ul>
+<li>A purchase is the association between a user and a product.</li>
+<li>When a user makes a new purchase, their task access is updated.</li>
+</ul>
+</li>
+<li>
+<p><strong>Role</strong>:
+<code>Purchases</code> and <code>Roles</code> are represented with the same DB object: <code>md_purchase</code>.
+Role is better adapted to “admin all set config” where user has no control over the tasks they can access.
+A <code>role</code> is making the relationship between a <code>user</code> and a <code>profile</code> which is a special <code>product</code> (as seen in the previous section).</p>
+</li>
+</ol>
+<h3 id="224-purchase-and-subscription-management">22.4 Purchase and Subscription Management</h3>
+<p>A user can't have 2 active purchases of a <code>Subscription</code> at the same time.
+When purchasing a subscription, if user already has a <code>Subscription</code> purchase, this one will be deactivated before adding the new <code>purchase</code>.</p>
+<h3 id="225-database-entities-relationship">22.5 Database Entities Relationship</h3>
+<p><img alt="alt text" src="image-10.png" /></p>
+<h3 id="226-procedure-to-create-a-new-product">22.6 Procedure to create a new Product</h3>
+<p><strong>Creating a New Product</strong>:
+1. Create a product category: <code>PUT /product_category</code>
+2. Within the category, create products for different user types: <code>PUT /product</code> (or <code>PUT /profile</code>)
+3. Associate tasks with each product: <code>PUT /product_task_association</code>
+4. Link users to products via purchases. <code>PUT /manual_purchase</code> (or <code>PUT /role</code>)</p>
+<p>Each operation can be done using the appropriate backend routes.</p>
+<h2 id="23-overview-of-mojodex-db-tables">23. Overview of Mojodex DB Tables</h2>
+<p>Mojodex's database is composed of several tables, each serving a specific purpose. The main categories of tables include:</p>
+<ul>
+<li><strong>Users</strong>: Configuration of user accounts, profiles, etc.</li>
+<li><strong>Documents</strong>: Configuration related to user documents and companies.</li>
+<li><strong>Tasks Configuration</strong>: How tasks are configured.</li>
+<li><strong>Tasks Execution</strong>: How users execute tasks.</li>
+</ul>
+<p>Access to the database documentation:
+- https://dbdiagram.io/d/MojodexDatabase-659d0645ac844320ae85b440
+- https://dbdocs.io/kelly.roussel/Mojodex</p>
+<h3 id="231-users">23.1 Users</h3>
+<h4 id="user-table">User Table</h4>
+<p>The User table is the central table in Mojodex. It contains essential elements for user identification, configuration data, authentication information, foreign keys to configuration tables, company information, time zones, and links to product categories. The product category determines the list of products that can be purchased by the user.</p>
+<h4 id="product-and-category-configuration">Product and Category Configuration</h4>
+<p>Before adding users, products and categories must be configured. This involves defining categories (<em>i.e recruitement</em>) for a given deployment, then creating associated products (<em>i.e manager</em>). 
+Note: Each product category defines an implicit goal for the user, providing additional context for task execution.</p>
+<h4 id="purchase-and-payment-systems">Purchase and Payment Systems</h4>
+<p>A Purchase links a user to a product, validating their access. Mojodex, designed as a SaaS product, integrates with Stripe payment system. It also supports custom B2B relationships, allowing for invoice validation through a custom Purchase ID.</p>
+<p><img alt="docs/images/md_user.png" src="../../images/md_user.png" /></p>
+<h3 id="232-documents">23.2 Documents</h3>
+<h4 id="display-data">Display Data</h4>
+<p>Display data stores translation information, which is practical for backend flexibility despite adding some load to the database structure.</p>
+<h4 id="user-documents">User Documents</h4>
+<p>Users are linked to documents like websites. These documents provide context information for task execution.</p>
+<h4 id="vocabulary">Vocabulary</h4>
+<p>User vocabulary stores proper names used by the user, enhancing the assistant's recognition capabilities. </p>
+<h4 id="events-management">Events Management</h4>
+<p>Events log notifications sent to users, including emails and push notifications.</p>
+<h4 id="devices-and-notifications-management">Devices and Notifications Management</h4>
+<p>The Device table stores Firebase Messaging tokens for user devices, ensuring notifications are sent to all valid devices. Invalid tokens are marked as such to maintain accuracy.</p>
+<blockquote>
+<p>Note: with this representation, if a user has multiple accounts on the same device, all notifications of all accounts will be sent to this device</p>
+</blockquote>
+<h3 id="233-tasks-configuration">23.3 Tasks Configuration</h3>
+<h4 id="task">Task</h4>
+<p>Tasks are the core of Mojodex, divided into two types: Instruct and Workflow – but same table <code>md_task</code>. Task configuration includes defining task types, names, system definitions, display information, output formats, and more. Tasks are associated with platforms (e.g., mobile, web) to control their availability.</p>
+<h4 id="product-tasks">Product Tasks</h4>
+<p>Product Tasks link products to tasks, determining the list of tasks available for a given product.</p>
+<h4 id="workflow-and-steps">Workflow and Steps</h4>
+<p>Workflows consist of ordered steps defined in the <code>md_workflow_step</code> table. Each step includes information to process the workflow.</p>
+<h4 id="actions">Actions</h4>
+<p>Tasks can have predefined actions linking them to other tasks, enabling task chaining. For example, after a meeting summary, a follow-up email task can be triggered.</p>
+<p><img alt="" src="../../images/md_task.png" /></p>
+<h3 id="234-tasks-executions">23.4 Tasks Executions</h3>
+<h4 id="task-execution-and-sessions">Task Execution and Sessions</h4>
+<p>Task execution involves the UserTaskExecution table, which links to user tasks, sessions, and purchases. Sessions manage all exchanges during task execution, including messages between the user and the assistant.</p>
+<h4 id="inputs-and-messages">Inputs and Messages</h4>
+<p>Users can start tasks via forms or messages. Form inputs are stored in <code>user_task_execution.json_input.values</code>, while message-based inputs are managed through message exchanges. </p>
+<blockquote>
+<p>Note for message-based execution: at the start of a task AND even in the context of a chat over an already existing user_task_execution, inputs are not re-extracted but concatenated in the run task template, as conversation history.</p>
+</blockquote>
+<h4 id="task-results-and-produced-text-versions">Task Results and Produced Text Versions</h4>
+<p>Task execution results are stored in ProducedTextVersion, with multiple versions possible due to user edits or text-edit actions. The most recent version is considered the final result.</p>
+<h4 id="todos">ToDos</h4>
+<p>ToDos are extracted at the end of a UserTaskExecution and can have various statuses (e.g., completed, pending, deleted). They are associated with a schedule, which can be adjusted over time.</p>
+<h4 id="home-chat-interactions">Home Chat Interactions</h4>
+<p>The Home Chat table manages chat interactions not necessarly linked to specific tasks, maintaining context for a week. This allows users to chat with an assistant about various topics, with interactions stored in sessions.</p>
+<p><img alt="" src="../../images/md_user_task_execution.png" /></p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../../getting-started/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Getting Started">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Getting Started
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../../design-principles/tasks/whats_a_task/" class="md-footer__link md-footer__link--next" aria-label="Next: What&#39;s a task">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                What's a task
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4Z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../..", "features": ["content.code.copy", "navigation.sections", "navigation.instant", "navigation.tabs", "navigation.footer"], "search": "../../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.fe8b6f2b.min.js"></script>
+      
+    
+  </body>
+</html>

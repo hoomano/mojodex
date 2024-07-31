@@ -1,0 +1,14 @@
+{
+    "datetime": "2024-02-14T10:46:15.283Z",
+    "label": "string",
+    "displayed_data": [
+        {
+            "language_code": "en",
+            "name_for_user": "<NAME OF THE PROFILE CATEGORY AS IT APPEARS IN THE APP>",
+            "description_for_user": "<DESCRIPTION OF THE PROFILE CATEGORY AS IT APPEARS IN THE APP>"
+        }
+    ],
+    "emoji": "<EMOJI>",
+    "implicit_goal": "<IMPLICIT GOAL>",
+    "visible": true
+}

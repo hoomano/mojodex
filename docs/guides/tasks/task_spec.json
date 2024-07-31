@@ -1,5 +1,6 @@
 {
     "datetime": "2024-02-14T17:49:26.545180",
+    "task_type": "instruct",
     "platforms": ["webapp","mobile"],
     "predefined_actions": [],
     "task_displayed_data": [
@@ -30,5 +31,6 @@
             "info_name": "<INFO NAME>",
             "description": "<INFO DESCRIPTION>"
         }
-    ]
+    ],
+    "result_chat_enabled":true
 }

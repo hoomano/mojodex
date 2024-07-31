@@ -32,6 +32,7 @@ Eager to assist Mia in her quest for the perfect pitch, I set out to create a ta
         "mobile",
         "webapp"
     ],
+    "task_type": "instruct",
     "predefined_actions": [],
     "task_displayed_data": [
         {
@@ -73,7 +74,8 @@ Eager to assist Mia in her quest for the perfect pitch, I set out to create a ta
             "info_name": "target_market",
             "description": "The target market represented by an ideal customer description"
         }
-    ]
+    ],
+    "result_chat_enabled": true
 }
 ```
 

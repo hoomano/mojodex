@@ -197,7 +197,7 @@ const TaskExecutionDetail = () => {
         if (currentTask?.task_type !== "workflow") {
           setSelectedTab("result");
         } else {
-          if (editorDetails.producedTextPk) {
+          if (currentTask?.produced_text_pk) {
             setSelectedTab("result");
           } else {
             setSelectedTab("process");

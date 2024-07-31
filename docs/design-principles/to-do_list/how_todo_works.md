@@ -112,6 +112,8 @@ This json is parsed and items are added to the database, related to the task.
 
 Once the To-Do items are extracted, their date format is checked and if it is valid, they are saved in the database.
 
+![To-Do extraction process](../../images/to-dos_flow/extract_todos.png)
+
 ## To-Do Schedule
 
 ### Trigger
@@ -224,7 +226,7 @@ The result of the prompt is a json dictionnary defining the new due date of the 
 
 The argument for the reschedule date will also be saved to notify the user of the reason for this new reschedule date.
 
-
+![To-Do reschedule process](../../images/to-dos_flow/reschedule_todos.png)
 
 ## To-Do Reminder
 
@@ -330,3 +332,38 @@ The result of the LLM call is a json:
 }
 ```
 Then, the method `send_event()`, defined in the `EmailEventGenerator` abstract class, sends the email to the user and logs the event in the database.
+
+![To-Do reminder email generation process](../../images/to-dos_flow/remind_user.png)
+
+## User actions on To-Do list
+
+Users can of course also act on their own To-Dos. For now, they can take 2 actions:
+- Delete a To-Do item, if it was not relevant to add it or the assistant made any mistake. As any application call, this call is made to the backend and the route is DELETE `/todo`.
+> Note: an item is never deleted for real in the database. It is only marked as deleted so that it does not appear in the user's To-Do list anymore. This is to keep track of all the work the assistant has done.
+`backend/app/routes/todo.py`
+```python
+class Todos(Resource):
+    [...]
+    def delete(self, user_id):
+        [...]
+        todo.deleted_by_user = datetime.now()
+        db.session.commit()
+        [...]
+           
+```
+
+- Mark a To-Do as completed as soon as they don't need it anymore to remember of the work they have to do. As any application call, this call is made to the backend and the route is POST `/todo`.
+`backend/app/routes/todo.py`
+```python
+class Todos(Resource):
+    [...]
+    def post(self, user_id):
+        [...]
+        todo.completed = datetime.now()
+        db.session.commit()
+        [...]
+           
+```
+
+
+![user_actions](../../images/to-dos_flow/user_actions.png)

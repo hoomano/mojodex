@@ -1,6 +1,6 @@
-# Workflow Execution Workflow in Mojodex
+# How `Workflows` are run?
 
-This document provides an overview of the concept related to the workflow execution process in the Mojodex platform and describes the sequence of events that occur from the moment a user initiates a new workflow execution until the workflow is completed and the result is delivered.
+This document provides an overview of the concept related to the workflow execution process in the Mojodex platform and describes the sequence of events that occurs from the moment a user initiates a new workflow execution until the workflow is completed and the result is delivered.
 
 ## Main concepts
 

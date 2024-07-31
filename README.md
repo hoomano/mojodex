@@ -80,7 +80,7 @@ For a complete experience, you can also build and use the open-source Mojodex mo
 
 - **Personalizable** : Built-in memory of user interactions and goals to improve task execution.
 
-- **Proactive** : Independently organizing todos from tasks, freeing users to focus on other activities through a mutli-platform architecture.
+- **Proactive** : Independently organizing todos from tasks, freeing users to focus on other activities through a multi-platform architecture.
 
 - **Multiple User Interfaces** : Includes a web application in this repository, an open-source mobile application, and a CLI (yes, a CLI).
 

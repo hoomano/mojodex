@@ -1,10 +1,16 @@
-# Create a new task
+# Create a new instruct task
 
 ## Technical definition
 A task is a JSON object that contains all necessary information to render it in the app and to guide the assistant through the process of drafting the document resulting from the task.
 You can find a template of a task in the file `task_spec.json` in this repository.
 
 Let's break this specification down with "meeting_minutes" task as an example.
+
+#### Task Type
+```
+"task_type": "instruct"
+```
+The type of the task. Can be "workflow" or "instruct". A workflow is a task that requires multiple steps, executed as code, to be completed. See dedicated `new_workflow` documentation for more information on how to create a workflow.
 
 #### Platforms
 ```
@@ -120,13 +126,34 @@ This field contains all the information the assistant needs to collect from the 
 - description: the description of the information as it will be used in the assistant prompt
 
 
-#### predefined_actions
+### predefined_actions
 ```
-"predefined_actions": []
+"predefined_actions": [
+    {
+        "task_pk": <pk of the task to chain>,
+        "displayed_data": [
+            {
+                "language_code": "en",
+                "data": {
+                    "name": "Send a follow-up email", # name of the predefined action
+                    "button_text": "Send email", # text displayed on the button of the predefined action
+                    "message_prefix": "Prepare a follow-up email to send this meeting minutes to the participants: " # prefix of the message that will be sent to the assistant in behalf of the user to start the task. It will be concatenated with the produced_text of the previous task.
+                }
+            }
+        ]
+    }
+]
 ```
-Predefined actions will be covered in a coming documentation. Let's keep it empty for now.
+Predefined Actions in Mojodex allow for chaining Task Executions. This feature is currently available only on the mobile app. It enables the execution of a subsequent task using the result of the previous task, maintaining the same context.
 
-## How to create a new task?
+### result_chat_enabled
+```
+"result_chat_enabled": true
+```
+This field is used to enable the chat at the end of the task, once produced_text has been generated, to let user give instruction to edit the produced_text. It is by default true. On instruct tasks, it is recommended to keep it true.
+
+
+## How to create a new instruct task?
 
 Let's create your first task on Mojodex.
 

@@ -47,6 +47,8 @@ from routes.is_email_service_configured import IsEmailServiceConfigured
 from routes.is_push_notif_service_configured import IsPushNotifServiceConfigured
 from routes.user_workflow_step_execution_result import UserWorkflowStepExecutionResult
 from routes.restart_user_workflow_execution import RestartUserWorkflowExecution
+from routes.statistics import Statistics
+
 class HttpRouteManager:
     def __init__(self, api):
         api.add_resource(Purchase, '/purchase')
@@ -98,3 +100,4 @@ class HttpRouteManager:
         api.add_resource(IsPushNotifServiceConfigured, "/is_push_notif_service_configured")
         api.add_resource(UserWorkflowStepExecutionResult, "/user_workflow_step_execution_result")
         api.add_resource(RestartUserWorkflowExecution, "/restart_user_workflow_execution")
+        api.add_resource(Statistics, '/statistics')
